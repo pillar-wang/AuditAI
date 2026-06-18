@@ -565,7 +565,10 @@ public class ReferenceEditor
 					var dto = dal.GetProject();
 					if (dto != null)
 					{
+						externalProject.Dal = dal;
+						externalProject.PopulateFieldsFromDto(dto);
 						externalProject.Name = dto.Name;
+						externalProject.Load();
 					}
 				}
 				catch { }
@@ -674,7 +677,10 @@ public class ReferenceEditor
 					var dto = dal.GetProject();
 					if (dto != null)
 					{
+						externalProject.Dal = dal;
+						externalProject.PopulateFieldsFromDto(dto);
 						externalProject.Name = dto.Name;
+						externalProject.Load();
 					}
 				}
 				catch { }
@@ -800,7 +806,10 @@ public class ReferenceEditor
 					var dto = dal.GetProject();
 					if (dto != null)
 					{
+						externalProject.Dal = dal;
+						externalProject.PopulateFieldsFromDto(dto);
 						externalProject.Name = dto.Name;
+						externalProject.Load();
 					}
 				}
 				catch { }
@@ -915,7 +924,10 @@ public class ReferenceEditor
 					var dto = dal.GetProject();
 					if (dto != null)
 					{
+						externalProject.Dal = dal;
+						externalProject.PopulateFieldsFromDto(dto);
 						externalProject.Name = dto.Name;
+						externalProject.Load();
 					}
 				}
 				catch { }

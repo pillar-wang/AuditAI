@@ -1,4 +1,4 @@
-﻿namespace Leqisoft.Model;
+﻿﻿namespace Leqisoft.Model;
 
 public enum LineStyle
 {
