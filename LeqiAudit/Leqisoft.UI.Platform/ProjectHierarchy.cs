@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -271,6 +271,12 @@ public class ProjectHierarchy
         View.Paint += View_Paint;
         View.PageTitlePostPaintHandle = View_PageTitlePostPaint;
         View.PageDoubleClicked += View_PageDoubleClicked;
+
+        // 将 _grid 添加到 View 的页面中
+        var page = new C1OutPage();
+        page.Controls.Add(_grid);
+        View.Pages.Add(page);
+
         SecondTrigger.Trigger.Tick += Trigger_Tick;
 
         // cmdMoveUpGroup
