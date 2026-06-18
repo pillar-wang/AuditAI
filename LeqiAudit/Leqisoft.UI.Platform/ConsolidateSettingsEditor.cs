@@ -228,6 +228,10 @@ public class ConsolidateSettingsEditor
 
 		public object C1EditorGetValue()
 		{
+			if (base.Row < 0 || base.Row >= base.Rows.Count)
+			{
+				return null;
+			}
 			return base.Rows[base.Row].UserData;
 		}
 
@@ -264,6 +268,7 @@ public class ConsolidateSettingsEditor
 				Node node = ((parentNode != null) ? parentNode.AddNode(NodeTypeEnum.LastChild, null) : base.Rows.AddNode(0));
 				node.Key = p;
 				node.Data = p.Name;
+				node.Row.UserData = p;
 				foreach (Leqisoft.Model.Project item in _owner._projects.Where((Leqisoft.Model.Project c) => c.ParentId == p.Id))
 				{
 					AddProject(item, node);

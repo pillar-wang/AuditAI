@@ -68,6 +68,7 @@ public class ProjectTreeGrid
 			node.Key = treeGroup;
 			node.Data = treeGroup.Name;
 			node.Image = Resources.TreeGroup;
+			node.Row.UserData = treeGroup;
 			foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
 			{
 				Node node2 = null;
@@ -78,16 +79,28 @@ public class ProjectTreeGrid
 						if (rootNode is TreeDocumentNode treeDocumentNode)
 						{
 							node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Name, treeDocumentNode, Resources.TreeDoc);
+							if (node2 != null)
+							{
+								node2.Row.UserData = treeDocumentNode;
+							}
 						}
 					}
 					else
 					{
 						node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Name, treeTableNode, Resources.TreeTable);
+						if (node2 != null)
+						{
+							node2.Row.UserData = treeTableNode;
+						}
 					}
 				}
 				else
 				{
 					node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+					if (node2 != null)
+					{
+						node2.Row.UserData = treeDirectoryNode;
+					}
 					AddDirectoryNode(treeDirectoryNode, node2);
 				}
 				if (!rootNode.Visible && node2 != null)
@@ -110,16 +123,28 @@ public class ProjectTreeGrid
 						if (child is TreeDocumentNode treeDocumentNode2)
 						{
 							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Name, treeDocumentNode2, Resources.TreeDoc);
+							if (node3 != null)
+							{
+								node3.Row.UserData = treeDocumentNode2;
+							}
 						}
 					}
 					else
 					{
 						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Name, treeTableNode2, Resources.TreeTable);
+						if (node3 != null)
+						{
+							node3.Row.UserData = treeTableNode2;
+						}
 					}
 				}
 				else
 				{
 					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Name, treeDirectoryNode2, Resources.TreeDir);
+					if (node3 != null)
+					{
+						node3.Row.UserData = treeDirectoryNode2;
+					}
 					AddDirectoryNode(treeDirectoryNode2, node3);
 				}
 				if (!child.Visible && node3 != null)

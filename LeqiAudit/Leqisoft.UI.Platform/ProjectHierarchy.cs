@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -20,7 +20,6 @@ namespace Leqisoft.UI.Platform;
 public class ProjectHierarchy
 {
     private C1FlexGridEx _grid;
-    private ContextMenuStrip _contextMenu;
 
     // 分组右键菜单命令
     private C1Command cmdMoveUpGroup = new C1Command();
@@ -186,6 +185,16 @@ public class ProjectHierarchy
     private C1ContextMenu ctxBatchOperation = new C1ContextMenu();
     private C1ContextMenu ctxProjectMember = new C1ContextMenu();
 
+    // 子菜单
+    private C1CommandMenu mnuInsert = new C1CommandMenu();
+    private C1CommandMenu mnuAppendChild = new C1CommandMenu();
+    private C1CommandMenu mnuCopy = new C1CommandMenu();
+    private C1CommandMenu mnuPaste = new C1CommandMenu();
+    private C1CommandMenu mnuNodeImport = new C1CommandMenu();
+    private C1CommandMenu mnuAppendRoot = new C1CommandMenu();
+    private C1CommandMenu mnuPasteRoot = new C1CommandMenu();
+    private C1CommandMenu mnuEmptyImport = new C1CommandMenu();
+
     // 其他字段
     private List<TreeGroupView> _groups;
     private frmSearch frmSearch;
@@ -261,9 +270,247 @@ public class ProjectHierarchy
     {
         NumberShown = UserSet.Config.ShowNumber;
 
-        View = _grid;
+        var outBar = new C1OutBarEx
+        {
+            Dock = DockStyle.Fill,
+            ShowScrollButtons = false
+        };
+        outBar.MouseClick += View_MouseClick;
+
+        var page = new C1OutPage();
+        page.Controls.Add(_grid);
+        outBar.Pages.Add(page);
+        View = outBar;
 
         SecondTrigger.Trigger.Tick += Trigger_Tick;
+
+        // ---- 设置所有命令的 Text 和 Image ----
+        cmdMoveUpGroup.Text = "上移分组";
+        cmdMoveDownGroup.Text = "下移分组";
+        cmdAddGroup.Text = "新建分组";
+        cmdRemoveGroup.Text = "删除分组";
+        cmdCopyGroup.Text = "复制分组";
+        cmdRenameGroup.Text = "重命名分组";
+        cmdRenameGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxMofify;
+        cmdPasteGroup.Text = "粘贴分组";
+        cmdPasteGroupClickOnGridTree.Text = "粘贴分组";
+
+        cmdInsertDirectory.Text = "新建文件夹";
+        cmdInsertTable.Text = "新建表格";
+        cmdInsertTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        cmdInsertDocument.Text = "新建文档";
+        cmdInsertImage.Text = "新建图片";
+        cmdInsertImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertImage;
+        cmdInsertPdf.Text = "新建PDF";
+
+        cmdAppendChildDirectory.Text = "追加文件夹";
+        cmdAppendChildTable.Text = "追加表格";
+        cmdAppendChildDocument.Text = "追加文档";
+        cmdAppendChildImage.Text = "追加图片";
+        cmdAppendChildPdf.Text = "追加PDF";
+
+        cmdMoveUpNode.Text = "上移";
+        cmdMoveDownNode.Text = "下移";
+        cmdRemoveNode.Text = "删除";
+        cmdRemoveNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxDelete;
+        cmdHideNode.Text = "隐藏";
+
+        cmdShowNodes.Text = "显示所有节点";
+        cmdShowNodes.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxSearch;
+        cmdSearchNodes.Text = "搜索节点";
+        cmdSearchNodes.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxSearch;
+
+        cmdCutNode.Text = "剪切";
+        cmdCutNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCut;
+
+        cmdCopyTable.Text = "复制表格";
+        cmdCopyTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopyDocument.Text = "复制文档";
+        cmdCopyDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopyDirectory.Text = "复制文件夹";
+        cmdCopyDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopyImage.Text = "复制图片";
+        cmdCopyImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopyPdf.Text = "复制PDF";
+        cmdCopyPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+
+        cmdPasteNode.Text = "粘贴";
+        cmdPasteNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteTable.Text = "粘贴表格";
+        cmdPasteTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteDocument.Text = "粘贴文档";
+        cmdPasteDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteDirectory.Text = "粘贴文件夹";
+        cmdPasteDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteImage.Text = "粘贴图片";
+        cmdPasteImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPastePdf.Text = "粘贴PDF";
+        cmdPastePdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+
+        cmdRenameNode.Text = "重命名";
+        cmdRenameNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxMofify;
+        cmdEditNumber.Text = "编辑索引号";
+        cmdEditNumber.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxNumber;
+        cmdReload.Text = "重新加载";
+        cmdReload.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxReloadFile;
+        cmdSyncTable.Text = "同步表格";
+        cmdSyncTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxRefreshTable;
+        cmdSyncDocument.Text = "同步文档";
+        cmdSyncDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxRefresh;
+
+        cmdNodeImportFile.Text = "导入文件";
+        cmdNodeImportFile.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportExcel.Text = "导入Excel";
+        cmdNodeImportExcel.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportWord.Text = "导入Word";
+        cmdNodeImportWord.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportImage.Text = "导入图片";
+        cmdNodeImportImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportPdf.Text = "导入PDF";
+        cmdNodeImportPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportFolder.Text = "导入文件夹";
+        cmdNodeImportFolder.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+
+        cmdAppendRootDirectory.Text = "新建文件夹";
+        cmdAppendRootTable.Text = "新建表格";
+        cmdAppendRootTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        cmdAppendRootDocument.Text = "新建文档";
+        cmdAppendRootImage.Text = "新建图片";
+        cmdAppendRootImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertImage;
+        cmdAppendRootPdf.Text = "新建PDF";
+
+        cmdPasteRootNode.Text = "粘贴";
+        cmdPasteRootNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootTable.Text = "粘贴表格";
+        cmdPasteRootTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootDocument.Text = "粘贴文档";
+        cmdPasteRootDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootDirectory.Text = "粘贴文件夹";
+        cmdPasteRootDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootImage.Text = "粘贴图片";
+        cmdPasteRootImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootPdf.Text = "粘贴PDF";
+        cmdPasteRootPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+
+        cmdEmptyImportFile.Text = "导入文件";
+        cmdEmptyImportFile.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportExcel.Text = "导入Excel";
+        cmdEmptyImportExcel.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportWord.Text = "导入Word";
+        cmdEmptyImportWord.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportImage.Text = "导入图片";
+        cmdEmptyImportImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportPdf.Text = "导入PDF";
+        cmdEmptyImportPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportFolder.Text = "导入文件夹";
+        cmdEmptyImportFolder.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+
+        // ---- 补充缺失的图标 ----
+        cmdMoveUpGroup.Image = Leqisoft.UI.Platform.Properties.Resources.MoveUp;
+        cmdMoveDownGroup.Image = Leqisoft.UI.Platform.Properties.Resources.MoveDown;
+        cmdRemoveGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxDelete;
+        cmdCopyGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+
+        cmdMoveUpNode.Image = Leqisoft.UI.Platform.Properties.Resources.MoveUp;
+        cmdMoveDownNode.Image = Leqisoft.UI.Platform.Properties.Resources.MoveDown;
+        cmdHideNode.Image = Leqisoft.UI.Platform.Properties.Resources.HideNodes;
+
+        cmdInsertDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
+        cmdInsertDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
+        cmdInsertPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+
+        cmdAppendChildDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
+        cmdAppendChildTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        cmdAppendChildDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
+        cmdAppendChildImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertImage;
+        cmdAppendChildPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+
+        cmdAppendRootDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
+        cmdAppendRootDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
+        cmdAppendRootPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+
+        // ---- 补充缺失的命令图标 ----
+        cmdAddGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxAppendRow;
+        cmdPasteGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteGroupClickOnGridTree.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+
+        // ---- 设置子菜单 ----
+        mnuInsert.Text = "新建";
+        mnuInsert.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        mnuAppendChild.Text = "追加";
+        mnuAppendChild.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxAppendRow;
+        mnuCopy.Text = "复制";
+        mnuCopy.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        mnuPaste.Text = "粘贴";
+        mnuPaste.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        mnuNodeImport.Text = "导入";
+        mnuNodeImport.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+        mnuAppendRoot.Text = "新建";
+        mnuAppendRoot.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        mnuPasteRoot.Text = "粘贴";
+        mnuPasteRoot.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
+        mnuEmptyImport.Text = "导入";
+        mnuEmptyImport.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
+
+        // 配置 新建 子菜单
+        mnuInsert.CommandLinks.Add(lnkInsertDirectory);
+        mnuInsert.CommandLinks.Add(lnkInsertTable);
+        mnuInsert.CommandLinks.Add(lnkInsertDocument);
+        mnuInsert.CommandLinks.Add(lnkInsertImage);
+        mnuInsert.CommandLinks.Add(lnkInsertPdf);
+
+        // 配置 追加 子菜单
+        mnuAppendChild.CommandLinks.Add(lnkAppendChildDirectory);
+        mnuAppendChild.CommandLinks.Add(lnkAppendChildTable);
+        mnuAppendChild.CommandLinks.Add(lnkAppendChildDocument);
+        mnuAppendChild.CommandLinks.Add(lnkAppendChildImage);
+        mnuAppendChild.CommandLinks.Add(lnkAppendChildPdf);
+
+        // 配置 复制 子菜单
+        mnuCopy.CommandLinks.Add(lnkCopyTable);
+        mnuCopy.CommandLinks.Add(lnkCopyDocument);
+        mnuCopy.CommandLinks.Add(lnkCopyDirectory);
+        mnuCopy.CommandLinks.Add(lnkCopyImage);
+        mnuCopy.CommandLinks.Add(lnkCopyPdf);
+
+        // 配置 粘贴 子菜单
+        mnuPaste.CommandLinks.Add(lnkPasteNode);
+        mnuPaste.CommandLinks.Add(lnkPasteTable);
+        mnuPaste.CommandLinks.Add(lnkPasteDocument);
+        mnuPaste.CommandLinks.Add(lnkPasteDirectory);
+        mnuPaste.CommandLinks.Add(lnkPasteImage);
+        mnuPaste.CommandLinks.Add(lnkPastePdf);
+
+        // 配置 导入 子菜单
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportFile);
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportExcel);
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportWord);
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportImage);
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportPdf);
+        mnuNodeImport.CommandLinks.Add(lnkNodeImportFolder);
+
+        // 配置 空白区域-新建 子菜单
+        mnuAppendRoot.CommandLinks.Add(lnkAppendRootDirectory);
+        mnuAppendRoot.CommandLinks.Add(lnkAppendRootTable);
+        mnuAppendRoot.CommandLinks.Add(lnkAppendRootDocument);
+        mnuAppendRoot.CommandLinks.Add(lnkAppendRootImage);
+        mnuAppendRoot.CommandLinks.Add(lnkAppendRootPdf);
+
+        // 配置 空白区域-粘贴 子菜单
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootNode);
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootTable);
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootDocument);
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootDirectory);
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootImage);
+        mnuPasteRoot.CommandLinks.Add(lnkPasteRootPdf);
+
+        // 配置 空白区域-导入 子菜单
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportFile);
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportExcel);
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportWord);
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportImage);
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportPdf);
+        mnuEmptyImport.CommandLinks.Add(lnkEmptyImportFolder);
 
         // cmdMoveUpGroup
         cmdMoveUpGroup.CommandStateQuery += CmdMoveUpGroup_CommandStateQuery;
@@ -327,19 +574,16 @@ public class ProjectHierarchy
         cmdInsertDirectory.CommandStateQuery += CmdInsertDirectory_CommandStateQuery;
         cmdInsertDirectory.Click += CmdInsertDirectory_Click;
         lnkInsertDirectory.Command = cmdInsertDirectory;
-        ctxTreeNode.CommandLinks.Add(lnkInsertDirectory);
 
         // cmdInsertTable
         cmdInsertTable.CommandStateQuery += CmdInsertTable_CommandStateQuery;
         cmdInsertTable.Click += CmdInsertTable_Click;
         lnkInsertTable.Command = cmdInsertTable;
-        ctxTreeNode.CommandLinks.Add(lnkInsertTable);
 
         // cmdInsertDocument
         cmdInsertDocument.CommandStateQuery += CmdInsertDocument_CommandStateQuery;
         cmdInsertDocument.Click += CmdInsertDocument_Click;
         lnkInsertDocument.Command = cmdInsertDocument;
-        ctxTreeNode.CommandLinks.Add(lnkInsertDocument);
 
         // cmdInsertImage
         cmdInsertImage.CommandStateQuery += CmdInsertImage_CommandStateQuery;
@@ -351,23 +595,25 @@ public class ProjectHierarchy
         cmdInsertPdf.Click += CmdInsertPdf_Click;
         lnkInsertPdf.Command = cmdInsertPdf;
 
+        // 添加 新建 子菜单到节点菜单
+        var lnkInsert = new C1CommandLink();
+        lnkInsert.Command = mnuInsert;
+        ctxTreeNode.CommandLinks.Add(lnkInsert);
+
         // cmdAppendChildDirectory
         cmdAppendChildDirectory.CommandStateQuery += CmdAppendChildDirectory_CommandStateQuery;
         cmdAppendChildDirectory.Click += CmdAppendChildDirectory_Click;
         lnkAppendChildDirectory.Command = cmdAppendChildDirectory;
-        ctxTreeNode.CommandLinks.Add(lnkAppendChildDirectory);
 
         // cmdAppendChildTable
         cmdAppendChildTable.CommandStateQuery += CmdAppendChildTable_CommandStateQuery;
         cmdAppendChildTable.Click += CmdAppendChildTable_Click;
         lnkAppendChildTable.Command = cmdAppendChildTable;
-        ctxTreeNode.CommandLinks.Add(lnkAppendChildTable);
 
         // cmdAppendChildDocument
         cmdAppendChildDocument.CommandStateQuery += CmdAppendChildDocument_CommandStateQuery;
         cmdAppendChildDocument.Click += CmdAppendChildDocument_Click;
         lnkAppendChildDocument.Command = cmdAppendChildDocument;
-        ctxTreeNode.CommandLinks.Add(lnkAppendChildDocument);
 
         // cmdAppendChildImage
         cmdAppendChildImage.CommandStateQuery += CmdAppendChildImage_CommandStateQuery;
@@ -378,6 +624,11 @@ public class ProjectHierarchy
         cmdAppendChildPdf.CommandStateQuery += CmdAppendChildPdf_CommandStateQuery;
         cmdAppendChildPdf.Click += CmdAppendChildPdf_Click;
         lnkAppendChildPdf.Command = cmdAppendChildPdf;
+
+        // 添加 追加 子菜单到节点菜单
+        var lnkAppend = new C1CommandLink();
+        lnkAppend.Command = mnuAppendChild;
+        ctxTreeNode.CommandLinks.Add(lnkAppend);
 
         // cmdMoveUpNode
         cmdMoveUpNode.CommandStateQuery += CmdMoveUpNode_CommandStateQuery;
@@ -423,67 +674,67 @@ public class ProjectHierarchy
         cmdCopyTable.CommandStateQuery += CmdCopyTable_CommandStateQuery;
         cmdCopyTable.Click += CmdCopyTable_Click;
         lnkCopyTable.Command = cmdCopyTable;
-        ctxTreeNode.CommandLinks.Add(lnkCopyTable);
 
         // cmdCopyDocument
         cmdCopyDocument.CommandStateQuery += CmdCopyDocument_CommandStateQuery;
         cmdCopyDocument.Click += CmdCopyDocument_Click;
         lnkCopyDocument.Command = cmdCopyDocument;
-        ctxTreeNode.CommandLinks.Add(lnkCopyDocument);
 
         // cmdCopyDirectory
         cmdCopyDirectory.CommandStateQuery += CmdCopyDirectory_CommandStateQuery;
         cmdCopyDirectory.Click += CmdCopyDirectory_Click;
         lnkCopyDirectory.Command = cmdCopyDirectory;
-        ctxTreeNode.CommandLinks.Add(lnkCopyDirectory);
 
         // cmdCopyImage
         cmdCopyImage.CommandStateQuery += CmdCopyImage_CommandStateQuery;
         cmdCopyImage.Click += CmdCopyImage_Click;
         lnkCopyImage.Command = cmdCopyImage;
-        ctxTreeNode.CommandLinks.Add(lnkCopyImage);
 
         // cmdCopyPdf
         cmdCopyPdf.CommandStateQuery += CmdCopyPdf_CommandStateQuery;
         cmdCopyPdf.Click += CmdCopyPdf_Click;
         lnkCopyPdf.Command = cmdCopyPdf;
-        ctxTreeNode.CommandLinks.Add(lnkCopyPdf);
+
+        // 添加 复制 子菜单到节点菜单
+        var lnkCopy = new C1CommandLink();
+        lnkCopy.Command = mnuCopy;
+        ctxTreeNode.CommandLinks.Add(lnkCopy);
 
         // cmdPasteNode
         cmdPasteNode.CommandStateQuery += CmdPasteNode_CommandStateQuery;
         cmdPasteNode.Click += CmdPasteNode_Click;
         lnkPasteNode.Command = cmdPasteNode;
-        ctxTreeNode.CommandLinks.Add(lnkPasteNode);
 
         // cmdPasteTable
         cmdPasteTable.CommandStateQuery += CmdPasteTable_CommandStateQuery;
         cmdPasteTable.Click += CmdPasteTable_Click;
         lnkPasteTable.Command = cmdPasteTable;
-        ctxTreeNode.CommandLinks.Add(lnkPasteTable);
 
         // cmdPasteDocument
         cmdPasteDocument.CommandStateQuery += CmdPasteDocument_CommandStateQuery;
         cmdPasteDocument.Click += CmdPasteDocument_Click;
         lnkPasteDocument.Command = cmdPasteDocument;
-        ctxTreeNode.CommandLinks.Add(lnkPasteDocument);
 
         // cmdPasteDirectory
         cmdPasteDirectory.CommandStateQuery += CmdPasteDirectory_CommandStateQuery;
         cmdPasteDirectory.Click += CmdPasteDirectory_Click;
         lnkPasteDirectory.Command = cmdPasteDirectory;
-        ctxTreeNode.CommandLinks.Add(lnkPasteDirectory);
 
         // cmdPasteImage
         cmdPasteImage.CommandStateQuery += CmdPasteImage_CommandStateQuery;
         cmdPasteImage.Click += CmdPasteImage_Click;
         lnkPasteImage.Command = cmdPasteImage;
-        ctxTreeNode.CommandLinks.Add(lnkPasteImage);
 
         // cmdPastePdf
         cmdPastePdf.CommandStateQuery += CmdPastePdf_CommandStateQuery;
         cmdPastePdf.Click += CmdPastePdf_Click;
         lnkPastePdf.Command = cmdPastePdf;
-        ctxTreeNode.CommandLinks.Add(lnkPastePdf);
+
+        // 添加 粘贴 子菜单到节点菜单
+        var lnkPaste = new C1CommandLink();
+        lnkPaste.Command = mnuPaste;
+        lnkPaste.Delimiter = true;
+        ctxTreeNode.CommandLinks.Add(lnkPaste);
 
         // lnkPasteGroup3 -> cmdPasteGroupClickOnGridTree (ctxTreeNode)
         lnkPasteGroup3.Command = cmdPasteGroupClickOnGridTree;
@@ -521,37 +772,37 @@ public class ProjectHierarchy
         cmdNodeImportFile.CommandStateQuery += CmdNodeImportFile_CommandStateQuery;
         cmdNodeImportFile.Click += CmdNodeImportFile_Click;
         lnkNodeImportFile.Command = cmdNodeImportFile;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportFile);
 
         // cmdNodeImportExcel
         cmdNodeImportExcel.CommandStateQuery += CmdNodeImportExcel_CommandStateQuery;
         cmdNodeImportExcel.Click += CmdNodeImportExcel_Click;
         lnkNodeImportExcel.Command = cmdNodeImportExcel;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportExcel);
 
         // cmdNodeImportWord
         cmdNodeImportWord.CommandStateQuery += CmdNodeImportWord_CommandStateQuery;
         cmdNodeImportWord.Click += CmdNodeImportWord_Click;
         lnkNodeImportWord.Command = cmdNodeImportWord;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportWord);
 
         // cmdNodeImportImage
         cmdNodeImportImage.CommandStateQuery += CmdNodeImportImage_CommandStateQuery;
         cmdNodeImportImage.Click += CmdNodeImportImage_Click;
         lnkNodeImportImage.Command = cmdNodeImportImage;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportImage);
 
         // cmdNodeImportPdf
         cmdNodeImportPdf.CommandStateQuery += CmdNodeImportPdf_CommandStateQuery;
         cmdNodeImportPdf.Click += CmdNodeImportPdf_Click;
         lnkNodeImportPdf.Command = cmdNodeImportPdf;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportPdf);
 
         // cmdNodeImportFolder
         cmdNodeImportFolder.CommandStateQuery += CmdNodeImportFolder_CommandStateQuery;
         cmdNodeImportFolder.Click += CmdNodeImportFolder_Click;
         lnkNodeImportFolder.Command = cmdNodeImportFolder;
-        ctxTreeNode.CommandLinks.Add(lnkNodeImportFolder);
+
+        // 添加 导入 子菜单到节点菜单
+        var lnkImport = new C1CommandLink();
+        lnkImport.Command = mnuNodeImport;
+        lnkImport.Delimiter = true;
+        ctxTreeNode.CommandLinks.Add(lnkImport);
 
         // ctxBatchOperation 子菜单
         ctxBatchOperation.Text = "批量操作";
@@ -616,19 +867,16 @@ public class ProjectHierarchy
         cmdAppendRootDirectory.CommandStateQuery += CmdAppendRootDirectory_CommandStateQuery;
         cmdAppendRootDirectory.Click += CmdAppendRootDirectory_Click;
         lnkAppendRootDirectory.Command = cmdAppendRootDirectory;
-        ctxTreeEmpty.CommandLinks.Add(lnkAppendRootDirectory);
 
         // cmdAppendRootTable
         cmdAppendRootTable.CommandStateQuery += CmdAppendRootTable_CommandStateQuery;
         cmdAppendRootTable.Click += CmdAppendRootTable_Click;
         lnkAppendRootTable.Command = cmdAppendRootTable;
-        ctxTreeEmpty.CommandLinks.Add(lnkAppendRootTable);
 
         // cmdAppendRootDocument
         cmdAppendRootDocument.CommandStateQuery += CmdAppendRootDocument_CommandStateQuery;
         cmdAppendRootDocument.Click += CmdAppendRootDocument_Click;
         lnkAppendRootDocument.Command = cmdAppendRootDocument;
-        ctxTreeEmpty.CommandLinks.Add(lnkAppendRootDocument);
 
         // lnkShowNodes2 -> cmdShowNodes (ctxTreeEmpty)
         lnkShowNodes2.Command = cmdShowNodes;
@@ -648,41 +896,46 @@ public class ProjectHierarchy
         cmdAppendRootPdf.Click += CmdAppendRootPdf_Click;
         lnkAppendRootPdf.Command = cmdAppendRootPdf;
 
+        // 添加 新建 子菜单到空白区域菜单
+        var lnkAppendRoot2 = new C1CommandLink();
+        lnkAppendRoot2.Command = mnuAppendRoot;
+        ctxTreeEmpty.CommandLinks.Add(lnkAppendRoot2);
+
         // cmdPasteRootNode
         cmdPasteRootNode.CommandStateQuery += CmdPasteRootNode_CommandStateQuery;
         cmdPasteRootNode.Click += CmdPasteRootNode_Click;
         lnkPasteRootNode.Command = cmdPasteRootNode;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootNode);
 
         // cmdPasteRootTable
         cmdPasteRootTable.CommandStateQuery += CmdPasteRootTable_CommandStateQuery;
         cmdPasteRootTable.Click += CmdPasteRootTable_Click;
         lnkPasteRootTable.Command = cmdPasteRootTable;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootTable);
 
         // cmdPasteRootDocument
         cmdPasteRootDocument.CommandStateQuery += CmdPasteRootDocument_CommandStateQuery;
         cmdPasteRootDocument.Click += CmdPasteRootDocument_Click;
         lnkPasteRootDocument.Command = cmdPasteRootDocument;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootDocument);
 
         // cmdPasteRootDirectory
         cmdPasteRootDirectory.CommandStateQuery += CmdPasteRootDirectory_CommandStateQuery;
         cmdPasteRootDirectory.Click += CmdPasteRootDirectory_Click;
         lnkPasteRootDirectory.Command = cmdPasteRootDirectory;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootDirectory);
 
         // cmdPasteRootImage
         cmdPasteRootImage.CommandStateQuery += CmdPasteRootImage_CommandStateQuery;
         cmdPasteRootImage.Click += CmdPasteRootImage_Click;
         lnkPasteRootImage.Command = cmdPasteRootImage;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootImage);
 
         // cmdPasteRootPdf
         cmdPasteRootPdf.CommandStateQuery += CmdPasteRootPdf_CommandStateQuery;
         cmdPasteRootPdf.Click += CmdPasteRootPdf_Click;
         lnkPasteRootPdf.Command = cmdPasteRootPdf;
-        ctxTreeEmpty.CommandLinks.Add(lnkPasteRootPdf);
+
+        // 添加 粘贴 子菜单到空白区域菜单
+        var lnkPasteRoot2 = new C1CommandLink();
+        lnkPasteRoot2.Command = mnuPasteRoot;
+        lnkPasteRoot2.Delimiter = true;
+        ctxTreeEmpty.CommandLinks.Add(lnkPasteRoot2);
 
         // lnkPasteGroup4 -> cmdPasteGroupClickOnGridTree (ctxTreeEmpty)
         lnkPasteGroup4.Command = cmdPasteGroupClickOnGridTree;
@@ -692,37 +945,37 @@ public class ProjectHierarchy
         cmdEmptyImportFile.CommandStateQuery += CmdEmptyImportFile_CommandStateQuery;
         cmdEmptyImportFile.Click += CmdEmptyImportFile_Click;
         lnkEmptyImportFile.Command = cmdEmptyImportFile;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportFile);
 
         // cmdEmptyImportExcel
         cmdEmptyImportExcel.CommandStateQuery += CmdEmptyImportExcel_CommandStateQuery;
         cmdEmptyImportExcel.Click += CmdEmptyImportExcel_Click;
         lnkEmptyImportExcel.Command = cmdEmptyImportExcel;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportExcel);
 
         // cmdEmptyImportWord
         cmdEmptyImportWord.CommandStateQuery += CmdEmptyImportWord_CommandStateQuery;
         cmdEmptyImportWord.Click += CmdEmptyImportWord_Click;
         lnkEmptyImportWord.Command = cmdEmptyImportWord;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportWord);
 
         // cmdEmptyImportImage
         cmdEmptyImportImage.CommandStateQuery += CmdEmptyImportImage_CommandStateQuery;
         cmdEmptyImportImage.Click += CmdEmptyImportImage_Click;
         lnkEmptyImportImage.Command = cmdEmptyImportImage;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportImage);
 
         // cmdEmptyImportPdf
         cmdEmptyImportPdf.CommandStateQuery += CmdEmptyImportPdf_CommandStateQuery;
         cmdEmptyImportPdf.Click += CmdEmptyImportPdf_Click;
         lnkEmptyImportPdf.Command = cmdEmptyImportPdf;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportPdf);
 
         // cmdEmptyImportFolder
         cmdEmptyImportFolder.CommandStateQuery += CmdEmptyImportFolder_CommandStateQuery;
         cmdEmptyImportFolder.Click += CmdEmptyImportFolder_Click;
         lnkEmptyImportFolder.Command = cmdEmptyImportFolder;
-        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImportFolder);
+
+        // 添加 导入 子菜单到空白区域菜单
+        var lnkEmptyImport2 = new C1CommandLink();
+        lnkEmptyImport2.Command = mnuEmptyImport;
+        lnkEmptyImport2.Delimiter = true;
+        ctxTreeEmpty.CommandLinks.Add(lnkEmptyImport2);
 
         // ctxTreeEmpty 分隔符
         lnkPasteRootNode.Delimiter = true;
@@ -741,96 +994,6 @@ public class ProjectHierarchy
         frmSearch = new frmSearch();
         frmSearch.SelectNode += FrmSearch_SelectNode;
         lazySearchExcute.SetAction(LazySearchExcute_Action);
-        BuildContextMenu();
-    }
-
-    private void BuildContextMenu()
-    {
-        _contextMenu = new ContextMenuStrip();
-
-        // 分组操作菜单
-        var miMoveUpGroup = new ToolStripMenuItem("上移分组", null, OnMoveUpGroup) { Name = "上移分组" };
-        var miMoveDownGroup = new ToolStripMenuItem("下移分组", null, OnMoveDownGroup) { Name = "下移分组" };
-        var sepGroup = new ToolStripSeparator();
-        var miNewGroup = new ToolStripMenuItem("新建分组", null, OnNewGroup) { Name = "新建分组" };
-        var miDeleteGroup = new ToolStripMenuItem("删除分组", null, OnDeleteGroup) { Name = "删除分组" };
-        var miCopyGroup = new ToolStripMenuItem("复制分组", null, OnCopyGroup) { Name = "复制分组" };
-        var miRenameGroup = new ToolStripMenuItem("重命名分组", null, OnRenameGroup) { Name = "重命名分组" };
-
-        // 节点操作菜单
-        var miNewDir = new ToolStripMenuItem("新建文件夹", null, OnNewDirectory) { Name = "新建文件夹" };
-        var miNewTable = new ToolStripMenuItem("新建表格", null, OnNewTable) { Name = "新建表格" };
-        var miNewDoc = new ToolStripMenuItem("新建文档", null, OnNewDocument) { Name = "新建文档" };
-        var miImportFile = new ToolStripMenuItem("导入文件...", null, OnImportFile) { Name = "导入文件..." };
-        var miImportFolder = new ToolStripMenuItem("导入文件夹...", null, OnImportFolder) { Name = "导入文件夹..." };
-        var sep1 = new ToolStripSeparator();
-        var miRename = new ToolStripMenuItem("重命名", null, OnRename) { Name = "重命名" };
-        var miDelete = new ToolStripMenuItem("删除", null, OnDelete) { Name = "删除" };
-        var sep2 = new ToolStripSeparator();
-        var miMoveUp = new ToolStripMenuItem("上移", null, OnMoveUp) { Name = "上移" };
-        var miMoveDown = new ToolStripMenuItem("下移", null, OnMoveDown) { Name = "下移" };
-
-        _contextMenu.Items.AddRange(new ToolStripItem[]
-        {
-            miMoveUpGroup, miMoveDownGroup, sepGroup,
-            miNewGroup, miDeleteGroup, miCopyGroup, miRenameGroup,
-            sep1,
-            miNewDir, miNewTable, miNewDoc, miImportFile, miImportFolder,
-            sep2, miRename, miDelete,
-            miMoveUp, miMoveDown
-        });
-    }
-
-    private void ShowContextMenu(object selectedItem)
-    {
-        foreach (ToolStripItem item in _contextMenu.Items)
-        {
-            item.Visible = false;
-        }
-
-        if (selectedItem is TreeGroup group)
-        {
-            // 分组节点 - 支持上移、下移、新建、删除、复制、重命名
-            _contextMenu.Items["上移分组"].Visible = group.CanMoveUp1;
-            _contextMenu.Items["下移分组"].Visible = group.CanMoveDown1;
-            _contextMenu.Items["新建分组"].Visible = true;
-            _contextMenu.Items["删除分组"].Visible = true;
-            _contextMenu.Items["复制分组"].Visible = true;
-            _contextMenu.Items["重命名分组"].Visible = true;
-        }
-        else if (selectedItem == null)
-        {
-            // 空白区域右键 - 在当前分组下新建节点和新建分组
-            _contextMenu.Items["新建分组"].Visible = true;
-            _contextMenu.Items["新建文件夹"].Visible = true;
-            _contextMenu.Items["新建表格"].Visible = true;
-            _contextMenu.Items["新建文档"].Visible = true;
-            _contextMenu.Items["导入文件..."].Visible = true;
-            _contextMenu.Items["导入文件夹..."].Visible = true;
-        }
-        else if (selectedItem is TreeDirectoryNode)
-        {
-            // 文件夹节点 - 可新建子项、重命名、删除、上移、下移
-            _contextMenu.Items["新建文件夹"].Visible = true;
-            _contextMenu.Items["新建表格"].Visible = true;
-            _contextMenu.Items["新建文档"].Visible = true;
-            _contextMenu.Items["导入文件..."].Visible = true;
-            _contextMenu.Items["导入文件夹..."].Visible = true;
-            _contextMenu.Items["重命名"].Visible = true;
-            _contextMenu.Items["删除"].Visible = true;
-            _contextMenu.Items["上移"].Visible = true;
-            _contextMenu.Items["下移"].Visible = true;
-        }
-        else if (selectedItem is TreeNodeBase)
-        {
-            // 表格/文档/图片/PDF节点 - 可重命名、删除、上移、下移
-            _contextMenu.Items["重命名"].Visible = true;
-            _contextMenu.Items["删除"].Visible = true;
-            _contextMenu.Items["上移"].Visible = true;
-            _contextMenu.Items["下移"].Visible = true;
-        }
-
-        _contextMenu.Show(_grid, _grid.PointToClient(Cursor.Position));
     }
 
     #region 右键菜单操作
@@ -1559,25 +1722,36 @@ public class ProjectHierarchy
                     {
                         SelectedNode = group;
                         _grid.Row = ht.Row;
-                        ShowContextMenu(group);
+                        ctxTreeGroup.ShowContextMenu(_grid, e.Location);
                     }
                     else if (node.Key is TreeNodeBase tnb)
                     {
                         SelectedNode = tnb;
                         _grid.Row = ht.Row;
-                        ShowContextMenu(tnb);
+                        ctxTreeNode.ShowContextMenu(_grid, e.Location);
                     }
                 }
                 else
                 {
-                    ShowContextMenu(null);
+                    ctxTreeEmpty.ShowContextMenu(_grid, e.Location);
                 }
             }
             else
             {
-                ShowContextMenu(null);
+                ctxTreeNothing.ShowContextMenu(_grid, e.Location);
             }
         }
+    }
+
+    private void View_MouseClick(object sender, MouseEventArgs e)
+    {
+        if (e.Button != MouseButtons.Right) return;
+
+        var outBar = (C1OutBarEx)sender;
+        if (outBar.HotPage == null)
+            ctxTreeNothing.ShowContextMenu(View, e.Location);
+        else
+            ctxTreeGroup.ShowContextMenu(View, e.Location);
     }
 
     private void _grid_MouseDoubleClick(object sender, MouseEventArgs e)

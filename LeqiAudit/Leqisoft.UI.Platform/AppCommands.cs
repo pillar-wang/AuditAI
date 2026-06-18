@@ -1,4 +1,4 @@
-﻿namespace Leqisoft.UI.Platform;
+﻿﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommands
 {

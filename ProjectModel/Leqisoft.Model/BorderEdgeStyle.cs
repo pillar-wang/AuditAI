@@ -1,4 +1,4 @@
-﻿namespace Leqisoft.Model;
+﻿﻿namespace Leqisoft.Model;
 
 /// <summary>
 /// 表示单条边框的样式配置（线型 + 磅数）
