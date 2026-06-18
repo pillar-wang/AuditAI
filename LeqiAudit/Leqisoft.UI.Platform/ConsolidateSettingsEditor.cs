@@ -254,6 +254,10 @@ public class ConsolidateSettingsEditor
 
 		public void Initialize()
 		{
+			if (_owner._projects == null || _owner._projects.Count == 0)
+			{
+				return;
+			}
 			AddProject(_owner._projects[0], null);
 			void AddProject(Leqisoft.Model.Project p, Node parentNode)
 			{

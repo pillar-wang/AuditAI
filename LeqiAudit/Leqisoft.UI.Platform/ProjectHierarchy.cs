@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -206,7 +206,7 @@ public class ProjectHierarchy
         }
     }
 
-    public C1OutBarEx View { get; private set; }
+    public Control View { get; private set; }
     public dynamic SelectedNode { get; set; }
     public TreeGroupView _currentGroup { get; set; }
     public bool IsInOpeningSomeTreeNode { get; set; }
@@ -261,21 +261,7 @@ public class ProjectHierarchy
     {
         NumberShown = UserSet.Config.ShowNumber;
 
-        View = new C1OutBarEx
-        {
-            Dock = DockStyle.Fill,
-            ShowScrollButtons = false
-        };
-        View.SelectedPageChanged += View_SelectedPageChanged;
-        View.MouseClick += View_MouseClick;
-        View.Paint += View_Paint;
-        View.PageTitlePostPaintHandle = View_PageTitlePostPaint;
-        View.PageDoubleClicked += View_PageDoubleClicked;
-
-        // 将 _grid 添加到 View 的页面中
-        var page = new C1OutPage();
-        page.Controls.Add(_grid);
-        View.Pages.Add(page);
+        View = _grid;
 
         SecondTrigger.Trigger.Tick += Trigger_Tick;
 
@@ -755,6 +741,7 @@ public class ProjectHierarchy
         frmSearch = new frmSearch();
         frmSearch.SelectNode += FrmSearch_SelectNode;
         lazySearchExcute.SetAction(LazySearchExcute_Action);
+        BuildContextMenu();
     }
 
     private void BuildContextMenu()
@@ -1610,26 +1597,6 @@ public class ProjectHierarchy
     }
 
     #region Initialize 事件存根
-
-    private void View_SelectedPageChanged(object sender, EventArgs e)
-    {
-    }
-
-    private void View_MouseClick(object sender, MouseEventArgs e)
-    {
-    }
-
-    private void View_Paint(object sender, PaintEventArgs e)
-    {
-    }
-
-    private void View_PageTitlePostPaint(C1OutPage page, PaintEventArgs e, Rectangle bounds)
-    {
-    }
-
-    private void View_PageDoubleClicked(object sender, PageClickEventArgs e)
-    {
-    }
 
     private void Trigger_Tick(object sender, EventArgs e)
     {
