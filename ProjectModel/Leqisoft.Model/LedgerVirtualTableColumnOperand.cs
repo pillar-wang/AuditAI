@@ -1,0 +1,9 @@
+namespace Leqisoft.Model;
+
+public class LedgerVirtualTableColumnOperand : ColumnOperand
+{
+	public LedgerVirtualTableColumnOperand(Column column)
+		: base(column)
+	{
+	}
+}

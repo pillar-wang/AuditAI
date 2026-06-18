@@ -1,0 +1,104 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>CommonControls</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net462</TargetFramework>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="C1.Win.C1Command.4">
+      <HintPath>..\Libs\C1.Win.C1Command.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1FlexGrid.4">
+      <HintPath>..\Libs\C1.Win.C1FlexGrid.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Ribbon.4">
+      <HintPath>..\Libs\C1.Win.C1Ribbon.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1TileControl.4">
+      <HintPath>..\Libs\C1.Win.C1TileControl.4.dll</HintPath>
+    </Reference>
+    <Reference Include="CefSharp.WinForms">
+      <HintPath>..\Libs\CefSharp.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="CefSharp">
+      <HintPath>..\Libs\CefSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="C1.Win.C1Input.4">
+      <HintPath>..\Libs\C1.Win.C1Input.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.C1Report.4">
+      <HintPath>..\Libs\C1.C1Report.4.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectModel">
+      <HintPath>..\Libs\ProjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1SplitContainer.4">
+      <HintPath>..\Libs\C1.Win.C1SplitContainer.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.C1Excel.4">
+      <HintPath>..\Libs\C1.C1Excel.4.dll</HintPath>
+    </Reference>
+    <Reference Include="LedgerModel">
+      <HintPath>..\Libs\LedgerModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="DTO">
+      <HintPath>..\Libs\DTO.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="ChnCharInfo">
+      <HintPath>..\Libs\ChnCharInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Sizer.4">
+      <HintPath>..\Libs\C1.Win.C1Sizer.4.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Gauge.4">
+      <HintPath>..\Libs\C1.Win.C1Gauge.4.dll</HintPath>
+    </Reference>
+    <Reference Include="TXTextControl.Server">
+      <HintPath>..\Libs\TXTextControl.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="TXTextControl.Windows.Forms">
+      <HintPath>..\Libs\TXTextControl.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="ThemeResource">
+      <HintPath>..\Libs\ThemeResource.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Themes.4">
+      <HintPath>..\Libs\C1.Win.C1Themes.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1SuperTooltip.4">
+      <HintPath>..\Libs\C1.Win.C1SuperTooltip.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.4">
+      <HintPath>..\Libs\C1.Win.4.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="TXTextControl">
+      <HintPath>..\Libs\TXTextControl.dll</HintPath>
+    </Reference>
+    <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LeqiAudit.LocalDataStore\LeqiAudit.LocalDataStore.csproj" />
+  </ItemGroup>
+</Project>

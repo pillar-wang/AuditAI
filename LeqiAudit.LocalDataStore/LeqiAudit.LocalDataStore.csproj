@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>LeqiAudit.LocalDataStore</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net462</TargetFramework>
+    <LangVersion>11.0</LangVersion>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Google.Protobuf">
+      <HintPath>..\Libs\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    
+    <Reference Include="DTO">
+      <HintPath>..\Libs\DTO.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectModel">
+      <HintPath>..\Libs\ProjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+  </ItemGroup>
+</Project>
