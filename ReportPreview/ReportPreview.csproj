@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>ReportPreview</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net462</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup />
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="C1.C1Report.4">
+      <HintPath>..\Libs\C1.C1Report.4.dll</HintPath>
+    </Reference>
+    <Reference Include="ProjectModel">
+      <HintPath>..\Libs\ProjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Report.4">
+      <HintPath>..\Libs\C1.Win.C1Report.4.dll</HintPath>
+    </Reference>
+    <Reference Include="DTO">
+      <HintPath>..\Libs\DTO.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="TXTextControl.Server">
+      <HintPath>..\Libs\TXTextControl.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="TXTextControl">
+      <HintPath>..\Libs\TXTextControl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
