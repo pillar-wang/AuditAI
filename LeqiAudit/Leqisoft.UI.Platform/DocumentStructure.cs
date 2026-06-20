@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -491,6 +491,49 @@ public class DocumentStructure : ISetTheme
 	}
 
 	/// <summary>
+	/// 获取树节点数据列表（供对话框复制树结构使用）
+	/// 返回扁平化的节点列表，每个节点包含层级深度、文本和 Key
+	/// </summary>
+	public List<(int Depth, string Text, object Key)> GetTreeNodeData()
+	{
+		var result = new List<(int Depth, string Text, object Key)>();
+		CollectTopLevelNodes(View.Rows, 0, result);
+		return result;
+	}
+
+	private void CollectTopLevelNodes(C1.Win.C1FlexGrid.RowCollection rows, int depth, List<(int Depth, string Text, object Key)> result)
+	{
+		for (int i = 0; i < rows.Count; i++)
+		{
+			var row = rows[i];
+			var node = row.Node;
+			if (node == null) continue;
+			// 跳过子节点（子节点通过递归收集）
+			if (node.Parent != null) continue;
+
+			result.Add((depth, node.Data as string ?? "", node.Key));
+
+			if (node.Nodes != null && node.Nodes.Length > 0)
+			{
+				CollectChildNodes(node.Nodes, depth + 1, result);
+			}
+		}
+	}
+
+	private void CollectChildNodes(Node[] nodes, int depth, List<(int Depth, string Text, object Key)> result)
+	{
+		foreach (var node in nodes)
+		{
+			result.Add((depth, node.Data as string ?? "", node.Key));
+
+			if (node.Nodes != null && node.Nodes.Length > 0)
+			{
+				CollectChildNodes(node.Nodes, depth + 1, result);
+			}
+		}
+	}
+
+	/// <summary>
 	/// 处理范围选择模式下的点击事件
 	/// </summary>
 	private void HandleRangeSelectionClick(MouseEventArgs e)
@@ -538,9 +581,9 @@ public class DocumentStructure : ISetTheme
 	}
 
 	/// <summary>
-	/// 从节点 Key 获取文档位置
+	/// 从节点 Key 获取文档位置（公开方法，供对话框使用）
 	/// </summary>
-	private int GetPositionFromKey(object key)
+	public int GetPositionFromKey(object key)
 	{
 		if (key is TXTextControl.DocumentTarget dt)
 			return dt.Start;

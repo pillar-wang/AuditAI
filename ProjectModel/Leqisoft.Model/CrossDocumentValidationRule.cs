@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using Leqisoft.DTO;
+﻿﻿﻿﻿﻿﻿﻿﻿using Leqisoft.DTO;
 
 namespace Leqisoft.Model;
 

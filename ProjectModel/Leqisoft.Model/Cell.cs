@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -1696,6 +1696,22 @@ public class Cell
 		if (o is double)
 		{
 			return (double)o;
+		}
+		if (o is int)
+		{
+			return (int)o;
+		}
+		if (o is decimal)
+		{
+			return (double)(decimal)o;
+		}
+		if (o is float)
+		{
+			return (float)o;
+		}
+		if (o is string s && double.TryParse(s, out double val))
+		{
+			return val;
 		}
 		return 0.0;
 	}

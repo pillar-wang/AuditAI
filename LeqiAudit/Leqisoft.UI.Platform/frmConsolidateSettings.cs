@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -44,6 +44,12 @@ public class frmConsolidateSettings : C1RibbonForm
 
 	internal C1Label _lblMode;
 
+	internal C1TextBox _txtConsolidationName;
+
+	internal C1Label _lblConsolidationName;
+
+	internal C1CheckBox _chkShowDetail;
+
 	public frmConsolidateSettings()
 	{
 		InitializeComponent();
@@ -78,7 +84,7 @@ public class frmConsolidateSettings : C1RibbonForm
 			Location = new System.Drawing.Point(15, 55),
 			Name = "_lblMode",
 			Size = new System.Drawing.Size(60, 17),
-			Value = "汇总模式"
+			Value = "合并方式"
 		};
 		pnlBottom.Controls.Add(_lblMode);
 		_cmbMode = new C1ComboBox
@@ -88,9 +94,35 @@ public class frmConsolidateSettings : C1RibbonForm
 			Size = new System.Drawing.Size(120, 23),
 			DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList
 		};
-		_cmbMode.Items.Add("分组汇总");
-		_cmbMode.Items.Add("行追加");
+		_cmbMode.Items.Add("分组汇总合并");
+		_cmbMode.Items.Add("逐行追加合并");
 		pnlBottom.Controls.Add(_cmbMode);
+		_txtConsolidationName = new C1TextBox
+		{
+			Location = new System.Drawing.Point(220, 52),
+			Name = "_txtConsolidationName",
+			Size = new System.Drawing.Size(150, 23)
+		};
+		pnlBottom.Controls.Add(_txtConsolidationName);
+		_lblConsolidationName = new C1Label
+		{
+			AutoSize = true,
+			BackColor = System.Drawing.Color.Transparent,
+			BorderStyle = System.Windows.Forms.BorderStyle.None,
+			ForeColor = System.Drawing.Color.Black,
+			Location = new System.Drawing.Point(220, 35),
+			Name = "_lblConsolidationName",
+			Value = "合并报表名称"
+		};
+		pnlBottom.Controls.Add(_lblConsolidationName);
+		_chkShowDetail = new C1CheckBox
+		{
+			Location = new System.Drawing.Point(420, 55),
+			Name = "_chkShowDetail",
+			Size = new System.Drawing.Size(140, 20),
+			Text = "显示工作底稿明细"
+		};
+		pnlBottom.Controls.Add(_chkShowDetail);
 	}
 
 	private void FrmConsolidateSettings_Shown(object sender, EventArgs e)
@@ -186,7 +218,7 @@ public class frmConsolidateSettings : C1RibbonForm
 		this.lbl2.Size = new System.Drawing.Size(29, 17);
 		this.lbl2.TabIndex = 1;
 		this.lbl2.Tag = null;
-		this.lbl2.Value = "汇总填充列";
+		this.lbl2.Value = "合并金额列";
 		this.lbl1.AutoSize = true;
 		this.lbl1.BackColor = System.Drawing.Color.Transparent;
 		this.lbl1.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -196,7 +228,7 @@ public class frmConsolidateSettings : C1RibbonForm
 		this.lbl1.Size = new System.Drawing.Size(29, 17);
 		this.lbl1.TabIndex = 0;
 		this.lbl1.Tag = null;
-		this.lbl1.Value = "分组填充列";
+		this.lbl1.Value = "合并维度列";
 		this.pnlGrid.Controls.Add(this._grid);
 		this.pnlGrid.Height = 400;
 		this.pnlGrid.KeepRelativeSize = false;
@@ -225,7 +257,7 @@ public class frmConsolidateSettings : C1RibbonForm
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmConsolidateSettings";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-		this.Text = "跨项目汇总数据设置";
+		this.Text = "合并报表设置";
 		((System.ComponentModel.ISupportInitialize)this.container).EndInit();
 		this.container.ResumeLayout(false);
 		this.pnlBottom.ResumeLayout(false);

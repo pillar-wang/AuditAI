@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -1665,7 +1665,7 @@ public class MainForm
 		View.Text = CurrentProject.Name + " - " + GetAppName();
 		ProjectHierarchy.Project = CurrentProject;
 		ProjectHierarchy.Populate();
-		if (ProjectHierarchy._cutCopyMode == ProjectHierarchy.CutCopyModeEnum.Cut)
+		if (ProjectHierarchy._cutCopyMode is ProjectHierarchy.CutCopyModeEnum cutCopyMode && cutCopyMode == ProjectHierarchy.CutCopyModeEnum.Cut)
 		{
 			ProjectHierarchy._cutCopyMode = ProjectHierarchy.CutCopyModeEnum.None;
 			ClipboardManager.Instance.Clear();

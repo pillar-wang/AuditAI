@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using Leqisoft.DTO;
 using Newtonsoft.Json;
@@ -6,13 +6,13 @@ using Newtonsoft.Json;
 namespace Leqisoft.Model;
 
 /// <summary>
-/// 跨项目数据合并模式
+/// 合并方式
 /// </summary>
 public enum MergeMode
 {
-	/// <summary>汇总模式：按分组列合并相同键值的行，数据列求和</summary>
+	/// <summary>分组汇总合并：按合并维度合并相同键值的行，合并金额求和</summary>
 	Aggregate,
-	/// <summary>追加模式：直接追加所有行，不合并</summary>
+	/// <summary>逐行追加合并：直接追加所有行，不合并</summary>
 	Append
 }
 
@@ -35,6 +35,12 @@ public class ConsolidateSettings
 	public List<Column> AggregateDest { get; set; }
 
 	public MergeMode Mode { get; set; } = MergeMode.Aggregate;
+
+	/// <summary>合并报表名称</summary>
+	public string ConsolidationName { get; set; } = string.Empty;
+
+	/// <summary>是否显示工作底稿明细</summary>
+	public bool ShowDetail { get; set; } = true;
 
 	public string Serialize()
 	{

@@ -1,8 +1,10 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Leqisoft.DTO;
 using Leqisoft.UI.Controls.Properties;
@@ -132,5 +134,47 @@ public static class Util
 			return lhs.B == rhs.B;
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// 使用进度对话框，逐项处理 UI 元素集合。每项通过 control.Invoke 回到 UI 线程执行。
+	/// 适用于所有需要在 WinForms UI 线程上循环处理对象并展示进度的场景。
+	/// </summary>
+	/// <typeparam name="T">集合元素类型</typeparam>
+	/// <param name="control">用于封送到 UI 线程的 Control 实例（如 TextControl / UserControl）</param>
+	/// <param name="items">要处理的元素列表</param>
+	/// <param name="taskName">任务描述名称，如"正在刷新表格"</param>
+	/// <param name="processItem">处理单个元素的回调，参数为 (元素, 索引, 总数)</param>
+	public static void ProcessItemsWithProgress<T>(
+		Control control,
+		IList<T> items,
+		string taskName,
+		Action<T, int, int> processItem)
+	{
+		int total = items.Count;
+		if (total == 0) return;
+
+		new ProgressForm<object>(async delegate(IProgress<ProgressInfo> iProg)
+		{
+			for (int i = 0; i < total; i++)
+			{
+				int idx = i;
+				iProg.Report(new ProgressInfo
+				{
+					MainCaption = $"{taskName} ({i + 1}/{total})...",
+					MainProgress = (int)((double)i / total * 100.0)
+				});
+
+				control.Invoke(new Action(() => processItem(items[idx], idx, total)));
+				await Task.Delay(1);
+			}
+
+			iProg.Report(new ProgressInfo
+			{
+				MainCaption = $"{taskName}完成",
+				MainProgress = 100
+			});
+			return (object)null;
+		}).ShowDialog();
 	}
 }

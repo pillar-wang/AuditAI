@@ -1,11 +1,11 @@
-using System;
+﻿﻿using System;
 using System.Threading.Tasks;
 
 namespace Leqisoft.UI.Platform;
 
 public class AppCommandExecuteConsolidateBrief : AppCommandButton
 {
-	public override string Text => "结果样式";
+	public override string Text => "汇总结果";
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

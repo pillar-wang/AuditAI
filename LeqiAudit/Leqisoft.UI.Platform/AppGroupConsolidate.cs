@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿﻿using System.Drawing;
 using Leqisoft.DTO;
 using Leqisoft.PlatformResource;
 using Leqisoft.UI.Platform.Properties;
@@ -7,7 +7,7 @@ namespace Leqisoft.UI.Platform;
 
 public class AppGroupConsolidate : AppCommandGroup
 {
-	public override string Text => "跨项目汇总数据";
+	public override string Text => "合并报表";
 
 	public override System.Drawing.Image Image => Resources.ConsolidateStatements;
 

@@ -7,11 +7,11 @@ using Leqisoft.UI.Platform.Properties;
 namespace Leqisoft.UI.Platform;
 
 /// <summary>
-/// 刷新跨项目数据按钮
+/// 刷新合并报表数据按钮
 /// </summary>
 public class AppCommandRefreshConsolidate : AppCommandButton
 {
-	public override string Text => "刷新跨项目数据";
+	public override string Text => "刷新合并报表";
 
 	public override Image LargeIcon => Leqisoft.UI.Platform.Properties.Resources.ConsolidateStatements;
 
@@ -20,5 +20,5 @@ public class AppCommandRefreshConsolidate : AppCommandButton
 		await Program.MainForm.TableEditor.RefreshConsolidate();
 	};
 
-	protected override string Tooltip => "从来源项目重新读取最新数据，刷新当前表的跨项目汇总结果";
+	protected override string Tooltip => "从来源单体重新读取最新数据，刷新当前表的合并报表结果";
 }

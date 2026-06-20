@@ -1,5 +1,6 @@
 ﻿﻿using System;
 using System.Windows.Forms;
+using C1.Win.C1Command;
 using C1.Win.C1FlexGrid;
 using C1.Win.C1FlexGrid.Util.BaseControls;
 using Leqisoft.DTO;
@@ -11,6 +12,9 @@ namespace Leqisoft.UI.Controls;
 public class ProjectTreeGrid
 {
 	private C1FlexGridEx _grid;
+	private C1ContextMenu _ctxMenu;
+	private C1Command _cmdExpandAll;
+	private C1Command _cmdCollapseAll;
 
 	public Leqisoft.Model.Project Project { get; set; }
 
@@ -34,6 +38,8 @@ public class ProjectTreeGrid
 
 	public event EventHandler<TreeNodeEventArgs> TreeNodeDoubleClicked;
 
+	public event EventHandler<TreeNodeEventArgs> TreeNodeRightClicked;
+
 	public ProjectTreeGrid()
 	{
 		_grid = new C1FlexGridEx
@@ -55,6 +61,18 @@ public class ProjectTreeGrid
 		_grid.MouseClick += _grid_MouseClick;
 		_grid.MouseDoubleClick += _grid_MouseDoubleClick;
 		_grid.Paint += _grid_Paint;
+
+		_cmdExpandAll = new C1Command();
+		_cmdExpandAll.Text = "全部展开";
+		_cmdExpandAll.Click += (s, args) => _grid.ExpandAll();
+
+		_cmdCollapseAll = new C1Command();
+		_cmdCollapseAll.Text = "全部收缩";
+		_cmdCollapseAll.Click += (s, args) => _grid.CollapseAll();
+
+		_ctxMenu = new C1ContextMenu();
+		_ctxMenu.CommandLinks.Add(new C1CommandLink(_cmdExpandAll));
+		_ctxMenu.CommandLinks.Add(new C1CommandLink(_cmdCollapseAll));
 	}
 
 	public void Populate()
@@ -179,7 +197,15 @@ public class ProjectTreeGrid
 			if (node != null)
 			{
 				TreeNodeBase tnb = (SelectedNode = node.Key as TreeNodeBase);
-				this.TreeNodeClicked?.Invoke(this, new TreeNodeEventArgs(tnb));
+				if (e.Button == MouseButtons.Right)
+				{
+					this.TreeNodeRightClicked?.Invoke(this, new TreeNodeEventArgs(tnb));
+					_ctxMenu.ShowContextMenu(_grid, e.Location);
+				}
+				else
+				{
+					this.TreeNodeClicked?.Invoke(this, new TreeNodeEventArgs(tnb));
+				}
 			}
 		}
 		if (e.Button == MouseButtons.Left && hitTestInfo.Type == HitTestTypeEnum.Cell && hitTestInfo.Column == _grid.Tree.Column)

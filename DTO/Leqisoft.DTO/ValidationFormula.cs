@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.DTO;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.DTO;
 
 public class ValidationFormula
 {

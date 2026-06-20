@@ -1,4 +1,4 @@
-namespace Leqisoft.UI.Platform;
+﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommandGroups
 {
@@ -126,6 +126,9 @@ public static class AppCommandGroups
 
 
 	public static AppGroupValidateDocument ValidateDocument { get; } = new AppGroupValidateDocument();
+
+
+	public static AppGroupDocValidationDomain DocValidationDomain { get; } = new AppGroupDocValidationDomain();
 
 
 	public static AppGroupPaper Paper { get; } = new AppGroupPaper();

@@ -1,7 +1,8 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using C1.Win.C1Command;
 using C1.Win.C1FlexGrid;
@@ -10,6 +11,8 @@ using Leqisoft.Model;
 using Leqisoft.UI.CommonControls;
 using Leqisoft.UI.Controls;
 using Leqisoft.UI.Controls.Properties;
+using MessageBox = Leqisoft.UI.Controls.MessageBox;
+using Table = Leqisoft.Model.Table;
 
 using C1FlexGridEx = Leqisoft.UI.Controls.C1FlexGridEx;
 using SDImage = System.Drawing.Image;
@@ -49,17 +52,8 @@ public class ProjectHierarchy
     private C1Command cmdShowNodes = new C1Command();
     private C1Command cmdSearchNodes = new C1Command();
     private C1Command cmdCutNode = new C1Command();
-    private C1Command cmdCopyTable = new C1Command();
-    private C1Command cmdCopyDocument = new C1Command();
-    private C1Command cmdCopyDirectory = new C1Command();
-    private C1Command cmdCopyImage = new C1Command();
-    private C1Command cmdCopyPdf = new C1Command();
+    private C1Command cmdCopy = new C1Command();
     private C1Command cmdPasteNode = new C1Command();
-    private C1Command cmdPasteTable = new C1Command();
-    private C1Command cmdPasteDocument = new C1Command();
-    private C1Command cmdPasteDirectory = new C1Command();
-    private C1Command cmdPasteImage = new C1Command();
-    private C1Command cmdPastePdf = new C1Command();
     private C1Command cmdRenameNode = new C1Command();
     private C1Command cmdEditNumber = new C1Command();
     private C1Command cmdReload = new C1Command();
@@ -74,6 +68,7 @@ public class ProjectHierarchy
 
     // 批量操作命令
     private C1Command cmdBatchHideFile = new C1Command();
+    private C1Command cmdBatchUnhideFile = new C1Command();
     private C1Command cmdBatchDeleteFile = new C1Command();
     private C1Command cmdBatchEditIndex = new C1Command();
     private C1Command cmdBatchExportFile = new C1Command();
@@ -86,11 +81,6 @@ public class ProjectHierarchy
     private C1Command cmdAppendRootImage = new C1Command();
     private C1Command cmdAppendRootPdf = new C1Command();
     private C1Command cmdPasteRootNode = new C1Command();
-    private C1Command cmdPasteRootTable = new C1Command();
-    private C1Command cmdPasteRootDocument = new C1Command();
-    private C1Command cmdPasteRootDirectory = new C1Command();
-    private C1Command cmdPasteRootImage = new C1Command();
-    private C1Command cmdPasteRootPdf = new C1Command();
     private C1Command cmdEmptyImportFile = new C1Command();
     private C1Command cmdEmptyImportExcel = new C1Command();
     private C1Command cmdEmptyImportWord = new C1Command();
@@ -129,17 +119,6 @@ public class ProjectHierarchy
     private C1CommandLink lnkSearchNodes = new C1CommandLink();
     private C1CommandLink lnkSearchNodes2 = new C1CommandLink();
     private C1CommandLink lnkCutNode = new C1CommandLink();
-    private C1CommandLink lnkCopyTable = new C1CommandLink();
-    private C1CommandLink lnkCopyDocument = new C1CommandLink();
-    private C1CommandLink lnkCopyDirectory = new C1CommandLink();
-    private C1CommandLink lnkCopyImage = new C1CommandLink();
-    private C1CommandLink lnkCopyPdf = new C1CommandLink();
-    private C1CommandLink lnkPasteNode = new C1CommandLink();
-    private C1CommandLink lnkPasteTable = new C1CommandLink();
-    private C1CommandLink lnkPasteDocument = new C1CommandLink();
-    private C1CommandLink lnkPasteDirectory = new C1CommandLink();
-    private C1CommandLink lnkPasteImage = new C1CommandLink();
-    private C1CommandLink lnkPastePdf = new C1CommandLink();
     private C1CommandLink lnkRenameNode = new C1CommandLink();
     private C1CommandLink lnkEditNumber = new C1CommandLink();
     private C1CommandLink lnkReload = new C1CommandLink();
@@ -154,6 +133,7 @@ public class ProjectHierarchy
     private C1CommandLink lnkBatchOperation = new C1CommandLink();
     private C1CommandLink lnkBatchOperation2 = new C1CommandLink();
     private C1CommandLink lnkBatchHideFile = new C1CommandLink();
+    private C1CommandLink lnkBatchUnhideFile = new C1CommandLink();
     private C1CommandLink lnkBatchDeleteFile = new C1CommandLink();
     private C1CommandLink lnkBatchEditIndex = new C1CommandLink();
     private C1CommandLink lnkBatchExportFile = new C1CommandLink();
@@ -165,11 +145,6 @@ public class ProjectHierarchy
     private C1CommandLink lnkAppendRootImage = new C1CommandLink();
     private C1CommandLink lnkAppendRootPdf = new C1CommandLink();
     private C1CommandLink lnkPasteRootNode = new C1CommandLink();
-    private C1CommandLink lnkPasteRootTable = new C1CommandLink();
-    private C1CommandLink lnkPasteRootDocument = new C1CommandLink();
-    private C1CommandLink lnkPasteRootDirectory = new C1CommandLink();
-    private C1CommandLink lnkPasteRootImage = new C1CommandLink();
-    private C1CommandLink lnkPasteRootPdf = new C1CommandLink();
     private C1CommandLink lnkEmptyImportFile = new C1CommandLink();
     private C1CommandLink lnkEmptyImportExcel = new C1CommandLink();
     private C1CommandLink lnkEmptyImportWord = new C1CommandLink();
@@ -188,22 +163,23 @@ public class ProjectHierarchy
     // 子菜单
     private C1CommandMenu mnuInsert = new C1CommandMenu();
     private C1CommandMenu mnuAppendChild = new C1CommandMenu();
-    private C1CommandMenu mnuCopy = new C1CommandMenu();
-    private C1CommandMenu mnuPaste = new C1CommandMenu();
     private C1CommandMenu mnuNodeImport = new C1CommandMenu();
     private C1CommandMenu mnuAppendRoot = new C1CommandMenu();
-    private C1CommandMenu mnuPasteRoot = new C1CommandMenu();
     private C1CommandMenu mnuEmptyImport = new C1CommandMenu();
 
     // 其他字段
     private List<TreeGroupView> _groups;
     private frmSearch frmSearch;
     private LazyExcute lazySearchExcute = new LazyExcute();
+    private TreeNodeBase firstImportNode;
+    private Dictionary<Id64, Table> _dicDupFormula = new Dictionary<Id64, Table>();
+    public ProjectImport ImportProject;
 
     public class TreeGroupView
     {
         public C1FlexGridBase Grid { get; set; }
         public object Page { get; set; }
+        public TreeGroup Model { get; set; }
         public SDImage GetTreeNodeIcon(TreeNodeBase node)
         {
             if (node is TreeDirectoryNode) return Resources.TreeDir;
@@ -213,9 +189,12 @@ public class ProjectHierarchy
             if (node is TreePdfNode) return Resources.TreeDoc;
             throw new ArgumentOutOfRangeException();
         }
+        public void PopulateDirectoryNode(TreeDirectoryNode dirNode, Node gridNode)
+        {
+        }
     }
 
-    public Control View { get; private set; }
+    public C1OutBarEx View { get; private set; }
     public dynamic SelectedNode { get; set; }
     public TreeGroupView _currentGroup { get; set; }
     public bool IsInOpeningSomeTreeNode { get; set; }
@@ -280,6 +259,9 @@ public class ProjectHierarchy
         var page = new C1OutPage();
         page.Controls.Add(_grid);
         outBar.Pages.Add(page);
+        var groupView = new TreeGroupView { Grid = _grid, Page = page };
+        page.Tag = groupView;
+        _currentGroup = groupView;
         View = outBar;
 
         SecondTrigger.Trigger.Tick += Trigger_Tick;
@@ -315,7 +297,7 @@ public class ProjectHierarchy
         cmdRemoveNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxDelete;
         cmdHideNode.Text = "隐藏";
 
-        cmdShowNodes.Text = "显示所有节点";
+        cmdShowNodes.Text = "取消隐藏";
         cmdShowNodes.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxSearch;
         cmdSearchNodes.Text = "搜索节点";
         cmdSearchNodes.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxSearch;
@@ -323,29 +305,11 @@ public class ProjectHierarchy
         cmdCutNode.Text = "剪切";
         cmdCutNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCut;
 
-        cmdCopyTable.Text = "复制表格";
-        cmdCopyTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
-        cmdCopyDocument.Text = "复制文档";
-        cmdCopyDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
-        cmdCopyDirectory.Text = "复制文件夹";
-        cmdCopyDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
-        cmdCopyImage.Text = "复制图片";
-        cmdCopyImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
-        cmdCopyPdf.Text = "复制PDF";
-        cmdCopyPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopy.Text = "复制";
+        cmdCopy.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
 
         cmdPasteNode.Text = "粘贴";
         cmdPasteNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteTable.Text = "粘贴表格";
-        cmdPasteTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteDocument.Text = "粘贴文档";
-        cmdPasteDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteDirectory.Text = "粘贴文件夹";
-        cmdPasteDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteImage.Text = "粘贴图片";
-        cmdPasteImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPastePdf.Text = "粘贴PDF";
-        cmdPastePdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
 
         cmdRenameNode.Text = "重命名";
         cmdRenameNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxMofify;
@@ -381,16 +345,6 @@ public class ProjectHierarchy
 
         cmdPasteRootNode.Text = "粘贴";
         cmdPasteRootNode.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteRootTable.Text = "粘贴表格";
-        cmdPasteRootTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteRootDocument.Text = "粘贴文档";
-        cmdPasteRootDocument.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteRootDirectory.Text = "粘贴文件夹";
-        cmdPasteRootDirectory.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteRootImage.Text = "粘贴图片";
-        cmdPasteRootImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteRootPdf.Text = "粘贴PDF";
-        cmdPasteRootPdf.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
 
         cmdEmptyImportFile.Text = "导入文件";
         cmdEmptyImportFile.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
@@ -417,17 +371,17 @@ public class ProjectHierarchy
 
         cmdInsertDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
         cmdInsertDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
-        cmdInsertPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+        cmdInsertPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
 
         cmdAppendChildDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
         cmdAppendChildTable.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
         cmdAppendChildDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
         cmdAppendChildImage.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertImage;
-        cmdAppendChildPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+        cmdAppendChildPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
 
         cmdAppendRootDirectory.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDir;
         cmdAppendRootDocument.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
-        cmdAppendRootPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreePdf;
+        cmdAppendRootPdf.Image = Leqisoft.UI.Platform.Properties.Resources.TreeDoc;
 
         // ---- 补充缺失的命令图标 ----
         cmdAddGroup.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxAppendRow;
@@ -439,16 +393,10 @@ public class ProjectHierarchy
         mnuInsert.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
         mnuAppendChild.Text = "追加";
         mnuAppendChild.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxAppendRow;
-        mnuCopy.Text = "复制";
-        mnuCopy.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxCopy;
-        mnuPaste.Text = "粘贴";
-        mnuPaste.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
         mnuNodeImport.Text = "导入";
         mnuNodeImport.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
         mnuAppendRoot.Text = "新建";
         mnuAppendRoot.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxInsertTable;
-        mnuPasteRoot.Text = "粘贴";
-        mnuPasteRoot.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxPaste;
         mnuEmptyImport.Text = "导入";
         mnuEmptyImport.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxImport;
 
@@ -466,21 +414,6 @@ public class ProjectHierarchy
         mnuAppendChild.CommandLinks.Add(lnkAppendChildImage);
         mnuAppendChild.CommandLinks.Add(lnkAppendChildPdf);
 
-        // 配置 复制 子菜单
-        mnuCopy.CommandLinks.Add(lnkCopyTable);
-        mnuCopy.CommandLinks.Add(lnkCopyDocument);
-        mnuCopy.CommandLinks.Add(lnkCopyDirectory);
-        mnuCopy.CommandLinks.Add(lnkCopyImage);
-        mnuCopy.CommandLinks.Add(lnkCopyPdf);
-
-        // 配置 粘贴 子菜单
-        mnuPaste.CommandLinks.Add(lnkPasteNode);
-        mnuPaste.CommandLinks.Add(lnkPasteTable);
-        mnuPaste.CommandLinks.Add(lnkPasteDocument);
-        mnuPaste.CommandLinks.Add(lnkPasteDirectory);
-        mnuPaste.CommandLinks.Add(lnkPasteImage);
-        mnuPaste.CommandLinks.Add(lnkPastePdf);
-
         // 配置 导入 子菜单
         mnuNodeImport.CommandLinks.Add(lnkNodeImportFile);
         mnuNodeImport.CommandLinks.Add(lnkNodeImportExcel);
@@ -495,14 +428,6 @@ public class ProjectHierarchy
         mnuAppendRoot.CommandLinks.Add(lnkAppendRootDocument);
         mnuAppendRoot.CommandLinks.Add(lnkAppendRootImage);
         mnuAppendRoot.CommandLinks.Add(lnkAppendRootPdf);
-
-        // 配置 空白区域-粘贴 子菜单
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootNode);
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootTable);
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootDocument);
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootDirectory);
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootImage);
-        mnuPasteRoot.CommandLinks.Add(lnkPasteRootPdf);
 
         // 配置 空白区域-导入 子菜单
         mnuEmptyImport.CommandLinks.Add(lnkEmptyImportFile);
@@ -670,69 +595,18 @@ public class ProjectHierarchy
         lnkCutNode.Command = cmdCutNode;
         ctxTreeNode.CommandLinks.Add(lnkCutNode);
 
-        // cmdCopyTable
-        cmdCopyTable.CommandStateQuery += CmdCopyTable_CommandStateQuery;
-        cmdCopyTable.Click += CmdCopyTable_Click;
-        lnkCopyTable.Command = cmdCopyTable;
-
-        // cmdCopyDocument
-        cmdCopyDocument.CommandStateQuery += CmdCopyDocument_CommandStateQuery;
-        cmdCopyDocument.Click += CmdCopyDocument_Click;
-        lnkCopyDocument.Command = cmdCopyDocument;
-
-        // cmdCopyDirectory
-        cmdCopyDirectory.CommandStateQuery += CmdCopyDirectory_CommandStateQuery;
-        cmdCopyDirectory.Click += CmdCopyDirectory_Click;
-        lnkCopyDirectory.Command = cmdCopyDirectory;
-
-        // cmdCopyImage
-        cmdCopyImage.CommandStateQuery += CmdCopyImage_CommandStateQuery;
-        cmdCopyImage.Click += CmdCopyImage_Click;
-        lnkCopyImage.Command = cmdCopyImage;
-
-        // cmdCopyPdf
-        cmdCopyPdf.CommandStateQuery += CmdCopyPdf_CommandStateQuery;
-        cmdCopyPdf.Click += CmdCopyPdf_Click;
-        lnkCopyPdf.Command = cmdCopyPdf;
-
-        // 添加 复制 子菜单到节点菜单
+        // cmdCopy（统一复制命令
+        cmdCopy.CommandStateQuery += CmdCopy_CommandStateQuery;
+        cmdCopy.Click += CmdCopy_Click;
         var lnkCopy = new C1CommandLink();
-        lnkCopy.Command = mnuCopy;
+        lnkCopy.Command = cmdCopy;
         ctxTreeNode.CommandLinks.Add(lnkCopy);
 
-        // cmdPasteNode
+        // cmdPasteNode（统一粘贴命令）
         cmdPasteNode.CommandStateQuery += CmdPasteNode_CommandStateQuery;
         cmdPasteNode.Click += CmdPasteNode_Click;
-        lnkPasteNode.Command = cmdPasteNode;
-
-        // cmdPasteTable
-        cmdPasteTable.CommandStateQuery += CmdPasteTable_CommandStateQuery;
-        cmdPasteTable.Click += CmdPasteTable_Click;
-        lnkPasteTable.Command = cmdPasteTable;
-
-        // cmdPasteDocument
-        cmdPasteDocument.CommandStateQuery += CmdPasteDocument_CommandStateQuery;
-        cmdPasteDocument.Click += CmdPasteDocument_Click;
-        lnkPasteDocument.Command = cmdPasteDocument;
-
-        // cmdPasteDirectory
-        cmdPasteDirectory.CommandStateQuery += CmdPasteDirectory_CommandStateQuery;
-        cmdPasteDirectory.Click += CmdPasteDirectory_Click;
-        lnkPasteDirectory.Command = cmdPasteDirectory;
-
-        // cmdPasteImage
-        cmdPasteImage.CommandStateQuery += CmdPasteImage_CommandStateQuery;
-        cmdPasteImage.Click += CmdPasteImage_Click;
-        lnkPasteImage.Command = cmdPasteImage;
-
-        // cmdPastePdf
-        cmdPastePdf.CommandStateQuery += CmdPastePdf_CommandStateQuery;
-        cmdPastePdf.Click += CmdPastePdf_Click;
-        lnkPastePdf.Command = cmdPastePdf;
-
-        // 添加 粘贴 子菜单到节点菜单
         var lnkPaste = new C1CommandLink();
-        lnkPaste.Command = mnuPaste;
+        lnkPaste.Command = cmdPasteNode;
         lnkPaste.Delimiter = true;
         ctxTreeNode.CommandLinks.Add(lnkPaste);
 
@@ -817,6 +691,14 @@ public class ProjectHierarchy
         lnkBatchHideFile.Command = cmdBatchHideFile;
         ctxBatchOperation.CommandLinks.Add(lnkBatchHideFile);
 
+        // cmdBatchUnhideFile
+        cmdBatchUnhideFile.Text = "批量取消隐藏";
+        cmdBatchUnhideFile.Image = Leqisoft.UI.Platform.Properties.ContextResources.ctxSearch;
+        cmdBatchUnhideFile.Click += CmdBatchUnhideFile_Click;
+        cmdBatchUnhideFile.CommandStateQuery += CmdBatchUnhideFile_CommandStateQuery;
+        lnkBatchUnhideFile.Command = cmdBatchUnhideFile;
+        ctxBatchOperation.CommandLinks.Add(lnkBatchUnhideFile);
+
         // cmdBatchDeleteFile
         cmdBatchDeleteFile.Text = "批量删除文件";
         cmdBatchDeleteFile.Image = Leqisoft.UI.Platform.Properties.Resources.BatchRemoveNodes16;
@@ -829,6 +711,7 @@ public class ProjectHierarchy
         cmdBatchEditIndex.Text = "批量编辑索引号";
         cmdBatchEditIndex.Image = Leqisoft.UI.Platform.Properties.Resources.EditNodesNumber16;
         cmdBatchEditIndex.Click += CmdBatchEditIndex_Click;
+        cmdBatchEditIndex.CommandStateQuery += CmdBatchEditIndex_CommandStateQuery;
         lnkBatchEditIndex.Command = cmdBatchEditIndex;
         ctxBatchOperation.CommandLinks.Add(lnkBatchEditIndex);
 
@@ -855,7 +738,6 @@ public class ProjectHierarchy
         lnkMoveUpNode.Delimiter = true;
         lnkRemoveNode.Delimiter = true;
         lnkCutNode.Delimiter = true;
-        lnkPasteNode.Delimiter = true;
         lnkRenameNode.Delimiter = true;
         lnkReload.Delimiter = true;
         lnkNodeImportFile.Delimiter = true;
@@ -901,39 +783,11 @@ public class ProjectHierarchy
         lnkAppendRoot2.Command = mnuAppendRoot;
         ctxTreeEmpty.CommandLinks.Add(lnkAppendRoot2);
 
-        // cmdPasteRootNode
+        // cmdPasteRootNode（统一粘贴命令）
         cmdPasteRootNode.CommandStateQuery += CmdPasteRootNode_CommandStateQuery;
         cmdPasteRootNode.Click += CmdPasteRootNode_Click;
-        lnkPasteRootNode.Command = cmdPasteRootNode;
-
-        // cmdPasteRootTable
-        cmdPasteRootTable.CommandStateQuery += CmdPasteRootTable_CommandStateQuery;
-        cmdPasteRootTable.Click += CmdPasteRootTable_Click;
-        lnkPasteRootTable.Command = cmdPasteRootTable;
-
-        // cmdPasteRootDocument
-        cmdPasteRootDocument.CommandStateQuery += CmdPasteRootDocument_CommandStateQuery;
-        cmdPasteRootDocument.Click += CmdPasteRootDocument_Click;
-        lnkPasteRootDocument.Command = cmdPasteRootDocument;
-
-        // cmdPasteRootDirectory
-        cmdPasteRootDirectory.CommandStateQuery += CmdPasteRootDirectory_CommandStateQuery;
-        cmdPasteRootDirectory.Click += CmdPasteRootDirectory_Click;
-        lnkPasteRootDirectory.Command = cmdPasteRootDirectory;
-
-        // cmdPasteRootImage
-        cmdPasteRootImage.CommandStateQuery += CmdPasteRootImage_CommandStateQuery;
-        cmdPasteRootImage.Click += CmdPasteRootImage_Click;
-        lnkPasteRootImage.Command = cmdPasteRootImage;
-
-        // cmdPasteRootPdf
-        cmdPasteRootPdf.CommandStateQuery += CmdPasteRootPdf_CommandStateQuery;
-        cmdPasteRootPdf.Click += CmdPasteRootPdf_Click;
-        lnkPasteRootPdf.Command = cmdPasteRootPdf;
-
-        // 添加 粘贴 子菜单到空白区域菜单
         var lnkPasteRoot2 = new C1CommandLink();
-        lnkPasteRoot2.Command = mnuPasteRoot;
+        lnkPasteRoot2.Command = cmdPasteRootNode;
         lnkPasteRoot2.Delimiter = true;
         ctxTreeEmpty.CommandLinks.Add(lnkPasteRoot2);
 
@@ -991,6 +845,7 @@ public class ProjectHierarchy
 
         // 事件和延迟执行
         TreeNodeCollapsed += ProjectHierarchy_TreeNodeCollapsed;
+        View.SelectedPageChanged += View_SelectedPageChanged;
         frmSearch = new frmSearch();
         frmSearch.SelectNode += FrmSearch_SelectNode;
         lazySearchExcute.SetAction(LazySearchExcute_Action);
@@ -1399,6 +1254,10 @@ public class ProjectHierarchy
 
     public void Populate()
         {
+            // 保存当前展开状态
+            var expandedKeys = new HashSet<object>();
+            SaveExpandedState(_grid, expandedKeys);
+
             SelectedNode = null;
             _grid.BeginUpdate();
             _grid.Rows.Count = _grid.Rows.Fixed;
@@ -1420,10 +1279,23 @@ public class ProjectHierarchy
                 {
                     AddTreeNode(rootNode, node);
                 }
-                node.Collapsed = true;
+                // 恢复展开状态
+                node.Collapsed = !expandedKeys.Contains(treeGroup);
             }
             _grid.EndUpdate();
         }
+
+    private void SaveExpandedState(C1FlexGridBase grid, HashSet<object> expandedKeys)
+    {
+        for (int r = grid.Rows.Fixed; r < grid.Rows.Count; r++)
+        {
+            var row = grid.Rows[r];
+            if (row.IsNode && !row.Node.Collapsed && row.Node.Key != null)
+            {
+                expandedKeys.Add(row.Node.Key);
+            }
+        }
+    }
 
     private void AddTreeNode(TreeNodeBase treeNode, Node parentNode)
     {
@@ -1673,6 +1545,14 @@ public class ProjectHierarchy
         return SelectedNode != null;
     }
 
+    private void UpdateCurrentGroupModel(TreeGroup group)
+    {
+        if (_currentGroup != null && group != null)
+        {
+            _currentGroup.Model = group;
+        }
+    }
+
     #endregion
 
     private void _grid_MouseClick(object sender, MouseEventArgs e)
@@ -1688,11 +1568,15 @@ public class ProjectHierarchy
                 if (node.Key is TreeGroup group)
                 {
                     SelectedNode = group;
+                    UpdateCurrentGroupModel(group);
                 }
                 else if (node.Key is TreeNodeBase tnb)
                 {
                     SelectedNode = tnb;
-                    TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                    UpdateCurrentGroupModel(tnb.Group);
+                    // 仅左键点击时触发选中事件，右键不触发以避免不必要的文档加载
+                    if (e.Button == MouseButtons.Left)
+                        TreeNodeSelected?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -1721,12 +1605,14 @@ public class ProjectHierarchy
                     if (node.Key is TreeGroup group)
                     {
                         SelectedNode = group;
+                        UpdateCurrentGroupModel(group);
                         _grid.Row = ht.Row;
                         ctxTreeGroup.ShowContextMenu(_grid, e.Location);
                     }
                     else if (node.Key is TreeNodeBase tnb)
                     {
                         SelectedNode = tnb;
+                        UpdateCurrentGroupModel(tnb.Group);
                         _grid.Row = ht.Row;
                         ctxTreeNode.ShowContextMenu(_grid, e.Location);
                     }
@@ -1780,6 +1666,29 @@ public class ProjectHierarchy
     {
     }
 
+    private void View_SelectedPageChanged(object sender, EventArgs e)
+    {
+        _currentGroup = View.SelectedPage?.Tag as TreeGroupView;
+        var en = View.Pages.GetEnumerator();
+        try
+        {
+            while (en.MoveNext())
+            {
+                var page = (C1OutPage)en.Current;
+                if (_currentGroup?.Page == page) continue;
+                var groupView = page.Tag as TreeGroupView;
+                if (groupView != null)
+                    groupView.Grid.Row = -1;
+            }
+        }
+        finally
+        {
+            var disp = en as IDisposable;
+            if (disp != null) disp.Dispose();
+        }
+        RefreshOpenNode(false);
+    }
+
     private void ctxProjectMember_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
     {
         e.Enabled = true;
@@ -1792,6 +1701,10 @@ public class ProjectHierarchy
 
     private void LazySearchExcute_Action()
     {
+        if (Project == null || frmSearch == null) return;
+        frmSearch.Project = Project;
+        frmSearch.Show();
+        frmSearch.Activate();
     }
 
     #endregion
@@ -1843,11 +1756,43 @@ public class ProjectHierarchy
 
     private void CmdInsertImage_Click(object sender, ClickEventArgs e)
     {
+        if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+        var imageId = SelectImage();
+        if (!imageId.HasValue) return;
+        int index = SelectedNode.Index;
+        TreeNodeBase newNode = null;
+        if (SelectedNode.IsRoot)
+        {
+            newNode = _currentGroup.Model.InsertRootImage(index, imageId.Value);
+        }
+        else
+        {
+            newNode = SelectedNode.Parent.InsertChildImage(index, imageId.Value);
+        }
+        var grid = _currentGroup.Grid;
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        grid.Row = node.Row.Index;
     }
     private void CmdInsertImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdInsertPdf_Click(object sender, ClickEventArgs e)
     {
+        if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+        var pdfId = SelectPdf();
+        if (!pdfId.HasValue) return;
+        int index = SelectedNode.Index;
+        TreeNodeBase newNode = null;
+        if (SelectedNode.IsRoot)
+        {
+            newNode = _currentGroup.Model.InsertRootPdf(index, pdfId.Value);
+        }
+        else
+        {
+            newNode = SelectedNode.Parent.InsertChildPdf(index, pdfId.Value);
+        }
+        var grid = _currentGroup.Grid;
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        grid.Row = node.Row.Index;
     }
     private void CmdInsertPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -1862,11 +1807,27 @@ public class ProjectHierarchy
 
     private void CmdAppendChildImage_Click(object sender, ClickEventArgs e)
     {
+        if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+        var imageId = SelectImage();
+        if (!imageId.HasValue) return;
+        var dirNode = (TreeDirectoryNode)SelectedNode;
+        var newNode = dirNode.InsertChildImage(dirNode.Children.Count, imageId.Value);
+        var grid = _currentGroup.Grid;
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        grid.Row = node.Row.Index;
     }
     private void CmdAppendChildImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdAppendChildPdf_Click(object sender, ClickEventArgs e)
     {
+        if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+        var pdfId = SelectPdf();
+        if (!pdfId.HasValue) return;
+        var dirNode = (TreeDirectoryNode)SelectedNode;
+        var newNode = dirNode.InsertChildPdf(dirNode.Children.Count, pdfId.Value);
+        var grid = _currentGroup.Grid;
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        grid.Row = node.Row.Index;
     }
     private void CmdAppendChildPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -1885,76 +1846,164 @@ public class ProjectHierarchy
 
     private void CmdHideNode_Click(object sender, ClickEventArgs e)
     {
+        if (_currentGroup == null) return;
+        var node = SelectedNode as TreeNodeBase;
+        if (node == null) return;
+
+        if (node.Visible)
+        {
+            if (!CanRemoveNode(node))
+            {
+                var dirNode = node as TreeDirectoryNode;
+                if (dirNode != null)
+                {
+                    var cantDeleteNode = dirNode.GetFirstCantDeleteDescendant();
+                    MessageBox.Show(MessageBoxIcon.None, string.Concat("因您没有该文件夹下【", cantDeleteNode.Name, "】文件的【", cantDeleteNode.GetDontHavePermissionString(), "】权限，因此，无法对该文件夹及其下所有文件执行隐藏操作 。"), MessageBoxButtons.OK, "", scroll: false);
+                    return;
+                }
+                MessageBox.Show(MessageBoxIcon.None, string.Concat("因您没有该文件的【", node.GetDontHavePermissionString(), "】权限，因此，无法对该文件执行隐藏操作。"), MessageBoxButtons.OK, "", scroll: false);
+                return;
+            }
+            node.UpdateVisible(false);
+            var gridNode = _currentGroup.Grid.Rows[_currentGroup.Grid.Row].Node;
+            ((C1FlexGridEx)_currentGroup.Grid).SetSubtreeVisible(gridNode, false);
+            Program.MainForm.SwitchToEmptyView();
+        }
+        else
+        {
+            node.UpdateVisible(true);
+            var gridNode = _currentGroup.Grid.Rows[_currentGroup.Grid.Row].Node;
+            ((C1FlexGridEx)_currentGroup.Grid).SetSubtreeVisible(gridNode, true);
+        }
     }
-    private void CmdHideNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
+    private void CmdHideNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+    {
+        var node = SelectedNode as TreeNodeBase;
+        e.Enabled = node != null;
+        if (node != null)
+        {
+            cmdHideNode.Text = node.Visible ? "隐藏" : "取消隐藏";
+        }
+    }
 
     private void CmdShowNodes_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            var selectedNode = SelectedNode as TreeNodeBase;
+            var form = new frmNodeSelector();
+            form.Project = Project;
+            if (form.ShowUnhide() != DialogResult.OK) return;
+
+            foreach (var node in form.Selected)
+            {
+                node.UpdateVisible(true);
+            }
+
+            Populate();
+            if (selectedNode != null && selectedNode.Visible)
+            {
+                FindAndSelectNode(selectedNode);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void ShowAllNodesRecursive(List<TreeNodeBase> nodes)
+    {
+        if (nodes == null) return;
+        foreach (var node in nodes)
+        {
+            node.UpdateVisible(true);
+            if (node is TreeDirectoryNode dirNode)
+            {
+                ShowAllNodesRecursive(dirNode.Children);
+            }
+        }
     }
     private void CmdShowNodes_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdSearchNodes_Click(object sender, ClickEventArgs e)
     {
+        lazySearchExcute.Excute();
     }
     private void CmdSearchNodes_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdCutNode_Click(object sender, ClickEventArgs e)
     {
+        if (ShowUnableCutDialog(SelectedNode)) return;
+        SetCutInfo();
     }
     private void CmdCutNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
-    private void CmdCopyTable_Click(object sender, ClickEventArgs e)
+    private void CmdCopy_Click(object sender, ClickEventArgs e)
     {
+        var node = SelectedNode as TreeNodeBase;
+        if (node == null) return;
+        if (ShowUnableCopyDialog(node)) return;
+        if (node is TreeDocumentNode docNode && docNode.Document.Paragraphs.Count <= 0) return;
+        _cutCopyMode = CutCopyModeEnum.Copy;
+        CutCopyMode = CutCopyModeEnum.Copy;
+        ClipboardManager.Instance.ProjectHierarchyNode = node;
     }
-    private void CmdCopyTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
-
-    private void CmdCopyDocument_Click(object sender, ClickEventArgs e)
+    private void CmdCopy_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
     {
+        var node = SelectedNode as TreeNodeBase;
+        e.Enabled = node != null && (
+            node is TreeTableNode ||
+            node is TreeDocumentNode ||
+            node is TreeDirectoryNode ||
+            node is TreeImageNode ||
+            node is TreePdfNode);
     }
-    private void CmdCopyDocument_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
-
-    private void CmdCopyDirectory_Click(object sender, ClickEventArgs e)
-    {
-    }
-    private void CmdCopyDirectory_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
-
-    private void CmdCopyImage_Click(object sender, ClickEventArgs e)
-    {
-    }
-    private void CmdCopyImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
-
-    private void CmdCopyPdf_Click(object sender, ClickEventArgs e)
-    {
-    }
-    private void CmdCopyPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteNode_Click(object sender, ClickEventArgs e)
     {
+        if (_currentGroup == null || _currentGroup.Grid == null) return;
+        var clipNode = ClipboardManager.Instance.ProjectHierarchyNode;
+        if (clipNode == null) return;
+        if (_cutCopyMode != CutCopyModeEnum.Cut && _cutCopyMode != CutCopyModeEnum.Copy) return;
+        DoPaste();
     }
-    private void CmdPasteNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
+    private void CmdPasteNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+    {
+        var clipNode = ClipboardManager.Instance.ProjectHierarchyNode;
+        e.Enabled = clipNode != null && (
+            _cutCopyMode == CutCopyModeEnum.Cut ||
+            _cutCopyMode == CutCopyModeEnum.Copy);
+    }
 
     private void CmdPasteTable_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteNonRootTable();
     }
     private void CmdPasteTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteDocument_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteNonRootDocument();
     }
     private void CmdPasteDocument_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteDirectory_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteNonRootDirectory();
     }
     private void CmdPasteDirectory_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteImage_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteNonRootImage();
     }
     private void CmdPasteImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPastePdf_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteNonRootPdf();
     }
     private void CmdPastePdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -1963,11 +2012,13 @@ public class ProjectHierarchy
 
     private void CmdEditNumber_Click(object sender, ClickEventArgs e)
     {
+        EditNumber();
     }
     private void CmdEditNumber_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdReload_Click(object sender, ClickEventArgs e)
     {
+        ReloadNode();
     }
     private void CmdReload_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -1990,21 +2041,28 @@ public class ProjectHierarchy
 
     private void CmdNodeImportExcel_Click(object sender, ClickEventArgs e)
     {
+        SelectNodeImportExcel();
     }
     private void CmdNodeImportExcel_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdNodeImportWord_Click(object sender, ClickEventArgs e)
     {
+        if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+        firstImportNode = null;
+        SelectNodeImportWord();
+        if (firstImportNode != null) FindAndSelectNode(firstImportNode);
     }
     private void CmdNodeImportWord_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdNodeImportImage_Click(object sender, ClickEventArgs e)
     {
+        SelectNodeImportImage();
     }
     private void CmdNodeImportImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdNodeImportPdf_Click(object sender, ClickEventArgs e)
     {
+        SelectNodeImportPdf();
     }
     private void CmdNodeImportPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -2015,25 +2073,150 @@ public class ProjectHierarchy
 
     #region 批量操作命令
 
+    private List<TreeNodeBase> GetBatchOperationTargetNodes()
+    {
+        var result = new List<TreeNodeBase>();
+        if (_currentGroup?.Model == null) return result;
+
+        var selectedNode = SelectedNode as TreeNodeBase;
+        if (selectedNode is TreeDirectoryNode dirNode)
+        {
+            foreach (var child in dirNode.Children)
+            {
+                if (!(child is TreeDirectoryNode))
+                    result.Add(child);
+            }
+        }
+        else
+        {
+            foreach (var root in _currentGroup.Model.RootNodes)
+            {
+                if (!(root is TreeDirectoryNode))
+                    result.Add(root);
+            }
+        }
+
+        return result;
+    }
+
     private void CmdBatchHideFile_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            var selectedNode = SelectedNode as TreeNodeBase;
+            var form = new frmNodeSelector();
+            form.Project = Project;
+            if (form.ShowHide() != DialogResult.OK) return;
+
+            foreach (var node in form.Selected)
+            {
+                if (CanRemoveNode(node))
+                {
+                    node.UpdateVisible(false);
+                }
+            }
+
+            Populate();
+            if (selectedNode != null && selectedNode.Visible)
+            {
+                FindAndSelectNode(selectedNode);
+            }
+            else
+            {
+                Program.MainForm.SwitchToEmptyView();
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CmdBatchUnhideFile_Click(object sender, ClickEventArgs e)
+    {
+        try
+        {
+            var selectedNode = SelectedNode as TreeNodeBase;
+            var form = new frmNodeSelector();
+            form.Project = Project;
+            if (form.ShowUnhide() != DialogResult.OK) return;
+
+            foreach (var node in form.Selected)
+            {
+                node.UpdateVisible(true);
+            }
+
+            Populate();
+            if (selectedNode != null && selectedNode.Visible)
+            {
+                FindAndSelectNode(selectedNode);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
     }
 
     private void CmdBatchDeleteFile_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            Program.MainForm.RemoveNodes();
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
     }
+    private void CmdBatchUnhideFile_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
     private void CmdBatchDeleteFile_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdBatchEditIndex_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            Program.MainForm.NodesIndexEdit();
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
     }
 
-    private void CmdBatchExportFile_Click(object sender, ClickEventArgs e)
+    private void CmdBatchEditIndex_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
     {
+        e.Enabled = true;
     }
 
-    private void CmdBatchPrintFile_Click(object sender, ClickEventArgs e)
+    private async void CmdBatchExportFile_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            await Program.MainForm.BatchExport("批量导出");
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private async void CmdBatchPrintFile_Click(object sender, ClickEventArgs e)
+    {
+        try
+        {
+            await Program.MainForm.BatchPrint_Click("批量打印");
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
     }
 
     #endregion
@@ -2051,41 +2234,91 @@ public class ProjectHierarchy
 
     private void CmdAppendRootImage_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            var imageId = SelectImage();
+            if (!imageId.HasValue) return;
+            var groupModel = _currentGroup.Model;
+            var newNode = groupModel.InsertRootImage(groupModel.RootNodes.Count, imageId.Value);
+            var grid = _currentGroup.Grid;
+            var node = grid.Rows.AddNode(0);
+            node.Data = newNode.Name;
+            node.Key = newNode;
+            node.Image = Resources.TreeDoc;
+            grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "错误", scroll: false);
+        }
     }
     private void CmdAppendRootImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdAppendRootPdf_Click(object sender, ClickEventArgs e)
     {
+        try
+        {
+            var pdfId = SelectPdf();
+            if (!pdfId.HasValue) return;
+            var groupModel = _currentGroup.Model;
+            var newNode = groupModel.InsertRootPdf(groupModel.RootNodes.Count, pdfId.Value);
+            var grid = _currentGroup.Grid;
+            var node = grid.Rows.AddNode(0);
+            node.Data = newNode.Name;
+            node.Key = newNode;
+            node.Image = Resources.TreeDoc;
+            grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "错误", scroll: false);
+        }
     }
     private void CmdAppendRootPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootNode_Click(object sender, ClickEventArgs e)
     {
+        if (ClipboardManager.Instance.ProjectHierarchyNode == null) return;
+        if (ClipboardManager.Instance.ProjectHierarchyNode is TreeDirectoryNode)
+        {
+            CutPasteRoot();
+        }
+        else
+        {
+            DoPaste();
+        }
     }
     private void CmdPasteRootNode_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootTable_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteRootTable();
     }
     private void CmdPasteRootTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootDocument_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteRootDocument();
     }
     private void CmdPasteRootDocument_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootDirectory_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteRootDirectory();
     }
     private void CmdPasteRootDirectory_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootImage_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteRootImage();
     }
     private void CmdPasteRootImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdPasteRootPdf_Click(object sender, ClickEventArgs e)
     {
+        CopyPasteRootPdf();
     }
     private void CmdPasteRootPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
@@ -2119,7 +2352,764 @@ public class ProjectHierarchy
     private void CmdEmptyImportFolder_Click(object sender, ClickEventArgs e) => OnImportFolder(null, EventArgs.Empty);
     private void CmdEmptyImportFolder_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
+    private void CopyPasteNonRootPdf()
+    {
+        try
+        {
+            var dup = (ClipboardManager.Instance.ProjectHierarchyNode as TreePdfNode)?.DuplicatePdf();
+            if (dup == null) return;
+            var grid = _currentGroup.Grid;
+            var node = grid.Rows[grid.Row].Node;
+            if (SelectedNode.IsRoot)
+            {
+                var rootNodes = _currentGroup.Model.RootNodes;
+                if (rootNodes.Any(n => n.Name == dup.Name))
+                    dup.Name += "-副本";
+                _currentGroup.Model.InsertRootNode(dup, SelectedNode.Index);
+                node = grid.Rows.AddNode(0);
+                node.Data = dup.Name;
+                node.Key = dup;
+                node.Image = Resources.TreeDoc;
+            }
+            else
+            {
+                var parent = SelectedNode.Parent;
+                var children = parent.Children;
+                if (((List<TreeNodeBase>)children).Any(n => n.Name == dup.Name))
+                    dup.Name += "-副本";
+                parent.InsertChildNode(dup, SelectedNode.Index);
+                node = node.AddNode(NodeTypeEnum.LastChild, dup.Name, dup, Resources.TreeDoc);
+            }
+            grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void EditNumber()
+    {
+        if (!HasWritePermission()) return;
+        var number = SelectedNode.Number;
+        var text = InputForm.Text("编辑索引号", "请输入或修改索引号：", number, 128);
+        if (text == null) return;
+        text = text.Replace("", "").Replace("\n", "");
+        SelectedNode.UpdateNumber(text);
+        _currentGroup.Grid.Invalidate();
+    }
+
+    private Guid? SelectImage()
+    {
+        var guid = Guid.NewGuid();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "支持的图片格式|*.bmp;*.gif;*.jpg;*.jpeg;*.png;*.tif;*.tiff|bmp|*.bmp|gif|*.gif|jpg|*.jpg;*.jpeg|png|*.png|tiff|*.tif;*.tiff",
+            Multiselect = false,
+            Title = "选择图片文件"
+        };
+        if (dialog.ShowDialog() != DialogResult.OK)
+            return null;
+        try
+        {
+            using (var image = System.Drawing.Image.FromFile(dialog.FileName))
+            {
+            }
+            _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
+            return guid;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "打开图片文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
+            return null;
+        }
+    }
+
+    private Guid? SelectPdf()
+    {
+        var guid = Guid.NewGuid();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "PDF|*.pdf",
+            Multiselect = false,
+            Title = "选择 PDF 文件"
+        };
+        if (dialog.ShowDialog() != DialogResult.OK)
+            return null;
+        try
+        {
+            _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
+            return guid;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "打开 PDF 文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
+            return null;
+        }
+    }
+
+    private void CutPasteRoot()
+    {
+        var node = ClipboardManager.Instance.ProjectHierarchyNode;
+        if (node == null) return;
+        var gridNode = _currentGroup.Grid.Rows.AddNode(0);
+        gridNode.Data = node.Name;
+        gridNode.Key = node;
+        gridNode.Image = _currentGroup.GetTreeNodeIcon(node);
+        var dirNode = node as TreeDirectoryNode;
+        if (dirNode != null)
+            _currentGroup.PopulateDirectoryNode(dirNode, gridNode);
+        node.MoveTo(_currentGroup.Model);
+    }
+
+    private void DoPaste()
+    {
+        if (_currentGroup == null || _currentGroup.Grid == null) return;
+        var mode = _cutCopyMode;
+        if (mode == CutCopyModeEnum.Cut)
+        {
+            var node = ClipboardManager.Instance.ProjectHierarchyNode;
+            if (node == null) return;
+            if (node.Status != SyncStatus.New && node.Status != SyncStatus.Synced)
+                return;
+            var row = FindNode(node);
+            if (_currentGroup.Grid.Row >= 0)
+                CutPasteNonRoot();
+            else
+                CutPasteRoot();
+            if (row != null)
+                row.RemoveNode();
+            _cutCopyMode = CutCopyModeEnum.None;
+            return;
+        }
+        if (mode == CutCopyModeEnum.Copy)
+        {
+            if (_currentGroup.Grid.Row >= 0)
+            {
+                var node = ClipboardManager.Instance.ProjectHierarchyNode;
+                if (node is TreeTableNode)
+                    CopyPasteNonRootTable();
+                else if (node is TreeDocumentNode)
+                    CopyPasteNonRootDocument();
+                else if (node is TreeDirectoryNode)
+                    CopyPasteNonRootDirectory();
+                else if (node is TreeImageNode)
+                    CopyPasteNonRootImage();
+                else if (node is TreePdfNode)
+                    CopyPasteNonRootPdf();
+                return;
+            }
+            else
+            {
+                var node = ClipboardManager.Instance.ProjectHierarchyNode;
+                if (node is TreeTableNode)
+                    CopyPasteRootTable();
+                else if (node is TreeDocumentNode)
+                    CopyPasteRootDocument();
+                else if (node is TreeDirectoryNode)
+                    CopyPasteRootDirectory();
+                else if (node is TreeImageNode)
+                    CopyPasteRootImage();
+                else if (node is TreePdfNode)
+                    CopyPasteRootPdf();
+                return;
+            }
+        }
+    }
+
+    private void ManageSnapshots()
+    {
+        if (SelectedNode == null) return;
+        try
+        {
+            var form = new ManageSnapshots();
+            if (form.ShowSnapshots() != DialogResult.OK) return;
+            var snapshot = form.SelectedSnapshot;
+            TreeNodeBase node = null;
+            SDImage icon = null;
+            switch (snapshot.Kind)
+            {
+                case 0: // Table
+                    node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotTable(snapshot);
+                    icon = Resources.TreeTable;
+                    break;
+                case 1: // Document
+                    var docNode = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotDocument(snapshot);
+                    node = docNode;
+                    icon = Resources.TreeDoc;
+                    Program.MainForm.CurrentDocumentEditor = new DocumentEditor { Document = docNode.Document, NeedSave = true };
+                    Program.MainForm.AddDocumentEditor(Program.MainForm.CurrentDocumentEditor);
+                    Program.MainForm.CurrentDocumentEditor.PopulateDocument(false, true);
+                    break;
+                case 2: // Image
+                    node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotImage(snapshot);
+                    icon = Resources.TreeDoc;
+                    break;
+                case 3: // Pdf
+                    node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotPdf(snapshot);
+                    icon = Resources.TreeDoc;
+                    break;
+            }
+            node.Name += " - 历史版本";
+            var gridNode = _currentGroup.Grid.Rows.AddNode(0);
+            gridNode.Data = node.Name;
+            gridNode.Key = node;
+            gridNode.Image = icon;
+            _currentGroup.Model.InsertRootNode(node, _currentGroup.Model.RootNodes.Count);
+            _currentGroup.Grid.Row = gridNode.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "由于此历史版本存储的版本过低，无法恢复。请选择更新的历史版本重试。", MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void SelectNodeImportWord()
+    {
+        var model = _currentGroup?.Model;
+        if (model == null)
+        {
+            MessageBox.Show(MessageBoxIcon.None, "请选择导入分组", MessageBoxButtons.OK, "", scroll: false);
+            return;
+        }
+        CreateImportIfNotExist();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Word|*.docx",
+            Title = "选择 Word 文件",
+            Multiselect = true
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+            var selectedNode = SelectedNode;
+            if (selectedNode is TreeDirectoryNode dirNode)
+            {
+                ImportProject.ImportFiles(dirNode, dirNode.Children.Count, dialog.FileNames);
+            }
+            else
+            {
+                if (SelectedNode.Parent == null)
+                {
+                    ImportProject.ImportFiles(SelectedNode.Group, SelectedNode.Index, dialog.FileNames);
+                }
+                else
+                {
+                    ImportProject.ImportFiles(SelectedNode.Parent, SelectedNode.Index, dialog.FileNames);
+                }
+            }
+        }
+        finally
+        {
+            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+        }
+        AddDocumentEditor(ImportProject.DocumentEditors);
+    }
+
+    private void CopyPasteRootTable()
+    {
+        try
+        {
+            var source = (TreeTableNode)ClipboardManager.Instance.ProjectHierarchyNode;
+            var dup = source.DuplicateTable();
+            if (dup == null) return;
+            _dicDupFormula.Clear();
+            _dicDupFormula[source.Id] = dup.Table;
+            // dup.Table.DuplicateFormulas(_dicDupFormula);
+            // if (source.ProjectGuid != Program.MainForm.CurrentProject.Guid)
+            // {
+            //     var formulas = dup.Table.GetAllFormulas();
+            // }
+            var rootNodes = _currentGroup.Model.RootNodes;
+            if (rootNodes.Any(n => n.Name == dup.Name))
+                dup.Name += "-副本";
+            _currentGroup.Model.InsertRootNode(dup, _currentGroup.Model.RootNodes.Count);
+            var node = _currentGroup.Grid.Rows.AddNode(0);
+            node.Data = dup.Name;
+            node.Key = dup;
+            node.Image = Resources.TreeTable;
+            _currentGroup.Grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteRootDocument()
+    {
+        try
+        {
+            var source = (TreeDocumentNode)ClipboardManager.Instance.ProjectHierarchyNode;
+            var dup = source.DuplicateDocument();
+            if (dup == null) return;
+            Program.MainForm.CurrentProject.ThrowIfMaxExceeded();
+            var rootNodes = _currentGroup.Model.RootNodes;
+            if (rootNodes.Any(n => n.Name == dup.Name))
+                dup.Name += "-副本";
+            _currentGroup.Model.InsertRootNode(dup, _currentGroup.Model.RootNodes.Count);
+            var node = _currentGroup.Grid.Rows.AddNode(0);
+            node.Data = dup.Name;
+            node.Key = dup;
+            node.Image = Resources.TreeDoc;
+            _currentGroup.Grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteRootDirectory()
+    {
+        try
+        {
+            var source = (TreeDirectoryNode)ClipboardManager.Instance.ProjectHierarchyNode;
+            if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+            var dup = source.DuplicateDirectory();
+            if (dup == null) return;
+            var sb = new System.Text.StringBuilder();
+            DuplicateDirectory(source, dup, null, sb);
+            // if (source.ProjectGuid != Program.MainForm.CurrentProject.Guid)
+            // {
+            //     foreach (var tableNode in dup.GetDescendants().OfType<TreeTableNode>())
+            //     {
+            //         _dicDupFormula.Clear();
+            //         _dicDupFormula[source.Id] = tableNode.Table;
+            //         tableNode.Table.DuplicateFormulas(_dicDupFormula);
+            //     }
+            // }
+            if (sb.Length > 0)
+            {
+                MessageBox.Show(MessageBoxIcon.Error, "以下几个文件从服务器下载数据失败，请重试\r\n" + sb.ToString(), MessageBoxButtons.OK, "", scroll: false);
+            }
+            _currentGroup.Model.InsertRootNode(dup, _currentGroup.Model.RootNodes.Count);
+            var node = _currentGroup.Grid.Rows.AddNode(0);
+            node.Data = dup.Name;
+            node.Key = dup;
+            node.Image = Resources.TreeDir;
+            _currentGroup.PopulateDirectoryNode(dup, node);
+            _currentGroup.Grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteRootImage()
+    {
+        try
+        {
+            var source = (TreeImageNode)ClipboardManager.Instance.ProjectHierarchyNode;
+            var dup = source.DuplicateImage();
+            if (dup == null) return;
+            var rootNodes = _currentGroup.Model.RootNodes;
+            if (rootNodes.Any(n => n.Name == dup.Name))
+                dup.Name += "-副本";
+            _currentGroup.Model.InsertRootNode(dup, _currentGroup.Model.RootNodes.Count);
+            var node = _currentGroup.Grid.Rows.AddNode(0);
+            node.Data = dup.Name;
+            node.Key = dup;
+            node.Image = Resources.TreeDoc;
+            _currentGroup.Grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteRootPdf()
+    {
+        try
+        {
+            var source = (TreePdfNode)ClipboardManager.Instance.ProjectHierarchyNode;
+            var dup = source.DuplicatePdf();
+            if (dup == null) return;
+            var rootNodes = _currentGroup.Model.RootNodes;
+            if (rootNodes.Any(n => n.Name == dup.Name))
+                dup.Name += "-副本";
+            _currentGroup.Model.InsertRootNode(dup, _currentGroup.Model.RootNodes.Count);
+            var node = _currentGroup.Grid.Rows.AddNode(0);
+            node.Data = dup.Name;
+            node.Key = dup;
+            node.Image = Resources.TreeDoc;
+            _currentGroup.Grid.Row = node.Row.Index;
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void SelectNodeImportExcel()
+    {
+        var model = _currentGroup?.Model;
+        if (model == null)
+        {
+            MessageBox.Show(MessageBoxIcon.None, "请选择导入分组", MessageBoxButtons.OK, "", scroll: false);
+            return;
+        }
+        CreateImportIfNotExist();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Excel|*.xls;*.xlsx",
+            Title = "选择 Excel 文件",
+            Multiselect = true
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+        finally
+        {
+            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+        }
+        AddDocumentEditor(ImportProject.DocumentEditors);
+    }
+
+    private void SelectNodeImportImage()
+    {
+        var model = _currentGroup?.Model;
+        if (model == null)
+        {
+            MessageBox.Show(MessageBoxIcon.None, "请选择导入分组", MessageBoxButtons.OK, "", scroll: false);
+            return;
+        }
+        CreateImportIfNotExist();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "支持的图片格式|*.bmp;*.gif;*.jpg;*.jpeg;*.png;*.tif;*.tiff|bmp|*.bmp|gif|*.gif|jpg|*.jpg;*.jpeg|png|*.png|tiff|*.tif;*.tiff",
+            Title = "选择图片文件",
+            Multiselect = true
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+        finally
+        {
+            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+        }
+        AddDocumentEditor(ImportProject.DocumentEditors);
+    }
+
+    private void SelectNodeImportPdf()
+    {
+        var model = _currentGroup?.Model;
+        if (model == null)
+        {
+            MessageBox.Show(MessageBoxIcon.None, "请选择导入分组", MessageBoxButtons.OK, "", scroll: false);
+            return;
+        }
+        CreateImportIfNotExist();
+        var dialog = new OpenFileDialog
+        {
+            Filter = "PDF|*.pdf",
+            Title = "选择 PDF 文件",
+            Multiselect = false
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+        finally
+        {
+            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+        }
+        AddDocumentEditor(ImportProject.DocumentEditors);
+    }
+
     #endregion
+
+    #region 粘贴到指定位置实现
+
+    private void GetPasteTarget(TreeNodeBase targetNode, out TreeDirectoryNode parentDir, out int insertIndex)
+    {
+        parentDir = null;
+        insertIndex = 0;
+        if (targetNode == null) return;
+
+        if (targetNode is TreeDirectoryNode dirNode)
+        {
+            parentDir = dirNode;
+            insertIndex = dirNode.Children.Count;
+        }
+        else
+        {
+            parentDir = targetNode.Parent;
+            insertIndex = targetNode.Index + 1;
+        }
+    }
+
+    private string GetUniqueName(string name, TreeDirectoryNode parentDir)
+    {
+        string newName = name;
+        int suffix = 1;
+        System.Collections.Generic.IEnumerable<TreeNodeBase> siblings;
+
+        if (parentDir != null)
+            siblings = parentDir.Children;
+        else
+            siblings = _currentGroup.Model.RootNodes;
+
+        while (siblings.Any(n => n.Name == newName))
+        {
+            newName = name + "-副本" + (suffix > 1 ? suffix.ToString() : "");
+            suffix++;
+        }
+
+        return newName;
+    }
+
+    private void CutPasteNonRoot()
+    {
+        try
+        {
+            var targetNode = SelectedNode as TreeNodeBase;
+            var sourceNode = ClipboardManager.Instance.ProjectHierarchyNode;
+            if (targetNode == null || sourceNode == null) return;
+
+            GetPasteTarget(targetNode, out var parentDir, out var insertIndex);
+
+            if (parentDir != null)
+            {
+                sourceNode.MoveTo(parentDir, insertIndex);
+            }
+            else
+            {
+                sourceNode.MoveTo(_currentGroup.Model, insertIndex);
+            }
+
+            Populate();
+            FindAndSelectNode(sourceNode);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteNonRootTable()
+    {
+        try
+        {
+            var targetNode = SelectedNode as TreeNodeBase;
+            var source = ClipboardManager.Instance.ProjectHierarchyNode as TreeTableNode;
+            if (targetNode == null || source == null) return;
+
+            var dup = source.DuplicateTable();
+            if (dup == null) return;
+
+            _dicDupFormula.Clear();
+            _dicDupFormula[source.Id] = dup.Table;
+
+            GetPasteTarget(targetNode, out var parentDir, out var insertIndex);
+            dup.Name = GetUniqueName(dup.Name, parentDir);
+
+            if (parentDir != null)
+            {
+                parentDir.InsertChildNode(dup, insertIndex);
+            }
+            else
+            {
+                _currentGroup.Model.InsertRootNode(dup, insertIndex);
+            }
+
+            Populate();
+            FindAndSelectNode(dup);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteNonRootDocument()
+    {
+        try
+        {
+            var targetNode = SelectedNode as TreeNodeBase;
+            var source = ClipboardManager.Instance.ProjectHierarchyNode as TreeDocumentNode;
+            if (targetNode == null || source == null) return;
+
+            var dup = source.DuplicateDocument();
+            if (dup == null) return;
+
+            Program.MainForm.CurrentProject.ThrowIfMaxExceeded();
+
+            GetPasteTarget(targetNode, out var parentDir, out var insertIndex);
+            dup.Name = GetUniqueName(dup.Name, parentDir);
+
+            if (parentDir != null)
+            {
+                parentDir.InsertChildNode(dup, insertIndex);
+            }
+            else
+            {
+                _currentGroup.Model.InsertRootNode(dup, insertIndex);
+            }
+
+            Populate();
+            FindAndSelectNode(dup);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteNonRootDirectory()
+    {
+        try
+        {
+            var targetNode = SelectedNode as TreeNodeBase;
+            var source = ClipboardManager.Instance.ProjectHierarchyNode as TreeDirectoryNode;
+            if (targetNode == null || source == null) return;
+
+            if (SoftwareLicenseManager.IsProjectHierarchyTreeNodesCountOutOfLimit(() => GetAllFileNodesTotalCount())) return;
+
+            var dup = source.DuplicateDirectory();
+            if (dup == null) return;
+
+            var sb = new System.Text.StringBuilder();
+            DuplicateDirectory(source, dup, null, sb);
+
+            if (sb.Length > 0)
+            {
+                MessageBox.Show(MessageBoxIcon.Error, "以下几个文件从服务器下载数据失败，请重试\r\n" + sb.ToString(), MessageBoxButtons.OK, "", scroll: false);
+            }
+
+            GetPasteTarget(targetNode, out var parentDir, out var insertIndex);
+            dup.Name = GetUniqueName(dup.Name, parentDir);
+
+            if (parentDir != null)
+            {
+                parentDir.InsertChildNode(dup, insertIndex);
+            }
+            else
+            {
+                _currentGroup.Model.InsertRootNode(dup, insertIndex);
+            }
+
+            Populate();
+            FindAndSelectNode(dup);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    private void CopyPasteNonRootImage()
+    {
+        try
+        {
+            var targetNode = SelectedNode as TreeNodeBase;
+            var source = ClipboardManager.Instance.ProjectHierarchyNode as TreeImageNode;
+            if (targetNode == null || source == null) return;
+
+            var dup = source.DuplicateImage();
+            if (dup == null) return;
+
+            GetPasteTarget(targetNode, out var parentDir, out var insertIndex);
+            dup.Name = GetUniqueName(dup.Name, parentDir);
+
+            if (parentDir != null)
+            {
+                parentDir.InsertChildNode(dup, insertIndex);
+            }
+            else
+            {
+                _currentGroup.Model.InsertRootNode(dup, insertIndex);
+            }
+
+            Populate();
+            FindAndSelectNode(dup);
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+
+    #endregion
+
+    private void CreateImportIfNotExist()
+    {
+    }
+
+    private void ImportProject_AfterImportNode(object sender, EventArgs e)
+    {
+    }
+
+    private void AddDocumentEditor(List<DocumentEditor> editors)
+    {
+    }
+
+    private void DuplicateDirectory(TreeDirectoryNode source, TreeDirectoryNode dup, Node node, System.Text.StringBuilder sb)
+    {
+    }
+
+    private void RefreshOpenNode(bool b)
+    {
+    }
+
+    private void SetCutInfo()
+    {
+        var node = SelectedNode as TreeNodeBase;
+        if (node == null) return;
+        _cutCopyMode = CutCopyModeEnum.Cut;
+        CutCopyMode = CutCopyModeEnum.Cut;
+        ClipboardManager.Instance.ProjectHierarchyNode = node;
+    }
+
+    private bool ShowUnableCutDialog(TreeNodeBase node)
+    {
+        return false;
+    }
+
+    private bool ShowUnableCopyDialog(TreeNodeBase node)
+    {
+        return false;
+    }
 
     #endregion
 }
