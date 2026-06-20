@@ -1215,7 +1215,7 @@ public class SoftwareLicenseManager
 		{
 			return false;
 		}
-		ShowOutOfLicenseLimitPromptDialog("无使用【跨项目汇总数据】功能的权限，请联系官方客服升级为" + GetUnlimitLicenseDisplayName() + "用户，再使用该功能！");
+		ShowOutOfLicenseLimitPromptDialog("无使用【合并报表】功能的权限，请联系官方客服升级为" + GetUnlimitLicenseDisplayName() + "用户，再使用该功能！");
 		return true;
 	}
 

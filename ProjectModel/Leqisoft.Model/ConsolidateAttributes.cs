@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using Leqisoft.DTO;
 using Newtonsoft.Json;
 
@@ -14,6 +14,9 @@ public class ConsolidateAttributes
 
 	public Id64 ColumnId { get; set; }
 
+	/// <summary>持股比例（百分比）</summary>
+	public decimal OwnershipRatio { get; set; } = 100m;
+
 	public bool ShouldSerializeProjectId()
 	{
 		return Role == ConsolidateRole.Data;
@@ -25,6 +28,11 @@ public class ConsolidateAttributes
 	}
 
 	public bool ShouldSerializeColumnId()
+	{
+		return Role == ConsolidateRole.Data;
+	}
+
+	public bool ShouldSerializeOwnershipRatio()
 	{
 		return Role == ConsolidateRole.Data;
 	}

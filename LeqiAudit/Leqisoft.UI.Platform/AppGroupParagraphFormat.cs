@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using Leqisoft.UI.Platform.Properties;
 
 namespace Leqisoft.UI.Platform;
@@ -24,6 +24,8 @@ public class AppGroupParagraphFormat : AppCommandGroup
 		base.Commands.Add(new AppCommandSeparator());
 		base.Commands.Add(AppCommands.IndentParagraph);
 		base.Commands.Add(AppCommands.UnindentParagraph);
+		base.Commands.Add(new AppCommandSeparator());
+		base.Commands.Add(AppCommands.AutoNumber);
 	}
 
 	protected override void LauncherButtonClicked()

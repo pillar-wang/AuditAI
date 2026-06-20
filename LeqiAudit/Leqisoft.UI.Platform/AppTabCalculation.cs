@@ -1,4 +1,4 @@
-namespace Leqisoft.UI.Platform;
+﻿namespace Leqisoft.UI.Platform;
 
 public class AppTabCalculation : AppCommandTab
 {
@@ -9,6 +9,7 @@ public class AppTabCalculation : AppCommandTab
 		base.Groups.Add(AppCommandGroups.CalculateTable);
 		base.Groups.Add(AppCommandGroups.ValidateTable);
 		base.Groups.Add(AppCommandGroups.ValidateDocument);
+		base.Groups.Add(AppCommandGroups.DocValidationDomain);
 	}
 
 	public override void OnAppStateChanged(AppState state)

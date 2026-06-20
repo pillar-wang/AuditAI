@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -988,6 +988,25 @@ public class TableEditor : ISetTheme
 		ShowToolTips = false
 	};
 
+	private readonly C1Command cmdCrossProjectDataRef = new C1Command
+	{
+		Text = "跨项目数据引用",
+		Image = Leqisoft.UI.Platform.Properties.Resources.ComboList16
+	};
+
+	private readonly C1CommandLink lnkCrossProjectDataRef = new C1CommandLink();
+
+	private readonly C1Command cmdRefreshCrossProjectRefs = new C1Command
+	{
+		Text = "刷新跨项目引用",
+		Image = Leqisoft.UI.Platform.Properties.Resources.TicketMode
+	};
+
+	private readonly C1CommandLink lnkRefreshCrossProjectRefs = new C1CommandLink();
+
+	private readonly C1CommandLink lnkTB_CrossProjectDataRef = new C1CommandLink();
+	private readonly C1CommandLink lnkTB_RefreshCrossProjectRefs = new C1CommandLink();
+
 
 	private void InitializeContextMenu()
 	{
@@ -1479,6 +1498,18 @@ public class TableEditor : ISetTheme
 		lnkSumHeaderCells.Delimiter = true;
 		lnkSumHeaderCells.Command = cmdSumHeaderCells;
 		ctxHeaderCell.CommandLinks.Add(lnkSumHeaderCells);
+
+		// 跨项目数据引用命令
+		cmdCrossProjectDataRef.Click += CmdCrossProjectDataRef_Click;
+		cmdCrossProjectDataRef.CommandStateQuery += CmdCrossProjectDataRef_CommandStateQuery;
+		lnkCrossProjectDataRef.Command = cmdCrossProjectDataRef;
+		lnkCrossProjectDataRef.Delimiter = true;
+		ctxCell.CommandLinks.Add(lnkCrossProjectDataRef);
+		// 刷新跨项目引用命令
+		cmdRefreshCrossProjectRefs.Click += CmdRefreshCrossProjectRefs_Click;
+		cmdRefreshCrossProjectRefs.CommandStateQuery += CmdRefreshCrossProjectRefs_CommandStateQuery;
+		lnkRefreshCrossProjectRefs.Command = cmdRefreshCrossProjectRefs;
+		ctxCell.CommandLinks.Add(lnkRefreshCrossProjectRefs);
 	}
 
 	private void CmdForbiddenManualInputValue_Click(object sender, ClickEventArgs e)
@@ -7311,7 +7342,7 @@ public class TableEditor : ISetTheme
 	}
 
 	/// <summary>
-	/// 刷新跨项目汇总数据
+	/// 刷新合并报表数据
 	/// 重新从来源项目读取最新数据并更新当前表
 	/// </summary>
 	public async Task RefreshConsolidate()
@@ -7322,11 +7353,11 @@ public class TableEditor : ISetTheme
 		}
 		if (Table == null || Table.ConsolidateSettings == null || Table.ConsolidateSettings.Sources.Count == 0)
 		{
-			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前表没有配置跨项目汇总数据");
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前表没有配置合并报表数据");
 			return;
 		}
 		await ExecuteConsolidate(showDataCols: true);
-		Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "跨项目数据已刷新");
+		Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并报表数据已刷新");
 	}
 
 	public void Subtotal()
@@ -13028,6 +13059,12 @@ public class TableEditor : ISetTheme
 		cmdHideToolbar.Image = Leqisoft.UI.Platform.Properties.Resources.HideSideToolbar;
 		cmdHideToolbar.CommandStateQuery += CmdHideToolbar_CommandStateQuery;
 		cmdHideToolbar.Click += CmdHideToolbar_Click;
+		// 跨项目数据引用工具栏按钮
+		lnkTB_CrossProjectDataRef.Delimiter = true;
+		lnkTB_CrossProjectDataRef.Command = cmdCrossProjectDataRef;
+		ToolBar.CommandLinks.Add(lnkTB_CrossProjectDataRef);
+		lnkTB_RefreshCrossProjectRefs.Command = cmdRefreshCrossProjectRefs;
+		ToolBar.CommandLinks.Add(lnkTB_RefreshCrossProjectRefs);
 		foreach (C1CommandLink commandLink in ToolBar.CommandLinks)
 		{
 			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
@@ -13694,7 +13731,7 @@ public class TableEditor : ISetTheme
 				Leqisoft.Model.Column byId = s.Table.Columns.GetById(item);
 				if (byId == null)
 				{
-					Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "分组列不存在，可能是列已在云端删除，请重新设置");
+					Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并维度不存在，可能是列已在云端删除，请重新设置");
 					return false;
 				}
 				s.GroupSrc.Add(byId);
@@ -13717,7 +13754,7 @@ public class TableEditor : ISetTheme
 			Leqisoft.Model.Column byId3 = Table.Columns.GetById(item3);
 			if (byId3 == null)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标分组列不存在");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标合并维度不存在");
 				return false;
 			}
 			Table.ConsolidateSettings.GroupDest.Add(byId3);
@@ -13728,7 +13765,7 @@ public class TableEditor : ISetTheme
 			Leqisoft.Model.Column byId4 = Table.Columns.GetById(item4);
 			if (byId4 == null)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标汇总列不存在");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标合并金额不存在");
 				return false;
 			}
 			Table.ConsolidateSettings.AggregateDest.Add(byId4);
@@ -13908,7 +13945,7 @@ public class TableEditor : ISetTheme
 			return;
 		}
 
-		List<ConsolidateEntry> list3 = Table.ConsolidateSettings.Sources.Where((ConsolidateEntry s) => s.Selected).ToList();
+		List<ConsolidateEntry> list3 = Table.ConsolidateSettings.Sources.Where((ConsolidateEntry s) => s.Selected).OrderBy((ConsolidateEntry s) => s.Level).ToList();
 		for (int num = Table.Columns.Count - 1; num >= 0; num--)
 		{
 			Leqisoft.Model.Column column = Table.Columns[num];
@@ -13930,12 +13967,18 @@ public class TableEditor : ISetTheme
 					}
 					break;
 				case ConsolidateRole.Aggregate:
-					if (!Table.ConsolidateSettings.AggregateDest.Contains(column))
-					{
-						column.UpdateConsolidateAttribs(null);
-					}
-					break;
+				if (!Table.ConsolidateSettings.AggregateDest.Contains(column))
+				{
+					column.UpdateConsolidateAttribs(null);
 				}
+				break;
+			case ConsolidateRole.Intercompany:
+				if (!list3.Any((ConsolidateEntry src) => src.ProjectId == ca.ProjectId && src.TableId == ca.TableId && src.IntercompanyCols.Any((Id64 ds) => ds == ca.ColumnId)))
+				{
+					column.UpdateConsolidateAttribs(null);
+				}
+				break;
+			}
 			}
 		}
 		List<string> list4 = Table.ConsolidateSettings.AggregateDest.Select((Leqisoft.Model.Column c) => c.CaptionDisplay).ToList();
@@ -14002,15 +14045,18 @@ public class TableEditor : ISetTheme
 			}
 		}
 		int count3 = list3.Count;
-		List<Dictionary<List<object>, List<object>>> list6 = list3.Select((ConsolidateEntry src) => src.Table.Rows.Where((Leqisoft.Model.Row r) => r.Role == RowRole.Normal).GroupBy((Leqisoft.Model.Row row1) => (from c in row1.GetCells()
-			where src.GroupSrc.Contains(c.Column)
-			select c.Value).ToList(), (Leqisoft.Model.Row row1) => (from c in row1.GetCells()
-			where src.DataSrc.Contains(c.Column)
-			select c.Value).ToList(), (List<object> key, IEnumerable<List<object>> rows) => new
-		{
-			key = key,
-			data = rows.Aggregate((List<object> list1, List<object> list2) => ((IEnumerable<object>)list1).Zip((IEnumerable<object>)list2, (Func<object, object, object>)((object first, object second) => Leqisoft.Model.Cell.ToDoubleOr0(first) + Leqisoft.Model.Cell.ToDoubleOr0(second))).ToList())
-		}, SequenceEqualsComparer<List<object>, object>.Instance).ToDictionary(tup => tup.key, tup => tup.data, SequenceEqualsComparer<List<object>, object>.Instance)).ToList();
+		List<Dictionary<List<object>, List<object>>> list6 = list3.Select((ConsolidateEntry src) => {
+			var icSet = new HashSet<int>(src.DataSrc.Select((Leqisoft.Model.Column col, int idx) => new { col, idx }).Where(x => src.IntercompanyCols.Contains(x.col.Id)).Select(x => x.idx));
+			return src.Table.Rows.Where((Leqisoft.Model.Row r) => r.Role == RowRole.Normal).GroupBy((Leqisoft.Model.Row row1) => (from c in row1.GetCells()
+				where src.GroupSrc.Contains(c.Column)
+				select c.Value).ToList(), (Leqisoft.Model.Row row1) => (from c in row1.GetCells()
+				where src.DataSrc.Contains(c.Column)
+				select c.Value).ToList(), (List<object> key, IEnumerable<List<object>> rows) => new
+			{
+				key = key,
+				data = rows.Aggregate((List<object> list1, List<object> list2) => Enumerable.Range(0, Math.Min(list1.Count, list2.Count)).Select((int i) => icSet.Contains(i) ? (object)0.0 : (object)(Leqisoft.Model.Cell.ToDoubleOr0(list1[i]) + Leqisoft.Model.Cell.ToDoubleOr0(list2[i]))).ToList())
+			}, SequenceEqualsComparer<List<object>, object>.Instance).ToDictionary(tup => tup.key, tup => tup.data, SequenceEqualsComparer<List<object>, object>.Instance);
+		}).ToList();
 		List<IGrouping<List<object>, List<object>>> keys = list6.SelectMany((Dictionary<List<object>, List<object>> d) => d.Keys).GroupBy((List<object> k) => k, SequenceEqualsComparer<List<object>, object>.Instance).ToList();
 		List<Tuple<Leqisoft.Model.Row, List<object>>> list7 = (from r in Table.Rows
 			where r.Role == RowRole.Normal || r.Role == RowRole.Among || r.Role == RowRole.Minus
@@ -14050,6 +14096,20 @@ public class TableEditor : ISetTheme
 		{
 			Table.Rows.Insert(num2, count4 - Table.Rows.Count);
 		}
+		int minorityStartRow = num2;
+		int minorityCount = 0;
+		for (int miSrc = 0; miSrc < count3; miSrc++)
+		{
+			if (list3[miSrc].OwnershipRatio < 100m)
+			{
+				for (int miKey = 0; miKey < keys.Count; miKey++)
+				{
+					Table.Rows.Insert(num2, 1);
+					num2++;
+					minorityCount++;
+				}
+			}
+		}
 		BeginBatchUpdateValue();
 		for (int num3 = 0; num3 < keys.Count; num3++)
 		{
@@ -14074,16 +14134,39 @@ public class TableEditor : ISetTheme
 				{
 					if (list6[num9].TryGetValue(keys[num3].Key, out var value2))
 					{
-						num8 += Leqisoft.Model.Cell.ToDoubleOr0(value2[num7]);
+						num8 += Leqisoft.Model.Cell.ToDoubleOr0(value2[num7]) * (double)(list3[num9].OwnershipRatio / 100m);
 					}
 				}
 				Table[index2, Table.ConsolidateSettings.AggregateDest[num7].Index].UpdateValue(num8);
+			}
+			int miOffset = 0;
+			for (int miSrc = 0; miSrc < count3; miSrc++)
+			{
+				if (list3[miSrc].OwnershipRatio >= 100m)
+					continue;
+				double minorityRatio = 1.0 - (double)(list3[miSrc].OwnershipRatio / 100m);
+				List<object> srcData;
+				bool hasData = list6[miSrc].TryGetValue(keys[num3].Key, out srcData);
+				int miRowIdx = minorityStartRow + miOffset + num3;
+				if (miRowIdx < Table.Rows.Count)
+				{
+					for (int g = 0; g < count2; g++)
+					{
+						Table[miRowIdx, Table.ConsolidateSettings.GroupDest[g].Index].UpdateValue(g == 0 ? "少数股东权益" : string.Empty);
+					}
+					for (int col = 0; col < count; col++)
+					{
+						double val = hasData ? Leqisoft.Model.Cell.ToDoubleOr0(srcData[col]) * minorityRatio : 0.0;
+						Table[miRowIdx, Table.ConsolidateSettings.AggregateDest[col].Index].UpdateValue(val);
+					}
+				}
+				miOffset += keys.Count;
 			}
 		}
 		EndBatchUpdateValue();
 		foreach (Leqisoft.Model.Column item in list5)
 		{
-			item.UpdateVisible(showDataCols);
+			item.UpdateVisible(showDataCols && Table.ConsolidateSettings.ShowDetail);
 		}
 		PopulateColumns();
 		PopulateRows();
@@ -14159,10 +14242,15 @@ public class TableEditor : ISetTheme
 
 				for (int j = 0; j < aggregateDest.Count && j < source.DataSrc.Count; j++)
 				{
+					if (source.IntercompanyCols.Contains(source.DataSrcId[j])) continue;
 					var srcCol = source.Table.Columns.FirstOrDefault(c => c.Id == source.DataSrcId[j]);
 					if (srcCol != null)
 					{
 						var cellValue = sourceRow.GetCells().FirstOrDefault(c => c.Column == srcCol)?.Value;
+						if (source.OwnershipRatio < 100m)
+						{
+							cellValue = Leqisoft.Model.Cell.ToDoubleOr0(cellValue) * (double)(source.OwnershipRatio / 100m);
+						}
 						Table[newRow.Index, aggregateDest[j].Index].UpdateValue(cellValue ?? string.Empty);
 					}
 				}
@@ -14171,6 +14259,16 @@ public class TableEditor : ISetTheme
 
 		PopulateColumns();
 		PopulateRows();
+		if (Table.ConsolidateSettings != null)
+		{
+			foreach (Leqisoft.Model.Column col in Table.Columns)
+			{
+				if (col.ConsolidateAttributes != null && col.ConsolidateAttributes.Role == ConsolidateRole.Data)
+				{
+					col.UpdateVisible(showDataCols && Table.ConsolidateSettings.ShowDetail);
+				}
+			}
+		}
 	}
 
 	private void ShowCommentTooltip()
@@ -15122,4 +15220,53 @@ public class TableEditor : ISetTheme
 			}
 		}
 	}
+
+	#region 跨项目数据引用
+
+	private void CmdCrossProjectDataRef_Click(object sender, ClickEventArgs e)
+	{
+		try
+		{
+			if (Leqisoft.Model.Project.Current == null || Table == null) return;
+			using var frm = new frmCrossProjectDataRef(Leqisoft.Model.Project.Current, Table.Id);
+			frm.ShowDialog();
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
+	}
+
+	private void CmdCrossProjectDataRef_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+	{
+		e.Checked = false;
+		e.Enabled = Leqisoft.Model.Project.Current != null && Table != null;
+	}
+
+	private async void CmdRefreshCrossProjectRefs_Click(object sender, ClickEventArgs e)
+	{
+		try
+		{
+			if (Leqisoft.Model.Project.Current == null || Table == null) return;
+			var manager = new CrossProjectDataRefManager(Leqisoft.Model.Project.Current);
+			var results = await manager.ExecuteAll(Table.Id);
+			int success = results.Count(r => r.Success);
+			int failed = results.Count(r => !r.Success);
+			Leqisoft.UI.Controls.MessageBox.Show(
+				MessageBoxIcon.None,
+				$"刷新完成：成功 {success} 个，失败 {failed} 个");
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
+	}
+
+	private void CmdRefreshCrossProjectRefs_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+	{
+		e.Checked = false;
+		e.Enabled = Leqisoft.Model.Project.Current != null && Table != null;
+	}
+
+	#endregion
 }

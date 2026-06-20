@@ -1,4 +1,4 @@
-﻿﻿namespace Leqisoft.UI.Platform;
+﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommands
 {
@@ -433,6 +433,9 @@ public static class AppCommands
 	public static AppCommandAuxEdit AuxEdit { get; } = new AppCommandAuxEdit();
 
 
+	public static AppCommandAutoNumber AutoNumber { get; } = new AppCommandAutoNumber();
+
+
 	public static AppCommandEditComment EditComment { get; } = new AppCommandEditComment();
 
 
@@ -659,6 +662,15 @@ public static class AppCommands
 
 
 	public static AppCommandDocNextError DocNextError { get; } = new AppCommandDocNextError();
+
+
+	public static AppCommandAddValidationPoint AddValidationPoint { get; } = new AppCommandAddValidationPoint();
+
+
+	public static AppCommandRemoveValidationPoint RemoveValidationPoint { get; } = new AppCommandRemoveValidationPoint();
+
+
+	public static AppCommandDocValidationMgmt DocValidationMgmt { get; } = new AppCommandDocValidationMgmt();
 
 
 	public static AppCommandPaperA4 PaperA4 { get; } = new AppCommandPaperA4();

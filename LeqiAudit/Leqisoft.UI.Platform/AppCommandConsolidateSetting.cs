@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Leqisoft.UI.Controls.Properties;
@@ -8,7 +8,7 @@ namespace Leqisoft.UI.Platform;
 
 public class AppCommandConsolidateSetting : AppCommandButton
 {
-	public override string Text => "跨项目汇总数据设置";
+	public override string Text => "合并报表设置";
 
 	public override Image LargeIcon => Leqisoft.UI.Platform.Properties.Resources.ConsolidateSettings;
 

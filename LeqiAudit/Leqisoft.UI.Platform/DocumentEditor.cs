@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -57,6 +57,8 @@ public class DocumentEditor : UserControl
 	private readonly C1CommandLink lnkRefreshAllFields = new C1CommandLink();
 	private readonly C1Command cmdValidate = new C1Command();
 	private readonly C1CommandLink lnkValidate = new C1CommandLink();
+	private readonly C1Command cmdValidationMgmt = new C1Command();
+	private readonly C1CommandLink lnkValidationMgmt = new C1CommandLink();
 	private readonly C1Command cmdLock = new C1Command();
 	private readonly C1CommandLink lnkLock = new C1CommandLink();
 	private readonly C1Command cmdRefTable = new C1Command();
@@ -70,11 +72,9 @@ public class DocumentEditor : UserControl
 	private readonly C1Command cmdImportTable = new C1Command();
 	private readonly C1Command cmdGenerateConfirmation = new C1Command();
 
-	private TXTextControl.ParagraphFormat _formatPainterFormat;
-	private string _formatPainterFont;
-	private int _formatPainterSize;
-	private bool _formatPainterBold;
-	private bool _formatPainterItalic;
+	private readonly Cursor _curFormatPainter = new Cursor(new MemoryStream(Resources.cursordoc));
+	private FormatPainterContext _formatPainterContext;
+	public bool IsFormatPainting;
 
 	public TextControl Tx => _textControl;
 	public dynamic Document { get; set; }
@@ -215,6 +215,17 @@ public class DocumentEditor : UserControl
 		lnkValidate.Command = cmdValidate;
 		lnkValidate.Delimiter = true;
 		_toolbar.CommandLinks.Add(lnkValidate);
+
+		// 校验域管理
+		cmdValidationMgmt.Image = Resources.ValidationSettings;
+		cmdValidationMgmt.CommandStateQuery += (s, e) => cmdValidationMgmt.Text = "校验域管理";
+		cmdValidationMgmt.Click += (s, e) =>
+		{
+			using (var dlg = new frmDocValidationMgmt(this))
+				dlg.ShowDialog();
+		};
+		lnkValidationMgmt.Command = cmdValidationMgmt;
+		_toolbar.CommandLinks.Add(lnkValidationMgmt);
 
 		// 导出文档
 		cmdExportDoc.Image = Resources.DocWholeRefresh;
@@ -1301,10 +1312,13 @@ public class DocumentEditor : UserControl
 		var table = _textControl.Tables.GetItem();
 		if (table != null && table.CanMergeCells) table.MergeCells();
 	}
-	public void UnmergeCells(params object[] args)
+	public void UnmergeCells()
 	{
-		var table = _textControl.Tables.GetItem();
-		if (table != null) table.SplitCells();
+		if (IsDocumentLocked())
+		{
+			return;
+		}
+		GetCurrentTable()?.SplitCells();
 	}
 	public void ImportTable()
 	{
@@ -1725,14 +1739,15 @@ public class DocumentEditor : UserControl
 
 	private void SetColumnWidth(TXTextControl.Table txTable, Leqisoft.Model.Table modelTable)
 	{
-		var section = _tx.Sections.GetItem();
-		if (section == null) return;
 		int totalWidth = PixelToTwip(modelTable.Columns.WhereVisible.Sum(c => c.Width));
-		double pageWidth = section.Format.PageSize.Width - section.Format.PageMargins.Left - section.Format.PageMargins.Right;
-		double ratio = pageWidth / totalWidth;
+		int actualWidth = 0;
+		foreach (TXTextControl.TableColumn col in txTable.Columns)
+			actualWidth += col.Width;
+		double ratio = (double)actualWidth / totalWidth;
 		foreach (TXTextControl.TableColumn col in txTable.Columns)
 		{
 			var modelCol = modelTable.Columns.GetVisibleColumnAt(col.Column - 1);
+			if (modelCol == null) continue;
 			int newWidth = (int)(PixelToTwip(modelCol.Width) * ratio);
 			if (col.Width != newWidth)
 				col.Width = newWidth;
@@ -1756,13 +1771,11 @@ public class DocumentEditor : UserControl
 	}
 
 	private void SetDefaultStyleWithFormat(TXTextControl.Table txTable, Leqisoft.Model.CellStyle style)
-	{
-		if (style == null) return;
-		txTable.Select();
-		if (_tx.Selection.ListFormat.Type != TXTextControl.ListType.Numbered)
-			_tx.Selection.ListFormat.Type = TXTextControl.ListType.Numbered;
-		SetSelectionStyleWithFormat(style);
-	}
+{
+	if (style == null) return;
+	txTable.Select();
+	SetSelectionStyleWithFormat(style);
+}
 
 	private void SetColumnStyleWithFormat(TXTextControl.Table txTable, Leqisoft.Model.Table modelTable)
 	{
@@ -1933,8 +1946,7 @@ public class DocumentEditor : UserControl
 			string oldText = firstCell?.Text;
 
 			table.Select(r1, c1, r2, c2);
-			if (table.CanMergeCells)
-				table.MergeCells();
+			table.MergeCells();
 
 			// 合并后如果第一个单元格的文本改变了，恢复原文本
 			if (firstCell != null && firstCell.Text != oldText)
@@ -3324,13 +3336,11 @@ public class DocumentEditor : UserControl
 			// === 调整行数 ===
 			int totalModelRows = refTable.Rows.Count + getCaptionRows(refTable);
 			int currentRows = txTable.Rows.Count;
-			bool rowsChanged = false;
 
 			if (currentRows > totalModelRows)
 			{
 				int rowsToRemove = currentRows - totalModelRows;
 				RemoveRows(txTable, Enumerable.Range(totalModelRows + 1, rowsToRemove));
-				rowsChanged = true;
 			}
 			else if (currentRows < totalModelRows)
 			{
@@ -3342,19 +3352,16 @@ public class DocumentEditor : UserControl
 					_tx.Select(_tx.Selection.Start, 0);
 				}
 				txTable.Rows.Add(TableAddPosition.After, rowsToAdd);
-				rowsChanged = true;
 			}
 
 			// === 调整列数 ===
 			int visibleCols = refTable.Columns.VisibleCount;
 			int currentCols = txTable.Columns.Count;
-			bool colsChanged = false;
 
 			if (currentCols > visibleCols)
 			{
 				int colsToRemove = currentCols - visibleCols;
 				RemoveColumns(txTable, Enumerable.Range(visibleCols + 1, colsToRemove));
-				colsChanged = true;
 			}
 			else if (currentCols < visibleCols)
 			{
@@ -3367,18 +3374,15 @@ public class DocumentEditor : UserControl
 				}
 				for (int i = 0; i < colsToAdd; i++)
 					InsertCol(txTable, TableAddPosition.After);
-				colsChanged = true;
 			}
 
-			// 先拆分合并的单元格，为后续重新合并做准备（原始顺序：先增删行列，再拆分单元格）
+			// 拆分合并的单元格（原始顺序：先增删行列，再拆分单元格）
 			txTable.Select();
 			txTable.SplitCells();
 
-			// 重新设置列宽和行高（仅当行列数变化时）
-			if (colsChanged)
-				SetColumnWidth(txTable, refTable);
-			if (rowsChanged)
-				SetRowHeight(txTable, refTable);
+			// 设置列宽和行高（在 MergeCells 之前，与原始二进制保持一致）
+			SetColumnWidth(txTable, refTable);
+			SetRowHeight(txTable, refTable);
 
 			// 填充内容（使用不带格式的版本保留原有字体等格式）
 			SetCaptionStyleWithoutFormat(txTable, refTable);
@@ -3670,17 +3674,48 @@ public class DocumentEditor : UserControl
 			_tx.Selection.Underline = (TXTextControl.FontUnderlineStyle)20992;
 	}
 
-	public void BeginFormatPainter(params object[] args)
+	public void BeginFormatPainter()
 	{
-		_formatPainterFormat = _textControl.Selection.ParagraphFormat;
-		_formatPainterFont = _textControl.Selection.FontName;
-		_formatPainterSize = _textControl.Selection.FontSize;
-		_formatPainterBold = _textControl.Selection.Bold;
-		_formatPainterItalic = _textControl.Selection.Italic;
+		if (IsDocumentLocked() || IsFormatPainting)
+		{
+			return;
+		}
+		AppCommands.FormatBrush.IsPressed = true;
+		_textControl.Cursor = _curFormatPainter;
+		_textControl.MouseUp += Tx_MouseUp_FormatPainter;
+		_textControl.KeyDown += Tx_KeyDown_FormatPainter;
+		_formatPainterContext = FormatPainterContext.FromSelection(_textControl.Selection);
+		IsFormatPainting = true;
+		AppCommands.Information.ShowInformation("状态提示", "当前处于格式刷状态，按Esc键可退出格式刷状态。");
+		Program.MainForm.SwitchStateTo(MainFormView.DocFormatBrush);
 	}
-	public void EndFormatPainter(params object[] args)
+	public void EndFormatPainter()
 	{
-		_formatPainterFormat = null;
+		if (!IsFormatPainting)
+		{
+			return;
+		}
+		_textControl.Cursor = Cursors.IBeam;
+		_textControl.MouseUp -= Tx_MouseUp_FormatPainter;
+		_textControl.KeyDown -= Tx_KeyDown_FormatPainter;
+		AppCommands.FormatBrush.IsPressed = false;
+		IsFormatPainting = false;
+		AppCommands.Information.HideInformation();
+		Program.MainForm.SwitchStateTo(MainFormView.Document);
+	}
+
+	private void Tx_MouseUp_FormatPainter(object sender, MouseEventArgs e)
+	{
+		_formatPainterContext?.Apply(_textControl.Selection);
+		OnFormatChanged();
+	}
+
+	private void Tx_KeyDown_FormatPainter(object sender, KeyEventArgs e)
+	{
+		if (e.KeyCode == Keys.Escape)
+		{
+			EndFormatPainter();
+		}
 	}
 
 	/// <summary>
@@ -4000,19 +4035,20 @@ public class DocumentEditor : UserControl
 				TXTextControl.Table[] tables = new TXTextControl.Table[count];
 				_textControl.Tables.CopyTo(tables, 0);
 
-				foreach (var txTable in tables)
+				// 过滤出有书签引用的表格
+				var refTables = tables.Where(txTable =>
 				{
-					try
-					{
-						if (txTable == null || txTable.Cells.Count == 0) continue;
-						// 仅刷新有书签引用的表格，避免对普通表格造成破坏
-						if (GetRefTable(txTable, out var bookmark, out var refTable) && refTable != null)
-						{
-							RefreshModelTableWithFormatImpl(txTable);
-						}
-					}
-					catch (Exception ex) { ex.Log("DocumentEditor.RefreshAllTables[iter]"); }
-				}
+					if (txTable == null || txTable.Cells.Count == 0) return false;
+					return GetRefTable(txTable, out _, out var refTable) && refTable != null;
+				}).ToList();
+
+				if (refTables.Count == 0) return;
+
+				Leqisoft.UI.Controls.Util.ProcessItemsWithProgress(
+					_textControl,
+					refTables,
+					"正在刷新表格",
+					(txTable, i, total) => RefreshModelTableWithFormatImpl(txTable));
 			}
 			finally
 			{
@@ -4122,11 +4158,53 @@ public class DocumentEditor : UserControl
 
 			try
 			{
-				// 1. 全表刷新（带格式，从源数据重新加载）
-				RefreshAllTablesInternal();
+				new ProgressForm<object>(async delegate(IProgress<Leqisoft.DTO.ProgressInfo> iProg)
+				{
+					// Step 1: 全表刷新
+					int count = _textControl.Tables.Count;
+					TXTextControl.Table[] tables = new TXTextControl.Table[count];
+					_textControl.Tables.CopyTo(tables, 0);
 
-				// 2. 全域刷新（公式域重新计算）
-				RefreshAllFieldsInternal();
+					var refTables = tables.Where(txTable =>
+					{
+						if (txTable == null || txTable.Cells.Count == 0) return false;
+						return GetRefTable(txTable, out _, out var refTable) && refTable != null;
+					}).ToList();
+
+					int total = refTables.Count;
+					for (int i = 0; i < total; i++)
+					{
+						iProg.Report(new Leqisoft.DTO.ProgressInfo
+						{
+							MainCaption = $"正在刷新表格 ({i + 1}/{total})...",
+							MainProgress = (int)((double)i / total * 80.0)
+						});
+
+						int idx = i;
+						_textControl.Invoke(new Action(() =>
+						{
+							RefreshModelTableWithFormatImpl(refTables[idx]);
+						}));
+
+						await Task.Delay(1);
+					}
+
+					// Step 2: 全域刷新（公式域）
+					iProg.Report(new Leqisoft.DTO.ProgressInfo
+					{
+						MainCaption = "正在计算公式域...",
+						MainProgress = 80
+					});
+
+					_textControl.Invoke(new Action(RefreshAllFieldsInternal));
+
+					iProg.Report(new Leqisoft.DTO.ProgressInfo
+					{
+						MainCaption = "全文刷新完成",
+						MainProgress = 100
+					});
+					return (object)null;
+				}).ShowDialog();
 			}
 			finally
 			{
@@ -5342,7 +5420,7 @@ public class DocumentEditor : UserControl
 		return _textControl?.Tables?.GetItem();
 	}
 
-	private TXTextControl.ApplicationField GetCurrentApplicationField()
+	internal TXTextControl.ApplicationField GetCurrentApplicationField()
 	{
 		try
 		{

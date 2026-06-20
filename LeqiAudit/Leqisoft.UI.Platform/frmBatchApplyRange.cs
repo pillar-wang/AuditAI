@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using C1.Win.C1FlexGrid;
 using Leqisoft.Model;
 
 namespace Leqisoft.UI.Platform;
@@ -9,6 +10,7 @@ namespace Leqisoft.UI.Platform;
 /// <summary>
 /// 批量应用表格样式对话框
 /// 提供"选择范围→选择样式→确认应用"三步流程
+/// 显示文档结构树，通过"设为起始"/"设为结束"两个控件点击树节点选择范围
 /// </summary>
 public class frmBatchApplyRange : Form
 {
@@ -17,8 +19,6 @@ public class frmBatchApplyRange : Form
 
 	// UI 控件
 	private Label _lblStep;
-	private Label _lblInstruction;
-	private Button _btnSelectRange;
 	private Button _btnConfigStyle;
 	private Button _btnApply;
 	private Button _btnCancel;
@@ -27,9 +27,20 @@ public class frmBatchApplyRange : Form
 	private ProgressBar _progressBar;
 	private Label _lblProgress;
 
+	// 范围选择控件（两个）
+	private RadioButton _rbSetStart;
+	private RadioButton _rbSetEnd;
+
+	// 树形结构图
+	private C1FlexGrid _treeGrid;
+	private Button _btnExpandAll;
+	private Button _btnCollapseAll;
+
 	// 状态
 	private int _startPos = -1;
 	private int _endPos = -1;
+	private object _rangeStartKey;
+	private object _rangeEndKey;
 	private TableBorderStyle _selectedStyle;
 	private int _tableCountInRange;
 
@@ -39,12 +50,13 @@ public class frmBatchApplyRange : Form
 		_docEditor = docEditor;
 		_selectedStyle = TableBorderStyles.CreateCustom();
 		InitializeComponents();
+		PopulateTree();
 	}
 
 	private void InitializeComponents()
 	{
 		this.Text = "批量应用表格样式";
-		this.Size = new Size(500, 450);
+		this.Size = new Size(620, 680);
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.FormBorderStyle = FormBorderStyle.FixedDialog;
 		this.MaximizeBox = false;
@@ -57,60 +69,106 @@ public class frmBatchApplyRange : Form
 		{
 			Text = "批量应用表格样式向导",
 			Location = new Point(15, y),
-			Size = new Size(460, 25),
+			Size = new Size(580, 25),
 			Font = new Font("微软雅黑", 12, FontStyle.Bold)
 		};
 		y += 35;
 
-		// 步骤1: 选择范围
+		// 步骤1: 选择范围——树形结构 + 两个控件设置起止
 		var grpRange = new GroupBox
 		{
-			Text = "步骤1: 选择应用范围",
+			Text = "步骤1: 选择应用范围（在树中点击节点设置起始和结束位置）",
 			Location = new Point(15, y),
-			Size = new Size(460, 100)
+			Size = new Size(580, 420)
 		};
 
-		_lblInstruction = new Label
+		// 两个 RangeButton 控件：设为起始 / 设为结束（互斥）
+		_rbSetStart = new RadioButton
 		{
-			Text = "点击下方按钮，然后在文档结构树中点击起始和结束位置",
+			Text = "设为起始",
 			Location = new Point(10, 20),
-			Size = new Size(440, 30),
-			ForeColor = Color.Gray
+			Size = new Size(110, 22),
+			Checked = true,
+			BackColor = Color.FromArgb(230, 240, 255),
+			FlatStyle = FlatStyle.Standard,
+			Font = new Font("微软雅黑", 9, FontStyle.Bold)
 		};
-		grpRange.Controls.Add(_lblInstruction);
+		grpRange.Controls.Add(_rbSetStart);
 
-		_btnSelectRange = new Button
+		_rbSetEnd = new RadioButton
 		{
-			Text = "选择范围",
-			Location = new Point(10, 55),
-			Size = new Size(100, 30)
+			Text = "设为结束",
+			Location = new Point(130, 20),
+			Size = new Size(110, 22),
+			BackColor = Color.FromArgb(255, 235, 235),
+			FlatStyle = FlatStyle.Standard,
+			Font = new Font("微软雅黑", 9, FontStyle.Bold)
 		};
-		_btnSelectRange.Click += BtnSelectRange_Click;
-		grpRange.Controls.Add(_btnSelectRange);
+		grpRange.Controls.Add(_rbSetEnd);
 
+		// 展开/收缩按钮
+		_btnExpandAll = new Button
+		{
+			Text = "全部展开",
+			Location = new Point(260, 18),
+			Size = new Size(80, 25)
+		};
+		_btnExpandAll.Click += (s, e) => _treeGrid.Tree.Show(_treeGrid.Tree.MaximumLevel);
+		grpRange.Controls.Add(_btnExpandAll);
+
+		_btnCollapseAll = new Button
+		{
+			Text = "全部收缩",
+			Location = new Point(345, 18),
+			Size = new Size(80, 25)
+		};
+		_btnCollapseAll.Click += (s, e) => _treeGrid.Tree.Show(0);
+		grpRange.Controls.Add(_btnCollapseAll);
+
+		// 树形结构图
+		_treeGrid = new C1FlexGrid
+		{
+			Location = new Point(10, 50),
+			Size = new Size(555, 310),
+			Rows = { Fixed = 0, DefaultSize = 26 },
+			Cols = { Fixed = 0, Count = 1 },
+			ExtendLastCol = true,
+			AllowEditing = false,
+			SelectionMode = SelectionModeEnum.Row,
+			BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.FixedSingle,
+			FocusRect = FocusRectEnum.None,
+			Tree = { Column = 0, Style = TreeStyleFlags.Symbols }
+		};
+		_treeGrid.Cols[0].TextAlign = TextAlignEnum.LeftCenter;
+		_treeGrid.MouseClick += TreeGrid_MouseClick;
+		_treeGrid.OwnerDrawCell += TreeGrid_OwnerDrawCell;
+		grpRange.Controls.Add(_treeGrid);
+
+		// 范围信息
 		_txtRangeInfo = new TextBox
 		{
-			Location = new Point(120, 58),
-			Size = new Size(330, 25),
+			Location = new Point(10, 370),
+			Size = new Size(555, 25),
 			ReadOnly = true
 		};
-		SetPlaceholder(_txtRangeInfo, "未选择范围");
+		_txtRangeInfo.Text = "提示：先点击「设为起始」或「设为结束」，再点击树中节点";
+		_txtRangeInfo.ForeColor = Color.Gray;
 		grpRange.Controls.Add(_txtRangeInfo);
 
-		y += 110;
+		y += 430;
 
 		// 步骤2: 选择样式
 		var grpStyle = new GroupBox
 		{
 			Text = "步骤2: 配置表格样式",
 			Location = new Point(15, y),
-			Size = new Size(460, 80)
+			Size = new Size(580, 70)
 		};
 
 		_btnConfigStyle = new Button
 		{
 			Text = "配置样式",
-			Location = new Point(10, 30),
+			Location = new Point(10, 25),
 			Size = new Size(100, 30)
 		};
 		_btnConfigStyle.Click += BtnConfigStyle_Click;
@@ -118,21 +176,22 @@ public class frmBatchApplyRange : Form
 
 		_txtStyleInfo = new TextBox
 		{
-			Location = new Point(120, 33),
-			Size = new Size(330, 25),
+			Location = new Point(120, 28),
+			Size = new Size(440, 25),
 			ReadOnly = true
 		};
-		SetPlaceholder(_txtStyleInfo, "使用默认自定义样式");
+		_txtStyleInfo.Text = "使用默认自定义样式";
+		_txtStyleInfo.ForeColor = Color.Gray;
 		grpStyle.Controls.Add(_txtStyleInfo);
 
-		y += 90;
+		y += 80;
 
 		// 步骤3: 应用
 		var grpApply = new GroupBox
 		{
 			Text = "步骤3: 应用",
 			Location = new Point(15, y),
-			Size = new Size(460, 80)
+			Size = new Size(580, 80)
 		};
 
 		_btnApply = new Button
@@ -148,16 +207,16 @@ public class frmBatchApplyRange : Form
 		_lblProgress = new Label
 		{
 			Text = "",
-			Location = new Point(120, 35),
-			Size = new Size(330, 25),
+			Location = new Point(120, 20),
+			Size = new Size(440, 20),
 			ForeColor = Color.Gray
 		};
 		grpApply.Controls.Add(_lblProgress);
 
 		_progressBar = new ProgressBar
 		{
-			Location = new Point(120, 55),
-			Size = new Size(330, 20),
+			Location = new Point(120, 45),
+			Size = new Size(440, 20),
 			Visible = false
 		};
 		grpApply.Controls.Add(_progressBar);
@@ -168,66 +227,158 @@ public class frmBatchApplyRange : Form
 		_btnCancel = new Button
 		{
 			Text = "关闭",
-			Location = new Point(375, y),
+			Location = new Point(495, y),
 			Size = new Size(100, 30),
 			DialogResult = DialogResult.Cancel
 		};
 
 		this.Controls.AddRange(new Control[] { _lblStep, grpRange, grpStyle, grpApply, _btnCancel });
-
-		// 订阅范围选择事件
-		if (_docStructure != null)
-		{
-			_docStructure.RangeSelected += OnRangeSelected;
-		}
-
-		this.FormClosing += (s, e) =>
-		{
-			if (_docStructure != null)
-			{
-				_docStructure.RangeSelected -= OnRangeSelected;
-				_docStructure.ExitRangeSelectionMode();
-			}
-		};
 	}
 
 	/// <summary>
-	/// 为只读 TextBox 设置占位提示文本（兼容 .NET Framework 4.6.2，无 PlaceHolderText 支持）
+	/// 填充树形结构图
 	/// </summary>
-	private static void SetPlaceholder(TextBox txt, string placeholder)
-	{
-		txt.Text = placeholder;
-		txt.ForeColor = Color.Gray;
-	}
-
-	/// <summary>
-	/// 步骤1: 选择范围按钮点击
-	/// </summary>
-	private void BtnSelectRange_Click(object sender, EventArgs e)
+	private void PopulateTree()
 	{
 		if (_docStructure == null) return;
-		_startPos = -1;
-		_endPos = -1;
-		_txtRangeInfo.Text = "请在文档结构树中点击起始位置...";
-		_txtRangeInfo.ForeColor = Color.Gray;
-		_btnApply.Enabled = false;
-		_docStructure.EnterRangeSelectionMode();
+
+		var nodeData = _docStructure.GetTreeNodeData();
+		if (nodeData.Count == 0)
+		{
+			_txtRangeInfo.Text = "文档结构图为空，请先生成文档结构图";
+			_txtRangeInfo.ForeColor = Color.Red;
+			return;
+		}
+
+		_treeGrid.BeginUpdate();
+		try
+		{
+			_treeGrid.Rows.Count = 0;
+
+			var nodeStack = new Stack<(int Depth, Node Node)>();
+
+			foreach (var (depth, text, key) in nodeData)
+			{
+				while (nodeStack.Count > 0 && nodeStack.Peek().Depth >= depth)
+					nodeStack.Pop();
+
+				Node newNode;
+				if (nodeStack.Count == 0)
+				{
+					newNode = _treeGrid.Rows.AddNode(0);
+					newNode.Data = text;
+					newNode.Key = key;
+				}
+				else
+				{
+					newNode = nodeStack.Peek().Node.AddNode(NodeTypeEnum.LastChild, text, key, null);
+				}
+				_treeGrid.Rows[newNode.Row.Index].UserData = key;
+				nodeStack.Push((depth, newNode));
+			}
+
+			_treeGrid.Tree.Show(1);
+		}
+		finally
+		{
+			_treeGrid.EndUpdate();
+		}
 	}
 
 	/// <summary>
-	/// 范围选择完成回调
+	/// 树节点点击——根据选中状态设为起始或结束
 	/// </summary>
-	private void OnRangeSelected(int startPos, int endPos)
+	private void TreeGrid_MouseClick(object sender, MouseEventArgs e)
 	{
-		_startPos = startPos;
-		_endPos = endPos;
+		if (e.Button != MouseButtons.Left) return;
 
-		// 统计范围内表格数量
-		var tables = _docStructure.GetTablesInRange(startPos, endPos);
+		var hitTest = _treeGrid.HitTest(e.Location);
+		if (hitTest.Row < 0 || hitTest.Row >= _treeGrid.Rows.Count)
+			return;
+
+		var row = _treeGrid.Rows[hitTest.Row];
+		var node = row.Node;
+		if (node == null || node.Key == null) return;
+
+		if (_rbSetStart.Checked)
+		{
+			// 设为起始
+			_rangeStartKey = node.Key;
+			_startPos = _docStructure.GetPositionFromKey(_rangeStartKey);
+
+			// 更新按钮文本显示当前选择
+			_rbSetStart.Text = $"起始：{node.Data}";
+		}
+		else
+		{
+			// 设为结束
+			_rangeEndKey = node.Key;
+			_endPos = _docStructure.GetPositionFromKey(_rangeEndKey);
+
+			_rbSetEnd.Text = $"结束：{node.Data}";
+		}
+
+		// 重新计算范围信息
+		UpdateRangeInfo();
+
+		// 让两个按钮可以再次点击重新选择
+		_treeGrid.Invalidate();
+	}
+
+	/// <summary>
+	/// 计算并显示当前范围信息
+	/// </summary>
+	private void UpdateRangeInfo()
+	{
+		bool startSelected = _startPos >= 0 && _rangeStartKey != null;
+		bool endSelected = _endPos >= 0 && _rangeEndKey != null;
+
+		if (!startSelected && !endSelected)
+		{
+			_txtRangeInfo.Text = "提示：先点击「设为起始」或「设为结束」，再点击树中节点";
+			_txtRangeInfo.ForeColor = Color.Gray;
+			_tableCountInRange = 0;
+			UpdateApplyButton();
+			return;
+		}
+
+		if (!startSelected)
+		{
+			_txtRangeInfo.Text = "已选择结束位置，请选择起始位置";
+			_txtRangeInfo.ForeColor = Color.Gray;
+			_tableCountInRange = 0;
+			UpdateApplyButton();
+			return;
+		}
+
+		if (!endSelected)
+		{
+			_txtRangeInfo.Text = "已选择起始位置，请选择结束位置";
+			_txtRangeInfo.ForeColor = Color.Gray;
+			_tableCountInRange = 0;
+			UpdateApplyButton();
+			return;
+		}
+
+		// 两者都已选择——自动交换顺序
+		int rawStartPos = _docStructure.GetPositionFromKey(_rangeStartKey);
+		int rawEndPos = _docStructure.GetPositionFromKey(_rangeEndKey);
+		if (rawStartPos > rawEndPos)
+		{
+			_startPos = rawEndPos;
+			_endPos = rawStartPos;
+		}
+		else
+		{
+			_startPos = rawStartPos;
+			_endPos = rawEndPos;
+		}
+
+		var tables = _docStructure.GetTablesInRange(_startPos, _endPos);
 		_tableCountInRange = tables.Count;
 
-		_txtRangeInfo.Text = $"已选择范围: 位置 {startPos} - {endPos}，范围内有 {_tableCountInRange} 个表格";
-		_txtRangeInfo.ForeColor = Color.Black;
+		_txtRangeInfo.Text = $"已选择范围: 位置 {_startPos} - {_endPos}，范围内有 {_tableCountInRange} 个表格";
+		_txtRangeInfo.ForeColor = _tableCountInRange > 0 ? Color.Black : Color.Red;
 
 		if (_tableCountInRange == 0)
 		{
@@ -235,6 +386,34 @@ public class frmBatchApplyRange : Form
 		}
 
 		UpdateApplyButton();
+	}
+
+	/// <summary>
+	/// 在树节点上绘制"起"/"止"标记
+	/// </summary>
+	private void TreeGrid_OwnerDrawCell(object sender, OwnerDrawCellEventArgs e)
+	{
+		if (e.Row < 0 || e.Row >= _treeGrid.Rows.Count) return;
+
+		var row = _treeGrid.Rows[e.Row];
+		var node = row.Node;
+		if (node == null || node.Key == null) return;
+
+		bool isStart = node.Key.Equals(_rangeStartKey);
+		bool isEnd = node.Key.Equals(_rangeEndKey);
+
+		if (isStart || isEnd)
+		{
+			e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(120, 51, 153, 255)), e.Bounds);
+			string label = isStart ? "起" : "止";
+			using (var brush = new SolidBrush(Color.White))
+			using (var font = new Font("微软雅黑", 9, FontStyle.Bold))
+			{
+				var sf = new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center };
+				var labelBounds = new Rectangle(e.Bounds.Right - 30, e.Bounds.Top, 30, e.Bounds.Height);
+				e.Graphics.DrawString(label, font, brush, labelBounds, sf);
+			}
+		}
 	}
 
 	/// <summary>
@@ -276,12 +455,11 @@ public class frmBatchApplyRange : Form
 		_btnApply.Enabled = false;
 		_lblProgress.Text = "正在应用样式: 0/" + tables.Count;
 
-		// 调用 DocumentEditor 的批量应用方法（带进度回调）
 		int successCount = _docEditor.BatchApplyTableStyle(tables, _selectedStyle, (current, total) =>
 		{
 			_progressBar.Value = current;
 			_lblProgress.Text = $"正在应用样式: {current}/{total}";
-			Application.DoEvents(); // 刷新 UI
+			Application.DoEvents();
 		});
 
 		_progressBar.Value = tables.Count;

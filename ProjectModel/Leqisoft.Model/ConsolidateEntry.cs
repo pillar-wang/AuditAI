@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using Leqisoft.DTO;
 using Newtonsoft.Json;
@@ -29,5 +29,14 @@ public class ConsolidateEntry
 	public List<Column> DataSrc { get; set; }
 
 	public bool Selected { get; set; } = true;
+
+	/// <summary>持股比例（百分比，默认100%）</summary>
+	public decimal OwnershipRatio { get; set; } = 100m;
+
+	/// <summary>合并层级（默认1，数字越小越先合并）</summary>
+	public int Level { get; set; } = 1;
+
+	/// <summary>内部交易标识列ID列表</summary>
+	public List<Id64> IntercompanyCols { get; set; } = new List<Id64>();
 
 }

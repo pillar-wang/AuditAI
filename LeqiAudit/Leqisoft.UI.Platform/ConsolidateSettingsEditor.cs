@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -407,6 +407,10 @@ public class ConsolidateSettingsEditor
 				List<Leqisoft.DTO.Column> source2 = await GetTableColumns(table);
 				row["Group"] = source2.ToDictionary((Leqisoft.DTO.Column c) => c, (Leqisoft.DTO.Column c) => source.GroupSrcId.Contains(c.Id));
 				row["Data"] = source2.ToDictionary((Leqisoft.DTO.Column c) => c, (Leqisoft.DTO.Column c) => source.DataSrcId.Contains(c.Id));
+				row["OwnershipRatio"] = source.OwnershipRatio;
+				row["Level"] = source.Level;
+				var intercompanyModelCols = new HashSet<Id64>(table.Columns.Where(c => c.ConsolidateAttributes != null && c.ConsolidateAttributes.Role == ConsolidateRole.Intercompany).Select(c => c.Id));
+				row["IntercompanyCols"] = source2.Where(c => intercompanyModelCols.Contains(c.Id)).ToDictionary((Leqisoft.DTO.Column c) => c, (Leqisoft.DTO.Column c) => source.IntercompanyCols.Contains(c.Id));
 			}
 		}
 		foreach (Leqisoft.Model.Project project in _projects)
@@ -423,6 +427,8 @@ public class ConsolidateSettingsEditor
 		_dcbGroup.Value = Table.Columns.Where((Leqisoft.Model.Column c) => c.ConsolidateAttributes == null || c.ConsolidateAttributes.Role == ConsolidateRole.None || c.ConsolidateAttributes.Role == ConsolidateRole.GroupBy).ToDictionary((Leqisoft.Model.Column c) => c, (Leqisoft.Model.Column c) => Table.ConsolidateSettings.GroupDestId.Contains(c.Id));
 		_dcbAggregate.Value = Table.Columns.Where((Leqisoft.Model.Column c) => c.ConsolidateAttributes == null || c.ConsolidateAttributes.Role == ConsolidateRole.None || c.ConsolidateAttributes.Role == ConsolidateRole.Aggregate).ToDictionary((Leqisoft.Model.Column c) => c, (Leqisoft.Model.Column c) => Table.ConsolidateSettings.AggregateDestId.Contains(c.Id));
 		_cmbMode.SelectedIndex = (int)Table.ConsolidateSettings.Mode;
+		try { _form._txtConsolidationName.Text = Table.ConsolidateSettings.ConsolidationName; } catch { }
+		_form._chkShowDetail.Checked = Table.ConsolidateSettings.ShowDetail;
 		_grid.CellChanged += _grid_CellChanged;
 		_grid.AfterEdit += _grid_AfterEdit;
 	}
@@ -490,6 +496,8 @@ public class ConsolidateSettingsEditor
 			Dictionary<Leqisoft.DTO.Column, bool> value3 = (await GetTableColumns(table))?.ToDictionary((Leqisoft.DTO.Column c) => c, (Leqisoft.DTO.Column c) => false);
 			_grid[e.Row, "Group"] = value3;
 			_grid[e.Row, "Data"] = value3;
+			var intercompanyModelCols = new HashSet<Id64>(table.Columns.Where(c => c.ConsolidateAttributes != null && c.ConsolidateAttributes.Role == ConsolidateRole.Intercompany).Select(c => c.Id));
+			_grid[e.Row, "IntercompanyCols"] = value3?.Where(kv => intercompanyModelCols.Contains(kv.Key.Id)).ToDictionary(kv => kv.Key, kv => kv.Value);
 		}
 	}
 
@@ -507,7 +515,7 @@ public class ConsolidateSettingsEditor
 		{
 			e.Text = table.TreeNode.Name;
 		}
-		if ((e.Col == _grid.Cols["Group"].Index || e.Col == _grid.Cols["Data"].Index) && _grid[e.Row, e.Col] is IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>> source)
+		if ((e.Col == _grid.Cols["Group"].Index || e.Col == _grid.Cols["Data"].Index || e.Col == _grid.Cols["IntercompanyCols"].Index) && _grid[e.Row, e.Col] is IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>> source)
 		{
 			e.Text = string.Join("|", from kv in source
 				where kv.Value
@@ -545,7 +553,7 @@ public class ConsolidateSettingsEditor
 				return;
 			}
 		}
-		if ((e.Col != _grid.Cols["Group"].Index && e.Col != _grid.Cols["Data"].Index) || !(_grid[e.Row, "Project"] is Leqisoft.Model.Project))
+		if ((e.Col != _grid.Cols["Group"].Index && e.Col != _grid.Cols["Data"].Index && e.Col != _grid.Cols["IntercompanyCols"].Index) || !(_grid[e.Row, "Project"] is Leqisoft.Model.Project))
 		{
 			return;
 		}
@@ -565,6 +573,21 @@ public class ConsolidateSettingsEditor
 			else if (e.Col == _grid.Cols["Data"].Index)
 			{
 				_editorColumn.InitializeValue(_grid[e.Row, "Data"]);
+			}
+			else if (e.Col == _grid.Cols["IntercompanyCols"].Index)
+			{
+				var val = _grid[e.Row, "IntercompanyCols"];
+				if (val != null)
+				{
+					_editorColumn.InitializeValue(val);
+				}
+				else
+				{
+					var intercompanyCols = t.Columns.Where(c => c.ConsolidateAttributes != null && c.ConsolidateAttributes.Role == ConsolidateRole.Intercompany)
+						.Select(c => new Leqisoft.DTO.Column { Id = c.Id, Caption = c.Caption })
+						.ToDictionary(c => (Leqisoft.DTO.Column)c, c => false);
+					_editorColumn.InitializeValue(intercompanyCols);
+				}
 			}
 		}
 		catch (NullReferenceException)
@@ -619,11 +642,14 @@ public class ConsolidateSettingsEditor
 
 	private void _grid_Resize(object sender, EventArgs e)
 	{
-		int width = (_grid.Width - _grid.Cols["Number"].WidthDisplay - _grid.Cols["Selected"].WidthDisplay) / 4;
+		int width = (_grid.Width - _grid.Cols["Number"].WidthDisplay - _grid.Cols["Selected"].WidthDisplay) / 7;
 		_grid.Cols["Project"].Width = width;
 		_grid.Cols["Table"].Width = width;
 		_grid.Cols["Group"].Width = width;
 		_grid.Cols["Data"].Width = width;
+		_grid.Cols["OwnershipRatio"].Width = width;
+		_grid.Cols["Level"].Width = width;
+		_grid.Cols["IntercompanyCols"].Width = width;
 	}
 
 	private void _btnOk_Click(object sender, EventArgs e)
@@ -679,19 +705,32 @@ public class ConsolidateSettingsEditor
 		column.DataType = typeof(bool);
 		column = _grid.Cols.Add();
 		column.Name = "Project";
-		column.Caption = "来源" + StringConstBase.Current.Project;
+		column.Caption = "来源单体";
 		column.Editor = _projectSelector;
 		column = _grid.Cols.Add();
 		column.Name = "Table";
-		column.Caption = "来源表";
+		column.Caption = "来源报表";
 		column.Editor = _editorTable;
 		column = _grid.Cols.Add();
 		column.Name = "Group";
-		column.Caption = "分组列";
+		column.Caption = "合并维度";
 		column.Editor = _editorColumn;
 		column = _grid.Cols.Add();
 		column.Name = "Data";
-		column.Caption = "汇总列";
+		column.Caption = "合并金额";
+		column.Editor = _editorColumn;
+		column = _grid.Cols.Add();
+		column.Name = "OwnershipRatio";
+		column.Caption = "持股比例";
+		column.DataType = typeof(decimal);
+		column.Format = "0.00'%'";
+		column = _grid.Cols.Add();
+		column.Name = "Level";
+		column.Caption = "合并层级";
+		column.DataType = typeof(int);
+		column = _grid.Cols.Add();
+		column.Name = "IntercompanyCols";
+		column.Caption = "内部交易列";
 		column.Editor = _editorColumn;
 		_grid.OwnerDrawCell += _grid_OwnerDrawCell;
 		_grid.OwnerDrawCell += _grid_OwnerDrawCell_Number;
@@ -775,34 +814,34 @@ public class ConsolidateSettingsEditor
 		{
 			if (_grid[item2, "Project"] == null)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源" + StringConstBase.Current.Project + "不能为空");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源单体不能为空");
 				return false;
 			}
 			if (_grid[item2, "Table"] == null)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源表不能为空");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源报表不能为空");
 				return false;
 			}
 			if (_grid[item2, "Table"] == Table)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源表不能为当前表");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源报表不能为当前表");
 				return false;
 			}
 			Tuple<Leqisoft.Model.Project, Leqisoft.Model.Table> item = Tuple.Create(_grid[item2, "Project"] as Leqisoft.Model.Project, _grid[item2, "Table"] as Leqisoft.Model.Table);
 			if (hashSet.Contains(item))
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源表不能有重复");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源报表不能有重复");
 				return false;
 			}
 			hashSet.Add(item);
 			if (!(_grid[item2, "Group"] is IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>> source) || !source.Any((KeyValuePair<Leqisoft.DTO.Column, bool> kv) => kv.Value))
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "分组列不能为空");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并维度不能为空");
 				return false;
 			}
 			if (!(_grid[item2, "Data"] is IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>> source2) || !source2.Any((KeyValuePair<Leqisoft.DTO.Column, bool> kv) => kv.Value))
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "数据列不能为空");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并金额不能为空");
 				return false;
 			}
 			HashSet<Id64> hashSet2 = new HashSet<Id64>(from kv in source
@@ -813,7 +852,19 @@ public class ConsolidateSettingsEditor
 				select kv.Key.Id;
 			if (hashSet2.Overlaps(other))
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "分组列和数据列不能重复");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并维度和合并金额不能重复");
+				return false;
+			}
+			decimal ownershipRatio = (_grid[item2, "OwnershipRatio"] as decimal?) ?? 100m;
+			if (ownershipRatio < 0m || ownershipRatio > 100m)
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "持股比例必须在0~100之间");
+				return false;
+			}
+			int level = (_grid[item2, "Level"] as int?) ?? 1;
+			if (level < 1)
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "合并层级必须为正整数");
 				return false;
 			}
 		}
@@ -822,13 +873,13 @@ public class ConsolidateSettingsEditor
 		{
 			if ((_grid[item3, "Group"] as IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>>).Where((KeyValuePair<Leqisoft.DTO.Column, bool> kv) => kv.Value).Count() != num)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "各源表的分组列数量必须相同");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "各来源报表的合并维度数量必须相同");
 				return false;
 			}
 		}
 		if (num != _dcbGroup.SelectedValue.Count)
 		{
-			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "源表分组列数量与目标分组列数量必须相同");
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源报表合并维度数量与目标合并维度数量必须相同");
 			return false;
 		}
 		int num2 = (_grid[list[0], "Data"] as IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>>).Where((KeyValuePair<Leqisoft.DTO.Column, bool> kv) => kv.Value).Count();
@@ -836,18 +887,18 @@ public class ConsolidateSettingsEditor
 		{
 			if ((_grid[item4, "Data"] as IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>>).Where((KeyValuePair<Leqisoft.DTO.Column, bool> kv) => kv.Value).Count() != num2)
 			{
-				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "各源表的数据列数量必须相同");
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "各来源报表的合并金额数量必须相同");
 				return false;
 			}
 		}
 		if (num2 != _dcbAggregate.SelectedValue.Count)
 		{
-			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "源表数据列数量与目标汇总列数量必须相同");
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "来源报表合并金额数量与目标合并金额数量必须相同");
 			return false;
 		}
 		if (_dcbAggregate.SelectedValue.Intersect(_dcbGroup.SelectedValue).Any())
 		{
-			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标分组列与目标汇总列不得重复");
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "目标合并维度与目标合并金额不得重复");
 			return false;
 		}
 		return true;
@@ -865,17 +916,24 @@ public class ConsolidateSettingsEditor
 			if (project != null && table != null && enumerable != null && enumerable2 != null)
 			{
 				ConsolidateEntry item = new ConsolidateEntry
-				{
-					Selected = (_grid.GetCellCheck(i, _grid.Cols["Selected"].Index) == CheckEnum.Checked),
-					ProjectId = project.Id,
-					TableId = table.Id,
-					GroupSrcId = (from kv in enumerable
-						where kv.Value
-						select kv.Key.Id).ToList(),
-					DataSrcId = (from kv in enumerable2
+			{
+				Selected = (_grid.GetCellCheck(i, _grid.Cols["Selected"].Index) == CheckEnum.Checked),
+				ProjectId = project.Id,
+				TableId = table.Id,
+				GroupSrcId = (from kv in enumerable
+					where kv.Value
+					select kv.Key.Id).ToList(),
+				DataSrcId = (from kv in enumerable2
+					where kv.Value
+					select kv.Key.Id).ToList(),
+				OwnershipRatio = (_grid[i, "OwnershipRatio"] as decimal?) ?? 100m,
+				Level = (_grid[i, "Level"] as int?) ?? 1,
+				IntercompanyCols = (_grid[i, "IntercompanyCols"] is IEnumerable<KeyValuePair<Leqisoft.DTO.Column, bool>> intercompanyEnum
+					? (from kv in intercompanyEnum
 						where kv.Value
 						select kv.Key.Id).ToList()
-				};
+					: new List<Id64>())
+			};
 				Table.ConsolidateSettings.Sources.Add(item);
 			}
 		}
@@ -886,6 +944,8 @@ public class ConsolidateSettingsEditor
 			Table.ConsolidateSettings.GroupDestId = Table.ConsolidateSettings.GroupDest.Select((Leqisoft.Model.Column c) => c.Id).ToList();
 			Table.ConsolidateSettings.AggregateDestId = Table.ConsolidateSettings.AggregateDest.Select((Leqisoft.Model.Column c) => c.Id).ToList();
 			Table.ConsolidateSettings.Mode = (MergeMode)_cmbMode.SelectedIndex;
+			Table.ConsolidateSettings.ConsolidationName = _form._txtConsolidationName.Text;
+			Table.ConsolidateSettings.ShowDetail = _form._chkShowDetail.Checked;
 			Table.TagConsolidateSettingsDirty();
 		}
 	}

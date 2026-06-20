@@ -156,6 +156,36 @@ public class frmNodeSelector : C1RibbonForm
 		return ShowDialog();
 	}
 
+	public DialogResult ShowHide()
+	{
+		Text = "批量隐藏文件";
+		base.Icon = Leqisoft.UI.Controls.Theme.SelectedLeqiTheme.GetThemedIcon(Resources.BatchHideNodes16);
+		ckbExportExcel.Visible = false;
+		cboShowHideNodes.Visible = false;
+		Populate(2);
+		PopulateRemoveNodesCheck();
+		_grid.Cols["check"].Caption = "隐藏";
+		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.CellChecked += GrdEditor_CellChecked;
+		_grid.MouseClick += _grid_MouseClick_Tooltip_RemoveNodes;
+		return ShowDialog();
+	}
+
+	public DialogResult ShowUnhide()
+	{
+		Text = "取消隐藏";
+		base.Icon = Leqisoft.UI.Controls.Theme.SelectedLeqiTheme.GetThemedIcon(Resources.ShowNodes16);
+		ckbExportExcel.Visible = false;
+		cboShowHideNodes.Visible = false;
+		Populate(1);
+		PopulateRemoveNodesCheck();
+		_grid.Cols["check"].Caption = "取消隐藏";
+		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.CellChecked += GrdEditor_CellChecked;
+		_grid.MouseClick += _grid_MouseClick_Tooltip_ShowHideNode;
+		return ShowDialog();
+	}
+
 	public DialogResult ShowRemoveNodes()
 	{
 		Text = "批量删除文件";
@@ -672,7 +702,7 @@ public class frmNodeSelector : C1RibbonForm
 			}
 			else if (_grid.Rows[i].UserData is Leqisoft.Model.TreeGroup)
 			{
-				_grid.SetCellCheck(i, 1, CheckEnum.None);
+				_grid.SetCellCheck(i, 1, CheckEnum.Unchecked);
 			}
 		}
 	}

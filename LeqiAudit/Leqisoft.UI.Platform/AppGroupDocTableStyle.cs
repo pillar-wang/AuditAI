@@ -1,4 +1,4 @@
-﻿﻿using System.Drawing;
+﻿﻿﻿﻿using System.Drawing;
 using Leqisoft.UI.Platform.Properties;
 
 namespace Leqisoft.UI.Platform;
