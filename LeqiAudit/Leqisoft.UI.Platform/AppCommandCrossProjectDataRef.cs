@@ -22,7 +22,12 @@ public class AppCommandCrossProjectDataRef : AppCommandButton
 			var table = Program.MainForm?.TableEditor?.Table;
 			if (project == null || table == null) return;
 			using var frm = new frmCrossProjectDataRef(project, table.Id);
-			frm.ShowDialog();
+		frm.ShowDialog();
+		// 如果有引用被刷新过，重新从数据库加载表格数据
+		if (frm.DataRefreshed)
+		{
+			Program.MainForm?.TableEditor?.ReloadFromDb();
+		}
 		}
 		catch (Exception ex)
 		{

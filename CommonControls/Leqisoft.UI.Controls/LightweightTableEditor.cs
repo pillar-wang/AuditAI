@@ -95,6 +95,25 @@ namespace Leqisoft.UI.Controls
         }
 
         /// <summary>
+        /// 数据单元格背景色（整个表格的底色，区别于控件背景色 BackColor）
+        /// 设置后同步更新 Normal、EmptyArea 和 Alternate 样式
+        /// </summary>
+        public Color CellBackColor
+        {
+            get => _grid.Styles.Normal.BackColor;
+            set
+            {
+                _grid.Styles.Normal.BackColor = value;
+                _grid.Styles.EmptyArea.BackColor = value;
+                // 隔行变色：基于单元格底色稍深一点，保持视觉层次
+                _grid.Styles.Alternate.BackColor = Color.FromArgb(
+                    Math.Max(0, value.R - 7),
+                    Math.Max(0, value.G - 7),
+                    Math.Max(0, value.B - 7));
+            }
+        }
+
+        /// <summary>
         /// 根据背景色亮度计算对比色（黑或白）
         /// </summary>
         private static Color GetContrastColor(Color backColor)

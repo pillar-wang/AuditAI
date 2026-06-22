@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -116,11 +116,13 @@ public class CrossProjectDataRefManager
             if (!StorageRouter.IsLocalMode)
             {
                 result.ErrorMessage = "非本地模式暂不支持跨项目数据引用";
+                System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] 非本地模式，IsLocalMode={StorageRouter.IsLocalMode}");
                 return result;
             }
 
             // 打开外部项目数据库
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
+            System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] externalDbPath={externalDbPath}, Exists={File.Exists(externalDbPath)}");
             if (!File.Exists(externalDbPath))
             {
                 // 尝试缓存降级
@@ -213,10 +215,13 @@ public class CrossProjectDataRefManager
                     var filteredIndices = CrossProjectDataRefFilter.ApplyFilter(dataRef.FilterConfig, sourceData);
                     var filteredData = filteredIndices.Select(i => sourceData[i]).ToList();
 
+                    System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] sourceData.Count={sourceData.Count}, filteredData.Count={filteredData.Count}, RefMode={dataRef.RefMode}");
+
                     if (filteredData.Count == 0)
                     {
                         result.Success = true;
                         result.AffectedRows = 0;
+                        System.Diagnostics.Debug.WriteLine("[CrossProjectRef] filteredData为空，直接返回");
                         return result;
                     }
 
@@ -353,10 +358,12 @@ public class CrossProjectDataRefManager
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] ExecuteRef异常: {ex.GetType().Name}: {ex.Message}");
             result.ErrorMessage = ex.Message;
             result.RefStatus = 3; // Error
         }
 
+        System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] ExecuteRef完成: Success={result.Success}, AffectedRows={result.AffectedRows}, Error={result.ErrorMessage}");
         return result;
     }
 
@@ -655,7 +662,8 @@ public class CrossProjectDataRefManager
     private static string GetExternalDbPath(Guid projectId)
     {
         long userId = User.Current?.Id ?? 1;
-        return Path.Combine("data", userId.ToString(), $"{projectId}.db");
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine(baseDir, "data", userId.ToString(), $"{projectId}.db");
     }
 
     /// <summary>
@@ -664,7 +672,8 @@ public class CrossProjectDataRefManager
     private string GetCurrentDbPath()
     {
         long userId = User.Current?.Id ?? 1;
-        return Path.Combine("data", userId.ToString(), $"{_currentProject.Id}.db");
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine(baseDir, "data", userId.ToString(), $"{_currentProject.Id}.db");
     }
 
     /// <summary>
@@ -749,35 +758,36 @@ public class CrossProjectDataRefManager
     private async Task<int> ExecuteCellRef(CrossProjectDataRef dataRef, List<List<object>> filteredData)
     {
         if (filteredData == null || filteredData.Count == 0)
+        {
+            System.Diagnostics.Debug.WriteLine("[ExecuteCellRef] filteredData为空");
             return 0;
+        }
 
-        // 解析 RefConfig 获取目标单元格 ID 和来源单元格信息
         var config = SafeDeserialize<CellRefConfig>(dataRef.RefConfig);
         if (config == null || config.TargetCellId <= 0)
             throw new InvalidOperationException("CellRef 配置无效：缺少 TargetCellId");
 
-        // 确定来源单元格的值
+        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] TargetCellId={config.TargetCellId}, SourceCellId={config.SourceCellId}");
+
         object cellValue;
 
         if (config.SourceCellId > 0)
         {
-            // 通过 SourceCellId 直接从来源数据库读取
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
+            System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 读取来源: db={externalDbPath}, CellId={config.SourceCellId}");
             using var srcConn = new SQLiteConnection($"Data Source={externalDbPath};Version=3;");
             await srcConn.OpenAsync();
             using var srcCmd = new SQLiteCommand("SELECT `Value` FROM `Cell` WHERE `Id` = @Id", srcConn);
             srcCmd.Parameters.AddWithValue("@Id", config.SourceCellId);
-            var val = await srcCmd.ExecuteScalarAsync();
-            cellValue = val;
+            cellValue = await srcCmd.ExecuteScalarAsync();
+            System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 来源值类型={cellValue?.GetType().Name ?? "null"}, 值长度={(cellValue as byte[])?.Length ?? 0}");
         }
         else if (config.SourceColumnId > 0)
         {
-            // 通过 SourceColumnId + SourceRowIndex 定位
             int rowIndex = config.SourceRowIndex;
             if (rowIndex < 0 || rowIndex >= filteredData.Count)
                 throw new InvalidOperationException($"CellRef: 来源行索引 {rowIndex} 超出范围（共 {filteredData.Count} 行）");
 
-            // 需要找到 SourceColumnId 在 filteredData 中对应的列位置
             var sourceDal = new ProjectDAL(GetExternalDbPath(dataRef.SourceProjectId));
             var allCols = sourceDal.GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
             int colPos = -1;
@@ -796,21 +806,20 @@ public class CrossProjectDataRefManager
         }
         else
         {
-            // 兼容旧配置：取第一行第一列
             cellValue = filteredData[0].Count > 0 ? filteredData[0][0] : null;
         }
 
-        // 写入目标表
         string currentDbPath = GetCurrentDbPath();
+        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 写入目标: db={currentDbPath}, CellId={config.TargetCellId}");
         using var conn = new SQLiteConnection($"Data Source={currentDbPath};Version=3;");
         await conn.OpenAsync();
 
-        // 更新目标单元格值
         using var updateCmd = new SQLiteCommand(
             "UPDATE `Cell` SET `Value` = @Value, `Dirty` = 1 WHERE `Id` = @Id", conn);
         updateCmd.Parameters.AddWithValue("@Id", config.TargetCellId);
         updateCmd.Parameters.AddWithValue("@Value", ToBinaryValueBytes(cellValue));
-        await updateCmd.ExecuteNonQueryAsync();
+        int updated = await updateCmd.ExecuteNonQueryAsync();
+        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] UPDATE影响行数={updated}");
 
         return 1;
     }

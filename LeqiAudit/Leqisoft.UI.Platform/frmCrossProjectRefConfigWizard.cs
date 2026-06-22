@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -67,6 +67,11 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     private C1FlexGridEx _gridTables;  // 树形表格选择器（仿 frmNodeSelector）
     private RefMode _selectedRefMode;
     private string _refConfigJson;
+    private Func<bool> _stepValidate; // 当前步骤的验证+生成RefConfig委托
+
+    // 缓存的表格对象（用于查询 Cell ID 等）
+    private Leqisoft.Model.Table _targetTable;
+    private Leqisoft.Model.Table _sourceTable;
 
     // Step3/Step4 选择状态（跨步骤传递）
     private int _tgtCol = -1, _tgtRow = -1, _tgtEndCol = -1, _tgtEndRow = -1;
@@ -78,6 +83,8 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     private string _refName;
     private bool _autoRefresh = true;
     private int _cacheDuration = 60;
+    private List<Leqisoft.DTO.Project> _allProjects = new List<Leqisoft.DTO.Project>();
+    private Template _projectTileTemplate;
     private string _defaultValue = "";
 
     private int _currentStep = 1;
@@ -96,7 +103,11 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             _selectedTargetTableName = targetTableNode.TreeNode.Number + " " + targetTableNode.TreeNode.Name;
 
         InitializeComponent();
-        this.Load += (s, e) => ShowStep(1);
+        this.Load += async (s, e) =>
+        {
+            await LoadProjectsAsync();
+            if (!IsDisposed) ShowStep(1);
+        };
     }
 
     private void InitializeComponent()
@@ -143,9 +154,9 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _btnNext.Click += (s, e) =>
         {
             // Step3/Step4 需要先验证选择再进入下一步
-            if ((_currentStep == 3 || _currentStep == 4) && _btnNext.Tag is Func<bool> validate)
+            if ((_currentStep == 3 || _currentStep == 4) && _stepValidate != null)
             {
-                if (!validate())
+                if (!_stepValidate())
                     return;
             }
             ShowStep(_currentStep + 1);
@@ -172,6 +183,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _tileProjects = null;
         _gridTables = null;
         _btnNext.Tag = null; // 清除上一步的验证逻辑
+        _stepValidate = null;
 
         // 更新步骤指示器
         for (int i = 0; i < TOTAL_STEPS; i++)
@@ -245,6 +257,8 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             TileBackColor = Color.Transparent
         };
         _tileProjects.Templates.Add(template);
+        _projectTileTemplate = template;
+
         Theme.SetCurrentTree(_tileProjects);
         _tileProjects.TileBorderColor = Color.Transparent;
         _tileProjects.CustomBorderColor = Theme.SelectedLeqiTheme.ThemeContext.DarkColor;
@@ -273,51 +287,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         pnlSearch.Controls.Add(lblSearch);
         pnlSearch.Controls.Add(txtSearch);
 
-        // 加载项目列表 — 从主数据库 Projects 表读取（与 FormProjectManage 一致）
-        // 使用 Task.Run 避免 sync-over-async 死锁（StorageRouter.GetProjects 是 async 方法）
-        List<Leqisoft.DTO.Project> allProjects = new List<Leqisoft.DTO.Project>();
-        try
-        {
-            allProjects = Task.Run(() => StorageRouter.GetProjects()).Result
-                .Where(p => p.Type == ProjectType.Project && p.Id != _currentProject.Id)
-                .ToList();
-        }
-        catch (Exception ex) { ex.Log(); }
-
         // 构建 Tile 的方法
-        void BuildTiles(string filter)
-        {
-            _tileProjects.ClearSelected();
-            _tileProjects.BeginUpdate();
-            _tileProjects.Groups.Clear();
-
-            var filtered = allProjects.Where(p =>
-                string.IsNullOrWhiteSpace(filter) ||
-                (p.Name ?? "").IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                (p.Number ?? "").IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
-
-            var group = new C1.Win.C1Tile.Group { Text = "所有项目" };
-            foreach (var proj in filtered)
-            {
-                var tile = new Tile
-                {
-                    Text = proj.Name,
-                    Image1 = Program.MainForm.CurrentEdition?.ProjectTileIcon,
-                    HorizontalSize = 5,
-                    VerticalSize = 4,
-                    BackColor = Color.FromArgb(248, 248, 248),
-                    Template = template,
-                    Tag = proj.Id
-                };
-                group.Tiles.Add(tile);
-            }
-            _tileProjects.Groups.Add(group);
-            _tileProjects.EndUpdate();
-        }
-
-        BuildTiles(null);
-
-        // 搜索过滤
         txtSearch.TextChanged += (s, e) => BuildTiles(txtSearch.Text);
 
         // Tile 双击选择 → 进入 Step2
@@ -335,6 +305,10 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _pnlContent.Controls.Add(pnlSearch);
         _pnlContent.Controls.Add(_tileProjects);
         _pnlContent.Controls.Add(lbl);
+
+        // 如果项目列表已加载（LoadProjectsAsync 在 ShowStep 之前完成），填充 Tile
+        if (_allProjects != null)
+            BuildTiles(null);
     }
 
     private void ShowStep2()
@@ -600,12 +574,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             pnlStatus.Controls.Add(lblStatus);
 
             // ---- 目标表网格（用 LightweightTableEditor，模仿 TableEditor 风格） ----
-            var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0) };
+            var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 243, 252) };
             var gridTarget = new LightweightTableEditor
             {
                 Dock = DockStyle.Fill,
                 HighlightColor = Color.FromArgb(0, 120, 215),  // 蓝色高亮（目标表）
-                FocusColor = Color.FromArgb(200, 230, 255)
+                FocusColor = Color.FromArgb(200, 230, 255),
+                BackColor = Color.FromArgb(245, 250, 255),      // 浅蓝背景
+                CellBackColor = Color.FromArgb(245, 250, 255)   // 浅蓝单元格底色
             };
             LoadTargetTableStructure(gridTarget);
             pnlGrid.Controls.Add(gridTarget);
@@ -651,6 +627,32 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             {
                 if (args.StartCol < 0) return;
 
+                // 检查目标单元格是否包含公式（禁止选择有公式的单元格）
+                if (_targetTable != null)
+                {
+                    bool hasFormula = false;
+                    for (int r = args.StartRow; r <= args.EndRow && !hasFormula; r++)
+                    {
+                        for (int c = args.StartCol; c <= args.EndCol && !hasFormula; c++)
+                        {
+                            if (r < _targetTable.Rows.Count && c < _targetTable.Columns.Count)
+                            {
+                                var cell = _targetTable[r, c];
+                                if (cell != null && (cell.HasFormula || cell.HasColumnFormula()))
+                                    hasFormula = true;
+                            }
+                        }
+                    }
+                    if (hasFormula)
+                    {
+                        Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "选中的单元格包含公式，不能作为跨项目引用的目标。\n请选择不含公式的单元格。");
+                        _tgtCol = -1;
+                        lblStatus.Text = "请重新选择目标位置（不含公式的单元格）";
+                        lblStatus.ForeColor = Color.Red;
+                        return;
+                    }
+                }
+
                 _tgtRow = args.StartRow;
                 _tgtEndRow = args.EndRow;
                 _tgtCol = args.StartCol;
@@ -677,7 +679,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             };
 
             // ---- 验证 ----
-            _btnNext.Tag = new Func<bool>(() =>
+            _stepValidate = new Func<bool>(() =>
             {
                 if (_tgtCol < 0)
                 {
@@ -730,12 +732,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 pnlFormula.Controls.AddRange(new Control[] { lblColHint, chkListCols, lblExpr, txtExpr, lblHint });
 
                 // ---- 来源表预览（用 LightweightTableEditor，只读） ----
-                var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0) };
+                var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 245, 238) };
                 var gridSource = new LightweightTableEditor
                 {
                     Dock = DockStyle.Fill,
                     HighlightColor = Color.FromArgb(0, 120, 60),
-                    FocusColor = Color.FromArgb(200, 255, 200)
+                    FocusColor = Color.FromArgb(200, 255, 200),
+                    BackColor = Color.FromArgb(245, 252, 248),      // 浅绿背景
+                    CellBackColor = Color.FromArgb(245, 252, 248)   // 浅绿单元格底色
                 };
                 LoadSourceTableData(gridSource);
                 pnlGrid.Controls.Add(gridSource);
@@ -786,7 +790,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 }
 
                 // 验证
-                _btnNext.Tag = new Func<bool>(() =>
+                _stepValidate = new Func<bool>(() =>
                 {
                     _formulaExpr = txtExpr.Text.Trim();
                     if (_formulaCheckedIndices.Count == 0)
@@ -821,12 +825,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             }
 
             // ---- 非公式模式：来源表用 LightweightTableEditor 原生选择 ----
-            var pnlGrid2 = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0) };
+            var pnlGrid2 = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 245, 238) };
             var gridSource2 = new LightweightTableEditor
             {
                 Dock = DockStyle.Fill,
                 HighlightColor = Color.FromArgb(0, 120, 60),   // 绿色高亮（来源表）
-                FocusColor = Color.FromArgb(200, 255, 200)
+                FocusColor = Color.FromArgb(200, 255, 200),
+                BackColor = Color.FromArgb(245, 252, 248),      // 浅绿背景
+                CellBackColor = Color.FromArgb(245, 252, 248)   // 浅绿单元格底色
             };
             LoadSourceTableData(gridSource2);
             pnlGrid2.Controls.Add(gridSource2);
@@ -900,7 +906,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             };
 
             // 验证并保存
-            _btnNext.Tag = new Func<bool>(() =>
+            _stepValidate = new Func<bool>(() =>
             {
                 if (_srcCol < 0)
                 {
@@ -912,15 +918,22 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 switch (_selectedRefMode)
                 {
                     case RefMode.CellRef:
+                        var tgtCell = _targetTable?[_tgtRow, _tgtCol];
+                        var srcCell = _sourceTable?[_srcRow, _srcCol];
+                        if (tgtCell == null || tgtCell.Id.Value <= 0)
+                        {
+                            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "无法获取目标单元格信息，请重试");
+                            return false;
+                        }
+                        if (srcCell == null || srcCell.Id.Value <= 0)
+                        {
+                            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "无法获取来源单元格信息，请重试");
+                            return false;
+                        }
                         _refConfigJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
                         {
-                            Mode = "CellRef",
-                            TargetColumnIndex = _tgtCol,
-                            TargetColumnName = _tgtColName,
-                            TargetRowIndex = _tgtRow,
-                            SourceColumnIndex = _srcCol,
-                            SourceColumnName = gridSource2.GetColumnName(_srcCol),
-                            SourceRowIndex = _srcRow
+                            TargetCellId = tgtCell.Id.Value,
+                            SourceCellId = srcCell.Id.Value
                         });
                         break;
                     case RefMode.ColumnRef:
@@ -1032,6 +1045,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 return;
             }
 
+            _sourceTable = table;
             LoadTableToEditor(editor, table, 200);
         }
         catch (Exception ex)
@@ -1129,6 +1143,8 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 editor.ShowError("未找到目标表格");
                 return;
             }
+            _targetTable = table;
+            table.LoadAndReturn();
             LoadTableToEditor(editor, table, 50);
         }
         catch (Exception ex)
@@ -1223,6 +1239,15 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     {
         try
         {
+            // 重要：调用 Step4 的验证+生成 RefConfig 逻辑
+            // ShowStep4 时将验证+生成逻辑放在了 _stepValidate 中，
+            // 但 Step4 是最后一步，"下一步"隐藏，"完成"显示，所以需要在这里手动调用。
+            if (_stepValidate != null)
+            {
+                if (!_stepValidate())
+                    return;
+            }
+
             // 设置默认引用名称
             if (string.IsNullOrEmpty(_refName))
                 _refName = $"引用_{_selectedProjectName}_{DateTime.Now:yyyyMMdd}";
@@ -1256,6 +1281,56 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         {
             Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, $"保存失败：{ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 构建项目 Tile 列表
+    /// </summary>
+    private void BuildTiles(string filter)
+    {
+        if (_tileProjects == null) return;
+        _tileProjects.ClearSelected();
+        _tileProjects.BeginUpdate();
+        _tileProjects.Groups.Clear();
+
+        var filtered = _allProjects.Where(p =>
+            string.IsNullOrWhiteSpace(filter) ||
+            (p.Name ?? "").IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            (p.Number ?? "").IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+
+        var group = new C1.Win.C1Tile.Group { Text = "所有项目" };
+        foreach (var proj in filtered)
+        {
+            var tile = new Tile
+            {
+                Text = proj.Name,
+                Image1 = Program.MainForm.CurrentEdition?.ProjectTileIcon,
+                HorizontalSize = 5,
+                VerticalSize = 4,
+                BackColor = Color.FromArgb(248, 248, 248),
+                Template = _projectTileTemplate,
+                Tag = proj.Id
+            };
+            group.Tiles.Add(tile);
+        }
+        _tileProjects.Groups.Add(group);
+        _tileProjects.EndUpdate();
+    }
+
+    /// <summary>
+    /// 异步加载项目列表
+    /// </summary>
+    private async Task LoadProjectsAsync()
+    {
+        try
+        {
+            var projects = await StorageRouter.GetProjects();
+            _allProjects = projects
+                .Where(p => p.Type == ProjectType.Project && p.Id != _currentProject.Id)
+                .ToList();
+            BuildTiles(null);
+        }
+        catch (Exception ex) { ex.Log(); }
     }
 
     /// <summary>
