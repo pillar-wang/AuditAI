@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using Leqisoft.DTO;
@@ -23,6 +23,7 @@ public static class Program
 		Run().Wait();
 	}
 
+#pragma warning disable SCS0005 // 测试工具，非安全场景
 	private static async Task Run()
 	{
 		Random random = new Random();

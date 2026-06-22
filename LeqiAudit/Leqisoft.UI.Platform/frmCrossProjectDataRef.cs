@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using C1.Win.C1FlexGrid;
 using C1.Win.C1Input;
-using C1.Win.C1Ribbon;
+using Leqisoft.UI.Controls;
 using Leqisoft.DTO;
+using Leqisoft.LocalDataStore;
 using Leqisoft.Model;
 using Project = Leqisoft.Model.Project;
 
@@ -16,7 +17,7 @@ namespace Leqisoft.UI.Platform;
 /// <summary>
 /// 跨项目数据引用的配置管理对话框
 /// </summary>
-public class frmCrossProjectDataRef : C1RibbonForm
+public class frmCrossProjectDataRef : Form
 {
     private readonly Project _currentProject;
     private readonly Id64 _currentTableId;
@@ -24,15 +25,18 @@ public class frmCrossProjectDataRef : C1RibbonForm
     private List<CrossProjectDataRef> _refList;
 
     // UI 控件
-    private C1Label _lblTitle;
-    private C1FlexGrid _grid;
-    private C1Button _btnAdd;
+    private Label _lblTitle;
+    private C1FlexGridEx _grid;
     private C1Button _btnEdit;
     private C1Button _btnDelete;
     private C1Button _btnToggleEnabled;
     private C1Button _btnRefreshSelected;
     private C1Button _btnRefreshAll;
     private C1Button _btnClose;
+    private C1Button _btnAddNew;
+    private C1Button _btnDashboard;
+    private Label _lblStatusFilter;
+    private C1ComboBox _cmbStatusFilter;
 
     /// <summary>
     /// 构造函数
@@ -72,20 +76,98 @@ public class frmCrossProjectDataRef : C1RibbonForm
             _refList = await _store.Load(_currentTableId);
             _grid.Rows.Count = 1; // 保留固定行
 
-            for (int i = 0; i < _refList.Count; i++)
+            // 应用状态筛选
+            string filterText = _cmbStatusFilter?.SelectedItem?.ToString() ?? "全部";
+            var filteredList = _refList;
+            if (filterText != "全部")
             {
-                var item = _refList[i];
+                filteredList = _refList.Where(item =>
+                {
+                    var mark = CrossProjectRefCellStyle.GetMark(item.Id);
+                    var status = mark?.Status ?? CrossProjectRefCellStyle.RefStatus.Normal;
+                    return filterText switch
+                    {
+                        "正常" => status == CrossProjectRefCellStyle.RefStatus.Normal,
+                        "异常" => status == CrossProjectRefCellStyle.RefStatus.Error || status == CrossProjectRefCellStyle.RefStatus.DefaultValue,
+                        "缓存降级" => status == CrossProjectRefCellStyle.RefStatus.CacheFallback,
+                        _ => true
+                    };
+                }).ToList();
+            }
+
+            var authProvider = new CrossProjectRefAuthProvider(_currentProject);
+            var cache = new CrossProjectRefCache(Leqisoft.Model.User.Current?.Id ?? 1);
+
+            for (int i = 0; i < filteredList.Count; i++)
+            {
+                var item = filteredList[i];
                 _grid.Rows.Add();
                 var row = _grid.Rows[i + 1];
                 row[0] = i + 1;
                 row[1] = item.Name;
-                row[2] = item.SourceProjectId.ToString();
-                row[3] = item.SourceTableId.Value.ToString();
+                row[2] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : GetProjectNameById(item.SourceProjectId);
+                row[3] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : GetTableNameById(item.SourceProjectId, item.SourceTableId);
                 row[4] = GetRefModeDisplay(item.RefMode);
                 row[5] = item.Enabled ? "启用" : "禁用";
                 row[6] = item.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
                 row[7] = ""; // 最后执行结果（暂空）
+
+                // 授权状态
+                try
+                {
+                    bool authorized = authProvider.CheckTableAccess(item.SourceProjectId, _currentProject.Id, item.SourceTableId);
+                    row[8] = authorized ? "已授权" : "未授权";
+                }
+                catch
+                {
+                    row[8] = "未知";
+                }
+
+                // 缓存状态
+                try
+                {
+                    string dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
+                        (Leqisoft.Model.User.Current?.Id ?? 1).ToString(), $"{item.SourceProjectId}.db");
+                    var cachedData = cache.GetCachedData(item.Id, dbPath, 60);
+                    if (cachedData != null)
+                        row[9] = "已缓存";
+                    else if (item.LastSourceVersion.HasValue)
+                        row[9] = "过期";
+                    else
+                        row[9] = "未缓存";
+                }
+                catch
+                {
+                    row[9] = "未知";
+                }
+
+                // 版本号
+                row[10] = item.LastSourceVersion?.ToString() ?? "-";
+
+                // 上次验证
+                row[11] = item.LastVerifiedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
+
                 row.UserData = item;
+
+                // 行颜色编码
+                try
+                {
+                    var mark = CrossProjectRefCellStyle.GetMark(item.Id);
+                    if (mark != null)
+                    {
+                        row.StyleNew.BackColor = mark.Status switch
+                        {
+                            CrossProjectRefCellStyle.RefStatus.CacheFallback => Color.FromArgb(255, 255, 200),
+                            CrossProjectRefCellStyle.RefStatus.DefaultValue => Color.FromArgb(255, 220, 220),
+                            CrossProjectRefCellStyle.RefStatus.Error => Color.FromArgb(255, 220, 220),
+                            _ => Color.White
+                        };
+                    }
+                }
+                catch
+                {
+                    // 忽略样式设置错误
+                }
             }
 
             _grid.AutoSizeCols();
@@ -104,7 +186,7 @@ public class frmCrossProjectDataRef : C1RibbonForm
         return mode switch
         {
             RefMode.CellRef => "单元格",
-            RefMode.ColumnRef => "列",
+            RefMode.ColumnRef => "整列",
             RefMode.AreaRef => "区域",
             RefMode.FormulaCompute => "公式运算",
             _ => mode.ToString()
@@ -112,20 +194,91 @@ public class frmCrossProjectDataRef : C1RibbonForm
     }
 
     /// <summary>
-    /// 弹出新增对话框
+    /// 通过项目ID获取项目名称（与向导显示一致，从主数据库 Projects 表读取）
     /// </summary>
-    private void ShowAddDialog()
+    internal static string GetProjectNameById(Guid projectId)
     {
-        using var dialog = new frmCrossProjectDataRefEditDialog("新增引用", null, _currentTableId);
-        if (dialog.ShowDialog(this) == DialogResult.OK)
+        try
         {
-            var newRef = dialog.GetResult();
-            newRef.Id = _currentProject.GetNextId();
-            newRef.TargetTableId = _currentTableId;
-            newRef.CreatedAt = DateTime.Now;
-            newRef.UpdatedAt = DateTime.Now;
+            var projects = Task.Run(() => Leqisoft.LocalDataStore.StorageRouter.GetProjects()).Result;
+            var project = projects.FirstOrDefault(p => p.Id == projectId);
+            if (project != null)
+                return project.Name ?? projectId.ToString();
 
-            _ = SaveAndRefresh(newRef);
+            string dbPath = MainForm.GetDbPathByGuid(projectId);
+            if (!System.IO.File.Exists(dbPath))
+                return projectId.ToString();
+
+            var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+            var projectDto = dal.GetProject();
+            return projectDto?.Name ?? projectId.ToString();
+        }
+        catch
+        {
+            return projectId.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 通过项目ID和表ID获取表格名称（与向导显示一致）
+    /// </summary>
+    internal static string GetTableNameById(Guid projectId, Id64 tableId)
+    {
+        try
+        {
+            string dbPath = MainForm.GetDbPathByGuid(projectId);
+            if (!System.IO.File.Exists(dbPath))
+                return tableId.Value.ToString();
+
+            var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+            var dto = dal.GetProject();
+            if (dto == null)
+                return tableId.Value.ToString();
+
+            var project = new Leqisoft.Model.Project
+            {
+                Id = projectId,
+                Name = dto.Name,
+                Dal = dal
+            };
+            project.PopulateFieldsFromDto(dto);
+            project.Load();
+
+            var tableNode = project.GetAllTableNodes().FirstOrDefault(n => n.Id == tableId);
+            if (tableNode != null)
+                return tableNode.Number + " " + tableNode.Name;
+
+            var tableDto = dal.GetTable(tableId);
+            return tableDto?.Title ?? tableId.Value.ToString();
+        }
+        catch
+        {
+            return tableId.Value.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 获取当前项目中目标表的名称
+    /// </summary>
+    private string GetTargetTableName(Id64 tableId)
+    {
+        try
+        {
+            var table = _currentProject.GetTableById(tableId);
+            if (table != null)
+                return table.TreeNode?.Name ?? tableId.Value.ToString();
+            
+            string dbPath = MainForm.GetDbPathByGuid(_currentProject.Id);
+            if (!System.IO.File.Exists(dbPath))
+                return tableId.Value.ToString();
+
+            var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+            var tableDto = dal.GetTable(tableId);
+            return tableDto?.Title ?? tableId.Value.ToString();
+        }
+        catch
+        {
+            return tableId.Value.ToString();
         }
     }
 
@@ -136,7 +289,7 @@ public class frmCrossProjectDataRef : C1RibbonForm
     {
         if (item == null) return;
 
-        using var dialog = new frmCrossProjectDataRefEditDialog("编辑引用", item, _currentTableId);
+        using var dialog = new frmCrossProjectDataRefEditDialog("编辑引用", item, _currentTableId, _currentProject);
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
             var updated = dialog.GetResult();
@@ -163,11 +316,6 @@ public class frmCrossProjectDataRef : C1RibbonForm
     }
 
     // ---- 事件处理 ----
-
-    private void _btnAdd_Click(object sender, EventArgs e)
-    {
-        ShowAddDialog();
-    }
 
     private void _btnEdit_Click(object sender, EventArgs e)
     {
@@ -267,8 +415,8 @@ public class frmCrossProjectDataRef : C1RibbonForm
         {
             var manager = new CrossProjectDataRefManager(_currentProject);
             var results = await manager.ExecuteAll(_currentTableId);
-            int success = results.Count(r => r.Success);
-            int failed = results.Count(r => !r.Success);
+            int success = results.Results.Count(r => r.Success);
+            int failed = results.Results.Count(r => !r.Success);
             Leqisoft.UI.Controls.MessageBox.Show(
                 MessageBoxIcon.None,
                 $"全部刷新完成：成功 {success} 个，失败 {failed} 个");
@@ -283,6 +431,67 @@ public class frmCrossProjectDataRef : C1RibbonForm
     private void _btnClose_Click(object sender, EventArgs e)
     {
         this.Close();
+    }
+
+    private async void _btnAddNew_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            var result = frmCrossProjectRefConfigWizard.ShowWizard(_currentProject, _currentTableId, null);
+            if (result == DialogResult.OK)
+            {
+                await RefreshList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, $"新增引用失败: {ex.Message}");
+        }
+    }
+
+    private void _btnDashboard_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            frmCrossProjectRefStatus.ShowDashboard(_currentProject);
+        }
+        catch (Exception ex)
+        {
+            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, $"打开状态仪表板失败: {ex.Message}");
+        }
+    }
+
+    private async void _cmbStatusFilter_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        await RefreshList();
+    }
+
+    private async void _grid_AfterEdit(object sender, C1.Win.C1FlexGrid.RowColEventArgs e)
+    {
+        if (e.Col != 1) return; // 仅处理引用名称列
+
+        try
+        {
+            int rowIdx = e.Row;
+            if (rowIdx > 0 && rowIdx <= _grid.Rows.Count - 1)
+            {
+                var item = _grid.Rows[rowIdx].UserData as CrossProjectDataRef;
+                if (item != null)
+                {
+                    var newName = _grid.Rows[rowIdx][1]?.ToString()?.Trim();
+                    if (!string.IsNullOrWhiteSpace(newName) && newName != item.Name)
+                    {
+                        item.Name = newName;
+                        item.UpdatedAt = DateTime.Now;
+                        await _store.Save(item);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, $"保存名称失败: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -302,15 +511,19 @@ public class frmCrossProjectDataRef : C1RibbonForm
 
     private void InitializeComponent()
     {
-        this._lblTitle = new C1Label();
-        this._grid = new C1FlexGrid();
-        this._btnAdd = new C1Button();
+        this._lblTitle = new Label();
+        this._grid = new C1FlexGridEx();
         this._btnEdit = new C1Button();
         this._btnDelete = new C1Button();
         this._btnToggleEnabled = new C1Button();
         this._btnRefreshSelected = new C1Button();
         this._btnRefreshAll = new C1Button();
         this._btnClose = new C1Button();
+        this._btnAddNew = new C1Button();
+        this._btnDashboard = new C1Button();
+        
+        this._lblStatusFilter = new Label();
+        this._cmbStatusFilter = new C1ComboBox();
 
         //
         // _lblTitle
@@ -324,8 +537,7 @@ public class frmCrossProjectDataRef : C1RibbonForm
         this._lblTitle.Name = "_lblTitle";
         this._lblTitle.Size = new Size(200, 22);
         this._lblTitle.TabIndex = 0;
-        this._lblTitle.Text = "跨项目数据引用管理";
-        this._lblTitle.TextDetached = true;
+		this._lblTitle.Text = "跨项目数据引用管理";
 
         //
         // _grid
@@ -336,9 +548,9 @@ public class frmCrossProjectDataRef : C1RibbonForm
         this._grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         this._grid.BackColor = Color.White;
         this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.FixedSingle;
-        this._grid.Cols.Count = 8;
+        this._grid.Cols.Count = 12;
         this._grid.Cols[0].Caption = "序号";
-        this._grid.Cols[0].Width = 45;
+        this._grid.Cols[0].AllowSorting = false;
         this._grid.Cols[1].Caption = "引用名称";
         this._grid.Cols[1].Width = 150;
         this._grid.Cols[2].Caption = "来源项目";
@@ -353,125 +565,153 @@ public class frmCrossProjectDataRef : C1RibbonForm
         this._grid.Cols[6].Width = 150;
         this._grid.Cols[7].Caption = "最后执行结果";
         this._grid.Cols[7].Width = 100;
+        this._grid.Cols[8].Caption = "授权状态";
+        this._grid.Cols[8].Width = 80;
+        this._grid.Cols[9].Caption = "缓存状态";
+        this._grid.Cols[9].Width = 80;
+        this._grid.Cols[10].Caption = "版本号";
+        this._grid.Cols[10].Width = 70;
+        this._grid.Cols[11].Caption = "上次验证";
+        this._grid.Cols[11].Width = 150;
         this._grid.Cols.Fixed = 1;
+        this._grid.Cols[1].AllowEditing = true;
+        this._grid.ExtendLastCol = true;
         this._grid.Location = new Point(12, 50);
         this._grid.Name = "_grid";
         this._grid.Rows.Count = 1;
         this._grid.Rows.Fixed = 1;
-        this._grid.Rows.DefaultSize = 24;
+        this._grid.Rows.DefaultSize = 30;
         this._grid.SelectionMode = SelectionModeEnum.Row;
         this._grid.Size = new Size(960, 380);
-        this._grid.Styles.Normal.Font = new Font("Microsoft YaHei", 9f);
-        this._grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 9f, FontStyle.Bold);
+        this._grid.Styles.Normal.Font = new Font("Microsoft YaHei", 10f);
+        this._grid.Styles.Normal.TextAlign = TextAlignEnum.CenterCenter;
+        this._grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 10f, FontStyle.Bold);
+        this._grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
+        this._grid.Styles.EmptyArea.BackColor = Color.White;
         this._grid.TabIndex = 1;
+        this._grid.AfterEdit += _grid_AfterEdit;
 
         //
-        // _btnAdd
+        // 底部按钮面板
         //
-        this._btnAdd.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnAdd.Font = new Font("Microsoft YaHei", 9f);
-        this._btnAdd.Location = new Point(12, 440);
-        this._btnAdd.Name = "_btnAdd";
-        this._btnAdd.Size = new Size(87, 33);
-        this._btnAdd.TabIndex = 2;
-        this._btnAdd.Text = "新增";
-        this._btnAdd.UseVisualStyleBackColor = true;
-        this._btnAdd.Click += _btnAdd_Click;
+        var pnlButtons = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 55,
+            BackColor = Color.FromArgb(245, 245, 245)
+        };
+        var pnlBorder = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 1,
+            BackColor = Color.FromArgb(220, 220, 220)
+        };
+        pnlButtons.Controls.Add(pnlBorder);
 
-        //
-        // _btnEdit
-        //
-        this._btnEdit.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnEdit.Font = new Font("Microsoft YaHei", 9f);
-        this._btnEdit.Location = new Point(105, 440);
-        this._btnEdit.Name = "_btnEdit";
-        this._btnEdit.Size = new Size(87, 33);
-        this._btnEdit.TabIndex = 3;
+        // 左侧操作按钮组
+        var btnX = 12;
+        var btnY = 11;
+        var btnW = 87;
+        var btnH = 33;
+        var btnGap = 6;
+
+        Action<C1Button> layoutLeft = (btn) => {
+            btn.Font = new Font("Microsoft YaHei", 9f);
+            btn.Location = new Point(btnX, btnY);
+            btn.Size = new Size(btnW, btnH);
+            btn.UseVisualStyleBackColor = true;
+            pnlButtons.Controls.Add(btn);
+            btnX += btnW + btnGap;
+        };
+
+        this._btnAddNew.Text = "新增引用";
+        this._btnAddNew.TabIndex = 9;
+        this._btnAddNew.Click += _btnAddNew_Click;
+        layoutLeft(_btnAddNew);
+
         this._btnEdit.Text = "编辑";
-        this._btnEdit.UseVisualStyleBackColor = true;
+        this._btnEdit.TabIndex = 3;
         this._btnEdit.Click += _btnEdit_Click;
+        layoutLeft(_btnEdit);
 
-        //
-        // _btnDelete
-        //
-        this._btnDelete.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnDelete.Font = new Font("Microsoft YaHei", 9f);
-        this._btnDelete.Location = new Point(198, 440);
-        this._btnDelete.Name = "_btnDelete";
-        this._btnDelete.Size = new Size(87, 33);
-        this._btnDelete.TabIndex = 4;
         this._btnDelete.Text = "删除";
-        this._btnDelete.UseVisualStyleBackColor = true;
+        this._btnDelete.TabIndex = 4;
         this._btnDelete.Click += _btnDelete_Click;
+        layoutLeft(_btnDelete);
 
-        //
-        // _btnToggleEnabled
-        //
-        this._btnToggleEnabled.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnToggleEnabled.Font = new Font("Microsoft YaHei", 9f);
-        this._btnToggleEnabled.Location = new Point(291, 440);
-        this._btnToggleEnabled.Name = "_btnToggleEnabled";
-        this._btnToggleEnabled.Size = new Size(87, 33);
-        this._btnToggleEnabled.TabIndex = 5;
         this._btnToggleEnabled.Text = "启用/禁用";
-        this._btnToggleEnabled.UseVisualStyleBackColor = true;
+        this._btnToggleEnabled.TabIndex = 5;
         this._btnToggleEnabled.Click += _btnToggleEnabled_Click;
+        layoutLeft(_btnToggleEnabled);
 
-        //
-        // _btnRefreshSelected
-        //
-        this._btnRefreshSelected.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnRefreshSelected.Font = new Font("Microsoft YaHei", 9f);
-        this._btnRefreshSelected.Location = new Point(384, 440);
-        this._btnRefreshSelected.Name = "_btnRefreshSelected";
-        this._btnRefreshSelected.Size = new Size(87, 33);
-        this._btnRefreshSelected.TabIndex = 6;
         this._btnRefreshSelected.Text = "刷新选定";
-        this._btnRefreshSelected.UseVisualStyleBackColor = true;
+        this._btnRefreshSelected.TabIndex = 6;
         this._btnRefreshSelected.Click += _btnRefreshSelected_Click;
+        layoutLeft(_btnRefreshSelected);
 
-        //
-        // _btnRefreshAll
-        //
-        this._btnRefreshAll.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        this._btnRefreshAll.Font = new Font("Microsoft YaHei", 9f);
-        this._btnRefreshAll.Location = new Point(477, 440);
-        this._btnRefreshAll.Name = "_btnRefreshAll";
-        this._btnRefreshAll.Size = new Size(87, 33);
-        this._btnRefreshAll.TabIndex = 7;
         this._btnRefreshAll.Text = "刷新所有";
-        this._btnRefreshAll.UseVisualStyleBackColor = true;
+        this._btnRefreshAll.TabIndex = 7;
         this._btnRefreshAll.Click += _btnRefreshAll_Click;
+        layoutLeft(_btnRefreshAll);
+
+        this._btnDashboard.Text = "状态仪表板";
+        this._btnDashboard.TabIndex = 10;
+        this._btnDashboard.Click += _btnDashboard_Click;
+        layoutLeft(_btnDashboard);
+
+        // 右侧关闭按钮
+        this._btnClose.Text = "关闭";
+        this._btnClose.Anchor = AnchorStyles.Right;
+        this._btnClose.Font = new Font("Microsoft YaHei", 9f);
+        this._btnClose.Location = new Point(885, 11);
+        this._btnClose.Size = new Size(btnW, btnH);
+        this._btnClose.UseVisualStyleBackColor = true;
+        this._btnClose.TabIndex = 13;
+        this._btnClose.Click += _btnClose_Click;
+        pnlButtons.Controls.Add(_btnClose);
+
+        // 状态筛选 ComboBox 改到右上角标题行
 
         //
-        // _btnClose
+        // _lblStatusFilter
         //
-        this._btnClose.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnClose.Font = new Font("Microsoft YaHei", 9f);
-        this._btnClose.Location = new Point(885, 440);
-        this._btnClose.Name = "_btnClose";
-        this._btnClose.Size = new Size(87, 33);
-        this._btnClose.TabIndex = 8;
-        this._btnClose.Text = "关闭";
-        this._btnClose.UseVisualStyleBackColor = true;
-        this._btnClose.Click += _btnClose_Click;
+        this._lblStatusFilter.AutoSize = true;
+        this._lblStatusFilter.BackColor = Color.Transparent;
+        this._lblStatusFilter.Font = new Font("Microsoft YaHei", 9f);
+        this._lblStatusFilter.Location = new Point(820, 17);
+        this._lblStatusFilter.Name = "_lblStatusFilter";
+        this._lblStatusFilter.Size = new Size(56, 17);
+        this._lblStatusFilter.TabIndex = 14;
+        this._lblStatusFilter.Text = "状态筛选:";
+
+        //
+        // _cmbStatusFilter
+        //
+        this._cmbStatusFilter.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
+        this._cmbStatusFilter.Font = new Font("Microsoft YaHei", 9f);
+        this._cmbStatusFilter.Items.AddRange(new object[] { "全部", "正常", "异常", "缓存降级" });
+        this._cmbStatusFilter.Location = new Point(876, 14);
+        this._cmbStatusFilter.Name = "_cmbStatusFilter";
+        this._cmbStatusFilter.Size = new Size(96, 24);
+        this._cmbStatusFilter.TabIndex = 15;
+        this._cmbStatusFilter.SelectedIndex = 0;
+        this._cmbStatusFilter.SelectedIndexChanged += _cmbStatusFilter_SelectedIndexChanged;
 
         //
         // frmCrossProjectDataRef
         //
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(984, 485);
+        this.ClientSize = new Size(984, 530);
         this.Controls.Add(this._lblTitle);
         this.Controls.Add(this._grid);
-        this.Controls.Add(this._btnAdd);
-        this.Controls.Add(this._btnEdit);
-        this.Controls.Add(this._btnDelete);
-        this.Controls.Add(this._btnToggleEnabled);
-        this.Controls.Add(this._btnRefreshSelected);
-        this.Controls.Add(this._btnRefreshAll);
-        this.Controls.Add(this._btnClose);
+        this.Controls.Add(pnlButtons);
+        this.Controls.Add(this._lblStatusFilter);
+        this.Controls.Add(this._cmbStatusFilter);
         this.Font = new Font("Microsoft YaHei", 9f);
+        this.FormBorderStyle = FormBorderStyle.FixedDialog;
+        this.MaximizeBox = false;
+        this.MinimizeBox = false;
         this.Name = "frmCrossProjectDataRef";
         this.StartPosition = FormStartPosition.CenterParent;
         this.Text = "跨项目数据引用管理";
@@ -479,48 +719,230 @@ public class frmCrossProjectDataRef : C1RibbonForm
 }
 
 /// <summary>
-/// 简化版新增/编辑引用对话框
+/// 新增/编辑引用对话框
+/// 使用弹出窗口选择项目和表格，而非直接输入 ID
 /// </summary>
-internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
-{
-    private readonly CrossProjectDataRef _existing;
-    private readonly Id64 _currentTableId;
-
-    private TextBox _txtName;
-    private TextBox _txtSourceProjectId;
-    private TextBox _txtSourceTableId;
-    private TextBox _txtTargetTableId;
-    private ComboBox _cmbRefMode;
-    private TextBox _txtRefConfig;
-    private TextBox _txtFilterConfig;
-    private TextBox _txtFormulaExpression;
-    private TextBox _txtColumnMapping;
-    private C1Button _btnOk;
-    private C1Button _btnCancel;
-
-    public frmCrossProjectDataRefEditDialog(string title, CrossProjectDataRef existing, Id64 currentTableId)
+internal class frmCrossProjectDataRefEditDialog : Form
     {
-        _existing = existing;
-        _currentTableId = currentTableId;
-        InitializeComponent();
-        this.Text = title;
+        private readonly CrossProjectDataRef _existing;
+        private readonly Id64 _currentTableId;
+        private readonly Leqisoft.Model.Project _currentProject;
 
-        if (_existing != null)
+        // 私有状态
+        private Leqisoft.DTO.Project _selectedProject;
+        private TreeTableNode _selectedTableNode;
+
+        // UI 控件
+        private TextBox _txtName;
+        private TextBox _txtSourceProject;          // 显示选中的项目名
+        private C1Button _btnSelectProject;           // 点击弹出项目选择
+        private TextBox _txtSourceTable;            // 显示选中的表名
+        private C1Button _btnSelectTable;             // 点击弹出表格选择
+        private TextBox _txtTargetTableId;
+        private C1ComboBox _cmbRefMode;
+        private TextBox _txtRefConfig;
+        private TextBox _txtFilterConfig;
+        private TextBox _txtFormulaExpression;
+        private TextBox _txtColumnMapping;
+        private C1Button _btnOk;
+        private C1Button _btnCancel;
+
+        public frmCrossProjectDataRefEditDialog(string title, CrossProjectDataRef existing, Id64 currentTableId, Leqisoft.Model.Project currentProject)
         {
-            LoadFromExisting();
+            _existing = existing;
+            _currentTableId = currentTableId;
+            _currentProject = currentProject;
+            InitializeComponent();
+            this.Text = title;
+
+            _cmbRefMode.Items.AddRange(new object[] { "单元格", "整列", "区域", "公式运算" });
+            _cmbRefMode.SelectedIndex = 0;
+
+            if (_existing != null)
+            {
+                LoadFromExisting();
+            }
+            else
+            {
+                _txtTargetTableId.Text = GetTargetTableName(_currentTableId);
+            }
         }
-        else
+
+        private string GetTargetTableName(Id64 tableId)
         {
-            _txtTargetTableId.Text = _currentTableId.Value.ToString();
+            try
+            {
+                var table = _currentProject?.GetTableById(tableId);
+                if (table != null)
+                    return table.TreeNode?.Name ?? tableId.Value.ToString();
+                
+                if (_currentProject != null)
+                {
+                    string dbPath = MainForm.GetDbPathByGuid(_currentProject.Id);
+                    if (System.IO.File.Exists(dbPath))
+                    {
+                        var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+                        var tableDto = dal.GetTable(tableId);
+                        return tableDto?.Title ?? tableId.Value.ToString();
+                    }
+                }
+                return tableId.Value.ToString();
+            }
+            catch
+            {
+                return tableId.Value.ToString();
+            }
+        }
+
+    /// <summary>
+    /// 点击"选择项目"按钮 — 弹出 frmSelectProject 对话���
+    /// </summary>
+    private void _btnSelectProject_Click(object sender, EventArgs e)
+    {
+        using (var frm = new frmSelectProject(Program.MainForm.CurrentProject.Id))
+        {
+            if (frm.ShowDialog(this) == DialogResult.OK && frm.SelectedProject != null)
+            {
+                _selectedProject = frm.SelectedProject;
+                _txtSourceProject.Text = $"{_selectedProject.Name} ({_selectedProject.Number})";
+
+                // 清空之前选择的表
+                _selectedTableNode = null;
+                _txtSourceTable.Clear();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 点击"选择表"按钮 — 加载外部项目的表格树，弹出 TreeView 选择
+    /// </summary>
+    private void _btnSelectTable_Click(object sender, EventArgs e)
+    {
+        if (_selectedProject == null)
+        {
+            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择来源项目");
+            return;
+        }
+
+        // 加载外部项目的表格节点
+        var tableNodes = LoadTableNodesForProject(_selectedProject);
+        if (tableNodes == null || tableNodes.Count == 0)
+        {
+            Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "该项目没有可用的表格");
+            return;
+        }
+
+        // 弹出 TreeView 选择窗口
+        using (var tableForm = new Form())
+        {
+            tableForm.Text = "选择来源表 - " + _selectedProject.Name;
+            tableForm.Size = new Size(450, 420);
+            tableForm.StartPosition = FormStartPosition.CenterParent;
+            tableForm.MinimizeBox = false;
+            tableForm.MaximizeBox = false;
+            tableForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+
+            var treeView = new TreeView();
+            treeView.Dock = DockStyle.Fill;
+            treeView.Font = new Font("Microsoft YaHei", 9f);
+            tableForm.Controls.Add(treeView);
+
+            var btnOk = new Button();
+            btnOk.Text = "选择此表格";
+            btnOk.Dock = DockStyle.Bottom;
+            btnOk.Height = 36;
+            btnOk.Font = new Font("Microsoft YaHei", 9f);
+            btnOk.Click += (s, ev) =>
+            {
+                if (treeView.SelectedNode?.Tag is TreeTableNode tableNode)
+                {
+                    _selectedTableNode = tableNode;
+                    _txtSourceTable.Text = tableNode.Name;
+                    tableForm.DialogResult = DialogResult.OK;
+                    tableForm.Close();
+                }
+                else
+                {
+                    Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请选择一个表格");
+                }
+            };
+            tableForm.Controls.Add(btnOk);
+
+            // 填充树
+            foreach (var node in tableNodes)
+            {
+                var tn = treeView.Nodes.Add(node.Name);
+                tn.Tag = node;
+            }
+
+            // 自动展开所有节点
+            treeView.ExpandAll();
+
+            tableForm.ShowDialog(this);
+        }
+    }
+
+    /// <summary>
+    /// 打开外部项目并获取所有表格节点
+    /// </summary>
+    private static List<TreeTableNode> LoadTableNodesForProject(Leqisoft.DTO.Project projectDto)
+    {
+        try
+        {
+            string dbPath = MainForm.GetDbPathByGuid(projectDto.Id);
+            if (!System.IO.File.Exists(dbPath))
+                return new List<TreeTableNode>();
+
+            var dal = new ProjectDAL(dbPath);
+            var dto = dal.GetProject();
+            if (dto == null)
+                return new List<TreeTableNode>();
+
+            var project = new Project
+            {
+                Id = dto.Id,
+                Name = dto.Name
+            };
+            project.Dal = dal;
+            project.PopulateFieldsFromDto(dto);
+            project.Load();
+
+            var nodes = project.GetAllTableNodes();
+            return nodes?.ToList() ?? new List<TreeTableNode>();
+        }
+        catch
+        {
+            return new List<TreeTableNode>();
         }
     }
 
     private void LoadFromExisting()
     {
         _txtName.Text = _existing.Name;
-        _txtSourceProjectId.Text = _existing.SourceProjectId.ToString();
-        _txtSourceTableId.Text = _existing.SourceTableId.Value.ToString();
-        _txtTargetTableId.Text = _existing.TargetTableId.Value.ToString();
+
+        // 编辑模式下用已有数据显示，获取项目名称和表格名称
+        string projectName = frmCrossProjectDataRef.GetProjectNameById(_existing.SourceProjectId);
+        string tableName = frmCrossProjectDataRef.GetTableNameById(_existing.SourceProjectId, _existing.SourceTableId);
+
+        _selectedProject = new Leqisoft.DTO.Project
+        {
+            Id = _existing.SourceProjectId,
+            Name = projectName
+        };
+        _txtSourceProject.Text = projectName;
+        _txtSourceProject.ReadOnly = true;
+
+        _selectedTableNode = new TreeTableNode { Name = tableName };
+        _selectedTableNode.Id = _existing.SourceTableId;
+        _selectedTableNode.SetTable(new Leqisoft.Model.Table());
+        _txtSourceTable.Text = tableName;
+        _txtSourceTable.ReadOnly = true;
+
+        // 编辑模式下禁用选择按钮
+        _btnSelectProject.Enabled = false;
+        _btnSelectTable.Enabled = false;
+
+        _txtTargetTableId.Text = !string.IsNullOrEmpty(_existing.TargetTableName) ? _existing.TargetTableName : GetTargetTableName(_existing.TargetTableId);
         _cmbRefMode.SelectedItem = GetRefModeDisplay(_existing.RefMode);
         _txtRefConfig.Text = _existing.RefConfig ?? string.Empty;
         _txtFilterConfig.Text = _existing.FilterConfig ?? string.Empty;
@@ -536,10 +958,13 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
         var result = _existing ?? new CrossProjectDataRef();
 
         result.Name = _txtName.Text.Trim();
-        if (Guid.TryParse(_txtSourceProjectId.Text.Trim(), out Guid sourceProjectId))
-            result.SourceProjectId = sourceProjectId;
-        if (long.TryParse(_txtSourceTableId.Text.Trim(), out long sourceTableId))
-            result.SourceTableId = new Id64(sourceTableId);
+
+        if (_selectedProject != null)
+            result.SourceProjectId = _selectedProject.Id;
+
+        if (_selectedTableNode != null)
+            result.SourceTableId = _selectedTableNode.Table.Id;
+
         if (long.TryParse(_txtTargetTableId.Text.Trim(), out long targetTableId))
             result.TargetTableId = new Id64(targetTableId);
 
@@ -575,10 +1000,12 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
     private void InitializeComponent()
     {
         this._txtName = new TextBox();
-        this._txtSourceProjectId = new TextBox();
-        this._txtSourceTableId = new TextBox();
+        this._txtSourceProject = new TextBox();
+        this._btnSelectProject = new C1Button();
+        this._txtSourceTable = new TextBox();
+        this._btnSelectTable = new C1Button();
         this._txtTargetTableId = new TextBox();
-        this._cmbRefMode = new ComboBox();
+        this._cmbRefMode = new C1ComboBox();
         this._txtRefConfig = new TextBox();
         this._txtFilterConfig = new TextBox();
         this._txtFormulaExpression = new TextBox();
@@ -587,8 +1014,8 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
         this._btnCancel = new C1Button();
 
         var lblName = new Label { Text = "引用名称：", Location = new Point(12, 15), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblSourceProjectId = new Label { Text = "来源项目 ID：", Location = new Point(12, 48), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblSourceTableId = new Label { Text = "来源表 ID：", Location = new Point(12, 81), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
+        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(12, 48), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
+        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(12, 81), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
         var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(12, 114), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
         var lblRefMode = new Label { Text = "引用模式：", Location = new Point(12, 147), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
         var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(12, 180), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
@@ -606,22 +1033,48 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
         this._txtName.TabIndex = 0;
 
         //
-        // _txtSourceProjectId
+        // _txtSourceProject
         //
-        this._txtSourceProjectId.Font = new Font("Microsoft YaHei", 9f);
-        this._txtSourceProjectId.Location = new Point(118, 45);
-        this._txtSourceProjectId.Name = "_txtSourceProjectId";
-        this._txtSourceProjectId.Size = new Size(350, 24);
-        this._txtSourceProjectId.TabIndex = 1;
+        this._txtSourceProject.Font = new Font("Microsoft YaHei", 9f);
+        this._txtSourceProject.Location = new Point(118, 45);
+        this._txtSourceProject.Name = "_txtSourceProject";
+        this._txtSourceProject.ReadOnly = true;
+        this._txtSourceProject.Size = new Size(260, 24);
+        this._txtSourceProject.TabIndex = 1;
+        this._txtSourceProject.Text = "(点击右侧按钮选择)";
 
         //
-        // _txtSourceTableId
+        // _btnSelectProject
         //
-        this._txtSourceTableId.Font = new Font("Microsoft YaHei", 9f);
-        this._txtSourceTableId.Location = new Point(118, 78);
-        this._txtSourceTableId.Name = "_txtSourceTableId";
-        this._txtSourceTableId.Size = new Size(350, 24);
-        this._txtSourceTableId.TabIndex = 2;
+        this._btnSelectProject.Font = new Font("Microsoft YaHei", 9f);
+        this._btnSelectProject.Location = new Point(382, 44);
+        this._btnSelectProject.Name = "_btnSelectProject";
+        this._btnSelectProject.Size = new Size(90, 26);
+        this._btnSelectProject.TabIndex = 12;
+        this._btnSelectProject.Text = "选择...";
+        this._btnSelectProject.Click += _btnSelectProject_Click;
+
+        //
+        // _txtSourceTable
+        //
+        this._txtSourceTable.Font = new Font("Microsoft YaHei", 9f);
+        this._txtSourceTable.Location = new Point(118, 78);
+        this._txtSourceTable.Name = "_txtSourceTable";
+        this._txtSourceTable.ReadOnly = true;
+        this._txtSourceTable.Size = new Size(260, 24);
+        this._txtSourceTable.TabIndex = 2;
+        this._txtSourceTable.Text = "(请先选择来源项目)";
+
+        //
+        // _btnSelectTable
+        //
+        this._btnSelectTable.Font = new Font("Microsoft YaHei", 9f);
+        this._btnSelectTable.Location = new Point(382, 77);
+        this._btnSelectTable.Name = "_btnSelectTable";
+        this._btnSelectTable.Size = new Size(90, 26);
+        this._btnSelectTable.TabIndex = 13;
+        this._btnSelectTable.Text = "选择...";
+        this._btnSelectTable.Click += _btnSelectTable_Click;
 
         //
         // _txtTargetTableId
@@ -636,14 +1089,12 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
         //
         // _cmbRefMode
         //
-        this._cmbRefMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this._cmbRefMode.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
         this._cmbRefMode.Font = new Font("Microsoft YaHei", 9f);
-        this._cmbRefMode.Items.AddRange(new object[] { "单元格", "列", "区域", "公式运算" });
         this._cmbRefMode.Location = new Point(118, 144);
         this._cmbRefMode.Name = "_cmbRefMode";
         this._cmbRefMode.Size = new Size(350, 24);
         this._cmbRefMode.TabIndex = 4;
-        this._cmbRefMode.SelectedIndex = 0;
 
         //
         // _txtRefConfig
@@ -700,14 +1151,14 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
                 Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "请输入引用名称");
                 return;
             }
-            if (!Guid.TryParse(this._txtSourceProjectId.Text.Trim(), out _))
+            if (this._selectedProject == null)
             {
-                Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "来源项目 ID 格式不正确，请输入有效的 GUID");
+                Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "请选择来源项目");
                 return;
             }
-            if (!long.TryParse(this._txtSourceTableId.Text.Trim(), out _))
+            if (this._selectedTableNode == null)
             {
-                Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "来源表 ID 必须是数字");
+                Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "请选择来源表");
                 return;
             }
             // 验证 JSON 格式
@@ -753,8 +1204,10 @@ internal class frmCrossProjectDataRefEditDialog : C1RibbonForm
         this.Controls.AddRange(new Control[]
         {
             lblName, this._txtName,
-            lblSourceProjectId, this._txtSourceProjectId,
-            lblSourceTableId, this._txtSourceTableId,
+            lblSourceProject, this._txtSourceProject,
+            this._btnSelectProject,
+            lblSourceTable, this._txtSourceTable,
+            this._btnSelectTable,
             lblTargetTableId, this._txtTargetTableId,
             lblRefMode, this._cmbRefMode,
             lblRefConfig, this._txtRefConfig,

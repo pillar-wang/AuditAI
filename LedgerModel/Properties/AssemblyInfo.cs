@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿﻿﻿﻿using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -15,3 +15,4 @@ using System.Runtime.Versioning;
 [assembly: Guid("2139743a-c02e-437f-a030-dfa9f1dbee9a")]
 [assembly: AssemblyFileVersion("1.0.2022.0201")]
 [assembly: AssemblyVersion("1.0.2022.201")]
+[assembly: InternalsVisibleTo("LeqiAudit.Tests")]

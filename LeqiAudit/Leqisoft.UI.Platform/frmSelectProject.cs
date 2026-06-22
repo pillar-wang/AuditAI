@@ -1,11 +1,10 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using C1.Win.C1Input;
-using C1.Win.C1Ribbon;
 using C1.Win.C1Tile;
 using Leqisoft.DTO;
 using Leqisoft.LocalDataStore;
@@ -18,12 +17,13 @@ namespace Leqisoft.UI.Platform;
 /// 项目管理风格的项目选择对话框
 /// 用于跨项目引用时选择来源项目
 /// </summary>
-public class frmSelectProject : C1RibbonForm
+public class frmSelectProject : Form
 {
     private C1TileControlEx _tileControl;
+    private Template _projectTemplate;
     private C1Button _btnOk;
     private C1Button _btnCancel;
-    private C1Label _lblTitle;
+    private Label _lblTitle;
 
     private Leqisoft.DTO.Project _selectedProject;
     private readonly Guid _currentProjectId;
@@ -88,11 +88,10 @@ public class frmSelectProject : C1RibbonForm
                     Text = project.Name,
                     HorizontalSize = 5,
                     VerticalSize = 4,
-                    Tag = project
+                    Tag = project,
+                    Template = _projectTemplate,
+                    BackColor = Color.White
                 };
-
-                // 设置样式
-                tile.BackColor = Color.White;
 
                 group.Tiles.Add(tile);
             }
@@ -135,12 +134,53 @@ public class frmSelectProject : C1RibbonForm
         this.Close();
     }
 
+    /// <summary>
+    /// 创建项目 Tile 模板（显示项目图标 + 名称）
+    /// </summary>
+    private static Template CreateProjectTemplate()
+    {
+        var template = new Template();
+        template.Description = "Win32";
+
+        // 图标区域（上部）
+        var iconPanel = new PanelElement();
+        iconPanel.Alignment = ContentAlignment.TopCenter;
+        var iconImage = new ImageElement();
+        iconImage.FixedHeight = 50;
+        iconImage.FixedWidth = 50;
+        iconImage.ImageSelector = ImageSelector.Image1;
+        iconPanel.Children.Add(iconImage);
+        iconPanel.FixedHeight = 50;
+        iconPanel.FixedWidth = 50;
+        iconPanel.Margin = new Padding(0, 15, 0, 0);
+
+        // 名称区域（下部）
+        var namePanel = new PanelElement();
+        namePanel.Alignment = ContentAlignment.BottomCenter;
+        var nameText = new TextElement();
+        nameText.AlignmentOfContents = ContentAlignment.TopCenter;
+        nameText.TextTrimming = TextTrimming.EndEllipsis;
+        nameText.SingleLine = false;
+        nameText.Font = new Font("Microsoft YaHei", 9f, FontStyle.Regular);
+        nameText.FixedHeight = 40;
+        nameText.FixedWidth = 130;
+        namePanel.Children.Add(nameText);
+        namePanel.FixedHeight = 40;
+        namePanel.FixedWidth = 130;
+
+        template.Elements.Add(iconPanel);
+        template.Elements.Add(namePanel);
+        template.Name = "projectSelectTemplate";
+        return template;
+    }
+
     private void InitializeComponent()
     {
         this._tileControl = new C1TileControlEx();
+        this._projectTemplate = CreateProjectTemplate();
         this._btnOk = new C1.Win.C1Input.C1Button();
         this._btnCancel = new C1.Win.C1Input.C1Button();
-        this._lblTitle = new C1.Win.C1Input.C1Label();
+        this._lblTitle = new Label();
 
         //
         // _tileControl
@@ -150,10 +190,12 @@ public class frmSelectProject : C1RibbonForm
         this._tileControl.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
         this._tileControl.CellWidth = 10;
         this._tileControl.CellHeight = 10;
+        this._tileControl.CellSpacing = 20;
         this._tileControl.Location = new System.Drawing.Point(12, 50);
         this._tileControl.Name = "_tileControl";
         this._tileControl.Size = new System.Drawing.Size(760, 420);
         this._tileControl.TabIndex = 0;
+        this._tileControl.Templates.Add(this._projectTemplate);
         this._tileControl.DoubleClickTile += _tileControl_DoubleClickTile;
 
         //
@@ -169,7 +211,6 @@ public class frmSelectProject : C1RibbonForm
         this._lblTitle.Size = new System.Drawing.Size(200, 22);
         this._lblTitle.TabIndex = 1;
         this._lblTitle.Text = "请选择来源项目";
-        this._lblTitle.TextDetached = true;
 
         //
         // _btnOk

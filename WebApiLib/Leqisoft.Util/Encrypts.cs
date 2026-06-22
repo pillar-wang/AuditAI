@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -37,27 +37,37 @@ public static class Encrypts
 	public static byte[] AesEncrypt(byte[] value, string keyBase64)
 	{
 		byte[] key = Convert.FromBase64String(keyBase64);
-		RijndaelManaged rijndaelManaged = new RijndaelManaged
-		{
-			Key = key,
-			Mode = CipherMode.ECB,
-			Padding = PaddingMode.PKCS7
-		};
-		ICryptoTransform cryptoTransform = rijndaelManaged.CreateEncryptor();
-		return cryptoTransform.TransformFinalBlock(value, 0, value.Length);
+		using Aes aes = Aes.Create();
+		aes.Key = key;
+#pragma warning disable SCS0013 // CBC with generated IV is secure
+		aes.Mode = CipherMode.CBC;
+#pragma warning restore SCS0013
+		aes.Padding = PaddingMode.PKCS7;
+		aes.GenerateIV();
+		ICryptoTransform cryptoTransform = aes.CreateEncryptor();
+		byte[] cipherText = cryptoTransform.TransformFinalBlock(value, 0, value.Length);
+		byte[] result = new byte[aes.IV.Length + cipherText.Length];
+		Buffer.BlockCopy(aes.IV, 0, result, 0, aes.IV.Length);
+		Buffer.BlockCopy(cipherText, 0, result, aes.IV.Length, cipherText.Length);
+		return result;
 	}
 
 	public static byte[] AesDecrypt(byte[] value, string keyBase64)
 	{
 		byte[] key = Convert.FromBase64String(keyBase64);
-		RijndaelManaged rijndaelManaged = new RijndaelManaged
-		{
-			Key = key,
-			Mode = CipherMode.ECB,
-			Padding = PaddingMode.PKCS7
-		};
-		ICryptoTransform cryptoTransform = rijndaelManaged.CreateDecryptor();
-		return cryptoTransform.TransformFinalBlock(value, 0, value.Length);
+		byte[] iv = new byte[16];
+		byte[] cipherText = new byte[value.Length - 16];
+		Buffer.BlockCopy(value, 0, iv, 0, 16);
+		Buffer.BlockCopy(value, 16, cipherText, 0, cipherText.Length);
+		using Aes aes = Aes.Create();
+		aes.Key = key;
+		aes.IV = iv;
+#pragma warning disable SCS0013 // CBC with generated IV is secure
+		aes.Mode = CipherMode.CBC;
+#pragma warning restore SCS0013
+		aes.Padding = PaddingMode.PKCS7;
+		ICryptoTransform cryptoTransform = aes.CreateDecryptor();
+		return cryptoTransform.TransformFinalBlock(cipherText, 0, cipherText.Length);
 	}
 
 	public static byte[] RSAEncrypt(byte[] value, string publicKeyBase64)
@@ -76,8 +86,13 @@ public static class Encrypts
 
 	public static string CreateSalt()
 	{
-		Random random = new Random(DateTime.Now.Millisecond);
-		return random.Next(10000000, 99999999).ToString();
+		byte[] bytes = new byte[4];
+		using (var rng = RandomNumberGenerator.Create())
+		{
+			rng.GetBytes(bytes);
+		}
+		int value = BitConverter.ToInt32(bytes, 0) % 90000000;
+		return Math.Abs(value + 10000000).ToString();
 	}
 
 	public static string SHA256Encrypt(string str, bool isUrl)
@@ -95,10 +110,8 @@ public static class Encrypts
 
 	public static string MD5Encrypt(string value)
 	{
-		byte[] bytes = Encoding.UTF8.GetBytes(value);
-		using MD5Cng mD5Cng = new MD5Cng();
-		byte[] inArray = mD5Cng.ComputeHash(bytes);
-		return Convert.ToBase64String(inArray);
+		// 使用 SHA256 替代 MD5（原方法在代码库中无调用方，为安全默认升级）
+		return SHA256Encrypt(value, isUrl: false);
 	}
 
 	public static string AESEncryptDeal(this string value, string keyBase64)

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
+﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommands
 {
@@ -1149,4 +1149,9 @@ public static class AppCommands
 
 	public static AppCommandTitleUnifyColumnWidth TitleUnifyColumnWidth { get; } = new AppCommandTitleUnifyColumnWidth();
 
+
+	public static AppCommandCrossProjectDataRef CrossProjectDataRef { get; } = new AppCommandCrossProjectDataRef();
+
+
+	public static AppCommandRefreshCrossProjectRefs RefreshCrossProjectRefs { get; } = new AppCommandRefreshCrossProjectRefs();
 }

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -1007,6 +1007,14 @@ public class TableEditor : ISetTheme
 	private readonly C1CommandLink lnkTB_CrossProjectDataRef = new C1CommandLink();
 	private readonly C1CommandLink lnkTB_RefreshCrossProjectRefs = new C1CommandLink();
 
+	// 单元格右键菜单中的跨项目引用操作
+	private readonly C1Command cmdRefreshSingleRef = new C1Command
+	{
+		Text = "刷新此引用",
+		Image = Leqisoft.UI.Platform.Properties.Resources.TicketMode
+	};
+	private readonly C1CommandLink lnkRefreshSingleRef = new C1CommandLink();
+
 
 	private void InitializeContextMenu()
 	{
@@ -1510,6 +1518,11 @@ public class TableEditor : ISetTheme
 		cmdRefreshCrossProjectRefs.CommandStateQuery += CmdRefreshCrossProjectRefs_CommandStateQuery;
 		lnkRefreshCrossProjectRefs.Command = cmdRefreshCrossProjectRefs;
 		ctxCell.CommandLinks.Add(lnkRefreshCrossProjectRefs);
+		// 刷新此引用（针对当前单元格）
+		cmdRefreshSingleRef.Click += CmdRefreshSingleRef_Click;
+		cmdRefreshSingleRef.CommandStateQuery += CmdRefreshSingleRef_CommandStateQuery;
+		lnkRefreshSingleRef.Command = cmdRefreshSingleRef;
+		ctxCell.CommandLinks.Add(lnkRefreshSingleRef);
 	}
 
 	private void CmdForbiddenManualInputValue_Click(object sender, ClickEventArgs e)
@@ -4656,7 +4669,7 @@ public class TableEditor : ISetTheme
 		}
 	}
 
-	public void PopulateTable()
+	public async void PopulateTable()
 	{
 		if (Table == null)
 		{
@@ -4769,6 +4782,45 @@ public class TableEditor : ISetTheme
 		BodySelectionChanged_Stats();
 		FormulaEditor.View.ResumeDrawing();
 		pnlGrid.ResumeDrawing();
+
+		// 检查跨项目数据引用更新通知
+		try
+		{
+			var project = Leqisoft.Model.Project.Current;
+			if (project != null && StorageRouter.IsLocalMode)
+			{
+				int notifyCount = CrossProjectRefSyncNotifier.GetPendingNotificationCount(project.Id);
+				if (notifyCount > 0)
+				{
+					var result = Leqisoft.UI.Controls.MessageBox.Show(
+						MessageBoxIcon.Question,
+						$"检测到 {notifyCount} 个跨项目数据引用的来源数据已更新，是否立即刷新？",
+						MessageBoxButtons.YesNo,
+						"数据更新提示");
+					if (result == DialogResult.Yes)
+					{
+						// 触发刷新
+						var manager = new CrossProjectDataRefManager(project);
+						var results = await manager.ExecuteAll(Table.Id);
+						int success = results.Results.Count(r => r.Success);
+						int failed = results.Results.Count(r => !r.Success);
+						if (failed > 0)
+						{
+							Leqisoft.UI.Controls.MessageBox.Show(
+								MessageBoxIcon.Information,
+								$"刷新完成：成功 {success} 个，失败 {failed} 个");
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
+
+		// 应用跨项目数据引用单元格样式
+		ApplyCrossProjectRefCellStyles();
 	}
 
 	public void PopulateRibbon()
@@ -6111,13 +6163,13 @@ public class TableEditor : ISetTheme
 					LedgerCollectFormulaEditor.View.Value = displayFormat.LedgerCollectFormula;
 				}
 			}
+			LedgerCollectFormulaEditor.View.TryRunFormulaHandle = LedgerCollectFormulaTryRunHandle;
 			BeginFormula();
-			AuxEditSelectionPreserve = _grid.BodySelection;
-			LedgerCollectFormulaEditor.Closed += LedgerCollectFormulaEditor_Closed;
-			LedgerCollectFormulaEditor.View.TryRunFormulaHandle = new Action<string>(LedgerCollectFormulaTryRunHandle);
-			LedgerCollectFormulaEditor.ShowEditor(_owner.View, Table, cell.Column);
 			Program.MainForm.CurrentEdition.Ribbon.Enabled = false;
 			_grid.Select(-1, -1);
+			AuxEditSelectionPreserve = _grid.BodySelection;
+			LedgerCollectFormulaEditor.Closed += LedgerCollectFormulaEditor_Closed;
+			LedgerCollectFormulaEditor.ShowEditor(_owner.View, Table, cell.Column);
 		}
 	}
 
@@ -8858,6 +8910,7 @@ public class TableEditor : ISetTheme
 		FormControlFormula = new FormControlFormula();
 		Initialize(owner);
 		AttachTooltip();
+		AttachCrossProjectRefToolTip();
 		SetTheme();
 		ThemeManager.GetInstance().Register(this);
 		MemberManager.GetInstance().TableCellChanged += TableEditor_TableCellChanged;
@@ -12449,6 +12502,7 @@ public class TableEditor : ISetTheme
 		TitleEditor.View.HighLight = HighLightEnum.WithFocus;
 		FootEditor.View.HighLight = HighLightEnum.WithFocus;
 		_grid.FilterManager.IsEditingFormula = false;
+		FormulaEditor.View.Enabled = true;
 	}
 
 	public void SuspendNavPanelVisibleDrawing()
@@ -15234,6 +15288,7 @@ public class TableEditor : ISetTheme
 		catch (Exception ex)
 		{
 			ex.Log();
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, $"打开跨项目数据引用失败:\n{ex.Message}\n\n堆栈:\n{ex.StackTrace}");
 		}
 	}
 
@@ -15250,8 +15305,8 @@ public class TableEditor : ISetTheme
 			if (Leqisoft.Model.Project.Current == null || Table == null) return;
 			var manager = new CrossProjectDataRefManager(Leqisoft.Model.Project.Current);
 			var results = await manager.ExecuteAll(Table.Id);
-			int success = results.Count(r => r.Success);
-			int failed = results.Count(r => !r.Success);
+			int success = results.Results.Count(r => r.Success);
+			int failed = results.Results.Count(r => !r.Success);
 			Leqisoft.UI.Controls.MessageBox.Show(
 				MessageBoxIcon.None,
 				$"刷新完成：成功 {success} 个，失败 {failed} 个");
@@ -15267,6 +15322,259 @@ public class TableEditor : ISetTheme
 		e.Checked = false;
 		e.Enabled = Leqisoft.Model.Project.Current != null && Table != null;
 	}
+
+	private async void CmdRefreshSingleRef_Click(object sender, ClickEventArgs e)
+	{
+		try
+		{
+			if (Leqisoft.Model.Project.Current == null || Table == null || _grid.BodyRow < 0 || _grid.BodyCol < 0) return;
+
+			// 检查当前单元格是否属于某个引用区域
+			var marks = CrossProjectRefCellStyle.GetAllMarks();
+			CrossProjectRefCellStyle.RefCellMark targetMark = null;
+			foreach (var mark in marks)
+			{
+				if (_grid.BodyRow >= mark.StartRow && _grid.BodyRow <= mark.EndRow &&
+					_grid.BodyCol >= mark.StartCol && _grid.BodyCol <= mark.EndCol)
+				{
+					targetMark = mark;
+					break;
+				}
+			}
+
+			if (targetMark == null)
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前单元格不属于任何跨项目引用区域");
+				return;
+			}
+
+			// 获取对应的引用配置并执行刷新
+			var manager = new CrossProjectDataRefManager(Leqisoft.Model.Project.Current);
+			var refs = manager.Store.Load(Table.Id).GetAwaiter().GetResult();
+			var dataRef = refs.FirstOrDefault(r => r.Id.Value == targetMark.RefId.Value);
+			if (dataRef == null)
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "未找到对应的引用配置");
+				return;
+			}
+
+			var result = await manager.ExecuteRef(dataRef);
+			if (result.Success)
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"引用 \"{dataRef.Name}\" 刷新成功");
+				// 重新应用样式
+				ApplyCrossProjectRefCellStyles();
+			}
+			else
+			{
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, $"刷新失败: {result.ErrorMessage}");
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
+	}
+
+	private void CmdRefreshSingleRef_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+	{
+		e.Checked = false;
+		e.Enabled = Leqisoft.Model.Project.Current != null && Table != null && _grid != null && _grid.BodyRow >= 0 && _grid.BodyCol >= 0;
+	}
+
+	#region — 跨项目引用可视化标记 —
+
+	/// <summary>
+	/// 在表格加载完成后，根据 CrossProjectRefCellStyle 中的标记信息
+	/// 设置引用数据单元格的背景色和 ToolTip
+	/// </summary>
+	private void ApplyCrossProjectRefCellStyles()
+	{
+		if (_table == null || _grid == null) return;
+		try
+		{
+			var marks = CrossProjectRefCellStyle.GetAllMarks();
+			if (marks == null || marks.Count == 0) return;
+
+			// 获取当前表格的引用配置，用于解析行列范围
+			var project = Leqisoft.Model.Project.Current;
+			if (project == null) return;
+			var manager = new CrossProjectDataRefManager(project);
+			var refs = manager.Store.Load(_table.Id).GetAwaiter().GetResult();
+
+			_grid.BeginUpdate();
+			foreach (var mark in marks)
+			{
+				// 只处理属于当前表格的引用标记
+				var dataRef = refs.FirstOrDefault(r => r.Id.Value == mark.RefId.Value);
+				if (dataRef == null) continue;
+
+				// 解析行列范围
+				int startRow = 0, endRow = -1, startCol = 0, endCol = -1;
+				ResolveRefGridRange(dataRef, ref startRow, ref endRow, ref startCol, ref endCol);
+				if (endRow < 0 || endCol < 0) continue;
+
+				// 更新标记中的行列范围
+				mark.StartRow = startRow;
+				mark.EndRow = endRow;
+				mark.StartCol = startCol;
+				mark.EndCol = endCol;
+
+				// 设置单元格样式
+				for (int r = startRow; r <= endRow && r < _grid.BodyRowsCount; r++)
+				{
+					for (int c = startCol; c <= endCol && c < _grid.BodyColsCount; c++)
+					{
+						var style = _grid.GetCellStyle(r, c);
+						switch (mark.Status)
+						{
+							case CrossProjectRefCellStyle.RefStatus.CacheFallback:
+								style.BackColor = Color.FromArgb(255, 255, 200); // 浅黄色
+								style.Font = new Font(_grid.Font, FontStyle.Italic);
+								break;
+							case CrossProjectRefCellStyle.RefStatus.DefaultValue:
+							case CrossProjectRefCellStyle.RefStatus.Error:
+								style.BackColor = Color.FromArgb(255, 220, 220); // 浅红色
+								break;
+							case CrossProjectRefCellStyle.RefStatus.Refreshing:
+								style.BackColor = Color.FromArgb(200, 220, 255); // 浅蓝色
+								break;
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"[CrossProjectRefStyle] 应用引用样式失败: {ex.Message}");
+		}
+		finally
+		{
+			_grid?.EndUpdate();
+		}
+	}
+
+	/// <summary>
+	/// 根据引用配置解析目标表格中的行列范围
+	/// </summary>
+	private static void ResolveRefGridRange(CrossProjectDataRef dataRef, ref int startRow, ref int endRow, ref int startCol, ref int endCol)
+	{
+		try
+		{
+			if (string.IsNullOrWhiteSpace(dataRef.RefConfig)) return;
+
+			var config = Newtonsoft.Json.Linq.JObject.Parse(dataRef.RefConfig);
+
+			switch (dataRef.RefMode)
+			{
+				case RefMode.CellRef:
+					// 单元格引用：设置为单格范围（0,0），由调用方在表格上下文中精确匹配
+					startRow = 0;
+					endRow = 0;
+					startCol = 0;
+					endCol = 0;
+					break;
+
+				case RefMode.ColumnRef:
+					{
+						var targetStartRow = config["TargetStartRow"]?.ToObject<int>() ?? 0;
+						startRow = targetStartRow;
+						startCol = 0;
+						// 通过 ColumnMapping 确定列数
+						if (!string.IsNullOrWhiteSpace(dataRef.ColumnMapping))
+						{
+							try
+							{
+								var mapping = Newtonsoft.Json.Linq.JArray.Parse(dataRef.ColumnMapping);
+								endCol = Math.Max(0, mapping.Count - 1);
+							}
+							catch
+							{
+								endCol = 0;
+							}
+						}
+						else
+						{
+							endCol = 0;
+						}
+						endRow = startRow;
+					}
+					break;
+
+				case RefMode.AreaRef:
+					{
+						var targetStartRow = config["TargetStartRow"]?.ToObject<int>() ?? 0;
+						var targetStartCol = config["TargetStartCol"]?.ToObject<int>() ?? 0;
+						var srcStartRow = config["StartRow"]?.ToObject<int>() ?? 0;
+						var srcEndRow = config["EndRow"]?.ToObject<int>() ?? 0;
+						var srcStartCol = config["StartCol"]?.ToObject<int>() ?? 0;
+						var srcEndCol = config["EndCol"]?.ToObject<int>() ?? 0;
+
+						startRow = targetStartRow;
+						startCol = targetStartCol;
+						int areaRows = (srcEndRow - srcStartRow + 1);
+						int areaCols = (srcEndCol - srcStartCol + 1);
+						endRow = startRow + Math.Max(0, areaRows - 1);
+						endCol = startCol + Math.Max(0, areaCols - 1);
+					}
+					break;
+
+				case RefMode.FormulaCompute:
+					startRow = 0;
+					startCol = 0;
+					endRow = 0;
+					endCol = 0;
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"[CrossProjectRefStyle] 解析引用范围失败: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 在网格鼠标移动时显示跨项目引用数据的 ToolTip
+	/// </summary>
+	private void AttachCrossProjectRefToolTip()
+	{
+		if (_grid == null) return;
+		_grid.MouseMove += (s, e) =>
+		{
+			try
+			{
+				var ht = _grid.HitTest(e.Location);
+				if (ht.Type == C1.Win.C1FlexGrid.HitTestTypeEnum.None || ht.Row < 0 || ht.Column < 0) return;
+
+				// 转换到 body 区域的行列
+				int bodyRow = ht.Row - _grid.Rows.Fixed;
+				int bodyCol = ht.Column - _grid.Cols.Fixed;
+				if (bodyRow < 0 || bodyCol < 0) return;
+
+				var marks = CrossProjectRefCellStyle.GetAllMarks();
+				foreach (var mark in marks)
+				{
+					if (bodyRow >= mark.StartRow && bodyRow <= mark.EndRow &&
+						bodyCol >= mark.StartCol && bodyCol <= mark.EndCol)
+					{
+						tooltipManager.Show(
+							new TipInfo { Title = "跨项目引用", Body = mark.GetToolTipText() },
+							_grid, e.X, e.Y);
+						return;
+					}
+				}
+
+				// 不在引用区域内，恢复默认 ToolTip
+				tooltipManager.Hide();
+			}
+			catch
+			{
+				// 忽略 ToolTip 异常
+			}
+		};
+	}
+
+	#endregion
 
 	#endregion
 }

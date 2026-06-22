@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiLib", "WebApiLib\WebA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XinJiYuan", "XinJiYuan\XinJiYuan.csproj", "{715A11D2-D1DF-4BD6-B944-2B5A1E8A19AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeqiAudit.Tests", "LeqiAudit.Tests\LeqiAudit.Tests.csproj", "{380A6361-C914-4CF6-9226-169CA17E0C45}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -313,6 +315,18 @@ Global
 		{715A11D2-D1DF-4BD6-B944-2B5A1E8A19AE}.Release|x64.Build.0 = Release|Any CPU
 		{715A11D2-D1DF-4BD6-B944-2B5A1E8A19AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{715A11D2-D1DF-4BD6-B944-2B5A1E8A19AE}.Release|x86.Build.0 = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|x64.Build.0 = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Debug|x86.Build.0 = Debug|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|x64.ActiveCfg = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|x64.Build.0 = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|x86.ActiveCfg = Release|Any CPU
+		{380A6361-C914-4CF6-9226-169CA17E0C45}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
