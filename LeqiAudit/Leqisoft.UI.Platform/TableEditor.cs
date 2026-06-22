@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -785,6 +785,11 @@ public class TableEditor : ISetTheme
 	private readonly MainForm _owner;
 
 	private Leqisoft.Model.Table _table;
+
+	/// <summary>
+	/// 跨项目引用单元格样式缓存：(row, col) → RefStatus，由 ApplyCrossProjectRefCellStyles 构建，供 BodyOwnerDrawCell_Style O(1) 查找
+	/// </summary>
+	private Dictionary<(int row, int col), CrossProjectRefCellStyle.RefStatus> _refCellStyleCache;
 
 	private Leqisoft.Model.Table _tableBeforeEnteringValidation;
 
@@ -4854,7 +4859,7 @@ public class TableEditor : ISetTheme
 
 	internal bool HasSchemaPermission()
 	{
-		return Table.HasSchemaPermission();
+		return Table?.HasSchemaPermission() == true;
 	}
 
 	private void PopulateRerredTables()
@@ -11606,9 +11611,29 @@ public class TableEditor : ISetTheme
 						}
 					}
 					if (cell.Row.Table.ControlBackColorCells.TryGetValue(cell, out var value2))
+				{
+					styleNew.BackColor = value2;
+				}
+				// 跨项目数据引用单元格背景色（O(1) 查找缓存，覆盖在所有其他样式之上）
+				if (_refCellStyleCache != null && _refCellStyleCache.TryGetValue((e.Row, e.Col), out var refStatus))
+				{
+					switch (refStatus)
 					{
-						styleNew.BackColor = value2;
+						case CrossProjectRefCellStyle.RefStatus.Normal:
+							styleNew.BackColor = Color.FromArgb(232, 245, 233); // 浅绿色
+							break;
+						case CrossProjectRefCellStyle.RefStatus.CacheFallback:
+							styleNew.BackColor = Color.FromArgb(255, 255, 200); // 浅黄色
+							break;
+						case CrossProjectRefCellStyle.RefStatus.DefaultValue:
+						case CrossProjectRefCellStyle.RefStatus.Error:
+							styleNew.BackColor = Color.FromArgb(255, 220, 220); // 浅红色
+							break;
+						case CrossProjectRefCellStyle.RefStatus.Refreshing:
+							styleNew.BackColor = Color.FromArgb(200, 220, 255); // 浅蓝色
+							break;
 					}
+				}
 				}
 			}
 			if (e.Style.Name == _grid.Styles.Highlight.Name)
@@ -15283,7 +15308,12 @@ public class TableEditor : ISetTheme
 		{
 			if (Leqisoft.Model.Project.Current == null || Table == null) return;
 			using var frm = new frmCrossProjectDataRef(Leqisoft.Model.Project.Current, Table.Id);
-			frm.ShowDialog();
+		frm.ShowDialog();
+		// 如果有引用被刷新过，重新从数据库加载表格数据
+		if (frm.DataRefreshed)
+		{
+			ReloadFromDb();
+		}
 		}
 		catch (Exception ex)
 		{
@@ -15394,13 +15424,20 @@ public class TableEditor : ISetTheme
 		try
 		{
 			var marks = CrossProjectRefCellStyle.GetAllMarks();
-			if (marks == null || marks.Count == 0) return;
+			if (marks == null || marks.Count == 0)
+			{
+				_refCellStyleCache = null;
+				return;
+			}
 
 			// 获取当前表格的引用配置，用于解析行列范围
 			var project = Leqisoft.Model.Project.Current;
 			if (project == null) return;
 			var manager = new CrossProjectDataRefManager(project);
 			var refs = manager.Store.Load(_table.Id).GetAwaiter().GetResult();
+
+			// 构建缓存字典：(row, col) → RefStatus，供 BodyOwnerDrawCell_Style O(1) 查找
+			_refCellStyleCache = new Dictionary<(int row, int col), CrossProjectRefCellStyle.RefStatus>();
 
 			_grid.BeginUpdate();
 			foreach (var mark in marks)
@@ -15414,32 +15451,48 @@ public class TableEditor : ISetTheme
 				ResolveRefGridRange(dataRef, ref startRow, ref endRow, ref startCol, ref endCol);
 				if (endRow < 0 || endCol < 0) continue;
 
+				// CellRef 模式：通过 TargetCellId 查找实际行列位置
+				if (dataRef.RefMode == RefMode.CellRef && _table != null)
+				{
+					try
+					{
+						var cfg = Newtonsoft.Json.Linq.JObject.Parse(dataRef.RefConfig);
+						var targetCellId = cfg["TargetCellId"]?.ToObject<long>() ?? 0;
+						if (targetCellId > 0)
+						{
+							bool found = false;
+							for (int r = 0; r < _table.Rows.Count && !found; r++)
+							{
+								for (int c = 0; c < _table.Columns.Count && !found; c++)
+								{
+									var cell = _table[r, c];
+									if (cell != null && cell.Id.Value == targetCellId)
+									{
+										startRow = r;
+										endRow = r;
+										startCol = c;
+										endCol = c;
+										found = true;
+									}
+								}
+							}
+						}
+					}
+					catch { /* 忽略解析失败 */ }
+				}
+
 				// 更新标记中的行列范围
 				mark.StartRow = startRow;
 				mark.EndRow = endRow;
 				mark.StartCol = startCol;
 				mark.EndCol = endCol;
 
-				// 设置单元格样式
+				// 填充缓存字典
 				for (int r = startRow; r <= endRow && r < _grid.BodyRowsCount; r++)
 				{
 					for (int c = startCol; c <= endCol && c < _grid.BodyColsCount; c++)
 					{
-						var style = _grid.GetCellStyle(r, c);
-						switch (mark.Status)
-						{
-							case CrossProjectRefCellStyle.RefStatus.CacheFallback:
-								style.BackColor = Color.FromArgb(255, 255, 200); // 浅黄色
-								style.Font = new Font(_grid.Font, FontStyle.Italic);
-								break;
-							case CrossProjectRefCellStyle.RefStatus.DefaultValue:
-							case CrossProjectRefCellStyle.RefStatus.Error:
-								style.BackColor = Color.FromArgb(255, 220, 220); // 浅红色
-								break;
-							case CrossProjectRefCellStyle.RefStatus.Refreshing:
-								style.BackColor = Color.FromArgb(200, 220, 255); // 浅蓝色
-								break;
-						}
+						_refCellStyleCache[(r, c)] = mark.Status;
 					}
 				}
 			}

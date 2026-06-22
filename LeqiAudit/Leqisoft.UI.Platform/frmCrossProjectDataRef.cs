@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -23,6 +23,15 @@ public class frmCrossProjectDataRef : Form
     private readonly Id64 _currentTableId;
     private readonly CrossProjectDataRefStore _store;
     private List<CrossProjectDataRef> _refList;
+
+    /// <summary>
+    /// 是否有引用被刷新过（关闭后由调用方检查，决定是否重新加载表格）
+    /// </summary>
+    public bool DataRefreshed { get; private set; }
+
+    // 名称查询缓存
+    private readonly Dictionary<Guid, string> _projectNameCache = new Dictionary<Guid, string>();
+    private readonly Dictionary<(Guid, long), string> _tableNameCache = new Dictionary<(Guid, long), string>();
 
     // UI 控件
     private Label _lblTitle;
@@ -105,8 +114,8 @@ public class frmCrossProjectDataRef : Form
                 var row = _grid.Rows[i + 1];
                 row[0] = i + 1;
                 row[1] = item.Name;
-                row[2] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : GetProjectNameById(item.SourceProjectId);
-                row[3] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : GetTableNameById(item.SourceProjectId, item.SourceTableId);
+                row[2] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : await GetProjectNameByIdAsync(item.SourceProjectId);
+                row[3] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : await GetTableNameByIdAsync(item.SourceProjectId, item.SourceTableId);
                 row[4] = GetRefModeDisplay(item.RefMode);
                 row[5] = item.Enabled ? "启用" : "禁用";
                 row[6] = item.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
@@ -146,6 +155,11 @@ public class frmCrossProjectDataRef : Form
 
                 // 上次验证
                 row[11] = item.LastVerifiedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
+
+                // 目标区域 / 数据来源区域（从 RefConfig 解析）
+                var (targetArea, sourceArea) = ParseRefConfigArea(item);
+                row[12] = targetArea;
+                row[13] = sourceArea;
 
                 row.UserData = item;
 
@@ -194,13 +208,98 @@ public class frmCrossProjectDataRef : Form
     }
 
     /// <summary>
-    /// 通过项目ID获取项目名称（与向导显示一致，从主数据库 Projects 表读取）
+    /// 从 RefConfig JSON 中解析出目标区域和来源区域的文本描述
+    /// 用于在列表中显示
+    /// </summary>
+    private static (string targetArea, string sourceArea) ParseRefConfigArea(CrossProjectDataRef item)
+    {
+        if (string.IsNullOrWhiteSpace(item.RefConfig))
+            return ("-", "-");
+
+        try
+        {
+            var jObj = Newtonsoft.Json.Linq.JObject.Parse(item.RefConfig);
+
+            // 根据 RefMode 解析不同格式
+            switch (item.RefMode)
+            {
+                case RefMode.CellRef:
+                    // 新格式：{"TargetCellId": 12345, "SourceCellId": 67890}
+                    if (jObj["TargetCellId"] != null)
+                        return ("单元格 ID:" + (long)jObj["TargetCellId"],
+                                "单元格 ID:" + (jObj["SourceCellId"] != null ? ((long)jObj["SourceCellId"]).ToString() : "0"));
+                    // 旧格式索引
+                    return (FormatAreaDesc(jObj, "TargetColumnIndex", "TargetRowIndex"),
+                            FormatAreaDesc(jObj, "SourceColumnIndex", "SourceRowIndex"));
+
+                case RefMode.ColumnRef:
+                    // 预期格式：{"TargetColumnIndex": n, "TargetColumnName": "xxx", "SourceColumnIndex": n, "SourceColumnName": "xxx"}
+                    if (jObj["TargetColumnName"] != null)
+                        return ($"列:{(string)jObj["TargetColumnName"]}",
+                                $"列:{(string)(jObj["SourceColumnName"] ?? "?")}");
+                    return ("-", "-");
+
+                case RefMode.AreaRef:
+                    // 格式：{"TargetStartCol": n, "TargetEndCol": n, "TargetStartRow": n, "TargetEndRow": n,
+                    //        "SourceStartCol": n, "SourceEndCol": n, "SourceStartRow": n, "SourceEndRow": n}
+                    if (jObj["TargetStartCol"] != null)
+                    {
+                        string tgt = $"{jObj["TargetStartCol"]}-{jObj["TargetEndCol"]}列 × {jObj["TargetStartRow"]}-{jObj["TargetEndRow"]}行";
+                        string src = $"{jObj["SourceStartCol"]}-{jObj["SourceEndCol"]}列 × {jObj["SourceStartRow"]}-{jObj["SourceEndRow"]}行";
+                        return (tgt, src);
+                    }
+                    return ("-", "-");
+
+                case RefMode.FormulaCompute:
+                    // 格式：{"TargetColumnIndex": n, "TargetColumnName": "xxx", "SourceColumnNames": [...]}
+                    if (jObj["TargetColumnName"] != null)
+                    {
+                        string tgt = $"列:{(string)jObj["TargetColumnName"]}";
+                        var srcCols = jObj["SourceColumnNames"];
+                        string src = srcCols != null ? string.Join(",", srcCols.Values<string>()) : "-";
+                        return (tgt, src);
+                    }
+                    return ("-", "-");
+
+                default:
+                    return ("-", "-");
+            }
+        }
+        catch
+        {
+            return ("-", "-");
+        }
+    }
+
+    /// <summary>
+    /// 从 JObject 中读取列索引和行索引，格式化为列字母+行号描述
+    /// </summary>
+    private static string FormatAreaDesc(Newtonsoft.Json.Linq.JObject jObj, string colKey, string rowKey)
+    {
+        if (jObj[colKey] == null || jObj[rowKey] == null)
+            return "-";
+        int col = (int)jObj[colKey];
+        int row = (int)jObj[rowKey];
+        // 将列索引转为 Excel 风格字母 (A, B, C...)
+        string colLetter = "";
+        int tmp = col + 1;
+        while (tmp > 0)
+        {
+            tmp--;
+            colLetter = (char)('A' + tmp % 26) + colLetter;
+            tmp /= 26;
+        }
+        return $"{colLetter}{row + 1}";
+    }
+
+    /// <summary>
+    /// 通过项目ID获取项目名称（同步版本，用于非 UI 线程调用）
     /// </summary>
     internal static string GetProjectNameById(Guid projectId)
     {
         try
         {
-            var projects = Task.Run(() => Leqisoft.LocalDataStore.StorageRouter.GetProjects()).Result;
+            var projects = Task.Run(async () => await Leqisoft.LocalDataStore.StorageRouter.GetProjects()).GetAwaiter().GetResult();
             var project = projects.FirstOrDefault(p => p.Id == projectId);
             if (project != null)
                 return project.Name ?? projectId.ToString();
@@ -213,14 +312,15 @@ public class frmCrossProjectDataRef : Form
             var projectDto = dal.GetProject();
             return projectDto?.Name ?? projectId.ToString();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
             return projectId.ToString();
         }
     }
 
     /// <summary>
-    /// 通过项目ID和表ID获取表格名称（与向导显示一致）
+    /// 通过项目ID和表ID获取表格名称（同步版本，用于非 UI 线程调用）
     /// </summary>
     internal static string GetTableNameById(Guid projectId, Id64 tableId)
     {
@@ -251,8 +351,99 @@ public class frmCrossProjectDataRef : Form
             var tableDto = dal.GetTable(tableId);
             return tableDto?.Title ?? tableId.Value.ToString();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"获取表名称失败: {ex.Message}");
+            return tableId.Value.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 通过项目ID异步获取项目名称（带缓存）
+    /// </summary>
+    private async Task<string> GetProjectNameByIdAsync(Guid projectId)
+    {
+        if (_projectNameCache.TryGetValue(projectId, out string cachedName))
+            return cachedName;
+
+        try
+        {
+            var projects = await Leqisoft.LocalDataStore.StorageRouter.GetProjects();
+            var project = projects.FirstOrDefault(p => p.Id == projectId);
+            if (project != null)
+            {
+                _projectNameCache[projectId] = project.Name ?? projectId.ToString();
+                return _projectNameCache[projectId];
+            }
+
+            string dbPath = MainForm.GetDbPathByGuid(projectId);
+            if (!System.IO.File.Exists(dbPath))
+            {
+                _projectNameCache[projectId] = projectId.ToString();
+                return _projectNameCache[projectId];
+            }
+
+            var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+            var projectDto = dal.GetProject();
+            _projectNameCache[projectId] = projectDto?.Name ?? projectId.ToString();
+            return _projectNameCache[projectId];
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
+            return projectId.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 通过项目ID和表ID异步获取表格名称（带缓存）
+    /// </summary>
+    private async Task<string> GetTableNameByIdAsync(Guid projectId, Id64 tableId)
+    {
+        var key = (projectId, tableId.Value);
+        if (!_tableNameCache.TryGetValue(key, out string cachedName))
+        {
+            cachedName = await LoadTableNameFromDbAsync(projectId, tableId);
+            _tableNameCache[key] = cachedName;
+        }
+        return cachedName;
+    }
+
+    /// <summary>
+    /// 从数据库加载表格名称
+    /// </summary>
+    private async Task<string> LoadTableNameFromDbAsync(Guid projectId, Id64 tableId)
+    {
+        try
+        {
+            string dbPath = MainForm.GetDbPathByGuid(projectId);
+            if (!System.IO.File.Exists(dbPath))
+                return tableId.Value.ToString();
+
+            var dal = new Leqisoft.DTO.ProjectDAL(dbPath);
+            var dto = dal.GetProject();
+            if (dto == null)
+                return tableId.Value.ToString();
+
+            var project = new Leqisoft.Model.Project
+            {
+                Id = projectId,
+                Name = dto.Name,
+                Dal = dal
+            };
+            project.PopulateFieldsFromDto(dto);
+            project.Load();
+
+            var tableNode = project.GetAllTableNodes().FirstOrDefault(n => n.Id == tableId);
+            if (tableNode != null)
+                return tableNode.Number + " " + tableNode.Name;
+
+            var tableDto = dal.GetTable(tableId);
+            return tableDto?.Title ?? tableId.Value.ToString();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"获取表名称失败: {ex.Message}");
             return tableId.Value.ToString();
         }
     }
@@ -283,22 +474,17 @@ public class frmCrossProjectDataRef : Form
     }
 
     /// <summary>
-    /// 弹出编辑对话框
+    /// 弹出编辑对话框（使用向导）
     /// </summary>
     private void ShowEditDialog(CrossProjectDataRef item)
     {
         if (item == null) return;
 
-        using var dialog = new frmCrossProjectDataRefEditDialog("编辑引用", item, _currentTableId, _currentProject);
-        if (dialog.ShowDialog(this) == DialogResult.OK)
+        var result = frmCrossProjectRefConfigWizard.ShowWizard(_currentProject, _currentTableId, item);
+        if (result == DialogResult.OK)
         {
-            var updated = dialog.GetResult();
-            updated.Id = item.Id;
-            updated.TargetTableId = _currentTableId;
-            updated.CreatedAt = item.CreatedAt;
-            updated.UpdatedAt = DateTime.Now;
-
-            _ = SaveAndRefresh(updated);
+            // 向导内部已自行保存
+            _ = RefreshList();
         }
     }
 
@@ -395,6 +581,7 @@ public class frmCrossProjectDataRef : Form
             var result = await manager.ExecuteRef(selected);
             if (result.Success)
             {
+                DataRefreshed = true;
                 Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"刷新完成，影响 {result.AffectedRows} 行");
             }
             else
@@ -417,6 +604,7 @@ public class frmCrossProjectDataRef : Form
             var results = await manager.ExecuteAll(_currentTableId);
             int success = results.Results.Count(r => r.Success);
             int failed = results.Results.Count(r => !r.Success);
+            if (success > 0) DataRefreshed = true;
             Leqisoft.UI.Controls.MessageBox.Show(
                 MessageBoxIcon.None,
                 $"全部刷新完成：成功 {success} 个，失败 {failed} 个");
@@ -548,7 +736,7 @@ public class frmCrossProjectDataRef : Form
         this._grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         this._grid.BackColor = Color.White;
         this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.FixedSingle;
-        this._grid.Cols.Count = 12;
+        this._grid.Cols.Count = 14;
         this._grid.Cols[0].Caption = "序号";
         this._grid.Cols[0].AllowSorting = false;
         this._grid.Cols[1].Caption = "引用名称";
@@ -573,6 +761,10 @@ public class frmCrossProjectDataRef : Form
         this._grid.Cols[10].Width = 70;
         this._grid.Cols[11].Caption = "上次验证";
         this._grid.Cols[11].Width = 150;
+        this._grid.Cols[12].Caption = "目标区域";
+        this._grid.Cols[12].Width = 120;
+        this._grid.Cols[13].Caption = "数据来源区域";
+        this._grid.Cols[13].Width = 120;
         this._grid.Cols.Fixed = 1;
         this._grid.Cols[1].AllowEditing = true;
         this._grid.ExtendLastCol = true;
