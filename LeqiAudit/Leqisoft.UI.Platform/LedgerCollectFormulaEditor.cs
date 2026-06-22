@@ -1,30 +1,47 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Windows.Forms;
+using Leqisoft.Model;
 
 namespace Leqisoft.UI.Platform;
 
 public class LedgerCollectFormulaEditor
 {
+	private frmLedgerCollectFormulaEdit _view;
+
 	public bool IsEditing { get; set; }
-	public dynamic View { get; set; }
+
+	public frmLedgerCollectFormulaEdit View
+	{
+		get
+		{
+			return _view;
+		}
+		set
+		{
+			_view = value;
+		}
+	}
+
 	public event EventHandler Closed;
 
-	public void InsertRefTextAndFocus(params object[] args)
+	public LedgerCollectFormulaEditor()
+	{
+		_view = new frmLedgerCollectFormulaEdit(this);
+	}
+
+	public void InsertRefTextAndFocus(string refText)
 	{
 		try
 		{
-			if (args.Length > 0 && args[0] is string refText)
+			if (!string.IsNullOrEmpty(refText) && _view != null)
 			{
-				if (View != null)
-				{
-					View.Value = (View.Value ?? "") + refText;
-					View.Focus();
-				}
+				_view.rtbFormulaInput.SelectedText = refText;
+				_view.rtbFormulaInput.Focus();
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
-			// 插入引用文本失败时静默处理
+			System.Diagnostics.Debug.WriteLine(ex.Message);
 		}
 	}
 
@@ -32,51 +49,60 @@ public class LedgerCollectFormulaEditor
 	{
 		try
 		{
-			if (View != null)
+			if (_view != null)
 			{
-				// 移除当前位置的引用：将 View.Value 置空
-				View.Value = "";
+				FormulaDisplay formulaDisplay = new FormulaDisplay(_view.rtbFormulaInput.Text);
+				var refAtPos = formulaDisplay.GetRefAtPos(_view.rtbFormulaInput.SelectionStart);
+				if (refAtPos != null)
+				{
+					_view.rtbFormulaInput.Select(refAtPos.Item1, refAtPos.Item2);
+					_view.rtbFormulaInput.SelectedText = "";
+				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
-			// 移除引用失败时静默处理
+			System.Diagnostics.Debug.WriteLine(ex.Message);
 		}
 	}
 
-	public bool UseWildcard() { return false; }
-	
+	public bool UseWildcard()
+	{
+		if (_view != null)
+		{
+			return _view.UseWildcard();
+		}
+		return false;
+	}
+
 	public void New()
 	{
 		IsEditing = true;
-		View = null;
 	}
-	
-	public static void ShowEditor(params object[] args)
+
+	public void OnClosed()
+	{
+		IsEditing = false;
+		Closed?.Invoke(this, EventArgs.Empty);
+	}
+
+	public DialogResult ShowEditor(IWin32Window owner, Table table, Column column)
 	{
 		try
 		{
-			// 显示公式编辑器窗口
-			// args[0]: 父控件, args[1]: Table, args[2]: Column
-			if (args.Length > 0 && args[0] is Control parent)
+			IsEditing = true;
+			if (_view != null)
 			{
-				Form editorForm = new Form
-				{
-					Text = "账套采集公式编辑器",
-					Size = new System.Drawing.Size(600, 400),
-					StartPosition = FormStartPosition.CenterParent,
-					ShowInTaskbar = false
-				};
-				var editor = new LedgerCollectFormulaEditor();
-				editor.View = new TextBox { Dock = DockStyle.Fill, Multiline = true };
-				editor.View.Dock = DockStyle.Fill;
-				editorForm.Controls.Add((Control)editor.View);
-				editorForm.ShowDialog(parent);
+				_view.PopulateNavGrid(table, column);
+				_view.PopulateBalanceGrid();
+				_view.BuildVoucherGrid();
+				_view.PrepareToShow();
+				return _view.ShowDialog(owner);
 			}
 		}
-		catch
+		catch (Exception)
 		{
-			// 显示编辑器失败时静默处理
 		}
+		return DialogResult.None;
 	}
 }

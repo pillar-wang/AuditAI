@@ -1,4 +1,4 @@
-﻿extern alias CrawlerModelAlias;
+﻿﻿﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections;
@@ -1699,8 +1699,9 @@ public class LedgerViewer
 				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			ex.Log();
 		}
 	}
 
@@ -1710,8 +1711,9 @@ public class LedgerViewer
 		{
 			BalanceEditor.RemoveAuxiliaryItems(e.Item1, e.Item2);
 		}
-		catch
+		catch (Exception ex)
 		{
+			ex.Log();
 		}
 	}
 
@@ -2377,8 +2379,10 @@ public class LedgerViewer
 
 	private string MergeLedgerImpl(string otherFile)
 	{
+#pragma warning disable SCS0005 // 临时文件名使用随机后缀，非安全场景
 		string text = Path.GetTempFileName() + new Random().Next(1000, 9999);
 		string text2 = Path.GetTempFileName() + new Random().Next(1000, 9999);
+#pragma warning restore SCS0005
 		File.Copy(CurrentFilePath, text, overwrite: true);
 		File.Copy(otherFile, text2, overwrite: true);
 		PrepareForMergeLedger(text, text2);

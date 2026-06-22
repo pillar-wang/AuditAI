@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <LangVersion>11.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FilterModel\FilterModel.csproj" />
+    <ProjectReference Include="..\LedgerModel\LedgerModel.csproj" />
+  </ItemGroup>
+
+  <!-- DTO 源码引用（仅引用测试实际需要的类型，避免 Protobuf 生成代码的依赖问题） -->
+  <ItemGroup>
+    <Compile Include="..\DTO\Leqisoft.DTO\Id64.cs">
+      <Link>DTO\Id64.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\Id64JsonConverter.cs">
+      <Link>DTO\Id64JsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\DateYearMonth.cs">
+      <Link>DTO\DateYearMonth.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\TeamLevel.cs">
+      <Link>DTO\TeamLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\TeamLevelExtensions.cs">
+      <Link>DTO\TeamLevelExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\SignAlign.cs">
+      <Link>DTO\SignAlign.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\BinaryValue.cs">
+      <Link>DTO\BinaryValue.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\BinaryValueJsonConverter.cs">
+      <Link>DTO\BinaryValueJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\NormalException.cs">
+      <Link>DTO\NormalException.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\ServerException.cs">
+      <Link>DTO\ServerException.cs</Link>
+    </Compile>
+    <Compile Include="..\DTO\Leqisoft.DTO\NavigateViewType.cs">
+      <Link>DTO\NavigateViewType.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

@@ -1,8 +1,9 @@
-using System;
+﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
+#pragma warning disable SCS0005 // 验证码图片绘制，视觉随机非安全场景
 namespace Leqisoft.UI.Controls;
 
 public class ValidateCodeCreator

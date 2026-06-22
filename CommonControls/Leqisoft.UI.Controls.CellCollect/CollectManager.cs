@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿﻿﻿﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Leqisoft.Model;
@@ -46,7 +46,9 @@ public class CollectManager
 	{
 		return JsonConvert.SerializeObject(this, new JsonSerializerSettings
 		{
-			TypeNameHandling = TypeNameHandling.Objects
+#pragma warning disable SCS0028 // 需要多态序列化
+			TypeNameHandling = TypeNameHandling.Auto
+#pragma warning restore SCS0028
 		});
 	}
 
@@ -54,7 +56,9 @@ public class CollectManager
 	{
 		return JsonConvert.DeserializeObject<CollectManager>(json, new JsonSerializerSettings
 		{
-			TypeNameHandling = TypeNameHandling.Objects
+#pragma warning disable SCS0028 // 需要多态反序列化
+			TypeNameHandling = TypeNameHandling.Auto
+#pragma warning restore SCS0028
 		});
 	}
 

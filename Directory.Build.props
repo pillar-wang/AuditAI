@@ -1,0 +1,10 @@
+<Project>
+  <ItemGroup>
+    <!-- SecurityCodeScan：检测 SQL注入、XSS、弱加密等安全漏洞 -->
+    <!-- 注意：.NET SDK 9.0 已内置 Roslyn 代码分析器，无需额外引用 -->
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

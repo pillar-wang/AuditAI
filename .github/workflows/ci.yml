@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: NuGet cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore NuGet packages
+      run: dotnet restore LeqiAudit.sln
+
+    - name: Build
+      run: dotnet build LeqiAudit.sln --no-restore
+      env:
+        # SecurityCodeScan 和 Roslyn 分析器的警告不影响编译结果
+        TreatWarningsAsErrors: false
+        MSBuildTreatAllWarningsAsErrors: false
+
+    - name: Run unit tests
+      run: dotnet test LeqiAudit.sln --no-restore --no-build -c Debug --verbosity normal
+      env:
+        TreatWarningsAsErrors: false
+
+    - name: Scan NuGet package vulnerabilities
+      run: dotnet list LeqiAudit.sln package --vulnerable
+      continue-on-error: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: '**/TestResults/**'
+        retention-days: 7

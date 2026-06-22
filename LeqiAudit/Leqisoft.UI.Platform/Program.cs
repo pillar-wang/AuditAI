@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -1454,7 +1454,8 @@ internal static class Program
 			Type providerInfoType = assembly.GetType("C1.Util.Licensing.ProviderInfo");
 			if (providerInfoType != null)
 			{
-				FieldInfo maField = providerInfoType.GetField("m_a",
+				// 原始 C1 DLL 中字段名为 "a"（经 Mono.Cecil 反编译验证），不是 "m_a"
+				FieldInfo maField = providerInfoType.GetField("a",
 					BindingFlags.Static | BindingFlags.NonPublic);
 				if (maField != null)
 				{
@@ -1462,13 +1463,14 @@ internal static class Program
 				}
 			}
 
-			// 2. Patch SafeLicenseContext.m_a（Hashtable 缓存）预填许可证密钥
+			// 2. Patch SafeLicenseContext.a（Hashtable 缓存）预填许可证密钥
 			// 反编译确认：ValidateRuntime() 通过 SafeLicenseContext.GetSavedLicenseKey() 获取密钥
 			// 若返回 null 则判定为 Unlicensed；预填可使 ValidateRuntime 返回 Valid
 			Type safeLicenseContextType = assembly.GetType("C1.Util.Licensing.SafeLicenseContext");
 			if (safeLicenseContextType != null)
 			{
-				FieldInfo cacheField = safeLicenseContextType.GetField("m_a",
+				// 原始 C1 DLL 中字段名为 "a"（Hashtable），不是 "m_a"
+				FieldInfo cacheField = safeLicenseContextType.GetField("a",
 					BindingFlags.Static | BindingFlags.NonPublic);
 				if (cacheField != null)
 				{

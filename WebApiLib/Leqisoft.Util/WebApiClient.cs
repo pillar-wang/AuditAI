@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -116,7 +116,12 @@ public static class WebApiClient
 			UseProxy = false
 		};
 		ServicePointManager.DefaultConnectionLimit = 10;
+#if DEBUG
+		// 开发环境临时跳过证书验证（生产环境需配置有效证书）
+#pragma warning disable SCS0004
 		ServicePointManager.ServerCertificateValidationCallback = (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+#pragma warning restore SCS0004
+#endif
 		httpClient = HttpClientFactory.Create(_handler, new CompressionHandler(), new TimeoutHandler());
 		string appServer = ConfigurationManager.AppSettings["AppServer"];
 		if (!string.IsNullOrWhiteSpace(appServer))

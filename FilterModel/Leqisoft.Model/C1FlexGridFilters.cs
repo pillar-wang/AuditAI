@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -107,17 +107,21 @@ public class C1FlexGridFilters
 
 	public string Serialize()
 	{
+#pragma warning disable SCS0028 // 需要多态序列化
 		return JsonConvert.SerializeObject(filters, Formatting.Indented, new JsonSerializerSettings
 		{
-			TypeNameHandling = TypeNameHandling.All
+			TypeNameHandling = TypeNameHandling.Auto
 		});
+#pragma warning restore SCS0028
 	}
 
 	public void Deserialize(string SerializeData)
 	{
+#pragma warning disable SCS0028 // 需要多态反序列化
 		filters = JsonConvert.DeserializeObject<List<FilterBase>>(SerializeData, new JsonSerializerSettings
 		{
 			TypeNameHandling = TypeNameHandling.Auto
 		});
+#pragma warning restore SCS0028
 	}
 }

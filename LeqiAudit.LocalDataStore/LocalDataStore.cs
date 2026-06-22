@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -9,6 +9,8 @@ using Leqisoft.DTO;
 using Leqisoft.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+#pragma warning disable CS1998 // 反编译代码，原始 await 在反编译中丢失
 
 namespace Leqisoft.LocalDataStore
 {

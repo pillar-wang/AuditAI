@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +21,7 @@ public class EquidistanceFilter : FilterBase
 	protected internal override List<int> Apply(Dictionary<int, FilterValue> values)
 	{
 		List<int> list = values.Keys.ToList();
-		int num = list.Count / value;
+		int num = (value <= 0) ? 1 : Math.Max(1, list.Count / value);
 		int num2 = 0;
 		List<int> list2 = new List<int>();
 		while (list2.Count < value && num2 < list.Count)

@@ -1,6 +1,8 @@
-using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 
+// 随机抽样，使用 System.Random 足以满足审计抽样需求
+#pragma warning disable SCS0005
 namespace Leqisoft.Model;
 
 public sealed class RandomFilter : SampleCountFilter

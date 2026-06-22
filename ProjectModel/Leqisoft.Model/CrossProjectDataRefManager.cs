@@ -1,8 +1,9 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Leqisoft.DTO;
 using Leqisoft.LocalDataStore;
@@ -30,6 +31,9 @@ public class DataRefResult
 
     /// <summary>错误信息</summary>
     public string ErrorMessage { get; set; }
+
+    /// <summary>引用状态：0=Normal, 1=CacheFallback, 2=DefaultValue, 3=Error, 4=Refreshing</summary>
+    public int RefStatus { get; set; }
 }
 
 /// <summary>
@@ -48,6 +52,27 @@ public class DataRefStatus
 
     /// <summary>状态描述</summary>
     public string Description { get; set; }
+}
+
+/// <summary>
+/// 批量执行结果
+/// </summary>
+public class BatchExecuteResult
+{
+    /// <summary>总引用数</summary>
+    public int TotalRefs { get; set; }
+    /// <summary>成功数</summary>
+    public int SuccessCount { get; set; }
+    /// <summary>失败数</summary>
+    public int FailCount { get; set; }
+    /// <summary>总耗时（毫秒）</summary>
+    public long TotalDurationMs { get; set; }
+    /// <summary>缓存命中率</summary>
+    public double CacheHitRate { get; set; }
+    /// <summary>各引用的执行结果</summary>
+    public List<DataRefResult> Results { get; set; } = new List<DataRefResult>();
+    /// <summary>摘要信息</summary>
+    public string Summary => $"成功 {SuccessCount} 个，失败 {FailCount} 个，总耗时 {TotalDurationMs}ms";
 }
 
 /// <summary>
@@ -83,6 +108,8 @@ public class CrossProjectDataRefManager
             AffectedRows = 0
         };
 
+        var startTime = DateTime.Now;
+
         try
         {
             // 非本地模式暂不支持
@@ -96,113 +123,293 @@ public class CrossProjectDataRefManager
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
             if (!File.Exists(externalDbPath))
             {
+                // 尝试缓存降级
+                var localCache = new CrossProjectRefCache(User.Current?.Id ?? 1);
+                var cachedData = localCache.GetCachedData(dataRef.Id, externalDbPath, 60);
+                if (cachedData != null)
+                {
+                    result.AffectedRows = cachedData.Count;
+                    result.Success = true;
+                    result.RefStatus = 1; // CacheFallback
+                    result.ErrorMessage = null; // 缓存降级不算错误
+                    return result;
+                }
+                // 无缓存，检查是否有默认值
+                if (!string.IsNullOrEmpty(dataRef.DefaultValue))
+                {
+                    result.AffectedRows = 1;
+                    result.Success = true;
+                    result.RefStatus = 2; // DefaultValue
+                    return result;
+                }
                 result.ErrorMessage = "来源项目数据库不存在";
                 return result;
             }
 
-            var sourceDal = new ProjectDAL(externalDbPath);
-            var sourceTable = sourceDal.GetTable(dataRef.SourceTableId);
-            if (sourceTable == null)
+            // 权限检查（本地模式下跳过授权验证）
+            if (!StorageRouter.IsLocalMode)
             {
-                result.ErrorMessage = "来源表不存在";
-                return result;
+                var authProvider = new CrossProjectRefAuthProvider(_currentProject);
+                if (!authProvider.CheckAccess(dataRef.SourceProjectId, _currentProject.Id, dataRef.SourceTableId, new List<Id64>()))
+                {
+                    result.ErrorMessage = "权限不足：目标项目未获得访问来源项目数据的授权";
+                    return result;
+                }
             }
 
-            // 读取来源表数据为 List<List<object>> 格式
-            List<List<object>> sourceData = ReadSourceData(sourceDal, dataRef.SourceTableId);
-
-            // 如果有筛选配置，应用筛选
-            var filteredIndices = CrossProjectDataRefFilter.ApplyFilter(dataRef.FilterConfig, sourceData);
-            var filteredData = filteredIndices.Select(i => sourceData[i]).ToList();
-
-            if (filteredData.Count == 0)
-            {
-                result.Success = true;
-                result.AffectedRows = 0;
-                return result;
-            }
-
-            // 根据 RefMode 处理数据并写入目标表
+            // 两级缓存检查（跳过 FormulaCompute 模式，它需要直接访问数据库获取列数据）
+            CrossProjectRefCache cache = null;
+            List<List<object>> sourceData = null;
+            ProjectDAL sourceDal = null;
             int affectedRows = 0;
 
-            switch (dataRef.RefMode)
+            // 异常处理 - 自动重试
+            int maxRetries = 3;
+            int retryDelay = 1000; // 1 second
+            Exception lastException = null;
+
+            for (int retry = 0; retry < maxRetries; retry++)
             {
-                case RefMode.CellRef:
-                    affectedRows = await ExecuteCellRef(dataRef, filteredData);
-                    break;
+                try
+                {
+                    lastException = null;
 
-                case RefMode.ColumnRef:
-                    affectedRows = await ExecuteColumnRef(dataRef, filteredData);
-                    break;
-
-                case RefMode.AreaRef:
-                    // AreaRef：先在全量数据上应用筛选（筛选的 ColumnIndex 是全表列索引），
-                    // 再从筛选后的行中提取指定列范围
+                    if (dataRef.RefMode != RefMode.FormulaCompute)
                     {
-                        var areaConfig = SafeDeserialize<AreaRefConfig>(dataRef.RefConfig);
-                        if (areaConfig == null)
+                        cache = new CrossProjectRefCache(User.Current?.Id ?? 1);
+                        sourceData = cache.GetCachedData(dataRef.Id, externalDbPath,
+                            dataRef.CacheDurationSeconds > 0 ? dataRef.CacheDurationSeconds : 60);
+                    }
+
+                    if (sourceData == null)
+                    {
+                        // 缓存未命中，从数据库读取
+                        sourceDal = new ProjectDAL(externalDbPath);
+                        var sourceTable = sourceDal.GetTable(dataRef.SourceTableId);
+                        if (sourceTable == null)
                         {
-                            result.ErrorMessage = "AreaRef 配置无效";
+                            result.ErrorMessage = "来源表不存在";
                             return result;
                         }
-                        // 使用已筛选的全量数据（filteredData），按区域列范围裁剪
-                        var areaFilteredData = new List<List<object>>();
-                        foreach (var row in filteredData)
-                        {
-                            var croppedRow = new List<object>();
-                            for (int c = areaConfig.StartCol; c <= areaConfig.EndCol && c < row.Count; c++)
-                            {
-                                if (c >= 0)
-                                    croppedRow.Add(row[c]);
-                            }
-                            areaFilteredData.Add(croppedRow);
-                        }
-                        // 按区域行范围裁剪
-                        int startRow = Math.Max(0, areaConfig.StartRow);
-                        int endRow = Math.Min(areaConfig.EndRow, areaFilteredData.Count - 1);
-                        if (startRow <= endRow)
-                            areaFilteredData = areaFilteredData.GetRange(startRow, endRow - startRow + 1);
-                        else
-                            areaFilteredData = new List<List<object>>();
-                        affectedRows = await ExecuteAreaRef(dataRef, areaFilteredData);
+
+                        // 读取来源表数据为 List<List<object>> 格式
+                        sourceData = ReadSourceData(sourceDal, dataRef.SourceTableId);
+
+                        // 设置缓存
+                        cache?.SetCache(dataRef.Id, sourceData, externalDbPath,
+                            dataRef.CacheDurationSeconds > 0 ? dataRef.CacheDurationSeconds : 60);
                     }
-                    break;
 
-                case RefMode.FormulaCompute:
-                    affectedRows = await ExecuteFormulaCompute(dataRef, sourceDal);
-                    break;
+                    // 数据验证：获取来源列名并对原始数据进行验证
+                    var srcColumns = (sourceDal ?? new ProjectDAL(externalDbPath)).GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
+                    var srcColumnNames = srcColumns.Select(c => c.Caption).ToList();
+                    var validationResult = CrossProjectRefValidator.ValidateData(sourceData, srcColumnNames);
+                    if (!validationResult.IsValid)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[CrossProjectRefValidator] Ref {dataRef.Id}: 发现 {validationResult.Errors.Count} 个数据验证问题");
+                    }
 
-                default:
-                    result.ErrorMessage = $"不支持的引用模式: {dataRef.RefMode}";
-                    return result;
+                    // 如果有筛选配置，应用筛选
+                    var filteredIndices = CrossProjectDataRefFilter.ApplyFilter(dataRef.FilterConfig, sourceData);
+                    var filteredData = filteredIndices.Select(i => sourceData[i]).ToList();
+
+                    if (filteredData.Count == 0)
+                    {
+                        result.Success = true;
+                        result.AffectedRows = 0;
+                        return result;
+                    }
+
+                    // 根据 RefMode 处理数据并写入目标表
+                    affectedRows = 0;
+
+                    switch (dataRef.RefMode)
+                    {
+                        case RefMode.CellRef:
+                            affectedRows = await ExecuteCellRef(dataRef, filteredData);
+                            break;
+
+                        case RefMode.ColumnRef:
+                            affectedRows = await ExecuteColumnRef(dataRef, filteredData);
+                            break;
+
+                        case RefMode.AreaRef:
+                            // AreaRef：先在全量数据上应用筛选（筛选的 ColumnIndex 是全表列索引），
+                            // 再从筛选后的行中提取指定列范围
+                            {
+                                var areaConfig = SafeDeserialize<AreaRefConfig>(dataRef.RefConfig);
+                                if (areaConfig == null)
+                                {
+                                    result.ErrorMessage = "AreaRef 配置无效";
+                                    return result;
+                                }
+                                // 使用已筛选的全量数据（filteredData），按区域列范围裁剪
+                                var areaFilteredData = new List<List<object>>();
+                                foreach (var row in filteredData)
+                                {
+                                    var croppedRow = new List<object>();
+                                    for (int c = areaConfig.StartCol; c <= areaConfig.EndCol && c < row.Count; c++)
+                                    {
+                                        if (c >= 0)
+                                            croppedRow.Add(row[c]);
+                                    }
+                                    areaFilteredData.Add(croppedRow);
+                                }
+                                // 按区域行范围裁剪
+                                int startRow = Math.Max(0, areaConfig.StartRow);
+                                int endRow = Math.Min(areaConfig.EndRow, areaFilteredData.Count - 1);
+                                if (startRow <= endRow)
+                                    areaFilteredData = areaFilteredData.GetRange(startRow, endRow - startRow + 1);
+                                else
+                                    areaFilteredData = new List<List<object>>();
+                                affectedRows = await ExecuteAreaRef(dataRef, areaFilteredData);
+                            }
+                            break;
+
+                        case RefMode.FormulaCompute:
+                            affectedRows = await ExecuteFormulaCompute(dataRef, sourceDal);
+                            break;
+
+                        default:
+                            result.ErrorMessage = $"不支持的引用模式: {dataRef.RefMode}";
+                            return result;
+                    }
+
+                    result.Success = true;
+                    result.AffectedRows = affectedRows;
+                    result.RefStatus = 0; // Normal
+                    break; // 成功则跳出重试循环
+                }
+                catch (SQLiteException sqlex) when (retry < maxRetries - 1)
+                {
+                    lastException = sqlex;
+                    System.Threading.Thread.Sleep(retryDelay);
+                    result.ErrorMessage = $"数据库异常，第 {retry + 1} 次重试...";
+                }
+                catch (IOException ioex) when (retry < maxRetries - 1)
+                {
+                    lastException = ioex;
+                    System.Threading.Thread.Sleep(retryDelay);
+                    result.ErrorMessage = $"文件访问异常，第 {retry + 1} 次重试...";
+                }
             }
 
-            result.Success = true;
-            result.AffectedRows = affectedRows;
+            // 如果所有重试都失败，抛出最后的异常
+            if (lastException != null)
+            {
+                throw lastException;
+            }
+
+            // 数据写入成功后更新版本追踪（记录到来源项目数据库）
+            try
+            {
+                var versionTracker = new CrossProjectRefVersionTracker(externalDbPath);
+                versionTracker.IncrementVersion(dataRef.SourceProjectId.ToString(), dataRef.SourceTableId.Value);
+            }
+            catch (Exception verEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CrossProjectRefVersionTracker] Ref {dataRef.Id}: 版本更新失败 - {verEx.Message}");
+            }
+
+            // 记录引用数据标记（供 UI 层可视化引用区域）
+            try
+            {
+                string sourceTableName = null;
+                try
+                {
+                    var tmpDal = new ProjectDAL(externalDbPath);
+                    var tmpTable = tmpDal.GetTable(dataRef.SourceTableId);
+                    if (tmpTable != null) sourceTableName = tmpTable.Title;
+                }
+                catch { /* 忽略名称解析失败 */ }
+
+                var mark = new CrossProjectRefCellStyle.RefCellMark
+                {
+                    RefId = dataRef.Id,
+                    RefName = dataRef.Name,
+                    SourceProjectName = dataRef.SourceProjectId.ToString("N"),
+                    SourceTableName = sourceTableName ?? $"Table_{dataRef.SourceTableId.Value}",
+                    Status = (CrossProjectRefCellStyle.RefStatus)result.RefStatus,
+                    LastRefreshAt = DateTime.Now
+                };
+                CrossProjectRefCellStyle.SetMark(mark);
+            }
+            catch (Exception markEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CrossProjectRefMark] Ref {dataRef.Id}: 记录引用标记失败 - {markEx.Message}");
+            }
+        }
+        catch (SQLiteException sqlex)
+        {
+            if (sqlex.Message.Contains("no such column") || sqlex.Message.Contains("no such table"))
+            {
+                result.ErrorMessage = "来源结构变更：请重新配置引用";
+            }
+            else
+            {
+                result.ErrorMessage = $"来源数据库访问异常：{sqlex.Message}";
+            }
+            result.RefStatus = 3; // Error
         }
         catch (Exception ex)
         {
             result.ErrorMessage = ex.Message;
+            result.RefStatus = 3; // Error
         }
 
         return result;
     }
 
     /// <summary>
-    /// 执行指定目标表的所有已启用引用
+    /// 批量执行指定目标表的所有已启用引用
+    /// <para>按来源项目分组，同一来源项目共享数据库连接，不同来源项目并行读取（最大并发数 3）</para>
     /// </summary>
-    public async Task<List<DataRefResult>> ExecuteAll(Id64 targetTableId)
+    public async Task<BatchExecuteResult> ExecuteAll(Id64 targetTableId)
     {
-        var refs = await _store.Load(targetTableId);
-        var results = new List<DataRefResult>();
+        var startTime = DateTime.Now;
+        var result = new BatchExecuteResult();
 
-        foreach (var dataRef in refs.Where(r => r.Enabled))
+        var refs = await _store.Load(targetTableId);
+        var enabledRefs = refs.Where(r => r.Enabled).ToList();
+        result.TotalRefs = enabledRefs.Count;
+
+        // 按来源项目分组
+        var groups = enabledRefs.GroupBy(r => r.SourceProjectId);
+
+        // 并行处理每个来源项目（最大并发数 3）
+        var semaphore = new SemaphoreSlim(3);
+        var tasks = groups.Select(async group =>
         {
-            var result = await ExecuteRef(dataRef);
-            results.Add(result);
+            await semaphore.WaitAsync();
+            try
+            {
+                var groupResults = new List<DataRefResult>();
+                foreach (var refItem in group)
+                {
+                    var refResult = await ExecuteRef(refItem);
+                    groupResults.Add(refResult);
+                }
+                return groupResults;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        var allResults = await Task.WhenAll(tasks);
+        foreach (var groupResult in allResults.SelectMany(r => r))
+        {
+            result.Results.Add(groupResult);
+            if (groupResult.Success)
+                result.SuccessCount++;
+            else
+                result.FailCount++;
         }
 
-        return results;
+        result.TotalDurationMs = (long)(DateTime.Now - startTime).TotalMilliseconds;
+
+        return result;
     }
 
     /// <summary>
@@ -233,6 +440,59 @@ public class CrossProjectDataRefManager
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// 增量更新：通过版本号检测只更新变更的引用行
+    /// </summary>
+    public async Task<BatchExecuteResult> ExecuteIncrementalUpdate(Id64 tableId)
+    {
+        // 1. 加载所有引用
+        var refs = await _store.Load(tableId);
+        var enabledRefs = refs.Where(r => r.Enabled && r.AutoRefresh).ToList();
+
+        // 2. 逐个检查版本号
+        var result = new BatchExecuteResult();
+        result.TotalRefs = enabledRefs.Count;
+
+        foreach (var refItem in enabledRefs)
+        {
+            try
+            {
+                var externalDbPath = GetExternalDbPath(refItem.SourceProjectId);
+                if (!File.Exists(externalDbPath)) continue;
+
+                var tracker = new CrossProjectRefVersionTracker(externalDbPath);
+                int currentVersion = tracker.GetCurrentVersion(
+                    refItem.SourceProjectId.ToString(), refItem.SourceTableId.Value);
+
+                // 版本未变则跳过
+                if (refItem.LastSourceVersion.HasValue &&
+                    refItem.LastSourceVersion.Value >= currentVersion)
+                    continue;
+
+                // 版本变化了，执行刷新
+                var refResult = await ExecuteRef(refItem);
+                result.Results.Add(refResult);
+                if (refResult.Success)
+                    result.SuccessCount++;
+                else
+                    result.FailCount++;
+            }
+            catch (Exception ex)
+            {
+                result.FailCount++;
+                result.Results.Add(new DataRefResult
+                {
+                    RefId = refItem.Id,
+                    Name = refItem.Name,
+                    Success = false,
+                    ErrorMessage = $"增量更新失败: {ex.Message}"
+                });
+            }
+        }
+
+        return result;
     }
 
     /// <summary>

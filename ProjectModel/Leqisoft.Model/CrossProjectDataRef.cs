@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using Leqisoft.DTO;
 using Newtonsoft.Json;
@@ -21,6 +21,17 @@ public enum RefMode
 }
 
 /// <summary>
+/// 版本策略
+/// </summary>
+public enum VersionStrategy
+{
+    /// <summary>始终使用最新版本</summary>
+    Latest = 0,
+    /// <summary>锁定到指定版本</summary>
+    Locked = 1
+}
+
+/// <summary>
 /// 跨项目数据引用模型
 /// </summary>
 [Serializable]
@@ -35,11 +46,20 @@ public class CrossProjectDataRef
     /// <summary>来源项目 ID</summary>
     public Guid SourceProjectId { get; set; }
 
+    /// <summary>来源项目名称（保存时同步）</summary>
+    public string SourceProjectName { get; set; }
+
     /// <summary>来源表 ID</summary>
     public Id64 SourceTableId { get; set; }
 
+    /// <summary>来源表名称（保存时同步）</summary>
+    public string SourceTableName { get; set; }
+
     /// <summary>目标表 ID</summary>
     public Id64 TargetTableId { get; set; }
+
+    /// <summary>目标表名称（保存时同步）</summary>
+    public string TargetTableName { get; set; }
 
     /// <summary>引用模式</summary>
     public RefMode RefMode { get; set; }
@@ -72,6 +92,30 @@ public class CrossProjectDataRef
 
     /// <summary>更新时间</summary>
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+    /// <summary>来源授权用户 ID（可选，用于需要身份验证的数据源）</summary>
+    public Id64? AuthId { get; set; }
+
+    /// <summary>默认值（当来源数据为空时的备选值）</summary>
+    public string DefaultValue { get; set; }
+
+    /// <summary>缓存时长（秒），默认 60 秒</summary>
+    public int CacheDurationSeconds { get; set; } = 60;
+
+    /// <summary>版本策略</summary>
+    public VersionStrategy VersionStrategy { get; set; }
+
+    /// <summary>锁定版本号（当 VersionStrategy 为 Locked 时生效）</summary>
+    public int? LockedSourceVersion { get; set; }
+
+    /// <summary>最近一次读取到的来源版本号</summary>
+    public int? LastSourceVersion { get; set; }
+
+    /// <summary>最近一次版本验证时间</summary>
+    public DateTime? LastVerifiedAt { get; set; }
+
+    /// <summary>最近一次缓存命中时间</summary>
+    public DateTime? LastCacheHitAt { get; set; }
 
     public string Serialize()
     {
