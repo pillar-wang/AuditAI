@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -1195,15 +1195,6 @@ public class dlgProjectManagement : C1RibbonForm
 
 	private async void dlgProjectManagement_Shown(object sender, EventArgs e)
 	{
-		// 诊断信息：确认按钮数量和运行版本
-		var linkTexts = new System.Text.StringBuilder();
-		linkTexts.AppendLine($"tbrProject.CommandLinks.Count = {tbrProject.CommandLinks.Count}");
-		for (int i = 0; i < tbrProject.CommandLinks.Count; i++)
-		{
-			var link = tbrProject.CommandLinks[i];
-			linkTexts.AppendLine($"[{i}] SortOrder={link.SortOrder}, Text={link.Command?.Text}, Visible={link.Command?.Visible}");
-		}
-		Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, linkTexts.ToString(), MessageBoxButtons.OK, "诊断信息");
 		await PopulateProjects();
 		if (!(Program.MainForm.CurrentEdition is AppEditionGeneral) && _projects != null && _projects.Count == 0)
 		{
