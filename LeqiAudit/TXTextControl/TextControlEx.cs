@@ -19,6 +19,8 @@ public class TextControlEx : TextControl
 
 	private const int WM_CREATE = 1;
 
+	private const int WM_GETOBJECT = 0x003D;
+
 
 	public new event EventHandler<TextContextMenuEventArgs> TextContextMenuOpening;
 
@@ -159,6 +161,15 @@ public class TextControlEx : TextControl
 
 	protected override void WndProc(ref Message m)
 	{
+		// 拦截 WM_GETOBJECT，避免触发 TXTextControl.RawFragmentRootProvider 的
+		// NonComVisibleBaseClass MDA 警告（COM QueryInterface 失败）
+		// 返回 0 让系统使用默认辅助功能行为
+		if (m.Msg == WM_GETOBJECT && m.LParam != IntPtr.Zero)
+		{
+			m.Result = IntPtr.Zero;
+			return;
+		}
+
 		switch (m.Msg)
 		{
 		case 269:

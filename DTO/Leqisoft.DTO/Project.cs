@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -45,6 +45,10 @@ public class Project
 	public ChargeType ProjectChargeType { get; set; }
 
 	public DateTime ProjectLicenseDate { get; set; } = DateTime.Now;
+
+
+	/// <summary>自定义填充规则配置（JSON 格式）</summary>
+	public string CustomFillConfig { get; set; }
 
 
 	public Project Clone()

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -995,16 +995,16 @@ public class TableEditor : ISetTheme
 
 	private readonly C1Command cmdCrossProjectDataRef = new C1Command
 	{
-		Text = "跨项目数据引用",
-		Image = Leqisoft.UI.Platform.Properties.Resources.ComboList16
+		Text = "跨项目引用",
+		Image = Leqisoft.UI.Platform.Properties.Resources.ReferenceManager
 	};
 
 	private readonly C1CommandLink lnkCrossProjectDataRef = new C1CommandLink();
 
 	private readonly C1Command cmdRefreshCrossProjectRefs = new C1Command
 	{
-		Text = "刷新跨项目引用",
-		Image = Leqisoft.UI.Platform.Properties.Resources.TicketMode
+		Text = "刷新引用",
+		Image = Leqisoft.UI.Platform.Properties.Resources.RefreshProject
 	};
 
 	private readonly C1CommandLink lnkRefreshCrossProjectRefs = new C1CommandLink();
@@ -13129,10 +13129,6 @@ public class TableEditor : ISetTheme
 		lnkDesignTicket.Delimiter = true;
 		lnkDesignTicket.Command = cmdDesignTicket;
 		ToolBar.CommandLinks.Add(lnkDesignTicket);
-		lnkHelpCenter.Delimiter = true;
-		lnkHelpCenter.Command = cmdHelpCenter;
-		cmdHelpCenter.Click += CmdHelpCenter_Click;
-		ToolBar.CommandLinks.Add(lnkHelpCenter);
 		lnkHideToolbar.Delimiter = true;
 		lnkHideToolbar.Command = cmdHideToolbar;
 		cmdHideToolbar.Image = Leqisoft.UI.Platform.Properties.Resources.HideSideToolbar;
@@ -15423,28 +15419,29 @@ public class TableEditor : ISetTheme
 		if (_table == null || _grid == null) return;
 		try
 		{
-			var marks = CrossProjectRefCellStyle.GetAllMarks();
-			if (marks == null || marks.Count == 0)
-			{
-				_refCellStyleCache = null;
-				return;
-			}
-
 			// 获取当前表格的引用配置，用于解析行列范围
 			var project = Leqisoft.Model.Project.Current;
 			if (project == null) return;
 			var manager = new CrossProjectDataRefManager(project);
 			var refs = manager.Store.Load(_table.Id).GetAwaiter().GetResult();
+			if (refs == null || refs.Count == 0)
+			{
+				_refCellStyleCache = null;
+				return;
+			}
+
+			// 获取已有的标记（可能为空——未刷新过或程序重启后内存标记丢失）
+			var marks = CrossProjectRefCellStyle.GetAllMarks();
 
 			// 构建缓存字典：(row, col) → RefStatus，供 BodyOwnerDrawCell_Style O(1) 查找
 			_refCellStyleCache = new Dictionary<(int row, int col), CrossProjectRefCellStyle.RefStatus>();
 
 			_grid.BeginUpdate();
-			foreach (var mark in marks)
+			foreach (var dataRef in refs)
 			{
-				// 只处理属于当前表格的引用标记
-				var dataRef = refs.FirstOrDefault(r => r.Id.Value == mark.RefId.Value);
-				if (dataRef == null) continue;
+				// 查找对应的标记；未刷新过时默认 Normal 状态
+				var mark = marks?.FirstOrDefault(m => m.RefId.Value == dataRef.Id.Value);
+				var status = mark?.Status ?? CrossProjectRefCellStyle.RefStatus.Normal;
 
 				// 解析行列范围
 				int startRow = 0, endRow = -1, startCol = 0, endCol = -1;
@@ -15481,18 +15478,21 @@ public class TableEditor : ISetTheme
 					catch { /* 忽略解析失败 */ }
 				}
 
-				// 更新标记中的行列范围
-				mark.StartRow = startRow;
-				mark.EndRow = endRow;
-				mark.StartCol = startCol;
-				mark.EndCol = endCol;
+				// 更新标记中的行列范围（如有标记）
+				if (mark != null)
+				{
+					mark.StartRow = startRow;
+					mark.EndRow = endRow;
+					mark.StartCol = startCol;
+					mark.EndCol = endCol;
+				}
 
 				// 填充缓存字典
 				for (int r = startRow; r <= endRow && r < _grid.BodyRowsCount; r++)
 				{
 					for (int c = startCol; c <= endCol && c < _grid.BodyColsCount; c++)
 					{
-						_refCellStyleCache[(r, c)] = mark.Status;
+						_refCellStyleCache[(r, c)] = status;
 					}
 				}
 			}
@@ -15556,19 +15556,17 @@ public class TableEditor : ISetTheme
 
 				case RefMode.AreaRef:
 					{
+						// RefConfig 字段：TargetStartCol/TargetEndCol/TargetStartRow/TargetEndRow
+						//                  SourceStartCol/SourceEndCol/SourceStartRow/SourceEndRow
 						var targetStartRow = config["TargetStartRow"]?.ToObject<int>() ?? 0;
 						var targetStartCol = config["TargetStartCol"]?.ToObject<int>() ?? 0;
-						var srcStartRow = config["StartRow"]?.ToObject<int>() ?? 0;
-						var srcEndRow = config["EndRow"]?.ToObject<int>() ?? 0;
-						var srcStartCol = config["StartCol"]?.ToObject<int>() ?? 0;
-						var srcEndCol = config["EndCol"]?.ToObject<int>() ?? 0;
+						var targetEndRow = config["TargetEndRow"]?.ToObject<int>() ?? targetStartRow;
+						var targetEndCol = config["TargetEndCol"]?.ToObject<int>() ?? targetStartCol;
 
 						startRow = targetStartRow;
 						startCol = targetStartCol;
-						int areaRows = (srcEndRow - srcStartRow + 1);
-						int areaCols = (srcEndCol - srcStartCol + 1);
-						endRow = startRow + Math.Max(0, areaRows - 1);
-						endCol = startCol + Math.Max(0, areaCols - 1);
+						endRow = targetEndRow;
+						endCol = targetEndCol;
 					}
 					break;
 

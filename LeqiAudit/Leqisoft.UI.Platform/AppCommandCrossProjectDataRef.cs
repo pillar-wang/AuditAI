@@ -8,9 +8,9 @@ namespace Leqisoft.UI.Platform;
 
 public class AppCommandCrossProjectDataRef : AppCommandButton
 {
-	public override string Text => "跨项目数据引用";
+	public override string Text => "跨项目引用";
 
-	public override System.Drawing.Image LargeIcon => Resources.ComboList16;
+	public override System.Drawing.Image LargeIcon => Resources.ReferenceManager;
 
 	protected override string Tooltip => "打开跨项目数据引用管理对话框，配置从其他项目引用数据到当前表";
 

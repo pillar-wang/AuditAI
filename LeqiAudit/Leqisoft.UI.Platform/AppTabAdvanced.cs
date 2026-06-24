@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
+﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
 
 public class AppTabAdvanced : AppCommandTab
 {
@@ -9,6 +9,7 @@ public class AppTabAdvanced : AppCommandTab
 		base.Groups.Add(AppCommandGroups.CollectLedger);
 		base.Groups.Add(AppCommandGroups.Consolidate);
 		base.Groups.Add(AppCommandGroups.CrossProjectDataRef);
+		base.Groups.Add(AppCommandGroups.CustomFill);
 		base.Groups.Add(AppCommandGroups.Reference);
 		base.Groups.Add(AppCommandGroups.Confirmation);
 		base.Groups.Add(AppCommandGroups.BatchColumn);

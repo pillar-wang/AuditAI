@@ -10,9 +10,9 @@ namespace Leqisoft.UI.Platform;
 
 public class AppCommandRefreshCrossProjectRefs : AppCommandButton
 {
-	public override string Text => "刷新跨项目引用";
+	public override string Text => "刷新引用";
 
-	public override System.Drawing.Image LargeIcon => Resources.DocWholeRefresh;
+	public override System.Drawing.Image LargeIcon => Resources.RefreshProject;
 
 	protected override string Tooltip => "刷新当前表的所有跨项目数据引用";
 
