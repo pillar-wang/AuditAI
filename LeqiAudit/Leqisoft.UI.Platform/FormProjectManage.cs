@@ -714,6 +714,8 @@ public class FormProjectManage : ISetTheme
 			["RB_DELETEPROJECT"] = Resources.RemoveProject,
 			["RB_DUPLICATEPROJECT"] = Resources.DuplicateProject,
 			["RB_EXPORTPROJECT"] = Resources.ProjectExport,
+			["RB_EXPORTPROJECTFILE"] = Resources.ProjectExport,
+			["RB_IMPORTPROJECT"] = Resources.ProjectExport,
 			["RB_SAVEASTEMPLATE"] = Resources.SaveAsTemplate,
 			["IL_TILEMODE"] = Resources.tileMode,
 			["IL_LISTMODE"] = Resources.listMode,
@@ -752,6 +754,8 @@ public class FormProjectManage : ISetTheme
 		ribbonButton = AddRibbonButton(group2, "RB_DUPLICATEPROJECT", "复制" + StringConstBase.Current.Project);
 		ribbonButton.Visible = !SoftwareLicenseManager.IsDuplicateProjectOutOfLicenseLimit();
 		AddRibbonButton(group2, "RB_EXPORTPROJECT", StringConstBase.Current.Project + "导出");
+		AddRibbonButton(group2, "RB_EXPORTPROJECTFILE", "导出项目文件");
+		AddRibbonButton(group2, "RB_IMPORTPROJECT", "导入项目");
 		ribbonButton = AddRibbonButton(group2, "RB_SAVEASTEMPLATE", "另存" + StringConstBase.Current.Template);
 		ribbonButton.Visible = !(Program.MainForm.CurrentEdition is AppEditionGeneral);
 		AddRibbonButton(group2, "RB_SEARCH", "搜索" + StringConstBase.Current.Project);
@@ -2073,6 +2077,86 @@ public class FormProjectManage : ISetTheme
 		}
 	}
 
+	/// <summary>导出选中项目为 .lqaudit 归档文件（含项目数据库和元信息）</summary>
+	private async Task ExportProjectFile()
+	{
+		var selected = SelectedProject;
+		if (selected == null)
+		{
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择要导出的" + StringConstBase.Current.Project);
+			return;
+		}
+		string defaultName = string.IsNullOrWhiteSpace(selected.Number)
+			? $"{selected.Name}.lqaudit"
+			: $"{selected.Number} {selected.Name}.lqaudit";
+		foreach (char c in Path.GetInvalidFileNameChars())
+			defaultName = defaultName.Replace(c, '_');
+		using (var sfd = new SaveFileDialog
+		{
+			Filter = "项目归档文件 (*.lqaudit)|*.lqaudit",
+			FileName = defaultName,
+			Title = "导出项目文件"
+		})
+		{
+			if (sfd.ShowDialog() != DialogResult.OK) return;
+			try
+			{
+				await Task.Run(() => ProjectArchive.Export(selected, sfd.FileName));
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					$"项目导出成功！\n文件路径：{sfd.FileName}\n\n可将此文件发送给其他人员，通过\"导入项目\"功能打开。",
+					MessageBoxButtons.OK, "导出完成");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"导出失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "导出失败");
+			}
+		}
+	}
+
+	/// <summary>从 .lqaudit 归档文件导入项目</summary>
+	private async Task ImportProject()
+	{
+		using (var ofd = new OpenFileDialog
+		{
+			Filter = "项目归档文件 (*.lqaudit)|*.lqaudit",
+			Title = "导入项目",
+			CheckFileExists = true
+		})
+		{
+			if (ofd.ShowDialog() != DialogResult.OK) return;
+			try
+			{
+				// 读取元信息预览
+				var metadata = ProjectArchive.ReadMetadata(ofd.FileName);
+				string preview = $"项目名称：{metadata.ProjectName}\n" +
+					$"项目编号：{metadata.ProjectNumber}\n" +
+					$"项目类别：{metadata.Category}\n" +
+					$"被审计单位：{metadata.Auditee}\n" +
+					$"创建时间：{metadata.CreateTime:yyyy-MM-dd}\n" +
+					$"导出时间：{metadata.ExportTime:yyyy-MM-dd HH:mm}\n" +
+					$"导出人：{metadata.ExportedBy}\n" +
+					$"版本：v{metadata.SchemaVersion}";
+				if (Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.Question,
+					$"确认导入以下项目？\n\n{preview}", MessageBoxButtons.OKCancel, "导入项目确认") != DialogResult.OK)
+					return;
+
+				// 执行导入
+				var newProject = await Task.Run(() => ProjectArchive.Import(ofd.FileName));
+				await Populate();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					$"项目导入成功！\n新项目名称：{newProject.Name}", MessageBoxButtons.OK, "导入完成");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "导入失败");
+			}
+		}
+	}
+
 	private async Task SaveAsTemplate()
 	{
 		if (!HasSelectedProject)
@@ -2345,6 +2429,7 @@ public class FormProjectManage : ISetTheme
 			GetRibbonButton("RB_DELETEPROJECT").Enabled = CanModifyProject();
 			GetRibbonButton("RB_DUPLICATEPROJECT").Enabled = CanDuplicateProject();
 			GetRibbonButton("RB_EXPORTPROJECT").Enabled = CanDuplicateProject();
+			GetRibbonButton("RB_EXPORTPROJECTFILE").Enabled = HasSelectedProject;
 			GetRibbonButton("RB_SAVEASTEMPLATE").Enabled = CanDuplicateProject();
 			GetRibbonButton("RB_SHAREPROJECT").Visible = CanSeeShareProject();
 			GetRibbonButton("RB_SHAREPROJECT").Enabled = CanShareProject();
@@ -3005,13 +3090,19 @@ public class FormProjectManage : ISetTheme
 					}
 					break;
 				case 'S':
-					if (name == "RB_SHAREPROJECT")
-					{
-						await ShareProject();
-					}
-					break;
+				if (name == "RB_SHAREPROJECT")
+				{
+					await ShareProject();
 				}
 				break;
+			case 'I':
+				if (name == "RB_IMPORTPROJECT")
+				{
+					await ImportProject();
+				}
+				break;
+			}
+			break;
 			case 19:
 				if (name == "RB_DUPLICATEPROJECT")
 				{
@@ -3019,11 +3110,15 @@ public class FormProjectManage : ISetTheme
 				}
 				break;
 			case 20:
-				if (name == "RB_DUPLICATETEMPLATE")
-				{
-					await DuplicateTemplate();
-				}
-				break;
+			if (name == "RB_DUPLICATETEMPLATE")
+			{
+				await DuplicateTemplate();
+			}
+			else if (name == "RB_EXPORTPROJECTFILE")
+			{
+				await ExportProjectFile();
+			}
+			break;
 			case 18:
 				if (name == "RB_REFRESHTEMPLATE")
 				{
