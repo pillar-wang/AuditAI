@@ -1,4 +1,4 @@
-﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
+﻿﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommandGroups
 {
@@ -117,6 +117,9 @@ public static class AppCommandGroups
 
 
 	public static AppGroupCrossProjectDataRef CrossProjectDataRef { get; } = new AppGroupCrossProjectDataRef();
+
+
+	public static AppGroupCustomFill CustomFill { get; } = new AppGroupCustomFill();
 
 
 	public static AppGroupConfirmation Confirmation { get; } = new AppGroupConfirmation();

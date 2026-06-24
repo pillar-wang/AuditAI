@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.Collections.Generic;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Threading.Tasks;
 using Dapper;
@@ -368,18 +368,24 @@ public class ProjectDAL
 			sQLiteConnection.Execute("ALTER TABLE `ValidationFormula` ADD COLUMN `DocumentFieldId` INTEGER");
 		}
 		catch { /* 列已存在则忽略 */ }
+		// 项目级自定义填充配置迁移
+		try
+		{
+			sQLiteConnection.Execute("ALTER TABLE `Project` ADD COLUMN `CustomFillConfig` TEXT");
+		}
+		catch { /* 列已存在则忽略 */ }
 		sQLiteConnection.Execute($"PRAGMA user_version={num}");
 	}
 
 	public Project GetProject()
 	{
 		using SQLiteConnection cnn = GetConnection();
-		return cnn.QueryFirstOrDefault<Project>("SELECT `Id`,`Name`,`Parent`,`Version`,`Number`,`Category`,`Note`,`CreateTime` FROM `Project`");
+		return cnn.QueryFirstOrDefault<Project>("SELECT `Id`,`Name`,`Parent`,`Version`,`Number`,`Category`,`Note`,`CreateTime`,`CustomFillConfig` FROM `Project`");
 	}
 
 	public void SaveProject(Project dto)
 	{
-		Execute("INSERT OR REPLACE INTO `Project`(`Id`,`Name`,`Parent`,`Version`,`Number`,`Category`,`Note`,`CreateTime`) VALUES(@Id,@Name,@ParentId,@Version,@Number,@Category,@Note,@CreateTime)", dto);
+		Execute("INSERT OR REPLACE INTO `Project`(`Id`,`Name`,`Parent`,`Version`,`Number`,`Category`,`Note`,`CreateTime`,`CustomFillConfig`) VALUES(@Id,@Name,@ParentId,@Version,@Number,@Category,@Note,@CreateTime,@CustomFillConfig)", dto);
 	}
 
 	public IEnumerable<TreeGroup> GetTreeGroups()

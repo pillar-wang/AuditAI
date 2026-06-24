@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Leqisoft.UI.Platform;
 
 public static class AppCommands
 {
@@ -1154,4 +1154,10 @@ public static class AppCommands
 
 
 	public static AppCommandRefreshCrossProjectRefs RefreshCrossProjectRefs { get; } = new AppCommandRefreshCrossProjectRefs();
+
+
+	public static AppCommandCustomFillConfig CustomFillConfig { get; } = new AppCommandCustomFillConfig();
+
+
+	public static AppCommandExecuteCustomFill ExecuteCustomFill { get; } = new AppCommandExecuteCustomFill();
 }

@@ -46,6 +46,7 @@ public class frmCrossProjectDataRef : Form
     private C1Button _btnDashboard;
     private Label _lblStatusFilter;
     private C1ComboBox _cmbStatusFilter;
+    private Panel _pnlButtons;
 
     /// <summary>
     /// 构造函数
@@ -104,62 +105,28 @@ public class frmCrossProjectDataRef : Form
                 }).ToList();
             }
 
-            var authProvider = new CrossProjectRefAuthProvider(_currentProject);
-            var cache = new CrossProjectRefCache(Leqisoft.Model.User.Current?.Id ?? 1);
-
             for (int i = 0; i < filteredList.Count; i++)
             {
                 var item = filteredList[i];
                 _grid.Rows.Add();
                 var row = _grid.Rows[i + 1];
-                row[0] = i + 1;
-                row[1] = item.Name;
-                row[2] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : await GetProjectNameByIdAsync(item.SourceProjectId);
-                row[3] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : await GetTableNameByIdAsync(item.SourceProjectId, item.SourceTableId);
-                row[4] = GetRefModeDisplay(item.RefMode);
-                row[5] = item.Enabled ? "启用" : "禁用";
-                row[6] = item.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                row[7] = ""; // 最后执行结果（暂空）
+                row[0] = i + 1;           // 序号
+                row[1] = item.Name;       // 引用名称
 
-                // 授权状态
-                try
-                {
-                    bool authorized = authProvider.CheckTableAccess(item.SourceProjectId, _currentProject.Id, item.SourceTableId);
-                    row[8] = authorized ? "已授权" : "未授权";
-                }
-                catch
-                {
-                    row[8] = "未知";
-                }
+                // 目标表
+                row[2] = !string.IsNullOrEmpty(item.TargetTableName) ? item.TargetTableName : GetTargetTableName(item.TargetTableId);
 
-                // 缓存状态
-                try
-                {
-                    string dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data",
-                        (Leqisoft.Model.User.Current?.Id ?? 1).ToString(), $"{item.SourceProjectId}.db");
-                    var cachedData = cache.GetCachedData(item.Id, dbPath, 60);
-                    if (cachedData != null)
-                        row[9] = "已缓存";
-                    else if (item.LastSourceVersion.HasValue)
-                        row[9] = "过期";
-                    else
-                        row[9] = "未缓存";
-                }
-                catch
-                {
-                    row[9] = "未知";
-                }
-
-                // 版本号
-                row[10] = item.LastSourceVersion?.ToString() ?? "-";
-
-                // 上次验证
-                row[11] = item.LastVerifiedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
-
-                // 目标区域 / 数据来源区域（从 RefConfig 解析）
+                // 数据来源区域 / 目标区域（从 RefConfig 解析）
                 var (targetArea, sourceArea) = ParseRefConfigArea(item);
-                row[12] = targetArea;
-                row[13] = sourceArea;
+                row[3] = targetArea;      // 目标区域
+
+                row[4] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : await GetProjectNameByIdAsync(item.SourceProjectId);  // 来源项目
+                row[5] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : await GetTableNameByIdAsync(item.SourceProjectId, item.SourceTableId);  // 来源表
+                row[6] = sourceArea;      // 数据来源区域
+
+                row[7] = GetRefModeDisplay(item.RefMode);  // 引用模式
+                row[8] = item.Enabled ? "启用" : "禁用";   // 启用状态
+                row[9] = item.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");  // 更新时间
 
                 row.UserData = item;
 
@@ -185,6 +152,12 @@ public class frmCrossProjectDataRef : Form
             }
 
             _grid.AutoSizeCols();
+            // 确保目标区域和数据来源区域列有足够宽度（AutoSizeCols 可能压缩）
+            if (_grid.Cols.Count > 9)
+            {
+                _grid.Cols[3].Width = Math.Max(_grid.Cols[3].Width, 120);  // 目标区域
+                _grid.Cols[6].Width = Math.Max(_grid.Cols[6].Width, 120);  // 数据来源区域
+            }
         }
         catch (Exception ex)
         {
@@ -224,13 +197,25 @@ public class frmCrossProjectDataRef : Form
             switch (item.RefMode)
             {
                 case RefMode.CellRef:
-                    // 新格式：{"TargetCellId": 12345, "SourceCellId": 67890}
+                    // 格式：{"TargetCellId": 12345, "SourceCellId": 67890, "TargetRow": r, "TargetCol": c, "SourceRow": r, "SourceCol": c}
                     if (jObj["TargetCellId"] != null)
-                        return ("单元格 ID:" + (long)jObj["TargetCellId"],
-                                "单元格 ID:" + (jObj["SourceCellId"] != null ? ((long)jObj["SourceCellId"]).ToString() : "0"));
-                    // 旧格式索引
-                    return (FormatAreaDesc(jObj, "TargetColumnIndex", "TargetRowIndex"),
-                            FormatAreaDesc(jObj, "SourceColumnIndex", "SourceRowIndex"));
+                    {
+                        // 使用行列信息，显示为 A1 格式
+                        var tgtRow = jObj["TargetRow"]?.ToObject<int>();
+                        var tgtCol = jObj["TargetCol"]?.ToObject<int>();
+                        var srcRow = jObj["SourceRow"]?.ToObject<int>();
+                        var srcCol = jObj["SourceCol"]?.ToObject<int>();
+
+                        string targetPos = (tgtRow.HasValue && tgtCol.HasValue)
+                            ? ToCellRef(tgtRow.Value, tgtCol.Value)
+                            : "-";
+                        string sourcePos = (srcRow.HasValue && srcCol.HasValue)
+                            ? ToCellRef(srcRow.Value, srcCol.Value)
+                            : "-";
+
+                        return (targetPos, sourcePos);
+                    }
+                    return ("-", "-");
 
                 case RefMode.ColumnRef:
                     // 预期格式：{"TargetColumnIndex": n, "TargetColumnName": "xxx", "SourceColumnIndex": n, "SourceColumnName": "xxx"}
@@ -244,8 +229,20 @@ public class frmCrossProjectDataRef : Form
                     //        "SourceStartCol": n, "SourceEndCol": n, "SourceStartRow": n, "SourceEndRow": n}
                     if (jObj["TargetStartCol"] != null)
                     {
-                        string tgt = $"{jObj["TargetStartCol"]}-{jObj["TargetEndCol"]}列 × {jObj["TargetStartRow"]}-{jObj["TargetEndRow"]}行";
-                        string src = $"{jObj["SourceStartCol"]}-{jObj["SourceEndCol"]}列 × {jObj["SourceStartRow"]}-{jObj["SourceEndRow"]}行";
+                        int tsc = jObj["TargetStartCol"].ToObject<int>();
+                        int tec = jObj["TargetEndCol"].ToObject<int>();
+                        int tsr = jObj["TargetStartRow"].ToObject<int>();
+                        int ter = jObj["TargetEndRow"].ToObject<int>();
+                        int ssc = jObj["SourceStartCol"].ToObject<int>();
+                        int sec = jObj["SourceEndCol"].ToObject<int>();
+                        int ssr = jObj["SourceStartRow"].ToObject<int>();
+                        int ser = jObj["SourceEndRow"].ToObject<int>();
+                        string tgt = tsc == tec && tsr == ter
+                            ? ToCellRef(tsr, tsc)
+                            : $"{ToCellRef(tsr, tsc)}:{ToCellRef(ter, tec)}";
+                        string src = ssc == sec && ssr == ser
+                            ? ToCellRef(ssr, ssc)
+                            : $"{ToCellRef(ssr, ssc)}:{ToCellRef(ser, sec)}";
                         return (tgt, src);
                     }
                     return ("-", "-");
@@ -272,15 +269,10 @@ public class frmCrossProjectDataRef : Form
     }
 
     /// <summary>
-    /// 从 JObject 中读取列索引和行索引，格式化为列字母+行号描述
+    /// 将行列索引转为 Excel 风格的单元格引用（如 0,0 → A1）
     /// </summary>
-    private static string FormatAreaDesc(Newtonsoft.Json.Linq.JObject jObj, string colKey, string rowKey)
+    private static string ToCellRef(int row, int col)
     {
-        if (jObj[colKey] == null || jObj[rowKey] == null)
-            return "-";
-        int col = (int)jObj[colKey];
-        int row = (int)jObj[rowKey];
-        // 将列索引转为 Excel 风格字母 (A, B, C...)
         string colLetter = "";
         int tmp = col + 1;
         while (tmp > 0)
@@ -484,6 +476,7 @@ public class frmCrossProjectDataRef : Form
         if (result == DialogResult.OK)
         {
             // 向导内部已自行保存
+            DataRefreshed = true;
             _ = RefreshList();
         }
     }
@@ -534,6 +527,7 @@ public class frmCrossProjectDataRef : Form
             try
             {
                 await _store.Delete(selected.Id);
+                DataRefreshed = true;
                 await RefreshList();
             }
             catch (Exception ex)
@@ -628,6 +622,7 @@ public class frmCrossProjectDataRef : Form
             var result = frmCrossProjectRefConfigWizard.ShowWizard(_currentProject, _currentTableId, null);
             if (result == DialogResult.OK)
             {
+                DataRefreshed = true;
                 await RefreshList();
             }
         }
@@ -709,204 +704,267 @@ public class frmCrossProjectDataRef : Form
         this._btnClose = new C1Button();
         this._btnAddNew = new C1Button();
         this._btnDashboard = new C1Button();
-        
+
         this._lblStatusFilter = new Label();
         this._cmbStatusFilter = new C1ComboBox();
 
-        //
-        // _lblTitle
-        //
-        this._lblTitle.AutoSize = true;
+        // ---- 字体常量 ----
+        var fontTitle = new Font("Microsoft YaHei", 11f, FontStyle.Bold);
+        var fontNormal = new Font("Microsoft YaHei", 9f);
+        var fontBtn = new Font("Microsoft YaHei", 9f);
+        var fontBtnBold = new Font("Microsoft YaHei", 9f, FontStyle.Bold);
+
+        // ---- 颜色常量（与向导/主界面一致） ----
+        var colorHeaderBg = Color.FromArgb(0, 120, 215);       // 顶部标题栏深蓝
+        var colorHeaderFg = Color.White;                        // 顶部标题栏白字
+        var colorBtnPrimary = Color.FromArgb(0, 120, 215);      // 主操作按钮蓝
+        var colorBtnRefresh = Color.FromArgb(0, 150, 80);       // 刷新按钮绿
+        var colorBtnDanger = Color.FromArgb(200, 80, 80);       // 删除按钮红
+        var colorBtnNormal = Color.FromArgb(255, 255, 255);     // 普通按钮白
+        var colorBtnNormalFg = Color.FromArgb(60, 60, 60);      // 普通按钮深灰字
+        var colorBtnBorder = Color.FromArgb(200, 200, 200);     // 按钮边框灰
+        var colorBottomBg = Color.FromArgb(248, 249, 251);      // 底部按钮区浅灰
+        var colorGridFixedBg = Color.FromArgb(243, 245, 248);   // 表头浅灰
+        var colorGridAltBg = Color.FromArgb(248, 249, 251);     // 隔行浅灰
+
+        // ---- 顶部标题栏（深蓝背景 + 白色标题 + 右侧状态筛选） ----
+        var pnlHeader = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 48,
+            BackColor = colorHeaderBg
+        };
+        this._lblTitle.AutoSize = false;
         this._lblTitle.BackColor = Color.Transparent;
         this._lblTitle.BorderStyle = BorderStyle.None;
-        this._lblTitle.Font = new Font("Microsoft YaHei", 12f, FontStyle.Bold);
-        this._lblTitle.ForeColor = Color.Black;
-        this._lblTitle.Location = new Point(12, 15);
-        this._lblTitle.Name = "_lblTitle";
-        this._lblTitle.Size = new Size(200, 22);
-        this._lblTitle.TabIndex = 0;
-		this._lblTitle.Text = "跨项目数据引用管理";
+        this._lblTitle.Font = fontTitle;
+        this._lblTitle.ForeColor = colorHeaderFg;
+        this._lblTitle.Dock = DockStyle.Left;
+        this._lblTitle.Size = new Size(300, 48);
+        this._lblTitle.TextAlign = ContentAlignment.MiddleLeft;
+        this._lblTitle.Padding = new Padding(16, 0, 0, 0);
+        this._lblTitle.Text = "跨项目数据引用管理";
 
-        //
-        // _grid
-        //
+        // 状态筛选放标题栏右侧
+        this._lblStatusFilter.AutoSize = false;
+        this._lblStatusFilter.BackColor = Color.Transparent;
+        this._lblStatusFilter.Font = fontNormal;
+        this._lblStatusFilter.ForeColor = colorHeaderFg;
+        this._lblStatusFilter.Dock = DockStyle.Right;
+        this._lblStatusFilter.Size = new Size(70, 48);
+        this._lblStatusFilter.TextAlign = ContentAlignment.MiddleRight;
+        this._lblStatusFilter.Text = "状态筛选";
+
+        this._cmbStatusFilter.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
+        this._cmbStatusFilter.Font = fontNormal;
+        this._cmbStatusFilter.Items.AddRange(new object[] { "全部", "正常", "异常", "缓存降级" });
+        this._cmbStatusFilter.Dock = DockStyle.Right;
+        this._cmbStatusFilter.Size = new Size(110, 48);
+        this._cmbStatusFilter.SelectedIndex = 0;
+        this._cmbStatusFilter.SelectedIndexChanged += _cmbStatusFilter_SelectedIndexChanged;
+        this._cmbStatusFilter.Margin = new Padding(0, 12, 16, 12);
+
+        pnlHeader.Controls.Add(this._cmbStatusFilter);
+        pnlHeader.Controls.Add(this._lblStatusFilter);
+        pnlHeader.Controls.Add(this._lblTitle);
+
+        // ---- 中间网格区域 ----
         this._grid.AllowEditing = false;
         this._grid.AllowFiltering = false;
         this._grid.AllowSorting = AllowSortingEnum.None;
-        this._grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        this._grid.Dock = DockStyle.Fill;
         this._grid.BackColor = Color.White;
-        this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.FixedSingle;
-        this._grid.Cols.Count = 14;
+        this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
+        this._grid.Cols.Count = 10;
         this._grid.Cols[0].Caption = "序号";
-        this._grid.Cols[0].AllowSorting = false;
         this._grid.Cols[1].Caption = "引用名称";
         this._grid.Cols[1].Width = 150;
-        this._grid.Cols[2].Caption = "来源项目";
-        this._grid.Cols[2].Width = 230;
-        this._grid.Cols[3].Caption = "来源表";
-        this._grid.Cols[3].Width = 80;
-        this._grid.Cols[4].Caption = "引用模式";
-        this._grid.Cols[4].Width = 80;
-        this._grid.Cols[5].Caption = "启用状态";
-        this._grid.Cols[5].Width = 70;
-        this._grid.Cols[6].Caption = "更新时间";
-        this._grid.Cols[6].Width = 150;
-        this._grid.Cols[7].Caption = "最后执行结果";
-        this._grid.Cols[7].Width = 100;
-        this._grid.Cols[8].Caption = "授权状态";
-        this._grid.Cols[8].Width = 80;
-        this._grid.Cols[9].Caption = "缓存状态";
-        this._grid.Cols[9].Width = 80;
-        this._grid.Cols[10].Caption = "版本号";
-        this._grid.Cols[10].Width = 70;
-        this._grid.Cols[11].Caption = "上次验证";
-        this._grid.Cols[11].Width = 150;
-        this._grid.Cols[12].Caption = "目标区域";
-        this._grid.Cols[12].Width = 120;
-        this._grid.Cols[13].Caption = "数据来源区域";
-        this._grid.Cols[13].Width = 120;
+        this._grid.Cols[2].Caption = "目标表";
+        this._grid.Cols[2].Width = 80;
+        this._grid.Cols[3].Caption = "目标区域";
+        this._grid.Cols[3].Width = 120;
+        this._grid.Cols[4].Caption = "来源项目";
+        this._grid.Cols[4].Width = 230;
+        this._grid.Cols[5].Caption = "来源表";
+        this._grid.Cols[5].Width = 80;
+        this._grid.Cols[6].Caption = "数据来源区域";
+        this._grid.Cols[6].Width = 120;
+        this._grid.Cols[7].Caption = "引用模式";
+        this._grid.Cols[7].Width = 80;
+        this._grid.Cols[8].Caption = "启用状态";
+        this._grid.Cols[8].Width = 70;
+        this._grid.Cols[9].Caption = "更新时间";
+        this._grid.Cols[9].Width = 150;
         this._grid.Cols.Fixed = 1;
         this._grid.Cols[1].AllowEditing = true;
         this._grid.ExtendLastCol = true;
-        this._grid.Location = new Point(12, 50);
-        this._grid.Name = "_grid";
         this._grid.Rows.Count = 1;
         this._grid.Rows.Fixed = 1;
         this._grid.Rows.DefaultSize = 30;
         this._grid.SelectionMode = SelectionModeEnum.Row;
-        this._grid.Size = new Size(960, 380);
-        this._grid.Styles.Normal.Font = new Font("Microsoft YaHei", 10f);
+        this._grid.Styles.Normal.Font = fontNormal;
         this._grid.Styles.Normal.TextAlign = TextAlignEnum.CenterCenter;
-        this._grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 10f, FontStyle.Bold);
+        this._grid.Styles.Normal.Border.Style = BorderStyleEnum.Flat;
+        this._grid.Styles.Normal.Border.Width = 1;
+        this._grid.Styles.Normal.Border.Color = Color.FromArgb(234, 236, 240);
+        this._grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 9.5f, FontStyle.Bold);
+        this._grid.Styles.Fixed.ForeColor = Color.FromArgb(50, 55, 65);
+        this._grid.Styles.Fixed.BackColor = colorGridFixedBg;
         this._grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
+        this._grid.Styles.Fixed.Border.Style = BorderStyleEnum.Flat;
+        this._grid.Styles.Fixed.Border.Width = 1;
+        this._grid.Styles.Fixed.Border.Color = Color.FromArgb(220, 223, 230);
+        this._grid.Styles.Alternate.BackColor = colorGridAltBg;
         this._grid.Styles.EmptyArea.BackColor = Color.White;
-        this._grid.TabIndex = 1;
+        this._grid.Styles.Highlight.BackColor = Color.FromArgb(0, 120, 215);
+        this._grid.Styles.Highlight.ForeColor = Color.White;
+        this._grid.Styles.Focus.BackColor = Color.FromArgb(200, 230, 255);
+        this._grid.Styles.Focus.ForeColor = Color.Black;
         this._grid.AfterEdit += _grid_AfterEdit;
 
-        //
-        // 底部按钮面板
-        //
-        var pnlButtons = new Panel
+        // 网格容器（带 Padding 让网格不贴边）
+        var pnlGridContainer = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(12, 8, 12, 4),
+            BackColor = Color.White
+        };
+        pnlGridContainer.Controls.Add(this._grid);
+
+        // ---- 底部按钮区（扁平圆角风，浅灰背景） ----
+        _pnlButtons = new Panel
         {
             Dock = DockStyle.Bottom,
-            Height = 55,
-            BackColor = Color.FromArgb(245, 245, 245)
+            Height = 56,
+            BackColor = colorBottomBg
         };
         var pnlBorder = new Panel
         {
             Dock = DockStyle.Top,
             Height = 1,
-            BackColor = Color.FromArgb(220, 220, 220)
+            BackColor = Color.FromArgb(220, 223, 230)
         };
-        pnlButtons.Controls.Add(pnlBorder);
+        _pnlButtons.Controls.Add(pnlBorder);
 
-        // 左侧操作按钮组
-        var btnX = 12;
-        var btnY = 11;
-        var btnW = 87;
-        var btnH = 33;
-        var btnGap = 6;
-
-        Action<C1Button> layoutLeft = (btn) => {
-            btn.Font = new Font("Microsoft YaHei", 9f);
-            btn.Location = new Point(btnX, btnY);
-            btn.Size = new Size(btnW, btnH);
-            btn.UseVisualStyleBackColor = true;
-            pnlButtons.Controls.Add(btn);
-            btnX += btnW + btnGap;
+        // 按钮样式辅助方法（与其他界面一致的 C1Button 扁平风）
+        var btnH = 34;
+        Action<C1Button, Color, Color, string> styleBtn = (btn, bg, fg, text) => {
+            btn.Font = fontBtn;
+            btn.Text = text;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.BackColor = bg;
+            btn.ForeColor = fg;
+            btn.FlatAppearance.BorderSize = 1;
+            btn.FlatAppearance.BorderColor = (bg == colorBtnNormal) ? colorBtnBorder : bg;
+            btn.Size = new Size(0, btnH);
+            btn.UseVisualStyleBackColor = false;
+            btn.Cursor = Cursors.Hand;
         };
 
-        this._btnAddNew.Text = "新增引用";
+        // 创建所有按钮
         this._btnAddNew.TabIndex = 9;
         this._btnAddNew.Click += _btnAddNew_Click;
-        layoutLeft(_btnAddNew);
+        styleBtn(this._btnAddNew, colorBtnPrimary, Color.White, "新增引用");
+        this._btnAddNew.Font = fontBtnBold;
+        this._btnAddNew.Width = 96;
+        _pnlButtons.Controls.Add(this._btnAddNew);
 
-        this._btnEdit.Text = "编辑";
         this._btnEdit.TabIndex = 3;
         this._btnEdit.Click += _btnEdit_Click;
-        layoutLeft(_btnEdit);
+        styleBtn(this._btnEdit, colorBtnNormal, colorBtnNormalFg, "编辑");
+        this._btnEdit.Width = 64;
+        _pnlButtons.Controls.Add(this._btnEdit);
 
-        this._btnDelete.Text = "删除";
         this._btnDelete.TabIndex = 4;
         this._btnDelete.Click += _btnDelete_Click;
-        layoutLeft(_btnDelete);
+        styleBtn(this._btnDelete, colorBtnDanger, Color.White, "删除");
+        this._btnDelete.Width = 64;
+        _pnlButtons.Controls.Add(this._btnDelete);
 
-        this._btnToggleEnabled.Text = "启用/禁用";
         this._btnToggleEnabled.TabIndex = 5;
         this._btnToggleEnabled.Click += _btnToggleEnabled_Click;
-        layoutLeft(_btnToggleEnabled);
+        styleBtn(this._btnToggleEnabled, colorBtnNormal, colorBtnNormalFg, "启用/禁用");
+        this._btnToggleEnabled.Width = 80;
+        _pnlButtons.Controls.Add(this._btnToggleEnabled);
 
-        this._btnRefreshSelected.Text = "刷新选定";
         this._btnRefreshSelected.TabIndex = 6;
         this._btnRefreshSelected.Click += _btnRefreshSelected_Click;
-        layoutLeft(_btnRefreshSelected);
+        styleBtn(this._btnRefreshSelected, colorBtnRefresh, Color.White, "刷新选定");
+        this._btnRefreshSelected.Width = 80;
+        _pnlButtons.Controls.Add(this._btnRefreshSelected);
 
-        this._btnRefreshAll.Text = "刷新所有";
         this._btnRefreshAll.TabIndex = 7;
         this._btnRefreshAll.Click += _btnRefreshAll_Click;
-        layoutLeft(_btnRefreshAll);
+        styleBtn(this._btnRefreshAll, colorBtnRefresh, Color.White, "刷新所有");
+        this._btnRefreshAll.Width = 80;
+        _pnlButtons.Controls.Add(this._btnRefreshAll);
 
-        this._btnDashboard.Text = "状态仪表板";
         this._btnDashboard.TabIndex = 10;
         this._btnDashboard.Click += _btnDashboard_Click;
-        layoutLeft(_btnDashboard);
+        styleBtn(this._btnDashboard, colorBtnNormal, colorBtnNormalFg, "状态仪表板");
+        this._btnDashboard.Width = 96;
+        _pnlButtons.Controls.Add(this._btnDashboard);
 
-        // 右侧关闭按钮
-        this._btnClose.Text = "关闭";
-        this._btnClose.Anchor = AnchorStyles.Right;
-        this._btnClose.Font = new Font("Microsoft YaHei", 9f);
-        this._btnClose.Location = new Point(885, 11);
-        this._btnClose.Size = new Size(btnW, btnH);
-        this._btnClose.UseVisualStyleBackColor = true;
         this._btnClose.TabIndex = 13;
         this._btnClose.Click += _btnClose_Click;
-        pnlButtons.Controls.Add(_btnClose);
+        styleBtn(this._btnClose, colorBtnNormal, colorBtnNormalFg, "关闭");
+        this._btnClose.Width = 72;
+        _pnlButtons.Controls.Add(this._btnClose);
 
-        // 状态筛选 ComboBox 改到右上角标题行
+        // 按钮布局：Resize 时重新排列
+        _pnlButtons.Resize += (s, e) => LayoutButtons();
 
-        //
-        // _lblStatusFilter
-        //
-        this._lblStatusFilter.AutoSize = true;
-        this._lblStatusFilter.BackColor = Color.Transparent;
-        this._lblStatusFilter.Font = new Font("Microsoft YaHei", 9f);
-        this._lblStatusFilter.Location = new Point(820, 17);
-        this._lblStatusFilter.Name = "_lblStatusFilter";
-        this._lblStatusFilter.Size = new Size(56, 17);
-        this._lblStatusFilter.TabIndex = 14;
-        this._lblStatusFilter.Text = "状态筛选:";
-
-        //
-        // _cmbStatusFilter
-        //
-        this._cmbStatusFilter.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
-        this._cmbStatusFilter.Font = new Font("Microsoft YaHei", 9f);
-        this._cmbStatusFilter.Items.AddRange(new object[] { "全部", "正常", "异常", "缓存降级" });
-        this._cmbStatusFilter.Location = new Point(876, 14);
-        this._cmbStatusFilter.Name = "_cmbStatusFilter";
-        this._cmbStatusFilter.Size = new Size(96, 24);
-        this._cmbStatusFilter.TabIndex = 15;
-        this._cmbStatusFilter.SelectedIndex = 0;
-        this._cmbStatusFilter.SelectedIndexChanged += _cmbStatusFilter_SelectedIndexChanged;
-
-        //
-        // frmCrossProjectDataRef
-        //
+        // ---- 窗体设置 ----
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(984, 530);
-        this.Controls.Add(this._lblTitle);
-        this.Controls.Add(this._grid);
-        this.Controls.Add(pnlButtons);
-        this.Controls.Add(this._lblStatusFilter);
-        this.Controls.Add(this._cmbStatusFilter);
-        this.Font = new Font("Microsoft YaHei", 9f);
-        this.FormBorderStyle = FormBorderStyle.FixedDialog;
+        this.ClientSize = new Size(1040, 600);
+        this.Font = fontNormal;
+        this.FormBorderStyle = FormBorderStyle.Sizable;
         this.MaximizeBox = false;
         this.MinimizeBox = false;
+        this.MinimumSize = new Size(900, 500);
         this.Name = "frmCrossProjectDataRef";
         this.StartPosition = FormStartPosition.CenterParent;
         this.Text = "跨项目数据引用管理";
+
+        // Dock 布局顺序：先 Bottom，再 Top，最后 Fill
+        this.Controls.Add(pnlGridContainer);
+        this.Controls.Add(_pnlButtons);
+        this.Controls.Add(pnlHeader);
+
+        this.CancelButton = this._btnClose;
+
+        // 窗体 Load 时布局按钮
+        this.Load += (s, e) => LayoutButtons();
+    }
+
+    /// <summary>
+    /// 底部按钮对齐布局：左侧操作按钮从左到右排列，关闭按钮靠右
+    /// </summary>
+    private void LayoutButtons()
+    {
+        if (_pnlButtons == null) return;
+        var btnH = 34;
+        var btnY = (_pnlButtons.Height - btnH) / 2;
+        var btnGap = 8;
+        var startX = 12;
+
+        // 左侧按钮组
+        var leftBtns = new[] { _btnAddNew, _btnEdit, _btnDelete, _btnToggleEnabled,
+                                _btnRefreshSelected, _btnRefreshAll, _btnDashboard };
+        var x = startX;
+        foreach (var btn in leftBtns)
+        {
+            if (btn == null) continue;
+            btn.Location = new Point(x, btnY);
+            x += btn.Width + btnGap;
+        }
+
+        // 关闭按钮靠右
+        if (_btnClose != null)
+        {
+            _btnClose.Location = new Point(_pnlButtons.Width - _btnClose.Width - 12, btnY);
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -875,6 +875,58 @@ namespace Leqisoft.LocalDataStore
             {
                 // 项目：创建到 data/{userId} 目录
                 CreateProjectDbFile(project);
+            }
+        }
+
+        /// <summary>
+        /// 注册导入的项目到主数据库（仅插入 Projects 表记录，不创建 .db 文件，因为 .db 已由 ProjectArchive.Import 复制到位）
+        /// </summary>
+        public static void RegisterImportedProject(Leqisoft.DTO.Project project)
+        {
+            using var conn = CreateConnection();
+            EnsureProjectColumns(conn);
+
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                new SQLiteCommand(@"
+                    INSERT INTO Projects (Id, Name, Number, Category, Auditee, Note, Type, Version,
+                        TeamId, ParentId, CreatedBy, CreatedAt, IsDeleted)
+                    VALUES (@Id, @Name, @Number, @Category, @Auditee, @Note, @Type, 1,
+                        @TeamId, @ParentId, 1, @CreatedAt, 0)", conn, tx)
+                {
+                    Parameters = {
+                        new("@Id", project.Id.ToString()),
+                        new("@Name", project.Name ?? ""),
+                        new("@Number", project.Number ?? ""),
+                        new("@Category", project.Category ?? ""),
+                        new("@Auditee", project.Auditee ?? ""),
+                        new("@Note", project.Note ?? ""),
+                        new("@Type", (int)project.Type),
+                        new("@TeamId", Leqisoft.Model.User.Current?.TeamId.ToString() ?? ""),
+                        new("@ParentId", project.ParentId.HasValue ? project.ParentId.Value.ToString() : (object)DBNull.Value),
+                        new("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                    }
+                }.ExecuteNonQuery();
+
+                // 添加当前用户为项目成员（管理员角色）
+                long currentUserId = Leqisoft.Model.User.Current?.Id ?? 1;
+                new SQLiteCommand(@"
+                    INSERT OR IGNORE INTO ProjectMembers (ProjectId, UserId, Role)
+                    VALUES (@ProjectId, @UserId, 1)", conn, tx)
+                {
+                    Parameters = {
+                        new("@ProjectId", project.Id.ToString()),
+                        new("@UserId", currentUserId.ToString())
+                    }
+                }.ExecuteNonQuery();
+
+                tx.Commit();
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -7010,4 +7010,271 @@ public class MainForm
 		}
 		RefreshProjectsSyncTwinkle();
 	}
+
+	#region 自定义填充
+
+	public void ShowCustomFillConfig()
+	{
+		// 非模态显示，支持选区模式（类似 Excel 公式编辑器）
+		var dialog = new frmCustomFillConfig();
+		dialog.FormClosed += (s, e) => dialog.Dispose();
+		dialog.Show(View);
+	}
+
+	public async Task ExecuteCustomFill()
+	{
+		var project = Leqisoft.Model.Project.Current;
+		if (project?.Dal == null)
+		{
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先打开项目");
+			return;
+		}
+
+		var dto = project.Dal.GetProject();
+		if (dto == null) return;
+
+		var config = CustomFillConfig.Deserialize(dto.CustomFillConfig);
+		if (config == null || config.Rules.Count == 0)
+		{
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先配置填充规则");
+			return;
+		}
+
+		// 执行统计
+		int filledCount = 0;
+		int skippedCount = 0;
+		int failedCount = 0;
+		var errorMessages = new List<string>();
+
+		// 按表格分组收集更新，便于批量执行和撤销
+		var tableUpdates = new Dictionary<Leqisoft.Model.Table, List<Tuple<Leqisoft.Model.Cell, object>>>();
+
+		foreach (var rule in config.Rules)
+		{
+			try
+			{
+				// 解析目标表格
+				var targetTable = CurrentTable;
+				if (!string.IsNullOrEmpty(rule.TargetTableId))
+				{
+					try
+					{
+						var tableId = Id64.Parse(rule.TargetTableId);
+						targetTable = project.GetTableById(tableId);
+					}
+					catch (Exception ex) { ex.Log(); }
+				}
+
+				if (targetTable == null)
+				{
+					failedCount++;
+					errorMessages.Add($"规则跳过：目标表格未找到 (位置: {rule.TargetPosition})");
+					continue;
+				}
+
+				// 评估条件
+				if (rule.HasCondition)
+				{
+					var (condRow, condCol, _, _) = ParseTargetPosition(rule.Condition.SourcePosition);
+					if (condRow < 0 || condCol < 0)
+					{
+						skippedCount++;
+						continue;
+					}
+
+					string sourceValue = null;
+					if (condRow < targetTable.Rows.Count && condCol < targetTable.Columns.Count)
+					{
+						var sourceCell = targetTable[condRow, condCol];
+						sourceValue = sourceCell.Value as string ?? "";
+					}
+
+					if (!rule.Condition.IsMet(sourceValue))
+					{
+						skippedCount++;
+						continue;
+					}
+				}
+
+				// 解析目标位置
+				var (rowStart, colStart, rowEnd, colEnd) = ParseTargetPosition(rule.TargetPosition);
+				if (rowStart < 0)
+				{
+					failedCount++;
+					errorMessages.Add($"规则跳过：目标位置无效 ({rule.TargetPosition})");
+					continue;
+				}
+
+				// 收集该规则的所有单元格更新
+				if (!tableUpdates.TryGetValue(targetTable, out var updates))
+				{
+					updates = new List<Tuple<Leqisoft.Model.Cell, object>>();
+					tableUpdates[targetTable] = updates;
+				}
+
+				int seq = 0;
+				for (int r = rowStart; r <= rowEnd; r++)
+				{
+					for (int c = colStart; c <= colEnd; c++)
+					{
+						if (r >= targetTable.Rows.Count || c >= targetTable.Columns.Count)
+						{
+							failedCount++;
+							continue;
+						}
+
+						var cell = targetTable[r, c];
+						seq++;
+
+						// 处理占位符
+						string fillValue = ReplacePlaceholders(rule.Value, targetTable, r, c, seq);
+
+						object newValue;
+						if (rule.FillMode == CustomFillMode.Overwrite)
+						{
+							newValue = fillValue;
+						}
+						else // Append
+						{
+							var existingValue = cell.Value as string ?? "";
+							if (!string.IsNullOrEmpty(existingValue))
+								newValue = existingValue + Environment.NewLine + fillValue;
+							else
+								newValue = fillValue;
+						}
+
+						updates.Add(Tuple.Create(cell, (object)newValue));
+						filledCount++;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				failedCount++;
+				errorMessages.Add($"规则异常: {ex.Message}");
+			}
+		}
+
+		// 批量执行更新（支持撤销）
+		foreach (var kv in tableUpdates)
+		{
+			try
+			{
+				if (kv.Value.Count == 0) continue;
+				var batchCmd = new BatchCellUpdateValueCommand(kv.Key, kv.Value)
+				{
+					IsExistManualInputValue = true
+				};
+				kv.Key.CommandsManager.ExecuteCommand(batchCmd);
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				failedCount += kv.Value.Count;
+			}
+		}
+
+		// 显示执行摘要
+		var summary = $"自定义填充执行完成\n\n" +
+		              $"✓ 已填充: {filledCount} 个单元格\n" +
+		              $"⊘ 条件跳过: {skippedCount} 条规则\n" +
+		              $"✗ 失败: {failedCount} 个\n";
+		if (errorMessages.Count > 0)
+		{
+			summary += $"\n错误详情 (最多显示5条):\n" + string.Join("\n", errorMessages.Take(5));
+			if (errorMessages.Count > 5)
+				summary += $"\n... 还有 {errorMessages.Count - 5} 条错误";
+		}
+		summary += "\n\n可通过 Ctrl+Z 撤销填充操作。";
+
+		Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, summary);
+	}
+
+	/// <summary>替换填充值中的占位符</summary>
+	private static string ReplacePlaceholders(string value, Leqisoft.Model.Table table, int row, int col, int seq)
+	{
+		if (string.IsNullOrEmpty(value))
+			return value;
+
+		var now = DateTime.Now;
+		string tableName = table?.TreeNode?.Name ?? table?.Id.ToString() ?? "";
+
+		// 列字母 (0→A, 1→B, ...)
+		string colLetter = "";
+		int c = col + 1;
+		while (c > 0)
+		{
+			c--;
+			colLetter = (char)('A' + (c % 26)) + colLetter;
+			c /= 26;
+		}
+
+		// .NET Framework 4.5.2 不支持 string.Replace 的 StringComparison 重载，用 Regex + MatchEvaluator 替代
+		var replacements = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "{date}", now.ToString("yyyy-MM-dd") },
+			{ "{time}", now.ToString("HH:mm:ss") },
+			{ "{datetime}", now.ToString("yyyy-MM-dd HH:mm:ss") },
+			{ "{table}", tableName },
+			{ "{seq}", seq.ToString() },
+			{ "{row}", (row + 1).ToString() },
+			{ "{col}", colLetter }
+		};
+
+		string result = value;
+		foreach (var kv in replacements)
+		{
+			result = System.Text.RegularExpressions.Regex.Replace(
+				result, System.Text.RegularExpressions.Regex.Escape(kv.Key),
+				m => kv.Value,
+				System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+		}
+		return result;
+	}
+
+	private (int rowStart, int colStart, int rowEnd, int colEnd) ParseTargetPosition(string position)
+	{
+		if (string.IsNullOrWhiteSpace(position))
+			return (-1, -1, -1, -1);
+
+		try
+		{
+			var parts = position.Split(':');
+			var startCell = parts[0];
+			var endCell = parts.Length > 1 ? parts[1] : parts[0];
+
+			var (sr, sc) = ParseCellRef(startCell);
+			var (er, ec) = ParseCellRef(endCell);
+
+			return (sr, sc, er, ec);
+		}
+		catch
+		{
+			return (-1, -1, -1, -1);
+		}
+	}
+
+	private (int row, int col) ParseCellRef(string cellRef)
+	{
+		// Parse "A1" style references - column letters, row numbers
+		var match = System.Text.RegularExpressions.Regex.Match(cellRef, @"([A-Za-z]+)(\d+)");
+		if (!match.Success)
+			return (-1, -1);
+
+		string colPart = match.Groups[1].Value.ToUpper();
+		int row = int.Parse(match.Groups[2].Value) - 1; // 0-based
+
+		// Convert column letters to index (A=0, B=1, ...)
+		int col = 0;
+		foreach (char c in colPart)
+		{
+			col = col * 26 + (c - 'A' + 1);
+		}
+		col--; // 0-based
+
+		return (row, col);
+	}
+
+	#endregion
 }

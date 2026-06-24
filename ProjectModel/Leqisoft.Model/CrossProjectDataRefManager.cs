@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -248,21 +248,21 @@ public class CrossProjectDataRefManager
                                     result.ErrorMessage = "AreaRef 配置无效";
                                     return result;
                                 }
-                                // 使用已筛选的全量数据（filteredData），按区域列范围裁剪
+                                // 使用已筛选的全量数据（filteredData），按来源区域列范围裁剪
                                 var areaFilteredData = new List<List<object>>();
                                 foreach (var row in filteredData)
                                 {
                                     var croppedRow = new List<object>();
-                                    for (int c = areaConfig.StartCol; c <= areaConfig.EndCol && c < row.Count; c++)
+                                    for (int c = areaConfig.SourceStartCol; c <= areaConfig.SourceEndCol && c < row.Count; c++)
                                     {
                                         if (c >= 0)
                                             croppedRow.Add(row[c]);
                                     }
                                     areaFilteredData.Add(croppedRow);
                                 }
-                                // 按区域行范围裁剪
-                                int startRow = Math.Max(0, areaConfig.StartRow);
-                                int endRow = Math.Min(areaConfig.EndRow, areaFilteredData.Count - 1);
+                                // 按来源区域行范围裁剪
+                                int startRow = Math.Max(0, areaConfig.SourceStartRow);
+                                int endRow = Math.Min(areaConfig.SourceEndRow, areaFilteredData.Count - 1);
                                 if (startRow <= endRow)
                                     areaFilteredData = areaFilteredData.GetRange(startRow, endRow - startRow + 1);
                                 else
@@ -1129,12 +1129,14 @@ public class CrossProjectDataRefManager
     /// </summary>
     private class AreaRefConfig
     {
-        public int StartRow { get; set; }
-        public int EndRow { get; set; }
-        public int StartCol { get; set; }
-        public int EndCol { get; set; }
+        public int SourceStartRow { get; set; }
+        public int SourceEndRow { get; set; }
+        public int SourceStartCol { get; set; }
+        public int SourceEndCol { get; set; }
         public int TargetStartRow { get; set; }
         public int TargetStartCol { get; set; }
+        public int TargetEndRow { get; set; }
+        public int TargetEndCol { get; set; }
     }
 
     /// <summary>

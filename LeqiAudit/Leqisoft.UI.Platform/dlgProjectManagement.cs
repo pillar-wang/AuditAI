@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -196,6 +196,14 @@ public class dlgProjectManagement : C1RibbonForm
 
 	private C1CommandLink lnkExportProject;
 
+	private C1Command cmdExportProjectFile;
+
+	private C1CommandLink lnkExportProjectFile;
+
+	private C1Command cmdImportProject;
+
+	private C1CommandLink lnkImportProject;
+
 	private C1Command cmdDisplayStyle;
 
 	private C1CommandLink lnkDisplayStyle;
@@ -300,6 +308,8 @@ public class dlgProjectManagement : C1RibbonForm
 		cmdUseTemplate.Text = "基于模板创建" + StringConstBase.Current.Project;
 		cmdToProject.Text = StringConstBase.Current.Project + "管理";
 		cmdExportProject.Text = StringConstBase.Current.Project + "导出";
+		cmdExportProjectFile.Text = "导出项目文件";
+		cmdImportProject.Text = "导入项目";
 		lnkDeleteProject.Text = "删除" + StringConstBase.Current.Project;
 		Style.Load(ConfigManager.PROJECTMANAGEMENT_VIEWCONFIG);
 		if (Program.MainForm.CurrentEdition is AppEditionGeneral)
@@ -590,6 +600,139 @@ public class dlgProjectManagement : C1RibbonForm
 		cmdExportProject.Enabled = false;
 		await ExportProject();
 		cmdExportProject.Enabled = true;
+	}
+
+	private void cmdExportProjectFile_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+	{
+		e.Visible = true;
+		// 仅本地模式可用；且需要选中项目
+		if (!Leqisoft.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			e.Enabled = false;
+			return;
+		}
+		e.Enabled = SelectedProject != null;
+	}
+
+	private void cmdExportProjectFile_Click(object sender, ClickEventArgs e)
+	{
+		ExportProjectFile();
+	}
+
+	private void cmdImportProject_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+	{
+		e.Visible = true;
+		// 仅本地模式可用；不需要选中项目
+		e.Enabled = Leqisoft.LocalDataStore.StorageRouter.IsLocalMode;
+	}
+
+	private async void cmdImportProject_Click(object sender, ClickEventArgs e)
+	{
+		cmdImportProject.Enabled = false;
+		await ImportProject();
+		cmdImportProject.Enabled = true;
+	}
+
+	/// <summary>导出选中项目为 .lqaudit 归档文件</summary>
+	private void ExportProjectFile()
+	{
+		var selected = SelectedProject;
+		if (selected == null)
+		{
+			Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择要导出的项目");
+			return;
+		}
+
+		// 默认文件名：编号 名称.lqaudit
+		string defaultName = string.IsNullOrWhiteSpace(selected.Number)
+			? $"{selected.Name}.lqaudit"
+			: $"{selected.Number} {selected.Name}.lqaudit";
+		// 清理文件名中的非法字符
+		foreach (char c in Path.GetInvalidFileNameChars())
+			defaultName = defaultName.Replace(c, '_');
+
+		using (var sfd = new SaveFileDialog
+		{
+			Filter = "乐其审计项目归档 (*.lqaudit)|*.lqaudit",
+			Title = "导出项目文件",
+			FileName = defaultName
+		})
+		{
+			if (sfd.ShowDialog() != DialogResult.OK)
+				return;
+
+			try
+			{
+				ProjectArchive.Export(selected, sfd.FileName);
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"项目导出成功！\n\n文件位置: " + sfd.FileName, MessageBoxButtons.OK, "导出完成");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"项目导出失败: " + ex.Message, MessageBoxButtons.OK, "导出错误");
+			}
+		}
+	}
+
+	/// <summary>从 .lqaudit 归档文件导入项目</summary>
+	private async Task ImportProject()
+	{
+		using (var ofd = new OpenFileDialog
+		{
+			Filter = "乐其审计项目归档 (*.lqaudit)|*.lqaudit",
+			Title = "导入项目",
+			CheckFileExists = true
+		})
+		{
+			if (ofd.ShowDialog() != DialogResult.OK)
+				return;
+
+			// 先读取元信息进行预览确认
+			ProjectArchiveMetadata metadata;
+			try
+			{
+				metadata = ProjectArchive.ReadMetadata(ofd.FileName);
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"无法读取项目文件: " + ex.Message, MessageBoxButtons.OK, "导入错误");
+				return;
+			}
+
+			// 确认对话框
+			string summary = $"项目名称: {metadata.ProjectName}\n" +
+			                 $"项目编号: {metadata.ProjectNumber}\n" +
+			                 $"类别: {metadata.Category}\n" +
+			                 $"导出者: {metadata.ExportedBy}\n" +
+			                 $"导出时间: {metadata.ExportTime:yyyy-MM-dd HH:mm}\n" +
+			                 $"Schema版本: v{metadata.SchemaVersion}\n\n" +
+			                 $"导入后将生成新的项目 ID，不影响原项目。\n是否继续？";
+			if (Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				summary, MessageBoxButtons.YesNo, "确认导入项目") != DialogResult.Yes)
+				return;
+
+			// 执行导入
+			try
+			{
+				var newProject = ProjectArchive.Import(ofd.FileName);
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					$"项目导入成功！\n\n新项目名称: {newProject.Name}\n新项目 ID: {newProject.Id}",
+					MessageBoxButtons.OK, "导入完成");
+
+				// 刷新项目列表
+				await PopulateProjects();
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"项目导入失败: " + ex.Message, MessageBoxButtons.OK, "导入错误");
+			}
+		}
 	}
 
 	private void cmdModifyProject_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -1052,6 +1195,15 @@ public class dlgProjectManagement : C1RibbonForm
 
 	private async void dlgProjectManagement_Shown(object sender, EventArgs e)
 	{
+		// 诊断信息：确认按钮数量和运行版本
+		var linkTexts = new System.Text.StringBuilder();
+		linkTexts.AppendLine($"tbrProject.CommandLinks.Count = {tbrProject.CommandLinks.Count}");
+		for (int i = 0; i < tbrProject.CommandLinks.Count; i++)
+		{
+			var link = tbrProject.CommandLinks[i];
+			linkTexts.AppendLine($"[{i}] SortOrder={link.SortOrder}, Text={link.Command?.Text}, Visible={link.Command?.Visible}");
+		}
+		Leqisoft.UI.Controls.MessageBox.Show(MessageBoxIcon.None, linkTexts.ToString(), MessageBoxButtons.OK, "诊断信息");
 		await PopulateProjects();
 		if (!(Program.MainForm.CurrentEdition is AppEditionGeneral) && _projects != null && _projects.Count == 0)
 		{
@@ -2407,6 +2559,8 @@ public class dlgProjectManagement : C1RibbonForm
 		this.cmdToProject = new C1.Win.C1Command.C1Command();
 		this.cmdMembership = new C1.Win.C1Command.C1Command();
 		this.cmdExportProject = new C1.Win.C1Command.C1Command();
+		this.cmdExportProjectFile = new C1.Win.C1Command.C1Command();
+		this.cmdImportProject = new C1.Win.C1Command.C1Command();
 		this.cmdDisplayStyle = new C1.Win.C1Command.C1Command();
 		this.cmdAlterPersonInfo = new C1.Win.C1Command.C1Command();
 		this.cmdTemplateUserManage = new C1.Win.C1Command.C1Command();
@@ -2438,6 +2592,8 @@ public class dlgProjectManagement : C1RibbonForm
 		this.lnkDeleteProject = new C1.Win.C1Command.C1CommandLink();
 		this.lnkDuplicateProject = new C1.Win.C1Command.C1CommandLink();
 		this.lnkExportProject = new C1.Win.C1Command.C1CommandLink();
+		this.lnkExportProjectFile = new C1.Win.C1Command.C1CommandLink();
+		this.lnkImportProject = new C1.Win.C1Command.C1CommandLink();
 		this.lnkSaveAsTemplate = new C1.Win.C1Command.C1CommandLink();
 		this.lnkDisplayStyleProject = new C1.Win.C1Command.C1CommandLink();
 		this.lnkRefreshProject = new C1.Win.C1Command.C1CommandLink();
@@ -2501,6 +2657,8 @@ public class dlgProjectManagement : C1RibbonForm
 		this.commandHolder.Commands.Add(this.cmdToProject);
 		this.commandHolder.Commands.Add(this.cmdMembership);
 		this.commandHolder.Commands.Add(this.cmdExportProject);
+		this.commandHolder.Commands.Add(this.cmdExportProjectFile);
+		this.commandHolder.Commands.Add(this.cmdImportProject);
 		this.commandHolder.Commands.Add(this.cmdDisplayStyle);
 		this.commandHolder.Commands.Add(this.cmdAlterPersonInfo);
 		this.commandHolder.Commands.Add(this.cmdTemplateUserManage);
@@ -2604,6 +2762,18 @@ public class dlgProjectManagement : C1RibbonForm
 		this.cmdExportProject.ShortcutText = "";
 		this.cmdExportProject.Click += new C1.Win.C1Command.ClickEventHandler(cmdExportProject_Click);
 		this.cmdExportProject.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdExportProject_CommandStateQuery);
+		this.cmdExportProjectFile.Image = Leqisoft.UI.Platform.Properties.Resources.ProjectExport;
+		this.cmdExportProjectFile.Name = "cmdExportProjectFile";
+		this.cmdExportProjectFile.ShortcutText = "";
+		this.cmdExportProjectFile.Text = "导出项目文件";
+		this.cmdExportProjectFile.Click += new C1.Win.C1Command.ClickEventHandler(cmdExportProjectFile_Click);
+		this.cmdExportProjectFile.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdExportProjectFile_CommandStateQuery);
+		this.cmdImportProject.Image = Leqisoft.UI.Platform.Properties.Resources.ProjectExport;
+		this.cmdImportProject.Name = "cmdImportProject";
+		this.cmdImportProject.ShortcutText = "";
+		this.cmdImportProject.Text = "导入项目";
+		this.cmdImportProject.Click += new C1.Win.C1Command.ClickEventHandler(cmdImportProject_Click);
+		this.cmdImportProject.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdImportProject_CommandStateQuery);
 		this.cmdDisplayStyle.Image = Leqisoft.UI.Platform.Properties.Resources.tileMode;
 		this.cmdDisplayStyle.Name = "cmdDisplayStyle";
 		this.cmdDisplayStyle.ShortcutText = "";
@@ -2640,7 +2810,7 @@ public class dlgProjectManagement : C1RibbonForm
 		this.cmdHelpCenter.ShortcutText = "";
 		this.cmdHelpCenter.Text = "帮助中心";
 		this.cmdHelpCenter.Click += new C1.Win.C1Command.ClickEventHandler(cmdHelpCenter_Click);
-		this.cmdExportProject.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdHelpCenter_CommandStateQuery);
+		this.cmdHelpCenter.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdHelpCenter_CommandStateQuery);
 		this.splMain.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.splMain.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
 		this.splMain.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
@@ -2718,16 +2888,16 @@ public class dlgProjectManagement : C1RibbonForm
 		this.tbrProject.ButtonLayoutHorz = C1.Win.C1Command.ButtonLayoutEnum.TextBelow;
 		this.tbrProject.ButtonLookHorz = C1.Win.C1Command.ButtonLookFlags.TextAndImage;
 		this.tbrProject.CommandHolder = this.commandHolder;
-		this.tbrProject.CommandLinks.AddRange(new C1.Win.C1Command.C1CommandLink[14]
+		this.tbrProject.CommandLinks.AddRange(new C1.Win.C1Command.C1CommandLink[16]
 		{
-			this.lnkCreateProject, this.lnkOpenProject, this.lnkModifyProject, this.lnkDeleteProject, this.lnkDuplicateProject, this.lnkExportProject, this.lnkSaveAsTemplate, this.lnkDisplayStyleProject, this.lnkRefreshProject, this.lnkToTemplate,
+			this.lnkCreateProject, this.lnkOpenProject, this.lnkModifyProject, this.lnkDeleteProject, this.lnkDuplicateProject, this.lnkExportProject, this.lnkExportProjectFile, this.lnkImportProject, this.lnkSaveAsTemplate, this.lnkDisplayStyleProject, this.lnkRefreshProject, this.lnkToTemplate,
 			this.lnkMembership, this.lnkAlterPersonInfo, this.lnkChangePassword, this.lnkHelpCenter
 		});
 		this.tbrProject.Location = new System.Drawing.Point(0, 63);
 		this.tbrProject.MinButtonSize = 42;
 		this.tbrProject.Movable = false;
 		this.tbrProject.Name = "tbrProject";
-		this.tbrProject.Size = new System.Drawing.Size(753, 63);
+		this.tbrProject.Size = new System.Drawing.Size(892, 63);
 		this.tbrProject.Text = "c1ToolBar1";
 		this.tbrProject.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.tbrProject.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
@@ -2742,25 +2912,29 @@ public class dlgProjectManagement : C1RibbonForm
 		this.lnkDuplicateProject.SortOrder = 4;
 		this.lnkExportProject.Command = this.cmdExportProject;
 		this.lnkExportProject.SortOrder = 5;
+		this.lnkExportProjectFile.Command = this.cmdExportProjectFile;
+		this.lnkExportProjectFile.SortOrder = 6;
+		this.lnkImportProject.Command = this.cmdImportProject;
+		this.lnkImportProject.SortOrder = 7;
 		this.lnkSaveAsTemplate.Command = this.cmdSaveAsTemplate;
-		this.lnkSaveAsTemplate.SortOrder = 6;
+		this.lnkSaveAsTemplate.SortOrder = 8;
 		this.lnkDisplayStyleProject.Command = this.cmdDisplayStyle;
-		this.lnkDisplayStyleProject.SortOrder = 7;
+		this.lnkDisplayStyleProject.SortOrder = 9;
 		this.lnkRefreshProject.Command = this.cmdRefreshProject;
-		this.lnkRefreshProject.SortOrder = 8;
+		this.lnkRefreshProject.SortOrder = 10;
 		this.lnkToTemplate.Command = this.cmdToTemplate;
 		this.lnkToTemplate.Delimiter = true;
-		this.lnkToTemplate.SortOrder = 9;
+		this.lnkToTemplate.SortOrder = 11;
 		this.lnkMembership.Command = this.cmdMembership;
 		this.lnkMembership.Delimiter = true;
-		this.lnkMembership.SortOrder = 10;
+		this.lnkMembership.SortOrder = 12;
 		this.lnkAlterPersonInfo.Command = this.cmdAlterPersonInfo;
-		this.lnkAlterPersonInfo.SortOrder = 11;
+		this.lnkAlterPersonInfo.SortOrder = 13;
 		this.lnkChangePassword.Command = this.cmdChangePassword;
-		this.lnkChangePassword.SortOrder = 12;
+		this.lnkChangePassword.SortOrder = 14;
 		this.lnkHelpCenter.Command = this.cmdHelpCenter;
 		this.lnkHelpCenter.Delimiter = true;
-		this.lnkHelpCenter.SortOrder = 13;
+		this.lnkHelpCenter.SortOrder = 15;
 		this.pnlMain.Controls.Add(this.ctnMain);
 		this.pnlMain.Height = 500;
 		this.pnlMain.Location = new System.Drawing.Point(0, 67);
