@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "auditai": {
+      "command": "e:\\lq\\AuditAI\\AuditAI.McpServer\\bin\\Debug\\net462\\AuditAI.McpServer.exe",
+      "args": [],
+      "cwd": "e:\\lq\\AuditAI\\AuditAI.McpServer\\bin\\Debug\\net462"
+    }
+  }
+}

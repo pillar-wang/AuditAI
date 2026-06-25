@@ -1,4 +1,4 @@
-﻿﻿#define DEBUG
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿#define DEBUG
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ using C1.Win.C1SplitContainer;
 using C1.Win.C1Tile;
 using Resources = global::CrawlerForm.Properties.Resources;
 using DbAccess;
-using Leqisoft.Model;
+using Auditai.Model;
 
 namespace CrawlerForm;
 
@@ -205,7 +205,7 @@ public class CrawlerForm : Form
 
 	private LinkLabel lnkException;
 
-	private Color leqiBlue => Color.FromArgb(0, 195, 245);
+	private Color auditaiBlue => Color.FromArgb(0, 195, 245);
 
 	private Color buttonGreen => Color.FromArgb(43, 213, 67);
 
@@ -440,7 +440,7 @@ public class CrawlerForm : Form
 		btnLocalFile.ForeColor = Color.White;
 		btnLocalFile.FlatStyle = FlatStyle.Flat;
 		btnLocalFile.FlatAppearance.BorderSize = 0;
-		btnLocalFile.BackColor = leqiBlue;
+		btnLocalFile.BackColor = auditaiBlue;
 		tabPageLocalFile = new C1DockingTabPage();
 		tabPageLocalFile.Controls.Add(btnLocalFile);
 		tabPageLocalFile.Controls.Add(txtLocalFile);
@@ -693,7 +693,7 @@ public class CrawlerForm : Form
 		rectangle.Size = _bmp.Size;
 		Rectangle rect = rectangle;
 		Color color = Color.FromArgb(150, Color.White);
-		using LinearGradientBrush brush = new LinearGradientBrush(rect, color, leqiBlue, LinearGradientMode.Horizontal);
+		using LinearGradientBrush brush = new LinearGradientBrush(rect, color, auditaiBlue, LinearGradientMode.Horizontal);
 		using Graphics graphics = Graphics.FromImage(_bmp);
 		graphics.FillRectangle(brush, rect);
 	}
@@ -1511,7 +1511,7 @@ public class CrawlerForm : Form
 						try
 						{
 							text3 = ((!dbInfo2.IntegratedSecurity) ? SQLServerHelper.GetSqlServerConnectionString(dbInfo2.DataSource ?? "127.0.0.1", dbInfo2.Name, dbInfo2.User, dbInfo2.Password) : SQLServerHelper.GetSqlServerConnectionString(dbInfo2.DataSource ?? "127.0.0.1", dbInfo2.Name));
-							string text4 = "leqi" + DateTime.Now.ToString("yyyyMMddHHmmss");
+							string text4 = "auditai" + DateTime.Now.ToString("yyyyMMddHHmmss");
 							string outPath = Path.Combine("./Logs/", text4 + "_.analyze");
 							BakDatabase(item, text3, outPath);
 						}
@@ -2090,7 +2090,7 @@ public class CrawlerForm : Form
 
 	private void textBox_Enter(object sender, EventArgs e)
 	{
-		((C1TextBox)sender).BorderColor = leqiBlue;
+		((C1TextBox)sender).BorderColor = auditaiBlue;
 	}
 
 	private void textBox_Leave(object sender, EventArgs e)
@@ -2373,7 +2373,7 @@ public class CrawlerForm : Form
 		this.lblTitle.Size = new System.Drawing.Size(68, 17);
 		this.lblTitle.TabIndex = 2;
 		this.lblTitle.Tag = null;
-		this.lblTitle.Text = "乐其采数器";
+		this.lblTitle.Text = "AuditAI采数器";
 		this.lblTitle.TextDetached = true;
 		this.btnClose.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
 		this.btnClose.FlatAppearance.BorderSize = 0;
@@ -2404,7 +2404,7 @@ public class CrawlerForm : Form
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
 		base.Name = "CrawlerForm";
-		this.Text = "乐其采数器";
+		this.Text = "AuditAI采数器";
 		base.TopMost = true;
 		base.Load += new System.EventHandler(CrawlerForm_Load);
 		base.Shown += new System.EventHandler(CrawlerForm_Shown);

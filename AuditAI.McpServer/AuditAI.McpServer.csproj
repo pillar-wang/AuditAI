@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>AuditAI.McpServer</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net462</TargetFramework>
+    <LangVersion>11.0</LangVersion>
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
+    <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="DTO">
+      <HintPath>..\Libs\DTO.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.C1Excel.4">
+      <HintPath>..\Libs\C1.C1Excel.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1FlexGrid.4">
+      <HintPath>..\Libs\C1.Win.C1FlexGrid.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Command.4">
+      <HintPath>..\Libs\C1.Win.C1Command.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Input.4">
+      <HintPath>..\Libs\C1.Win.C1Input.4.dll</HintPath>
+    </Reference>
+    <Reference Include="TXTextControl">
+      <HintPath>..\Libs\TXTextControl.dll</HintPath>
+    </Reference>
+    <Reference Include="TXTextControl.Server">
+      <HintPath>..\Libs\TXTextControl.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+  </ItemGroup>
+</Project>

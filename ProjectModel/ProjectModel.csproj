@@ -17,7 +17,12 @@
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LeqiAudit.LocalDataStore\LeqiAudit.LocalDataStore.csproj" />
+    <Reference Include="AuditAI.LocalDataStore">
+      <HintPath>..\Libs\AuditAI.LocalDataStore.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>..\Libs\System.Data.SQLite.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Antlr4.Runtime.Standard">

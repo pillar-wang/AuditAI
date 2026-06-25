@@ -1,4 +1,4 @@
-using Leqisoft.Model;
+using Auditai.Model;
 
 namespace CrawlerForm;
 

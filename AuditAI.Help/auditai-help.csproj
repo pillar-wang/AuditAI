@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>auditai-help</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net462</TargetFramework>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="C1.Win.C1Ribbon.4">
+      <HintPath>..\Libs\C1.Win.C1Ribbon.4.dll</HintPath>
+    </Reference>
+    <Reference Include="CommonControls">
+      <HintPath>..\Libs\CommonControls.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfiumViewer">
+      <HintPath>..\Libs\PdfiumViewer.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1Command.4">
+      <HintPath>..\Libs\C1.Win.C1Command.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.C1SplitContainer.4">
+      <HintPath>..\Libs\C1.Win.C1SplitContainer.4.dll</HintPath>
+    </Reference>
+    <Reference Include="C1.Win.4">
+      <HintPath>..\Libs\C1.Win.4.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
