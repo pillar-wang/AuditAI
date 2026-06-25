@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("CrawlerModel")]
 [assembly: AssemblyDescription("采数模型")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("北京乐其软件股份有限公司")]
+[assembly: AssemblyCompany("AuditAI")]
 [assembly: AssemblyProduct("CrawlerModel")]
-[assembly: AssemblyCopyright("© 北京乐其软件股份有限公司 2022")]
+[assembly: AssemblyCopyright("© AuditAI 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("85eb4e25-8039-4900-8dde-66616045bd4e")]

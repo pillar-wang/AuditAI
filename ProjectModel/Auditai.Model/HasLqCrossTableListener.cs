@@ -1,0 +1,13 @@
+using System.Collections.Generic;
+
+namespace Auditai.Model;
+
+public class HasLqCrossTableListener : FunctionNameExistsListener
+{
+	private static IEnumerable<string> _funcNames = new string[2] { "LqCrossTable", "CrossTable" };
+
+	public HasLqCrossTableListener()
+		: base(_funcNames)
+	{
+	}
+}

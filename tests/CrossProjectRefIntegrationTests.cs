@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// CrossProjectRefIntegrationTests.cs
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// CrossProjectRefIntegrationTests.cs
 // 跨项目数据引用集成测试
 // 测试 CrossProjectDataRefManager、CrossProjectRefCache、CrossProjectDataRefStore、
 //       CrossProjectRefAuthProvider、CrossProjectRefSyncNotifier
@@ -19,9 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Leqisoft.DTO;
-using Leqisoft.LocalDataStore;
-using Leqisoft.Model;
+using Auditai.DTO;
+using Auditai.LocalDataStore;
+using Auditai.Model;
 using Newtonsoft.Json;
 using Xunit;
 

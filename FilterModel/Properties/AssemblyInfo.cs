@@ -1,11 +1,11 @@
-﻿﻿﻿﻿using System.Diagnostics;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 [assembly: InternalsVisibleTo("CommonControls")]
-[assembly: InternalsVisibleTo("LeqiAudit.Tests")]
+[assembly: InternalsVisibleTo("AuditAI.Tests")]
 [assembly: AssemblyTitle("FilterModel")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;

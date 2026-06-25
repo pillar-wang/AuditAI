@@ -99,6 +99,6 @@
     <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LeqiAudit.LocalDataStore\LeqiAudit.LocalDataStore.csproj" />
+    <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
   </ItemGroup>
 </Project>
