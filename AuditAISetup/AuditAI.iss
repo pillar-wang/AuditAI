@@ -2,7 +2,7 @@
 ; 使用 Inno Setup 6 编译
 
 #define MyAppName "AuditAI"
-#define MyAppVersion "1.1.0.0"
+#define MyAppVersion "1.2.0.0"
 #define MyAppPublisher "AuditAI"
 #define MyAppExeName "AuditAILauncher.exe"
 #define MyAppMainExe "AuditAI.exe"
@@ -29,7 +29,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ArchitecturesAllowed=x86 x64compatible
 WizardStyle=modern
 WizardImageStretch=no
-UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayIcon={app}\app.ico
 UninstallDisplayName={#MyAppName}
 MinVersion=6.1sp1
 
@@ -42,6 +42,7 @@ Name: "quicklaunchicon"; Description: "创建快速启动栏快捷方式"; Group
 
 [Files]
 Source: "{#MySourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.log,*.txt,logs\*,AuditAI采数器\Logs\*,Data\1\*,Data\Projects\*,Data\auditai_audit.db"
+Source: "app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#DotNetInstaller}"; DestDir: "{tmp}"; Flags: deleteafterinstall; Check: not IsDotNet462Installed
 
 [Icons]

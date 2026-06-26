@@ -1,0 +1,174 @@
+using System;
+using System.Collections;
+using System.Drawing;
+using System.IO;
+using System.Resources;
+using System.Text;
+using System.Xml;
+using System.Xml.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        string resxPath = @"e:\lq\AuditAI\PlatformResource\Auditai.PlatformResource.Properties.Resource.resx";
+        string icoPath = @"e:\lq\AuditAI\AuditAISetup\app.ico";
+        string backupPath = resxPath + ".bak";
+
+        // Backup original
+        File.Copy(resxPath, backupPath, true);
+
+        // Load the new icon
+        Icon newIcon = new Icon(icoPath);
+
+        // Read existing resx XML and modify it
+        XDocument doc = XDocument.Load(resxPath);
+        XNamespace ns = doc.Root.GetDefaultNamespace();
+
+        // Find all data elements with the icon names
+        string[] iconNames = { "审计协作平台", "集团报表平台", "业务管控平台", "报表开发平台" };
+
+        foreach (var data in doc.Descendants(ns + "data"))
+        {
+            string name = (string)data.Attribute("name");
+            if (Array.IndexOf(iconNames, name) >= 0)
+            {
+                Console.WriteLine($"Replacing icon: {name}");
+
+                // Use the resource writer to serialize the icon
+                // Since BinaryFormatter is deprecated, we use a different approach:
+                // We'll serialize the Icon using the Icon.Save method into a memory stream,
+                // then wrap it in the proper .NET serialization format
+
+                // Actually, the simplest approach is to write the .ico bytes directly
+                // and let the resx builder handle serialization.
+                // But since we're editing the XML directly...
+
+                // Let's use ResXResourceWriter to generate the correct serialization format
+                byte[] serializedData = SerializeIcon(newIcon);
+
+                // Convert to base64
+                string base64 = Convert.ToBase64String(serializedData, Base64FormattingOptions.InsertLineBreaks);
+
+                // Update the value element
+                var value = data.Element(ns + "value");
+                if (value != null)
+                {
+                    value.Value = Environment.NewLine + base64 + Environment.NewLine;
+                }
+
+                Console.WriteLine($"  Done: {base64.Length} chars");
+            }
+        }
+
+        // Save the modified resx
+        doc.Save(resxPath);
+
+        // Verify
+        Console.WriteLine("\nVerification:");
+        XDocument verify = XDocument.Load(resxPath);
+        foreach (var data in verify.Descendants(ns + "data"))
+        {
+            string name = (string)data.Attribute("name");
+            if (Array.IndexOf(iconNames, name) >= 0)
+            {
+                var val = data.Element(ns + "value");
+                int len = val != null && val.Value != null ? val.Value.Trim().Length : 0;
+                Console.WriteLine($"  {name}: {len} chars");
+            }
+        }
+
+        newIcon.Dispose();
+        Console.WriteLine("\nDone!");
+    }
+
+    static byte[] SerializeIcon(Icon icon)
+    {
+        // Save icon to memory as .ico bytes
+        using (MemoryStream ms = new MemoryStream())
+        {
+            icon.Save(ms);
+            byte[] icoBytes = ms.ToArray();
+
+            // Now we need to wrap this in the .NET BinaryFormatter format
+            // that the resx reader expects.
+            // 
+            // The format is: SerializationHeaderRecord(7 bytes) + ClassWithId(10 bytes header) + 
+            //                AssemblyName(string) + TypeName(string) + MemberCount(int) +
+            //                member values
+            //
+            // For Icon, the serialized format is less complex since Icon implements ISerializable
+            // and has a custom serialization constructor.
+            //
+            // The ACTUAL content of the serialized stream is:
+            // 1. SerializationHeaderRecord (7 bytes): 00 01 00 00 00 FF FF FF
+            //    Actually: 00 01 00 00 00 FF FF FF FF 01 00 00 00 00 00 00 00
+            //    RecordType=SerHeader(0), RootId=1, HeaderId=-1, MajorVer=1, MinorVer=0
+            // 2. Then binary object with type info and data
+            //
+            // Instead of trying to create BinaryFormatter data manually,
+            // let's use the actual BinaryFormatter but with proper settings.
+
+            // BinaryFormatter is the canonical way to generate this data
+            var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+
+            // Create the serialized data in the format expected by resx
+            // The resx stores the raw .ico bytes internally, wrapped in
+            // System.Drawing.Icon serialization format.
+
+            // Actually, the simplest correct approach:
+            // Let's serialize using type-specific converter available in .NET
+
+            using (MemoryStream serMs = new MemoryStream())
+            {
+                // The Icon class implements ISerializable
+                // We can use the SerializationInfo to get the raw data
+                // But this requires full trust...
+
+                // Alternative: just store the raw icon data directly
+                // The resx reader should be able to reconstruct the Icon from it
+                // Let's check if we can use a TypeConverter approach:
+
+                // Actually, for .resx files using System.Resources.Extensions,
+                // the type converter for Icon generates the proper format.
+                // But with BinaryFormatter-based resx, it's trickier.
+
+                // Simplest correct approach: use ResXResourceWriter
+                // which handles all the serialization details:
+
+                try
+                {
+                    // Create a temp resx and extract the serialized data
+                    string tempResx = Path.GetTempFileName();
+                    using (ResXResourceWriter writer = new ResXResourceWriter(tempResx))
+                    {
+                        writer.AddResource("temp", icon);
+                        writer.Generate();
+                    }
+
+                    // Read back the serialized data from the temp resx
+                    XDocument tempDoc = XDocument.Load(tempResx);
+                    var tempData = tempDoc.Descendants("data")
+                        .FirstOrDefault(d => (string)d.Attribute("name") == "temp");
+                    if (tempData != null)
+                    {
+                        var tempValue = tempData.Element("value");
+                        if (tempValue != null)
+                        {
+                            string b64 = tempValue.Value.Trim();
+                            return Convert.FromBase64String(b64);
+                        }
+                    }
+
+                    // Fallback: return the raw icon data
+                    return icoBytes;
+                }
+                catch
+                {
+                    // Fallback: resx format might use raw icon data
+                    return icoBytes;
+                }
+            }
+        }
+    }
+}

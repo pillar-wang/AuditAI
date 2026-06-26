@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -2077,7 +2077,7 @@ public class FormProjectManage : ISetTheme
 		}
 	}
 
-	/// <summary>导出选中项目为 .lqaudit 归档文件（含项目数据库和元信息）</summary>
+	/// <summary>导出选中项目为 .auditai 归档文件（含项目数据库和元信息）</summary>
 	private async Task ExportProjectFile()
 	{
 		var selected = SelectedProject;
@@ -2087,13 +2087,13 @@ public class FormProjectManage : ISetTheme
 			return;
 		}
 		string defaultName = string.IsNullOrWhiteSpace(selected.Number)
-			? $"{selected.Name}.lqaudit"
-			: $"{selected.Number} {selected.Name}.lqaudit";
+			? $"{selected.Name}.auditai"
+			: $"{selected.Number} {selected.Name}.auditai";
 		foreach (char c in Path.GetInvalidFileNameChars())
 			defaultName = defaultName.Replace(c, '_');
 		using (var sfd = new SaveFileDialog
 		{
-			Filter = "项目归档文件 (*.lqaudit)|*.lqaudit",
+			Filter = "项目归档文件 (*.auditai)|*.auditai",
 			FileName = defaultName,
 			Title = "导出项目文件"
 		})
@@ -2115,12 +2115,12 @@ public class FormProjectManage : ISetTheme
 		}
 	}
 
-	/// <summary>从 .lqaudit 归档文件导入项目</summary>
+	/// <summary>从 .auditai 归档文件导入项目</summary>
 	private async Task ImportProject()
 	{
 		using (var ofd = new OpenFileDialog
 		{
-			Filter = "项目归档文件 (*.lqaudit)|*.lqaudit",
+			Filter = "项目归档文件 (*.auditai)|*.auditai",
 			Title = "导入项目",
 			CheckFileExists = true
 		})
@@ -3334,3 +3334,4 @@ public class FormProjectManage : ISetTheme
 		PopulateModel();
 	}
 }
+
