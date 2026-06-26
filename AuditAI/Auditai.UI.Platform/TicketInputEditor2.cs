@@ -872,6 +872,10 @@ public class TicketInputEditor2 : ISetTheme
 
 	private void SetCurrentRecord()
 	{
+		if (Ticket == null)
+		{
+			return;
+		}
 		TicketRecord ticketRecord = null;
 		if (_wantPopulatedRecordContainsRowId != 0L && Ticket.Navs.Count > 0)
 		{
@@ -5003,7 +5007,7 @@ public class TicketInputEditor2 : ISetTheme
 
 	public void RemoveRecordRows()
 	{
-		if (Table == null || Table.IsLocked || (Ticket.Kind != TicketKind.DynamicRow && Ticket.Kind != TicketKind.FixedDataRowMixDynamicDataRow))
+		if (Table == null || Table.IsLocked || Ticket == null || (Ticket.Kind != TicketKind.DynamicRow && Ticket.Kind != TicketKind.FixedDataRowMixDynamicDataRow))
 		{
 			return;
 		}
@@ -5470,7 +5474,18 @@ public class TicketInputEditor2 : ISetTheme
 		_ticketGridColumnMerges = null;
 		_isTicketLocked = false;
 		bool flag = false;
-		if (Ticket.Records.Count > 0)
+		if (Ticket == null || Ticket.Records == null)
+		{
+			_vm = new TicketInputTableVM(null, null, HasFillingFormula, isCalculateTicket: false);
+			_vm.IsInShowingVirtualNode = true;
+			_isAdd = true;
+			_isDirty = false;
+			Record = new TicketRecord();
+			_vm.BuildTableCellForAllTicketCell();
+			_vm.InitCombolistForNewRecord();
+			flag = true;
+		}
+		else if (Ticket.Records.Count > 0)
 		{
 			SetCurrentRecord();
 			_vm = new TicketInputTableVM(Ticket, Record, HasFillingFormula, isCalculateTicket: false);
@@ -6461,6 +6476,10 @@ public class TicketInputEditor2 : ISetTheme
 
 	public void PopulateNavs()
 	{
+		if (Ticket == null || Table == null)
+		{
+			return;
+		}
 		_otbNavs.SuspendDrawing();
 		_otbNavs.BeginUpdate();
 		_skipOtbIndexChange = true;

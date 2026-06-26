@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -3375,7 +3375,7 @@ public class TableEditor : ISetTheme
 	{
 		if (Table != null)
 		{
-			cmdCollectFill2.Visible = SoftwareLicenseManager.IsLedgerModuleEnable() && Table.Ticket.IsEmpty() && Program.ClientPlatformType == PlatformType.AuditPlatform;
+			cmdCollectFill2.Visible = SoftwareLicenseManager.IsLedgerModuleEnable() && Table.Ticket != null && Table.Ticket.IsEmpty() && Program.ClientPlatformType == PlatformType.AuditPlatform;
 			cmdCollectFill2.Text = "采账填充";
 		}
 	}
@@ -3459,7 +3459,12 @@ public class TableEditor : ISetTheme
 	{
 		if (!HasRowConvertPermission())
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "因您没有当前表格的【" + Table.TreeNode.GetDontHavePermissionString() + "】权限，因此，无法将选定行次内容转换为表格副标题。");
+			string permissionText = Table?.TreeNode != null ? Table.TreeNode.GetDontHavePermissionString() : "未知权限";
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "因您没有当前表格的【" + permissionText + "】权限，因此，无法将选定行次内容转换为表格副标题。");
+			return;
+		}
+		if (Table == null || Table.Title == null)
+		{
 			return;
 		}
 		int topRow = _grid.BodySelection.TopRow;
@@ -3468,6 +3473,10 @@ public class TableEditor : ISetTheme
 		if (num > 10)
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"此操作最多选定{10}行。");
+			return;
+		}
+		if (bottomRow < 0 || bottomRow >= Table.Rows.Count)
+		{
 			return;
 		}
 		int lastNonEmptyRow = Table.Title.GetLastNonEmptyRow();
@@ -4559,7 +4568,7 @@ public class TableEditor : ISetTheme
 
 	public bool IsNeedShowTableNavTree()
 	{
-		if (Table == null)
+		if (Table == null || Table.Ticket == null || Table.Title == null)
 		{
 			return false;
 		}
@@ -4576,7 +4585,7 @@ public class TableEditor : ISetTheme
 
 	public bool IsExistValidNavTreeCell()
 	{
-		if (Table.Title.NavTreeCellIdList == null || Table.Title.NavTreeCellIdList.Count == 0)
+		if (Table == null || Table.Title == null || Table.Title.NavTreeCellIdList == null || Table.Title.NavTreeCellIdList.Count == 0)
 		{
 			return false;
 		}
@@ -4597,7 +4606,7 @@ public class TableEditor : ISetTheme
 
 	public void ReBuildNavTree(bool isRestoreNavTreeStatusData = true)
 	{
-		if (Table == null)
+		if (Table == null || Table.Title == null)
 		{
 			Program.MainForm.HideNavigationPanel();
 			return;
@@ -4720,7 +4729,7 @@ public class TableEditor : ISetTheme
 		PopulateColumns();
 		PopulateMerges();
 		ValidationEditor.Enabled = !FormulaEditor.IsEditing;
-		if (!Program.MainForm.IsInEditingFormula() && Table.Title.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0 && Table.Ticket.IsEmpty())
+		if (!Program.MainForm.IsInEditingFormula() && Table != null && Table.Title != null && Table.Title.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0 && Table.Ticket != null && Table.Ticket.IsEmpty())
 		{
 			TableNavGrid.Table = Table;
 			TableNavGrid.Nav = Table.Title.NavTreeCellIdList;
@@ -15210,7 +15219,7 @@ public class TableEditor : ISetTheme
 		{
 			Program.MainForm.ShowNavigationPanel();
 		}
-		else if (Table.Title.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0)
+		else if (Table.Title?.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0)
 		{
 			Program.MainForm.ShowNavigationPanel();
 		}
@@ -15226,7 +15235,7 @@ public class TableEditor : ISetTheme
 				Program.MainForm.ShowNavigationPanel();
 				Program.MainForm.TicketInputEditor.ShowNavTreePanelForTableEditor(Table);
 			}
-			else if (Table.Title.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0)
+			else if (Table.Title?.NavTreeCellIdList != null && Table.Title.NavTreeCellIdList.Count > 0)
 			{
 				Program.MainForm.ShowNavigationPanel();
 				Program.MainForm.BindControlToNavigationPanel(_navTreeContainer);

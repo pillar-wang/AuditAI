@@ -43,7 +43,7 @@ public class ProjectArchiveMetadata
     public string Auditee { get; set; } = "";
 }
 
-/// <summary>项目归档读写核心逻辑（.lqaudit 格式）</summary>
+/// <summary>项目归档读写核心逻辑（.auditai 格式）</summary>
 public static class ProjectArchive
 {
     /// <summary>当前软件支持的最高项目数据库 Schema 版本</summary>
@@ -78,7 +78,7 @@ public static class ProjectArchive
         }
     }
 
-    /// <summary>导出项目为 .lqaudit 归档文件</summary>
+    /// <summary>导出项目为 .auditai 归档文件</summary>
     /// <param name="projectInfo">主数据库中的项目 DTO（提供名称、编号、类别等元信息）</param>
     /// <param name="outputPath">输出文件路径</param>
     public static void Export(Auditai.DTO.Project projectInfo, string outputPath)
@@ -147,7 +147,7 @@ public static class ProjectArchive
         }
     }
 
-    /// <summary>从 .lqaudit 归档导入项目，返回新项目 DTO</summary>
+    /// <summary>从 .auditai 归档导入项目，返回新项目 DTO</summary>
     public static Auditai.DTO.Project Import(string archivePath)
     {
         if (!File.Exists(archivePath))
@@ -165,7 +165,7 @@ public static class ProjectArchive
         Guid newProjectId = Guid.NewGuid();
 
         // 3. 解压到临时目录
-        string tempDir = Path.Combine(Path.GetTempPath(), "lqaudit_import_" + newProjectId.ToString("N"));
+        string tempDir = Path.Combine(Path.GetTempPath(), "auditai_import_" + newProjectId.ToString("N"));
         Directory.CreateDirectory(tempDir);
 
         try
@@ -268,3 +268,4 @@ public static class ProjectArchive
         }
     }
 }
+

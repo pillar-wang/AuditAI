@@ -28,7 +28,7 @@ public static class ClientCustomizeSettingOptionId
 
 	public const string client_platform_login_window_button_color = "client_platform_login_window_button_color";
 
-	public const string delete_leqi_cai_shu_qi_folder = "delete_leqi_cai_shu_qi_folder";
+	public const string delete_auditai_cai_shu_qi_folder = "delete_auditai_cai_shu_qi_folder";
 
 	public const string TableStyle_MainTitleHeight = "TableStyle.MainTitleHeight";
 
@@ -144,3 +144,4 @@ public static class ClientCustomizeSettingOptionId
 
 	public const string free_edition_max_table_rows = "free_edition_max_table_rows";
 }
+
