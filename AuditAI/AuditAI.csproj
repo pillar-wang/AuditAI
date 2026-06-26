@@ -7,6 +7,7 @@
     <TargetFramework>net462</TargetFramework>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <PlatformTarget>x86</PlatformTarget>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>
@@ -244,7 +245,7 @@
   <ItemGroup>
     <Content Include="Data\Templates\*.*" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="config\*.*" Link="config\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="乐其采数器\**" Exclude="乐其采数器\CrawlerForm\System.Xml.Linq.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="AuditAI采数器\**" Exclude="AuditAI采数器\CrawlerForm\System.Xml.Linq.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AuditAI.exe.licenses" />

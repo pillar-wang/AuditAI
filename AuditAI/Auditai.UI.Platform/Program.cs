@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -58,6 +58,9 @@ internal static class Program
 			// cefSettings.DisableGpuAcceleration();
 			// cefSettings.RemoteDebuggingPort = 1024;
 			// Cef.Initialize(cefSettings);
+
+			// ★ 尽早注册 AssemblyLoad 事件，确保任何 C1 程序集被加载时都能执行补丁
+			AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
 		}
 		catch (Exception ex)
 		{
@@ -72,6 +75,10 @@ internal static class Program
 	{
 		Application.EnableVisualStyles();
 		Application.SetCompatibleTextRenderingDefault(defaultValue: true);
+		
+		// ★ 必须放在最前面：抑制 C1 评估弹窗，在任何可能加载 C1 程序集的代码之前执行
+		SuppressC1EvalDialog();
+		
 		// ★ 新增：初始化本地存储（必须在 StartAuditaiPlatform 之前）
 		Auditai.LocalDataStore.StorageRouter.Initialize();
 		
@@ -81,8 +88,6 @@ internal static class Program
 			SetupLocalApiHandler();
 			
 		}
-		// ★ 新增：抑制 C1 评估弹窗
-		SuppressC1EvalDialog();
 		// ★ 新增：修复鼠标滚轮不滚动问题（WinForms 默认将滚轮消息发给焦点控件而非鼠标下方控件）
 		Application.AddMessageFilter(new MouseWheelMessageFilter());
 		
@@ -1244,11 +1249,10 @@ internal static class Program
 
 	private static void SuppressC1EvalDialog()
 	{
-		// 方案一：注册 AssemblyLoad 事件，在 C1 程序集加载时 patch 许可证字段
-		AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
-
 		// 预加载所有 C1 程序集，确保在组件使用前就完成 patch
-		// 这样可以避免首次使用时弹窗（AssemblyLoad 事件可能在组件静态构造函数之后才触发）
+		// 这样可以避免首次使用时弹窗（AssemblyLoad 事件在静态构造函数中已注册）
+		// 注意：AssemblyLoad 事件已在静态构造函数中注册，此处不再重复注册
+
 		try
 		{
 			string appDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -1302,9 +1306,13 @@ internal static class Program
 								title.Contains("评估") ||
 								title.IndexOf("Evaluation", StringComparison.OrdinalIgnoreCase) >= 0 ||
 								title.IndexOf("Trial", StringComparison.OrdinalIgnoreCase) >= 0 ||
-								title.IndexOf("License", StringComparison.OrdinalIgnoreCase) >= 0)
+								title.IndexOf("License", StringComparison.OrdinalIgnoreCase) >= 0 ||
+								title.IndexOf("About", StringComparison.OrdinalIgnoreCase) >= 0)
 							{
+								// 发送关闭消息
 								SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+								// 额外发送 WM_DESTROY 确保窗口关闭
+								SendMessage(hWnd, 0x0002, IntPtr.Zero, IntPtr.Zero);
 							}
 						}
 						catch { }
@@ -1441,71 +1449,137 @@ internal static class Program
 	}
 
 	/// <summary>
-	/// C1 许可证 Patch 核心逻辑（已修正命名空间和字段名）。
-	/// 反编译 C1.Win.C1Command.4.dll 确认实际命名空间为 C1.Util.Licensing（不是 C1.License）。
+	/// C1 许可证 Patch 核心逻辑。
+	/// 使用泛型方式扫描 C1.Util.Licensing 命名空间下的所有类型，同时支持非混淆命名
+	///（ProviderInfo/SafeLicenseContext）和混淆命名（单字母如 g/d），兼容所有 C1 程序集。
 	/// </summary>
 	private static void PatchC1LicenseFieldsCore(Assembly assembly)
 	{
 		try
 		{
-			// 1. Patch ProviderInfo.m_a = true（Nag 已显示标志，跳过弹窗逻辑）
-			// 反编译确认：ProviderInfo.Validate() 中 if (!ProviderInfo.m_a) 控制是否调用 Nag() 弹窗
-			// 设置为 true 后，Validate() 会进入 else 分支，不再弹窗
-			Type providerInfoType = assembly.GetType("C1.Util.Licensing.ProviderInfo");
-			if (providerInfoType != null)
+			// ---- 方案 A：通过 GetTypes() 泛型扫描所有 Licensing 类型 ----
+			Type[] types;
+			try
 			{
-				// 原始 C1 DLL 中字段名为 "a"（经 Mono.Cecil 反编译验证），不是 "m_a"
-				FieldInfo maField = providerInfoType.GetField("a",
-					BindingFlags.Static | BindingFlags.NonPublic);
-				if (maField != null)
-				{
-					maField.SetValue(null, true);
-				}
+				types = assembly.GetTypes();
+			}
+			catch (ReflectionTypeLoadException rtle)
+			{
+				types = rtle.Types.Where(t => t != null).ToArray();
 			}
 
-			// 2. Patch SafeLicenseContext.a（Hashtable 缓存）预填许可证密钥
-			// 反编译确认：ValidateRuntime() 通过 SafeLicenseContext.GetSavedLicenseKey() 获取密钥
-			// 若返回 null 则判定为 Unlicensed；预填可使 ValidateRuntime 返回 Valid
-			Type safeLicenseContextType = assembly.GetType("C1.Util.Licensing.SafeLicenseContext");
-			if (safeLicenseContextType != null)
+			foreach (Type type in types)
 			{
-				// 原始 C1 DLL 中字段名为 "a"（Hashtable），不是 "m_a"
-				FieldInfo cacheField = safeLicenseContextType.GetField("a",
-					BindingFlags.Static | BindingFlags.NonPublic);
-				if (cacheField != null)
+				string ns = type.Namespace ?? "";
+				if (!ns.StartsWith("C1.Util.Licensing"))
+					continue;
+
+				// 1. 如果类型继承自 LicenseProvider（无论是 ProviderInfo 还是混淆的 g），
+				//    将其所有静态 bool 字段设为 true，跳过 Nag 弹窗逻辑
+				if (type.BaseType != null &&
+					type.BaseType.FullName == "System.ComponentModel.LicenseProvider")
 				{
-					var cache = cacheField.GetValue(null) as System.Collections.Hashtable;
-					if (cache == null)
+					foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
 					{
-						cache = new System.Collections.Hashtable();
-						cacheField.SetValue(null, cache);
+						if (field.FieldType == typeof(bool))
+						{
+							field.SetValue(null, true);
+						}
 					}
-					// 标记已处理（具体类型密钥在首次 Validate 时由 .licenses 资源填充）
 				}
-			}
 
-			// 3. 触发 ProductLicense 类型初始化（确保静态构造函数已执行）
-			// 注意：ProductLicense 没有"许可证状态"静态字段，p 是加密用的 byte[]，不应修改
-			Type productLicenseType = assembly.GetType("C1.Util.Licensing.ProductLicense");
-			if (productLicenseType != null)
-			{
-				try
+				// 1b. ★ 即使不是 LicenseProvider 类型，也搜索所有静态 bool 字段设为 true
+				//    处理那些可能没有继承 LicenseProvider 但仍有 bool 标志位的授权辅助类
+				foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
 				{
-					// 触发静态构造函数，避免后续首次访问时引发竞态
-					System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(productLicenseType.TypeHandle);
+					if (field.FieldType == typeof(bool))
+					{
+						field.SetValue(null, true);
+					}
 				}
-				catch { }
+
+				// 2. 查找所有静态 Hashtable 字段（许可证密钥缓存），确保已初始化
+				//    非混淆：SafeLicenseContext.m_a
+				//    混淆：d.m_a
+				foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
+				{
+					if (field.FieldType == typeof(System.Collections.Hashtable))
+					{
+						var cache = field.GetValue(null) as System.Collections.Hashtable;
+						if (cache == null)
+						{
+							cache = new System.Collections.Hashtable();
+							field.SetValue(null, cache);
+						}
+					}
+				}
+
+				// 3. 触发所有 Licensing 类型的静态构造函数
+				if (!type.IsGenericType && !type.IsNestedPrivate)
+				{
+					try
+					{
+						System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+					}
+					catch { }
+				}
 			}
 
-			// 4. Patch LicenseInfo 的评估天数字段默认值
-			// 反编译确认：LicenseInfo.evalDaysElapsed 默认 int.MaxValue，EvaluationDaysLeft = 30 - evalDaysElapsed
-			// 当 evalDaysElapsed = int.MaxValue 时 EvaluationDaysLeft 为负数，触发 GetStop = true 并抛 LicenseException
-			// 由于 evalDaysElapsed 是实例字段，无法静态 patch，但 ProviderInfo.m_a=true 已能阻止弹窗和异常
+			// ---- 方案 B：如果方案 A 没有找到任何已知类型，尝试通过已知的类型名直接补丁 ----
+			// 非混淆名
+			TryPatchAllBools(assembly, "C1.Util.Licensing.ProviderInfo");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.SafeLicenseContext");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.LicenseInfo");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.ProductLicense");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.DTStorage");
+			// 混淆名
+			TryPatchAllBools(assembly, "C1.Util.Licensing.g");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.d");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.e");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.c");
+			TryPatchAllBools(assembly, "C1.Util.Licensing.a");
+
+			// 总是尝试触发 ProductLicense 和 DTStorage 类型初始化
+			RunStaticCtor(assembly, "C1.Util.Licensing.ProductLicense");
+			RunStaticCtor(assembly, "C1.Util.Licensing.DTStorage");
 		}
 		catch (Exception ex)
 		{
 			ex.Log("C1 License Patch failed for assembly: " + assembly.FullName);
 		}
+	}
+
+	/// <summary>尝试按类型名查找，并将该类型中所有静态 bool 字段设为 true</summary>
+	private static void TryPatchAllBools(Assembly assembly, string typeName)
+	{
+		try
+		{
+			Type t = assembly.GetType(typeName);
+			if (t == null) return;
+
+			foreach (var field in t.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
+			{
+				if (field.FieldType == typeof(bool))
+				{
+					field.SetValue(null, true);
+				}
+			}
+		}
+		catch { }
+	}
+
+	/// <summary>触发指定类型的静态构造函数</summary>
+	private static void RunStaticCtor(Assembly assembly, string typeName)
+	{
+		try
+		{
+			Type t = assembly.GetType(typeName);
+			if (t != null)
+			{
+				System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(t.TypeHandle);
+			}
+		}
+		catch { }
 	}
 
 }
