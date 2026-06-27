@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Auditai.Model;
 using Newtonsoft.Json;
@@ -39,6 +39,10 @@ public class BalanceItem : CollectItem
 				throw new UnExpectAuditYearException(string.Empty);
 			}
 			TrialBalanceSheet trialBalanceSheet2 = ledger.GetTrialBalanceSheet(start, dateTime);
+			if (!trialBalanceSheet2.Start.ContainsKey(account))
+			{
+				break;
+			}
 			if (!account.IsDebit)
 			{
 				return -trialBalanceSheet2.Start[account].Total;
@@ -52,6 +56,10 @@ public class BalanceItem : CollectItem
 				throw new UnExpectAuditYearException(string.Empty);
 			}
 			TrialBalanceSheet trialBalanceSheet8 = ledger.GetTrialBalanceSheet(start, dateTime);
+			if (!trialBalanceSheet8.Start.ContainsKey(account))
+			{
+				break;
+			}
 			if (!account.IsDebit)
 			{
 				return trialBalanceSheet8.Start[account].Total;
@@ -65,6 +73,10 @@ public class BalanceItem : CollectItem
 				throw new UnExpectAuditYearException(string.Empty);
 			}
 			TrialBalanceSheet trialBalanceSheet4 = ledger.GetTrialBalanceSheet(start, dateTime);
+			if (!trialBalanceSheet4.End.ContainsKey(account))
+			{
+				break;
+			}
 			if (!account.IsDebit)
 			{
 				return -trialBalanceSheet4.End[account].Total;
@@ -78,6 +90,10 @@ public class BalanceItem : CollectItem
 				throw new UnExpectAuditYearException(string.Empty);
 			}
 			TrialBalanceSheet trialBalanceSheet7 = ledger.GetTrialBalanceSheet(start, dateTime);
+			if (!trialBalanceSheet7.End.ContainsKey(account))
+			{
+				break;
+			}
 			if (!account.IsDebit)
 			{
 				return trialBalanceSheet7.End[account].Total;

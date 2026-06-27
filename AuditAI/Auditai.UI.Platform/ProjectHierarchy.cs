@@ -1642,7 +1642,7 @@ public class ProjectHierarchy
 
     private void _grid_MouseDoubleClick(object sender, MouseEventArgs e)
     {
-        HitTestInfo hitTestInfo = _grid.HitTest();
+        HitTestInfo hitTestInfo = _grid.HitTest(e.Location);
         if (hitTestInfo.Type == HitTestTypeEnum.Cell)
         {
             C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];

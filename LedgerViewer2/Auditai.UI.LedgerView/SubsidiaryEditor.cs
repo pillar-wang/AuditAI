@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -1665,7 +1665,7 @@ internal class SubsidiaryEditor : ISetTheme
 		TotalDisplay = BooksStyle.TotalDisplay;
 		grdVoucher.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdVoucher.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdVoucher, e1.Graphics);
 		};
 	}
 

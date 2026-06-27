@@ -108,7 +108,6 @@ public class ProgressForm2 : C1RibbonForm
 		{
 			Task.Run(async delegate
 			{
-				_ = 1;
 				try
 				{
 					await Task.Delay(1).ConfigureAwait(continueOnCapturedContext: false);

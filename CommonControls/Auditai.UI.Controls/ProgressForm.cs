@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
@@ -210,7 +210,6 @@ public class ProgressForm<T>
 
 	private async void _progressForm_Load2(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			if (_delay.TotalMilliseconds == 0.0)
@@ -248,7 +247,6 @@ public class ProgressForm<T>
 
 	private async void _progressForm_Load3(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			if (_delay.TotalMilliseconds == 0.0)

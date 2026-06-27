@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -1352,73 +1352,22 @@ internal static class Program
 		}
 	}
 
+	/// <summary>
+	/// 确保 TXTextControl 许可证已注入到 RuntimeLicenseContext。
+	/// 每次创建 TXTextControl 控件之前调用，避免因 AssemblyLoad 时序问题导致授权失败。
+	/// </summary>
+	public static void EnsureTXTextControlLicense()
+	{
+		PreloadLicensesFromEntryAssembly(force: true);
+	}
+
 	private static void PatchTXTextControlLicense(Assembly assembly)
 	{
 		try
 		{
-			// 遍历 TXTextControl 程序集中的所有类型，找到许可证验证相关的类
-			// TXTextControl 使用混淆的命名空间 ᜁ.ᝉ 做许可证验证
-			// 其 GetLicense 方法调用 LicenseManager.Validate，抛出 LicenseException
-			// 我们需要替换其内部的 License 字段
-
-			foreach (Type type in assembly.GetTypes())
-			{
-				string typeName = type.FullName ?? "";
-
-				// 查找许可证提供者类（混淆名包含 ᝉ 或实现 LicenseProvider）
-				if (type.BaseType != null && type.BaseType.FullName == "System.ComponentModel.LicenseProvider")
-				{
-					// 找到继承 LicenseProvider 的类，尝试设置其缓存的 License 字段
-					foreach (var field in type.GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
-					{
-						try
-						{
-							if (field.FieldType == typeof(System.ComponentModel.License))
-							{
-								field.SetValue(null, new TXFakeLicense());
-							}
-						}
-						catch { }
-					}
-				}
-
-				// 查找 ServerTextControl 类，设置其静态 license 字段
-				if (type.Name == "ServerTextControl")
-				{
-					foreach (var field in type.GetFields(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
-					{
-						try
-						{
-							if (field.FieldType == typeof(System.ComponentModel.License))
-							{
-								field.SetValue(null, new TXFakeLicense());
-							}
-						}
-						catch { }
-					}
-				}
-			}
-
-			// 关键：Hook LicenseManager 的内部验证逻辑
-			// 通过反射替换 licenseCache，使 Validate 总是成功
-			try
-			{
-				var lmType = typeof(System.ComponentModel.LicenseManager);
-
-				// 找到内部的 Hashtable licenseCache 字段
-				var cacheField = lmType.GetField("licenseCache",
-					System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-				if (cacheField != null)
-				{
-					var cache = cacheField.GetValue(null) as System.Collections.Hashtable;
-					if (cache != null)
-					{
-						// 预注册 ServerTextControl 的许可证
-						cache[typeof(TXTextControl.ServerTextControl)] = new TXFakeLicense();
-					}
-				}
-			}
-			catch { }
+			// 注入嵌入的 .licenses 资源到 RuntimeLicenseContext
+			// 绕过 cryptoKey 校验（反编译后程序集名变更导致 cryptoKey 不匹配）
+			PreloadLicensesFromEntryAssembly(force: false);
 		}
 		catch (Exception ex)
 		{
@@ -1426,15 +1375,71 @@ internal static class Program
 		}
 	}
 
-	/// <summary>假的 License 对象，用于绕过 TXTextControl 许可证验证</summary>
-	private class TXFakeLicense : System.ComponentModel.License
+	/// <summary>
+	/// 从入口程序集的嵌入资源中读取 .licenses 文件，
+	/// 绕过 cryptoKey 校验直接注入到 RuntimeLicenseContext.savedLicenseKeys。
+	/// </summary>
+	/// <param name="force">如果为 true，则强制覆盖已有的 savedLicenseKeys；否则仅在为空时注入。</param>
+	private static void PreloadLicensesFromEntryAssembly(bool force = false)
 	{
-		public override string LicenseKey => "TXTextControl.Valid.License";
-		public override void Dispose()
+		try
 		{
-			// 无需释放资源，此对象为绕过许可证验证的虚假实现。
-			// License.Dispose 是抽象方法，不能调用 base.Dispose()。
+			var entryAsm = Assembly.GetEntryAssembly();
+			if (entryAsm == null) return;
+
+			// RuntimeLicenseContext 是 LicenseManager.CurrentContext 的内部实现类
+			var context = System.ComponentModel.LicenseManager.CurrentContext;
+			if (context == null) return;
+
+			var contextType = context.GetType();
+			if (contextType.Name != "RuntimeLicenseContext") return;
+
+			// 读取 savedLicenseKeys 字段
+			var keysField = contextType.GetField("savedLicenseKeys",
+				System.Reflection.BindingFlags.Instance |
+				System.Reflection.BindingFlags.NonPublic |
+				System.Reflection.BindingFlags.Public);
+			if (keysField == null) return;
+
+			// 非强制模式下，如果已经加载过了就直接返回
+			if (!force && keysField.GetValue(context) != null) return;
+
+			// 查找 .licenses 嵌入资源
+			// 资源名可能是 AuditAI.exe.licenses、AuditAI.dll.licenses、或程序集短名.licenses
+			string resourceName = FindLicensesResource(entryAsm);
+			if (resourceName == null) return;
+
+			using (var stream = entryAsm.GetManifestResourceStream(resourceName))
+			{
+				if (stream == null) return;
+
+				var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+				object obj = formatter.Deserialize(stream);
+
+				// lc.exe 输出格式: object[] { cryptoKey_string, Hashtable_of_license_keys }
+				if (obj is object[] arr && arr.Length >= 2 && arr[1] is System.Collections.Hashtable licenseKeys)
+				{
+					keysField.SetValue(context, licenseKeys);
+				}
+			}
 		}
+		catch (Exception ex)
+		{
+			ex.Log("PreloadLicensesFromEntryAssembly failed: " + ex.Message);
+		}
+	}
+
+	/// <summary>在入口程序集中查找 .licenses 资源</summary>
+	private static string FindLicensesResource(Assembly assembly)
+	{
+		string[] names = assembly.GetManifestResourceNames();
+		string asmName = assembly.GetName().Name;
+
+		// 按优先级查找
+		return names.FirstOrDefault(n =>
+			n.Equals(asmName + ".exe.licenses", StringComparison.OrdinalIgnoreCase) ||
+			n.Equals(asmName + ".dll.licenses", StringComparison.OrdinalIgnoreCase) ||
+			n.EndsWith(".licenses", StringComparison.OrdinalIgnoreCase));
 	}
 
 	private static void PatchC1LicenseFields(Assembly assembly)

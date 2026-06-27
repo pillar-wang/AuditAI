@@ -182,23 +182,20 @@ public class LedgerMerge
 		for (int num = ledgerLevelDic2.Keys.Max(); num > ledgerLevelDic.Keys.Max(); num--)
 		{
 			foreach (Account secondAccount2 in ledgerLevelDic2[num])
+		{
+			Account account = new Account();
+			account.Ledger = first;
+			account.Code = secondAccount2.Code;
+			account.Name = secondAccount2.Name;
+			account.IsDebit = secondAccount2.IsDebit;
+			foreach (Account child in secondAccount2.Children)
 			{
-				Account account = new Account();
-				account.Ledger = first;
-				account.Code = secondAccount2.Code;
-				account.Name = secondAccount2.Name;
-				account.IsDebit = secondAccount2.IsDebit;
-				foreach (Account child in secondAccount2.Children)
-				{
-					account.Children.Add(dictionary6[child.Code]);
-				}
-				Dictionary<AuxiliaryClass, ClassBalance> classBalances = trialBalanceSheet.End.First((KeyValuePair<Account, AccountBalance> t) => t.Key == secondAccount2).Value.ClassBalances;
-				_ = classBalances.Count;
-				_ = 0;
-				first.Accounts.Add(account);
-				dictionary6.Add(account.Code, account);
-				dictionary5.Add(account, secondAccount2.Parent.Code);
+				account.Children.Add(dictionary6[child.Code]);
 			}
+			first.Accounts.Add(account);
+			dictionary6.Add(account.Code, account);
+			dictionary5.Add(account, secondAccount2.Parent.Code);
+		}
 		}
 		foreach (KeyValuePair<int, List<Account>> item6 in ledgerLevelDic.OrderByDescending((KeyValuePair<int, List<Account>> i) => i.Key))
 		{
@@ -219,13 +216,10 @@ public class LedgerMerge
 				account2.Name = secondAccount.Name;
 				account2.IsDebit = secondAccount.IsDebit;
 				foreach (Account child2 in secondAccount.Children)
-				{
-					account2.Children.Add(dictionary6[child2.Code]);
-				}
-				Dictionary<AuxiliaryClass, ClassBalance> classBalances2 = trialBalanceSheet.End.First((KeyValuePair<Account, AccountBalance> t) => t.Key == secondAccount).Value.ClassBalances;
-				_ = classBalances2.Count;
-				_ = 0;
-				first.Accounts.Add(account2);
+			{
+				account2.Children.Add(dictionary6[child2.Code]);
+			}
+			first.Accounts.Add(account2);
 				item6.Value.Add(account2);
 				dictionary7.Add(account2.Code, account2);
 				dictionary6.Add(account2.Code, account2);
@@ -330,3 +324,4 @@ public class LedgerMerge
 		}
 	}
 }
+

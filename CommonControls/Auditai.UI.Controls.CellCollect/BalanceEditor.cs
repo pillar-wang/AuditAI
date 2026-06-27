@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -438,8 +438,17 @@ internal class BalanceEditor
 			{
 				DetachEvents();
 			}
-			int count = grdBalance.Selection.BottomRow - grdBalance.Selection.TopRow + 1;
-			grdBalance.Rows.RemoveRange(grdBalance.Selection.TopRow, count);
+			int topRow = grdBalance.Selection.TopRow;
+			int count = grdBalance.Selection.BottomRow - topRow + 1;
+			for (int i = topRow; i < topRow + count && i < grdBalance.Rows.Count; i++)
+			{
+				C1.Win.C1FlexGrid.Row row = grdBalance.Rows[i];
+				if (collectsDic.ContainsKey(row))
+				{
+					collectsDic.Remove(row);
+				}
+			}
+			grdBalance.Rows.RemoveRange(topRow, count);
 			PopulateRowIndex();
 		}
 		catch (Exception ex)

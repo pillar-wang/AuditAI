@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -505,7 +505,7 @@ public class frmVoucherEditor : C1RibbonForm
 
 	private void GrdVoucher_Paint(object sender, PaintEventArgs e)
 	{
-		grdVoucher.DrawFormBorder(e.Graphics);
+		Auditai.UI.Controls.Theme.DrawFormBorder(grdVoucher, e.Graphics);
 	}
 
 	private void GrdVoucher_MouseDown(object sender, MouseEventArgs e)

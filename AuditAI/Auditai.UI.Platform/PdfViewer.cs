@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
@@ -114,8 +114,11 @@ public class PdfViewer
 		{
 			Dock = PanelDockStyle.Left
 		});
-		_pv.Renderer.DisplayRectangleChanged += PdfRenderer_OnDisplayRectangleChanged;
-		_pv.Renderer.ZoomChanged += PdfRenderer_OnZoomChanged;
+		if (_pv.Renderer != null)
+		{
+			_pv.Renderer.DisplayRectangleChanged += PdfRenderer_OnDisplayRectangleChanged;
+			_pv.Renderer.ZoomChanged += PdfRenderer_OnZoomChanged;
+		}
 		View.Panels[1].Controls.Add(_pv);
 		cmdBack.Click += CmdBack_Click;
 		lnkBack.Command = cmdBack;
@@ -150,7 +153,7 @@ public class PdfViewer
 
 	private void PdfRenderer_OnZoomChanged(object sender, EventArgs e)
 	{
-		if (Pdf != null)
+		if (Pdf != null && _pv?.Renderer != null)
 		{
 			Pdf.ZoomFactor = _pv.Renderer.Zoom;
 		}
@@ -158,7 +161,7 @@ public class PdfViewer
 
 	private void PdfRenderer_OnDisplayRectangleChanged(object sender, EventArgs e)
 	{
-		if (Pdf != null)
+		if (Pdf != null && _pv?.Renderer != null)
 		{
 			Rectangle displayRectangle = _pv.Renderer.DisplayRectangle;
 			Pdf.DisplayAreaOffsetX = displayRectangle.X;
@@ -168,7 +171,7 @@ public class PdfViewer
 
 	public void AfterBecomeVisible()
 	{
-		if (Pdf == null)
+		if (Pdf == null || _pv?.Renderer == null)
 		{
 			return;
 		}
@@ -190,6 +193,11 @@ public class PdfViewer
 	public void Populate()
 	{
 		string path = Pdf.Project.FileCacheManager.GetPath(Pdf.FileId);
+		if (!File.Exists(path))
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "PDF 文件不存在，请稍候重试");
+			return;
+		}
 		try
 		{
 			_onVisibleViewOffsetX = Pdf.DisplayAreaOffsetX;
@@ -200,8 +208,11 @@ public class PdfViewer
 				_pv.Document.Dispose();
 			}
 			_pv.Document = PdfDocument.Load(new FileStream(path, FileMode.Open, FileAccess.Read));
-			_pv.Renderer.Zoom = _onVisibleViewZoomFactor;
-			_pv.Renderer.SetDisplayRectLocation(new Point(_onVisibleViewOffsetX, _onVisibleViewOffsetY));
+			if (_pv.Renderer != null)
+			{
+				_pv.Renderer.Zoom = _onVisibleViewZoomFactor;
+				_pv.Renderer.SetDisplayRectLocation(new Point(_onVisibleViewOffsetX, _onVisibleViewOffsetY));
+			}
 		}
 		catch (PdfException ex)
 		{
@@ -211,7 +222,10 @@ public class PdfViewer
 
 	public void SetZoomFactor(int percent)
 	{
-		_pv.Renderer.Zoom = (float)percent / 100f;
+		if (_pv?.Renderer != null)
+		{
+			_pv.Renderer.Zoom = (float)percent / 100f;
+		}
 	}
 
 	public void Print()

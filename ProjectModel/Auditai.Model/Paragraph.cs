@@ -1,4 +1,5 @@
-﻿﻿using System.Linq;
+﻿﻿using System;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using Auditai.DTO;
@@ -48,21 +49,30 @@ public class Paragraph : IIndexable
 
 	public static Paragraph FromDto(Auditai.DTO.Paragraph dto)
 	{
-		var stream = Encoding.UTF8.GetString(ZipCompressor.Decompress(dto.Stream));
-		// 将旧格式书签 lsbm@ 转为 lsbm_（OOXML 安全，防止 @ 被截断导致 TableId 丢失）
-		if (stream.Contains("lsbm@"))
-			stream = UpgradeBookmarkFormat(stream);
-		return new Paragraph
+		try
 		{
-			Id = dto.Id,
-			Dirty = new ParagraphDirtyMask(dto.Dirty),
-			Index = dto.Index,
-			Stream = stream,
-			Status = (SyncStatus)dto.Status,
-			ServerIndex = dto.ServerIndex,
-			Section = ((dto.Section == null) ? null : Encoding.UTF8.GetString(ZipCompressor.Decompress(dto.Section))),
-			Comment = dto.Comment
-		};
+			var stream = Encoding.UTF8.GetString(ZipCompressor.Decompress(dto.Stream));
+			System.Diagnostics.Debug.WriteLine($"[Paragraph.FromDto] ParaId={dto.Id} DocId={dto.DocumentId} Stream decompressed length={stream.Length}");
+			// 将旧格式书签 lsbm@ 转为 lsbm_（OOXML 安全，防止 @ 被截断导致 TableId 丢失）
+			if (stream.Contains("lsbm@"))
+				stream = UpgradeBookmarkFormat(stream);
+			return new Paragraph
+			{
+				Id = dto.Id,
+				Dirty = new ParagraphDirtyMask(dto.Dirty),
+				Index = dto.Index,
+				Stream = stream,
+				Status = (SyncStatus)dto.Status,
+				ServerIndex = dto.ServerIndex,
+				Section = ((dto.Section == null) ? null : Encoding.UTF8.GetString(ZipCompressor.Decompress(dto.Section))),
+				Comment = dto.Comment
+			};
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"[Paragraph.FromDto] ParaId={dto.Id} DocId={dto.DocumentId} Decompress FAILED: {ex.Message}");
+			throw;
+		}
 	}
 
 	/// <summary>

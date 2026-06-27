@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -378,7 +378,6 @@ public class frmRegister : Form
 
 	private async void btnRegister_Click(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			SwitchStatusTo(Status.Registing);

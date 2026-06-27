@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -1608,7 +1608,6 @@ public class FormProjectManage : ISetTheme
 
 	private async Task OpenProject()
 	{
-		_ = 1;
 		try
 		{
 			if (!_isInOpenProject)

@@ -274,7 +274,6 @@ public class FormProjectMembers
 
 	private async Task PopulateTeamUsers()
 	{
-		_ = 1;
 		try
 		{
 			Auditai.Model.User current = Auditai.Model.User.Current;

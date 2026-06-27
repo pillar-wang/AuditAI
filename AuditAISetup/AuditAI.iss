@@ -55,11 +55,6 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Filename: "{tmp}\{#DotNetInstaller}"; Parameters: "/q /norestart"; StatusMsg: "正在安装 .NET Framework 4.6.2..."; Flags: runhidden; Check: not IsDotNet462Installed
 Filename: "{app}\{#MyAppExeName}"; Description: "启动 {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
-[UninstallDelete]
-Type: files; Name: "{app}\*.log"
-Type: dirifempty; Name: "{app}\Data"
-Type: dirifempty; Name: "{app}\config"
-
 [Code]
 function IsDotNet462Installed: Boolean;
 var
@@ -98,3 +93,8 @@ function NeedRestart: Boolean;
 begin
   Result := False;
 end;
+
+[UninstallDelete]
+Type: files; Name: "{app}\*.log"
+Type: dirifempty; Name: "{app}\Data"
+Type: dirifempty; Name: "{app}\config"

@@ -1,0 +1,31 @@
+Column table cols: ['Id', 'TableId', 'Index', 'ServerIndex', 'Caption', 'CaptionStyle', 'Width', 'Visible', 'Dirty', 'Status', 'ConsolidateAttribs', 'SubtotalAttribs', 'Formula', 'StyleId', 'Permissions', 'CaptionFormula', 'CrossAttributes']
+
+=== Column Id=11287174055451 ===
+  Id: 11287174055451
+  TableId: 11287174055345
+  Index: 4
+  ServerIndex: 4
+  Caption: 单位名称
+  CaptionStyle: {"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0,"A":false,"LCF":null},"Locker":0,"DefaultValue":"","Comment":""}
+  Width: 112
+  Visible: 1
+  Dirty: 0
+  Status: 1
+  ConsolidateAttribs: 
+  SubtotalAttribs: 0
+  Formula: 
+  StyleId: 11476152614921
+  Permissions: {"Read":{"GrantAll":true,"Users":[]},"Write":{"GrantAll":true,"Users":[]},"Schema":{"GrantAll":true,"Users":[]}}
+  CaptionFormula: 
+  CrossAttributes: b''
+
+=== First 5 rows of Column table ===
+Schema: ['Id', 'TableId', 'Index', 'ServerIndex', 'Caption', 'CaptionStyle', 'Width', 'Visible', 'Dirty', 'Status', 'ConsolidateAttribs', 'SubtotalAttribs', 'Formula', 'StyleId', 'Permissions', 'CaptionFormula', 'CrossAttributes']
+  (8589935101, 8589935088, 0, 0, '项目名称/产品名称', '{"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0},"Locker":0,"DefaultValue":"","Comment":""}', 176, 1, 0, 1, None, 0, '', 2448131358734, '{"Read": {"GrantAll": true}, "Write": {"GrantAll": true}, "Delete": {"GrantAll": true}}', '', b'')
+  (8589935113, 8589935088, 1, 1, '本期未审数', '{"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0},"Locker":0,"DefaultValue":"","Comment":""}', 136, 1, 0, 1, None, 0, '', 10411000728126, '{"Read": {"GrantAll": true}, "Write": {"GrantAll": true}, "Delete": {"GrantAll": true}}', '', b'')
+  (8589935125, 8589935088, 2, 2, '调整数_本期借方', '{"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0},"Locker":0,"DefaultValue":"","Comment":""}', 136, 1, 0, 1, None, 0, 'SumIf([2:1026497193282:1082331758645]="*主营业务收入*" and [2:1026497193282:1026497193313]=[4:8589935088:8589935101] and [2:1026497193282:1026497193313]<>" ",[2:1026497193282:1026497193317])', 10411000728126, '{"Read": {"GrantAll": true}, "Write": {"GrantAll": true}, "Delete": {"GrantAll": true}}', '', b'')
+  (8589935137, 8589935088, 3, 3, '调整数_本期贷方', '{"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0},"Locker":0,"DefaultValue":"","Comment":""}', 136, 1, 0, 1, None, 0, 'SumIf([2:1026497193282:1082331758645]="*主营业务收入*" and [2:1026497193282:1026497193313]=[4:8589935088:8589935101] and [2:1026497193282:1026497193313]<>" ",[2:1026497193282:1026497193319])', 10411000728126, '{"Read": {"GrantAll": true}, "Write": {"GrantAll": true}, "Delete": {"GrantAll": true}}', '', b'')
+  (8589935149, 8589935088, 4, 4, '本期审定数', '{"FontSize":10.5,"ForeColor":"Black","BackColor":"Transparent","FontFamily":"仿宋","Align":4,"Bold":true,"Italic":false,"Underline":false,"Margin":0,"Format":{"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0},"Locker":0,"DefaultValue":"","Comment":""}', 136, 1, 0, 1, None, 0, '[4:8589935088:8589935113]-[4:8589935088:8589935125]+[4:8589935088:8589935137]', 10411000728126, '{"Read": {"GrantAll": true}, "Write": {"GrantAll": true}, "Delete": {"GrantAll": true}}', '', b'')
+
+=== Search 11287174055451 in any text column of Column table ===
+  Found in column 'Id': [(11287174055451,)]

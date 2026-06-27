@@ -24,6 +24,9 @@ public class TxRecordEditor : IRecordEditor
 
 	public TxRecordEditor()
 	{
+		// 确保 TXTextControl 许可证已注入，避免授权失败
+		Program.EnsureTXTextControlLicense();
+
 		_tx = new TextControl
 		{
 			AllowDrop = false,

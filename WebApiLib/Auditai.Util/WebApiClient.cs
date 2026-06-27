@@ -2199,7 +2199,6 @@ public static class WebApiClient
 
 	private static async Task<PullTable> SendAsPullTable(RequestOptions options, TaskProgressValueReportCallback progressReportCallback)
 	{
-		_ = 1;
 		try
 		{
 			using Stream stream = await SendAsStream(options).ConfigureAwait(continueOnCapturedContext: false);
@@ -2764,7 +2763,6 @@ public static class WebApiClient
 
 	private static async Task<PullDocument> SendAsPullDocument(RequestOptions options, TaskProgressValueReportCallback progressReportCallback)
 	{
-		_ = 1;
 		try
 		{
 			using Stream stream = await SendAsStream(options).ConfigureAwait(continueOnCapturedContext: false);

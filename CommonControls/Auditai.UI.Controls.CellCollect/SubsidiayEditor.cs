@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -483,8 +483,17 @@ internal class SubsidiayEditor
 			{
 				DettachEvents();
 			}
-			int count = grdSubsidiary.Selection.BottomRow - grdSubsidiary.Selection.TopRow + 1;
-			grdSubsidiary.Rows.RemoveRange(grdSubsidiary.Selection.TopRow, count);
+			int topRow = grdSubsidiary.Selection.TopRow;
+			int count = grdSubsidiary.Selection.BottomRow - topRow + 1;
+			for (int i = topRow; i < topRow + count && i < grdSubsidiary.Rows.Count; i++)
+			{
+				C1.Win.C1FlexGrid.Row row = grdSubsidiary.Rows[i];
+				if (collectDic.ContainsKey(row))
+				{
+					collectDic.Remove(row);
+				}
+			}
+			grdSubsidiary.Rows.RemoveRange(topRow, count);
 			PopulateRowIndex();
 		}
 		catch (Exception ex)

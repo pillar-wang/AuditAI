@@ -1,0 +1,36 @@
+=== TreeNode Id=11287174055345 ===
+  Id=11287174055345, GroupId=4294967299, ParentId=47244640804, Name=应收账款替代测试表, Type=1, Level=0
+
+=== Parent TreeNode ===
+  Id=47244640804, Name=应收账款, Type=0
+
+=== Table with Id=11287174055345 ===
+  Found: Id=11287174055345, Title len=6616, Ticket len=63927
+
+=== Full Table row Id=11287174055345 ===
+  Title (first 500): {"NavTreeCellIdList":null,"Version":1,"TitleHeight":40,"TitleCell":{"BinaryValue":"AOW6lOaUtui0puasvuabv+S7o+a1i+ivleihqA==","Formula":null,"ForeColor":"192, 0, 0","BackColor":"","FontFamily":"仿宋","FontSize":16.0,"Align":4,"Bold":true,"Italic":false,"Underline":false,"Strikeout":false,"DefaultValue":"","Comment":"若需对多个预付账款账户进行测试时，可复制出多个表格予以测试。\r\n此表可通过点按侧边栏“采数填充”按钮自动自账务数据中采数填充。","ComboList":"","MultiComboList":false,"IgnoreComboList":false,"CellId":null,"Margin":0,"DataFormat":{"T":0,"D":0,"L":n
+  Ticket (first 2000): {"Columns":[{"Width":77,"Field":11287174055445,"FontFamily":"仿宋","FontSize":10.5,"Align":4,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":2},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","DataFormat":{"T":6,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0,"A":false,"LCF":null},"IsHiddenColumn":false},{"Width":50,"Field":11287174055447,"FontFamily":"仿宋","FontSize":10.5,"Align":4,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":1},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","IsHiddenColumn":false},{"Width":126,"Field":11287174055453,"FontFamily":"仿宋","FontSize":10.5,"Align":1,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":1},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","IsHiddenColumn":false},{"Width":136,"Field":11287174055455,"FontFamily":"仿宋","FontSize":10.5,"Align":1,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":1},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","IsHiddenColumn":false},{"Width":95,"Field":11287174055457,"FontFamily":"仿宋","FontSize":10.5,"Align":7,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":1},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","DataFormat":{"T":12,"D":2,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0,"A":false,"LCF":null},"IsHiddenColumn":false},{"Width":95,"Field":11287174055459,"FontFamily":"仿宋","FontSize":10.5,"Align":7,"Indent":0,"Top":{"Width":1},"Right":{"Width":1},"Bottom":{"Width":1},"Left":{"Width":1},"Middle":{"Width":1},"ForeColor":"Black","Bold":false,"Italic":false,"BackColor":"White","Formula":"","DataFormat":{"T":12,"D":2,"L
+  ControlFormula (first 1000): 
+
+  Ticket JSON keys: ['Columns', 'Rows', 'Cells', 'Merges', 'DataRowStart', 'DataRowCount', 'TableRowsFrozenCount', 'TableColsFrozenCount', 'ColumnHeaderRowsCount', 'DataRowHeight', 'Kind', 'Level', 'DataRowMerges', 'Navs', 'PageSetup', 'Title', 'Footer', 'FixedAndDynamicMixRange', 'IsDirtyDataOnlyIncludeCanOverrideByServerData', 'IsHiddenColumn', 'IsAllowShowVirtualNode']
+    Columns: [{"Width": 77, "Field": 11287174055445, "FontFamily": "仿宋", "FontSize": 10.5, "Align": 4, "Indent": 0, "Top": {"Width": 1}, "Right": {"Width": 1}, "Bottom": {"Width": 1}, "Left": {"Width": 2}, "Middle": {"Width": 1}, "ForeColor": "Black", "Bold": false, "Italic": false, "BackColor": "White", "Formula": "", "DataFormat": {"T": 6, "D": 0, "L": "", "MultiComboList": false, "IgnoreComboList": false, "Z": 0, "A": false, "LCF": null}, "IsHiddenColumn": false}, {"Width": 50, "Field": 11287174055447, "F...
+    Rows: [{"IsMixRangeFixedDataRow": false, "IsMixRangeDynamicDataRow": false, "IsMixRangeTemplateRow": false, "MixRangeDynamicDataRowTemplateId": -1, "MixRangeDataKeyId": -1, "Height": 30}, {"IsMixRangeFixedDataRow": false, "IsMixRangeDynamicDataRow": false, "IsMixRangeTemplateRow": false, "MixRangeDynamicDataRowTemplateId": -1, "MixRangeDataKeyId": -1, "Height": 30}, {"IsMixRangeFixedDataRow": false, "IsMixRangeDynamicDataRow": false, "IsMixRangeTemplateRow": false, "MixRangeDynamicDataRowTemplateId": ...
+    Cells: [{"Text": "记账日期", "Field": 0, "FontFamily": "仿宋", "FontSize": 10.5, "Align": 4, "Indent": 0, "Top": {"Width": 2}, "Right": {"Width": 1}, "Bottom": {"Width": 1}, "Left": {"Width": 2}, "Bold": true, "ForeColor": "Black", "Italic": false, "BackColor": "White", "Formula": "", "InputValue": null, "IsInMixRangeFixedDataRow": false, "IsInMixRangeDynamicDataRow": false, "IsMixRangeTicketKey": false}, {"Text": "凭证字号", "Field": 0, "FontFamily": "仿宋", "FontSize": 10.5, "Align": 4, "Indent": 0, "Top": {"Wid...
+    Merges: [{"TopRow": 0, "LeftColumn": 0, "BottomRow": 1, "RightColumn": 0}, {"TopRow": 0, "LeftColumn": 1, "BottomRow": 1, "RightColumn": 1}, {"TopRow": 0, "LeftColumn": 2, "BottomRow": 1, "RightColumn": 2}, {"TopRow": 0, "LeftColumn": 3, "BottomRow": 1, "RightColumn": 3}, {"TopRow": 0, "LeftColumn": 4, "BottomRow": 1, "RightColumn": 4}, {"TopRow": 0, "LeftColumn": 5, "BottomRow": 1, "RightColumn": 5}, {"TopRow": 0, "LeftColumn": 6, "BottomRow": 0, "RightColumn": 10}, {"TopRow": 6, "LeftColumn": 0, "Bott...
+    DataRowStart: 2
+    DataRowCount: 6
+    TableRowsFrozenCount: 0
+    TableColsFrozenCount: 0
+    ColumnHeaderRowsCount: 2
+    DataRowHeight: 30
+    Kind: 2
+    Level: 2
+    DataRowMerges: []
+    Navs: [{"Columns": [11287174055451]}]
+    PageSetup: {"Direction": 1, "PaperKind": 9, "PaperWidth": 0.0, "PaperHeight": 0.0, "IsPrintIndex": false, "HasNoteBorder": false, "HorizontalZoom": 1.0, "VerticalZoom": 1.0, "LeftMargin": 10.0, "BottomMargin": 15.0, "TopMargin": 15.0, "RightMargin": 10.0, "HeaderMargin": 15.0, "FooterMargin": 15.0, "FixedPrintColsNum": 1, "PrintPageRange": "全部", "PrintCopies": 1, "OneColor": true, "FitPageWidth": true, "FitPageHeight": false, "StartPageNo": 1, "PageHeader": {"LeftValue": "", "CenterValue": "", "RightValue"...
+    Title: {"Columns": [{"Width": 139, "Field": 0, "FontFamily": null, "FontSize": 0.0, "Align": 0, "Indent": 0, "Top": null, "Right": null, "Bottom": null, "Left": null, "Middle": null, "ForeColor": "", "Bold": false, "Italic": false, "BackColor": "", "Formula": null, "IsHiddenColumn": false}, {"Width": 213, "Field": 0, "FontFamily": null, "FontSize": 0.0, "Align": 0, "Indent": 0, "Top": null, "Right": null, "Bottom": null, "Left": null, "Middle": null, "ForeColor": "", "Bold": false, "Italic": false, "Ba...
+    Footer: {"Columns": [], "Rows": [], "Cells": [], "Merges": []}
+    FixedAndDynamicMixRange: null
+    IsDirtyDataOnlyIncludeCanOverrideByServerData: false
+    IsHiddenColumn: false
+    IsAllowShowVirtualNode: true

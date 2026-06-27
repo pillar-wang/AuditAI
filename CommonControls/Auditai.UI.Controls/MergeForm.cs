@@ -175,8 +175,6 @@ public class MergeForm : C1RibbonForm
 		HitTestInfo hitTestInfo = _projectTree.View.HitTest(e.Location);
 		if (e.Button == MouseButtons.Left && canTriggerMouse)
 		{
-			_ = hitTestInfo.Type;
-			_ = 1;
 		}
 		canTriggerMouse = true;
 	}
@@ -224,8 +222,6 @@ public class MergeForm : C1RibbonForm
 
 	private void MergeForm_FormClosing(object sender, FormClosingEventArgs e)
 	{
-		_ = e.CloseReason;
-		_ = 6;
 	}
 
 	protected override void Dispose(bool disposing)

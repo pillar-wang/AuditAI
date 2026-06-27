@@ -156,6 +156,9 @@ public class FormHeaderEdit
 		_splc.Panels.Add(_pnlMain);
 		try
 		{
+			// 确保 TXTextControl 许可证已注入，避免授权失败
+			Program.EnsureTXTextControlLicense();
+
 			_tx = new TextControlEx
 			{
 				BorderStyle = TXTextControl.BorderStyle.FixedSingle,

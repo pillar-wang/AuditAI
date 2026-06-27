@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -46,7 +46,7 @@ public class AccountAndAuxiliarySelectEditor : C1FlexGrid, IC1EmbeddedEditor
 		AttachEvent();
 		base.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			accountAndAuxiliarySelectEditor.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(accountAndAuxiliarySelectEditor, e1.Graphics);
 		};
 		Theme.SetCurrentObject(this);
 		base.Styles.Normal.Border.Color = Color.White;

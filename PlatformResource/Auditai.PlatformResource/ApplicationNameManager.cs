@@ -1,4 +1,4 @@
-﻿﻿namespace Auditai.PlatformResource;
+﻿﻿﻿﻿namespace Auditai.PlatformResource;
 
 public class ApplicationNameManager
 {
