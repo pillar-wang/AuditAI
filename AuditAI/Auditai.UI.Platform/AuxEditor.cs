@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Forms;
 using Auditai.Model;
 using Auditai.UI.Controls;
@@ -48,8 +48,8 @@ public class AuxEditor
 	public void InsertRefTextAndFocus(string t)
 	{
 		View.Activate();
-		View.rtbDropInput.Selection.Text = t;
-		View.rtbDropInput.Selection.Start += View.rtbDropInput.Selection.Length;
+		View.rtbDropInput.SelectedText = t;
+		View.rtbDropInput.SelectionStart += View.rtbDropInput.SelectionLength;
 	}
 
 	public void RemoveRefAtPos()
@@ -57,7 +57,7 @@ public class AuxEditor
 		try
 		{
 			FormulaDisplay formulaDisplay = new FormulaDisplay(View.rtbDropInput.Text);
-			Tuple<int, int> refAtPos = formulaDisplay.GetRefAtPos(View.rtbDropInput.Selection.Start);
+			Tuple<int, int> refAtPos = formulaDisplay.GetRefAtPos(View.rtbDropInput.SelectionStart);
 			if (refAtPos != null)
 			{
 				View.rtbDropInput.Select(refAtPos.Item1, refAtPos.Item2 - refAtPos.Item1 + 1);
