@@ -292,6 +292,23 @@ public class TicketInputTableVM
 
 		public void PrintLog()
 		{
+			parseTotalTime = watchForParser.ElapsedMilliseconds;
+			buldTotalTime = watchForBuildEnv.ElapsedMilliseconds;
+			evalTotalTime = watchForEval.ElapsedMilliseconds;
+			var sb = new StringBuilder();
+			sb.AppendLine("");
+			sb.AppendLine("统计时间: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ", 表格名称: " + _owner._ticket.Table.TreeNode.Name);
+			sb.AppendLine(string.Format("循环次数: {0}次", loopTime));
+			sb.AppendLine(string.Format("解析总耗时: {0}秒", parseTotalTime / 1000f));
+			sb.AppendLine(string.Format("构建运行环境总耗时: {0}秒", buldTotalTime / 1000f));
+			sb.AppendLine(string.Format("计算总耗时: {0}秒", evalTotalTime / 1000f));
+			try
+			{
+				File.AppendAllText("E:\\trace.log", sb.ToString());
+			}
+			catch
+			{
+			}
 		}
 	}
 
@@ -4392,6 +4409,32 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 
 	public void PrintTicketCellValue(string msg)
 	{
+		var sb = new StringBuilder();
+		sb.Append("\r\n");
+		sb.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff "));
+		sb.Append(msg);
+		sb.Append("\r\n");
+		for (int row = 0; row < GetRowsCount(); row++)
+		{
+			for (int col = 0; col < _columns.Count; col++)
+			{
+				var cell = GetCellVM(row, col);
+				if (col > 0)
+				{
+					sb.Append("\t");
+				}
+				sb.Append(cell.GetDisplayValue());
+			}
+			sb.Append("\r\n");
+		}
+		var text = sb.ToString();
+		try
+		{
+			File.AppendAllText("E:\\ticket_value.log", text);
+		}
+		catch
+		{
+		}
 	}
 
 	private void FindOutTicketFormulaShouldUpdateTableCell(TicketInputCellVM ticketCell, Dictionary<Auditai.Model.Cell, TicketInputCellVM> tableNeedUpdateCellDic)
