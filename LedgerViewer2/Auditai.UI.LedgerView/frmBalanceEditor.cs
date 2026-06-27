@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -157,7 +157,7 @@ public class frmBalanceEditor : C1RibbonForm
 		SetTheme();
 		grdBalance.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdBalance.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdBalance, e1.Graphics);
 		};
 		base.Shown += FrmBalanceEditor_Shown;
 	}

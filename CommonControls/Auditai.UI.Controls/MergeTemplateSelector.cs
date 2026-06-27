@@ -152,8 +152,6 @@ public class MergeTemplateSelector : C1RibbonForm
 		HitTestInfo hitTestInfo = _projectTree.View.HitTest(e.Location);
 		if (e.Button == MouseButtons.Left)
 		{
-			_ = hitTestInfo.Type;
-			_ = 1;
 		}
 	}
 
@@ -175,8 +173,6 @@ public class MergeTemplateSelector : C1RibbonForm
 
 	private void MergeTemplateSelector_FormClosing(object sender, FormClosingEventArgs e)
 	{
-		_ = e.CloseReason;
-		_ = 6;
 	}
 
 	protected override void Dispose(bool disposing)

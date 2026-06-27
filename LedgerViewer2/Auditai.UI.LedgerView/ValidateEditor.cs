@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -111,7 +111,7 @@ public class ValidateEditor : ISetTheme
 		Initialize();
 		grdValidate.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdValidate.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdValidate, e1.Graphics);
 		};
 		Tree.DoubleClick += ValidateTree_DoubleClick;
 		ValidateChanged += ValidateEditor_ValidateChanged;
@@ -158,7 +158,7 @@ public class ValidateEditor : ISetTheme
 		Tree = GridFactory.Create("tree");
 		Tree.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			Tree.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(Tree, e1.Graphics);
 		};
 	}
 

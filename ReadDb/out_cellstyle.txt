@@ -1,0 +1,53 @@
+CellStyle cols: ['Id', 'TableId', 'FontFamily', 'FontSize', 'ForeColor', 'BackColor', 'Align', 'Margin', 'Bold', 'Italic', 'Underline', 'DataType', 'Format', 'Status', 'Locked', 'DefaultValue', 'Comment']
+
+=== CellStyle Id=11476152614921 (单位名称列) ===
+  Id: 11476152614921
+  TableId: 11287174055345
+  FontFamily: None
+  FontSize: None
+  ForeColor: None
+  BackColor: None
+  Align: None
+  Margin: None
+  Bold: None
+  Italic: None
+  Underline: None
+  DataType: None
+  Format: {"T":0,"D":0,"L":"TableList([2:10337986289169:10337986289222]<>\"\",[2:10337986289169:10337986289222],[2:10337986289169:10660108840281],[2:10337986289169:10337986289224],[2:10337986289169:10337986289226],[2:10337986289169:10337986289228],[2:10337986289169:10337986289230])","MultiComboList":false,"IgnoreComboList":true,"Z":0,"A":false,"LCF":null}
+  Status: 1
+  Locked: None
+  DefaultValue: None
+  Comment: None
+
+  Format JSON keys: ['T', 'D', 'L', 'MultiComboList', 'IgnoreComboList', 'Z', 'A', 'LCF']
+    T: 0
+    D: 0
+    L: TableList([2:10337986289169:10337986289222]<>"",[2:10337986289169:10337986289222],[2:10337986289169:10660108840281],[2:10337986289169:10337986289224],[2:10337986289169:10337986289226],[2:10337986289169:10337986289228],[2:10337986289169:10337986289230])
+    MultiComboList: False
+    IgnoreComboList: True
+    Z: 0
+    A: False
+    LCF: None
+
+=== Table DefaultStyle for 应收账款替代测试表 ===
+  DefaultStyleId=11287174055379
+  Id: 11287174055379
+  TableId: 11287174055345
+  FontFamily: 仿宋
+  FontSize: 10.5
+  ForeColor: -16777216
+  BackColor: 16777215
+  Align: 1
+  Margin: 0
+  Bold: 0
+  Italic: 0
+  Underline: 0
+  DataType: 18
+  Format: {"T":0,"D":0,"L":"","MultiComboList":false,"IgnoreComboList":false,"Z":0,"A":false,"LCF":null}
+  Status: 1
+  Locked: 0
+  DefaultValue: None
+  Comment: None
+
+=== All CellStyle rows with non-empty ComboList in Format ===
+  Total CellStyle with ComboList: 0

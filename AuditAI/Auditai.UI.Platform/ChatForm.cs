@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -625,7 +625,6 @@ public class ChatForm : C1RibbonForm, ISetTheme
 
 	private async Task ChangeHeaderImpl()
 	{
-		_ = 1;
 		try
 		{
 			OpenFileDialog openFileDialog = new OpenFileDialog

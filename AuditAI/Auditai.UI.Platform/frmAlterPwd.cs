@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -179,7 +179,6 @@ public class frmAlterPwd : C1RibbonForm
 
 	private async void btnCertain_Click(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			if (_bindPhone && !Regex.IsMatch(txtVerification.Text.Trim(), "^\\w+$"))
@@ -246,7 +245,6 @@ public class frmAlterPwd : C1RibbonForm
 
 	private async void btnGetValidateCode_Click(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			if (txtPassword.Text.Length == 0)

@@ -91,6 +91,9 @@ public class DocumentEditor : UserControl
 	{
 		try
 		{
+			// 确保 TXTextControl 许可证已注入，避免授权失败
+			Program.EnsureTXTextControlLicense();
+
 			_textControl = new TextControlEx
 			{
 				Dock = DockStyle.Fill,
@@ -106,7 +109,7 @@ public class DocumentEditor : UserControl
 		}
 		catch (Exception ex)
 		{
-			ex.Log("TextControl license error");
+			ex.Log("TextControl license error: " + ex.ToString());
 		}
 		_ttpComment = new TooltipBox
 		{
@@ -302,23 +305,29 @@ public class DocumentEditor : UserControl
 		}
 
 		// 即使没有段落也尝试加载（MakePackage 会生成只含 SectPr 的空文档）
-		try
-		{
-			EnsureControlCreated();
-			LoadDocumentFromModel();
-			_isDocumentLoaded = true;
-		}
-		catch (Exception ex)
-		{
-			ex.Log($"DocumentEditor.PopulateDocument DocId={doc.Id}");
-			DocBadFlag = true;
-		}
+	try
+	{
+		EnsureControlCreated();
+		LoadDocumentFromModel();
+		_isDocumentLoaded = true;
+	}
+	catch (Exception ex)
+	{
+		ex.Log($"DocumentEditor.PopulateDocument DocId={doc.Id}");
+		DocBadFlag = true;
+	}
 	}
 
 	private void LoadDocumentFromModel()
 	{
 		var doc = Document as Auditai.Model.Document;
 		if (doc == null) return;
+
+		if (_textControl == null)
+		{
+			DocBadFlag = true;
+			throw new InvalidOperationException("TextControl 未初始化，无法加载文档");
+		}
 
 		var tup = doc.MakePackage();
 		if (tup == null || string.IsNullOrEmpty(tup.Item1) || !File.Exists(tup.Item1))
@@ -508,10 +517,16 @@ public class DocumentEditor : UserControl
 	public void LoadDocPrint(params object[] args)
 	{
 		// 如果已经加载过，不再重复加载
-		if (_isDocumentLoaded) return;
+		if (_isDocumentLoaded)
+		{
+			return;
+		}
 
 		var doc = Document as Auditai.Model.Document;
-		if (doc == null || DocBadFlag) return;
+		if (doc == null || DocBadFlag)
+		{
+			return;
+		}
 
 		try
 		{

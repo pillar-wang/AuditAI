@@ -1,0 +1,40 @@
+Row cols: ['Id', 'TableId', 'Index', 'ServerIndex', 'Height', 'Visible', 'Dirty', 'Status', 'Locked', 'Role', 'Permissions', 'Creator']
+Cell cols: ['Id', 'RowId', 'ColumnId', 'Value', 'StyleId', 'Dirty', 'Status', 'Formula', 'CollectSource', 'HeaderFormula']
+
+=== Source table 10337986289169 ===
+  Row count: 9
+  Cell count (via Column): 54
+
+  Rows (9 shown):
+    Id=10337986289234, Index=0, TableId=10337986289169
+    Id=10337986289235, Index=1, TableId=10337986289169
+    Id=10337986289236, Index=2, TableId=10337986289169
+    Id=10337986289237, Index=3, TableId=10337986289169
+    Id=10337986289238, Index=4, TableId=10337986289169
+    Id=10337986289239, Index=5, TableId=10337986289169
+    Id=10337986289244, Index=6, TableId=10337986289169
+    Id=11042360918383, Index=7, TableId=10337986289169
+    Id=11042360918384, Index=8, TableId=10337986289169
+
+  === Cells for Column 10337986289222 (单位名称) ===
+  Cell count: 9
+    Cell Id=10337986289245, RowId=10337986289234, Value='b'\x00\xe7\x9f\xb3\xe5\xae\xb6\xe5\xba\x84\xe9\xab\x98\xe6\x96\xb0\xe5\x8c\xba\xe4\xbc\x98\xe5\xae\x9d\xe8\xb4\x9d\xe5\xb9\xbc\xe5\x84\xbf\xe5\x9b\xad''
+    Cell Id=10337986289251, RowId=10337986289235, Value='b'\x00\xe7\x9f\xb3\xe5\xae\xb6\xe5\xba\x84\xe5\xb8\x82\xe8\x97\x81\xe5\x9f\x8e\xe5\x8c\xba\xe4\xbc\x98\xe5\xae\x9d\xe8\xb4\x9d\xe5\xb9\xbc\xe5\x84\xbf\xe5\x9b\xad''
+    Cell Id=10337986289257, RowId=10337986289236, Value='b'\x00\xe7\x9f\xb3\xe5\xae\xb6\xe5\xba\x84\xe5\xb8\x82\xe9\x95\xbf\xe5\xae\x89\xe5\x8c\xba\xe4\xbc\x98\xe5\xae\x9d\xe8\xb4\x9d\xe5\xb9\xbc\xe5\x84\xbf\xe5\x9b\xad''
+    Cell Id=10337986289263, RowId=10337986289237, Value='b'\x00''
+    Cell Id=10337986289269, RowId=10337986289238, Value='b'\x00''
+    Cell Id=10337986289275, RowId=10337986289239, Value='b'\x00''
+    Cell Id=10337986289305, RowId=10337986289244, Value='b'\x00\xe5\x90\x88\xe8\xae\xa1''
+    Cell Id=11042360918385, RowId=11042360918383, Value='b'\x00\xe5\xae\xa1\xe8\xae\xa1\xe8\xaf\xb4\xe6\x98\x8e\xef\xbc\x9a''
+    Cell Id=11042360918391, RowId=11042360918384, Value='b'\x00\xe5\xae\xa1\xe8\xae\xa1\xe7\xbb\x93\xe8\xae\xba\xef\xbc\x9a''
+
+=== Target table 11287174055345 (应收账款替代测试表) ===
+  Row count: 7
+  Cell count: 112
+    Row Id=11471857647710, Index=0
+    Row Id=11471857647711, Index=1
+    Row Id=11471857647712, Index=2
+    Row Id=11471857647713, Index=3
+    Row Id=11471857647714, Index=4
+    Row Id=11471857647692, Index=5
+    Row Id=137438953509, Index=6

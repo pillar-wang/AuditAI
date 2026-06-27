@@ -1,0 +1,20 @@
+=== Source TreeNode Id=10337986289169 ===
+  Id=10337986289169, Name=应收账款明细表（重分类调整前）, ParentId=47244640804, Type=1
+
+=== Source Table Id=10337986289169 ===
+  Id=10337986289169, Ticket len=1037
+  DataRowStart=-1, DataRowCount=0
+  Rows count in Ticket JSON: 0
+  Cells count: 0
+  Columns count: 0
+
+  === Data rows (from DataRowStart=-1) ===
+    ---
+
+=== Referenced columns in ComboList ===
+  Col Id=10337986289222 TableId=10337986289169 Index=0 Caption=单位名称
+  Col Id=10660108840281 TableId=10337986289169 Index=1 Caption=款项内容
+  Col Id=10337986289224 TableId=10337986289169 Index=2 Caption=期初未审数
+  Col Id=10337986289226 TableId=10337986289169 Index=3 Caption=借方发生数
+  Col Id=10337986289228 TableId=10337986289169 Index=4 Caption=贷方发生数
+  Col Id=10337986289230 TableId=10337986289169 Index=5 Caption=期末未审数

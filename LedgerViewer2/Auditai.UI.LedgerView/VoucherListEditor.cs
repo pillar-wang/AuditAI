@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -563,7 +563,7 @@ public class VoucherListEditor : ISetTheme
 		Tree = GridFactory.Create("tree");
 		Tree.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			Tree.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(Tree, e1.Graphics);
 		};
 		BindTreeContexMenu();
 	}

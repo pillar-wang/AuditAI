@@ -361,7 +361,6 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		async void commandClick(object s2, ClickEventArgs e2)
 		{
-			_ = 3;
 			try
 			{
 				if (s2 is C1Command { UserData: var userData })

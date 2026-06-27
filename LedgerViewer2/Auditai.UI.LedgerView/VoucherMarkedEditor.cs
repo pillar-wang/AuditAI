@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -576,7 +576,7 @@ public class VoucherMarkedEditor : ISetTheme
 		pnlDetails.CloseButtonClick += PnlMarkDetails_CloseButtonClick;
 		grdDetail.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdDetail.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdDetail, e1.Graphics);
 		};
 		grdDetail.KeyDown += GrdDetail_KeyDown;
 		grdDetail.MouseClick += GrdDetail_MouseClick;

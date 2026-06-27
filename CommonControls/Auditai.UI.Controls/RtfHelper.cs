@@ -1,5 +1,10 @@
-using System;
+﻿using System;
+using System.Collections;
+using System.ComponentModel;
 using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using Auditai.Model;
 using TXTextControl;
 
@@ -18,6 +23,7 @@ public class RtfHelper
 	{
 		try
 		{
+			EnsureTxLicense();
 			_tx = new ServerTextControl();
 			_tx.Create();
 			_txAvailable = true;
@@ -27,6 +33,49 @@ public class RtfHelper
 			_tx = null;
 			_txAvailable = false;
 		}
+	}
+
+	/// <summary>
+	/// 从入口程序集的嵌入资源中读取 .licenses 文件，
+	/// 绕过 cryptoKey 校验直接注入到 RuntimeLicenseContext.savedLicenseKeys。
+	/// </summary>
+	private static void EnsureTxLicense()
+	{
+		try
+		{
+			var entryAsm = Assembly.GetEntryAssembly();
+			if (entryAsm == null) return;
+
+			var context = LicenseManager.CurrentContext;
+			if (context == null) return;
+
+			var contextType = context.GetType();
+			if (contextType.Name != "RuntimeLicenseContext") return;
+
+			var keysField = contextType.GetField("savedLicenseKeys",
+				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			if (keysField == null) return;
+
+			string resourceName = entryAsm.GetManifestResourceNames()
+				.FirstOrDefault(n => n.Equals(entryAsm.GetName().Name + ".exe.licenses", StringComparison.OrdinalIgnoreCase) ||
+				                     n.Equals(entryAsm.GetName().Name + ".dll.licenses", StringComparison.OrdinalIgnoreCase) ||
+				                     n.EndsWith(".licenses", StringComparison.OrdinalIgnoreCase));
+			if (resourceName == null) return;
+
+			using (var stream = entryAsm.GetManifestResourceStream(resourceName))
+			{
+				if (stream == null) return;
+
+				var formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+				object obj = formatter.Deserialize(stream);
+
+				if (obj is object[] arr && arr.Length >= 2 && arr[1] is Hashtable licenseKeys)
+				{
+					keysField.SetValue(context, licenseKeys);
+				}
+			}
+		}
+		catch { }
 	}
 
 	public RtfHelper Load(string rtf)

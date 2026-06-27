@@ -1,0 +1,34 @@
+=== Full Ticket JSON for Table 10337986289169 (len=1037) ===
+
+Top-level keys: ['Columns', 'Rows', 'Cells', 'Merges', 'DataRowStart', 'DataRowCount', 'TableRowsFrozenCount', 'TableColsFrozenCount', 'ColumnHeaderRowsCount', 'DataRowHeight', 'Kind', 'Level', 'DataRowMerges', 'Navs', 'PageSetup', 'Title', 'Footer', 'FixedAndDynamicMixRange', 'IsDirtyDataOnlyIncludeCanOverrideByServerData', 'IsHiddenColumn', 'IsAllowShowVirtualNode']
+
+  Columns: []
+  Rows: []
+  Cells: []
+  Merges: []
+  DataRowStart: -1
+  DataRowCount: 0
+  TableRowsFrozenCount: 0
+  TableColsFrozenCount: 0
+  ColumnHeaderRowsCount: 0
+  DataRowHeight: 30
+  Kind: 0
+  Level: 0
+  DataRowMerges: []
+  Navs: []
+  PageSetup: {"Direction": 1, "PaperKind": 9, "PaperWidth": 0.0, "PaperHeight": 0.0, "IsPrintIndex": false, "HasNoteBorder": false, "HorizontalZoom": 1.0, "VerticalZoom": 1.0, "LeftMargin": 31.8, "BottomMargin": 25.4, "TopMargin": 25.4, "RightMargin": 31.8, "HeaderMargin": 15.0, "FooterMargin": 15.0, "FixedPrintColsNum": 1, "PrintPageRange": "全部", "PrintCopies": 1, "OneColor": true, "FitPageWidth": true, "FitPageHeight": false, "StartPageNo": 1, "PageHeader": {"LeftValue": "", "CenterValue": "", "RightValue": "", "Height": 15.0}, "PageFooter": {"LeftValue": "", "CenterValue": "", "RightValue": "", "Height": 17.5}}
+  Title: {"Columns": [], "Rows": [], "Cells": [], "Merges": []}
+  Footer: {"Columns": [], "Rows": [], "Cells": [], "Merges": []}
+  FixedAndDynamicMixRange: null
+  IsDirtyDataOnlyIncludeCanOverrideByServerData: true
+  IsHiddenColumn: false
+  IsAllowShowVirtualNode: true
+
+
+=== Target table 11287174055345 (应收账款替代测试表) Records ===
+Top-level keys: ['Columns', 'Rows', 'Cells', 'Merges', 'DataRowStart', 'DataRowCount', 'TableRowsFrozenCount', 'TableColsFrozenCount', 'ColumnHeaderRowsCount', 'DataRowHeight', 'Kind', 'Level', 'DataRowMerges', 'Navs', 'PageSetup', 'Title', 'Footer', 'FixedAndDynamicMixRange', 'IsDirtyDataOnlyIncludeCanOverrideByServerData', 'IsHiddenColumn', 'IsAllowShowVirtualNode']
+  Navs: [{"Columns": [11287174055451]}]
+  IsAllowShowVirtualNode: True
+  Navs: [{"Columns": [11287174055451]}]
+  DataRowStart: 2, DataRowCount: 6
+  Rows: 11, Cells: 121

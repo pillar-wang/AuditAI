@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -64,7 +64,6 @@ internal class ProjectBak
 							}
 							ThreadPool.QueueUserWorkItem(async delegate
 							{
-								_ = 2;
 								try
 								{
 									if (!(treeNode is TreeTableNode treeTableNode))

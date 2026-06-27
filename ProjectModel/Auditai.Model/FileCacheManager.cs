@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using Auditai.Util;
@@ -45,9 +45,27 @@ public class FileCacheManager
 		await WebApiClient.UploadFile(fileId, new FileStream(GetPath(fileId), FileMode.Open, FileAccess.Read));
 	}
 
-	public Task DownloadIfNotExist(Guid fileId)
+	public async Task DownloadIfNotExist(Guid fileId)
 	{
-		return Task.CompletedTask;
+		if (Exists(fileId))
+		{
+			return;
+		}
+		using Stream stream = await WebApiClient.DownloadFile(fileId);
+		if (stream == null)
+		{
+			return;
+		}
+		using FileStream fs = new FileStream(GetPath(fileId), FileMode.Create);
+		try
+		{
+			await stream.CopyToAsync(fs);
+		}
+		catch (IOException)
+		{
+			File.Delete(GetPath(fileId));
+			throw;
+		}
 	}
 
 	public void Delete(Guid fileId)

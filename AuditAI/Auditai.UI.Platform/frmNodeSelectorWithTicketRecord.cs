@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -914,13 +914,13 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 				}
 			}
 		}
-		foreach (TicketNavGrid.NavNode child in navNode.Children())
+		foreach (TicketNavGrid.NavNode child in navNode.Children)
 		{
 			BuildGridNodeTree(tableNode, rootNode, child, rootNode.GridNode);
 		}
 		void BuildGridNodeTree(TreeTableNode tableNode, TreeNodeBase parentTreeNode, TicketNavGrid.NavNode node, Node parentGridNode)
 		{
-			if (node.Children().Length == 0)
+			if (node.Children.Count == 0)
 			{
 				TicketNavTreeRecordNode ticketNavTreeRecordNode = new TicketNavTreeRecordNode();
 				ticketNavTreeRecordNode.Record = node.Record;
@@ -936,7 +936,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 			ticketNavTreeFolderNode.ParentNode = parentTreeNode;
 			ticketNavTreeFolderNode.GridNode = parentGridNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreeFolderNode.Name, ticketNavTreeFolderNode, Resources.TicketNavTreeListExpanded);
 			_grid.SetCellCheck(ticketNavTreeFolderNode.GridNode.Row.Index, 1, CheckEnum.Unchecked);
-			foreach (TicketNavGrid.NavNode child2 in node.Children())
+			foreach (TicketNavGrid.NavNode child2 in node.Children)
 			{
 				BuildGridNodeTree(tableNode, ticketNavTreeFolderNode, child2, ticketNavTreeFolderNode.GridNode);
 			}

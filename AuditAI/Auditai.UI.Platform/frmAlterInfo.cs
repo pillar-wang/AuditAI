@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -286,7 +286,6 @@ public class frmAlterInfo : C1RibbonForm
 
 	private async void btnConfirm_Click(object sender, EventArgs e)
 	{
-		_ = 2;
 		try
 		{
 			if (!Regex.IsMatch(txtUserName.Text.Trim(), "^.{2,20}$"))

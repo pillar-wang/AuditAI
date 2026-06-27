@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿﻿﻿﻿﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Auditai.Model;
@@ -33,6 +33,11 @@ public class ColumnOperand : CellsOperand
 		: base(FormulaEvaluator.GetCells(column), column.Table)
 	{
 		Column = column;
+		System.Diagnostics.Debug.WriteLine($"[ColumnOperand] ctor: column='{column.Caption}', Id={column.Id}, TableId={column.Table?.Id}, base.Cells.Count={base.Cells?.Count ?? 0}");
+		if (base.Cells == null || base.Cells.Count == 0)
+		{
+			System.Diagnostics.Debug.WriteLine($"[ColumnOperand] ctor: WARNING - no cells! Table.Rows.Count={column.Table?.Rows?.Count}, _loaded={column.Table?._loaded}");
+		}
 	}
 
 	public override Cell GetCellByRowIndex(int rowIndex)

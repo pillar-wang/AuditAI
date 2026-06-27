@@ -1,4 +1,4 @@
-extern alias CrawlerModelAlias;
+﻿﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -380,15 +380,15 @@ public class frmImport : C1RibbonForm
 		grdAuxiliary.AfterResizeRow += GrdAuxiliary_AfterResizeRow;
 		grdBalance.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdBalance.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdBalance, e1.Graphics);
 		};
 		grdVoucher.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdVoucher.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdVoucher, e1.Graphics);
 		};
 		grdAuxiliary.Paint += delegate(object s1, PaintEventArgs e1)
 		{
-			grdAuxiliary.DrawFormBorder(e1.Graphics);
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdAuxiliary, e1.Graphics);
 		};
 		grdBalance.Rows.Count = 20;
 		grdVoucher.Rows.Count = 20;

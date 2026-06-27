@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -186,7 +186,6 @@ public class frmFindPwd : Form
 
 	private async void btnGetVerification_Click(object sender, EventArgs e)
 	{
-		_ = 1;
 		try
 		{
 			string userName = await WebApiClient.GetUsernameByPhone(txtPhone.Text);

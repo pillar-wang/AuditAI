@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -281,7 +281,7 @@ public class MainForm
 
 	public ImageEditor ImageEditor { get; private set; }
 
-	public PdfViewer PdfViewer { get; } = new PdfViewer();
+	public PdfViewer PdfViewer { get; private set; }
 
 
 	public Auditai.Model.Project CurrentProject
@@ -575,8 +575,10 @@ public class MainForm
 			MinWidth = 0,
 			BackColor = Color.Transparent
 		};
+		// 懒初始化 PdfViewer，防止 PdfiumViewer DLL 初始化失败导致程序崩溃
+		try { PdfViewer = new PdfViewer(); } catch (Exception ex) { ex.Log("PdfViewer 初始化失败"); }
 		pnlContent.Controls.Add(EmptyView.View);
-		pnlContent.Controls.Add(PdfViewer.View);
+		if (PdfViewer != null) pnlContent.Controls.Add(PdfViewer.View);
 		if (TicketDesignEditor.View is Control viewControl) pnlContent.Controls.Add(viewControl);
 		EmptyView.View.BringToFront();
 		Initialize();
@@ -894,7 +896,6 @@ public class MainForm
 		return await LoadProjectFileImpl(progressUpdater2);
 		async Task<Auditai.Model.Project> LoadProjectFileImpl(TaskProgressValueUpdater progressUpdater)
 		{
-			_ = 2;
 			try
 			{
 				Auditai.Model.Project ret2 = new Auditai.Model.Project();
@@ -1401,6 +1402,7 @@ public class MainForm
 
 	public void SwitchToPdfView()
 	{
+		if (PdfViewer == null) return;
 		HideAllPnlContent();
 		PdfViewer.View.Show();
 		PdfViewer.View.BringToFront();
@@ -1411,6 +1413,7 @@ public class MainForm
 
 	public void SwitchToPdfPreviewView()
 	{
+		if (PdfViewer == null) return;
 		HideAllPnlContent();
 		PdfViewer.View.Show();
 		PdfViewer.View.BringToFront();
@@ -2439,7 +2442,6 @@ public class MainForm
 	{
 		FormProjectManage formProjectManage = new FormProjectManage();
 		formProjectManage.ShowDialog();
-		_ = 1;
 	}
 
 	public void ShowSettings()
@@ -2595,7 +2597,6 @@ public class MainForm
 
 	public async Task TableCollectSet()
 	{
-		_ = 1;
 		try
 		{
 			if (TableEditor.IsTableLocked)
@@ -2908,7 +2909,6 @@ public class MainForm
 
 	public async Task AutoImport()
 	{
-		_ = 2;
 		try
 		{
 			if (TableEditor.IsTableLocked)
@@ -4353,7 +4353,7 @@ public class MainForm
 				documentEditor.Value.HideToolbar();
 			}
 			ImageEditor.HideToolbar();
-			PdfViewer.HideToolbar();
+			if (PdfViewer != null) PdfViewer.HideToolbar();
 			MultiLedgerViewer.HideToolbar();
 			AuditaiTheme selectedAuditaiTheme = Theme.SelectedAuditaiTheme;
 			if (AppCommands.ShowSidebar.Button != null)
@@ -4376,7 +4376,7 @@ public class MainForm
 				documentEditor2.Value.ShowToolbar();
 			}
 			ImageEditor.ShowToolbar();
-			PdfViewer.ShowToolbar();
+			if (PdfViewer != null) PdfViewer.ShowToolbar();
 			MultiLedgerViewer.ShowToolbar();
 			AuditaiTheme selectedAuditaiTheme2 = Theme.SelectedAuditaiTheme;
 			if (AppCommands.ShowSidebar.Button != null)
@@ -4592,7 +4592,7 @@ public class MainForm
 		case MainFormView.PdfPreview:
 			try
 			{
-				PdfViewer.Print();
+				PdfViewer?.Print();
 				break;
 			}
 			catch
@@ -4646,7 +4646,7 @@ public class MainForm
 				break;
 			case MainFormView.Pdf:
 			case MainFormView.PdfPreview:
-				if (await PdfViewer.SaveDialog() == DialogResult.OK)
+				if (PdfViewer != null && await PdfViewer.SaveDialog() == DialogResult.OK)
 				{
 					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件导出成功");
 				}

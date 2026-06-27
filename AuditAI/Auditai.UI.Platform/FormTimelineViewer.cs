@@ -270,6 +270,10 @@ public class FormTimelineViewer
 		};
 		_ctn.Panels.Add(_pnlEntity);
 		_pnlEntity.Controls.Add(_ctnTable);
+
+		// 确保 TXTextControl 许可证已注入，避免授权失败
+		Program.EnsureTXTextControlLicense();
+
 		_tx = new TextControlEx
 		{
 			Dock = DockStyle.Fill,

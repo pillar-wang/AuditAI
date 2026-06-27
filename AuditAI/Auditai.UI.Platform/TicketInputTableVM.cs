@@ -783,8 +783,6 @@ public class TicketInputTableVM
 		}
 		else
 		{
-			_ = ticket.Kind;
-			_ = 1;
 		}
 		PopulateMerges();
 		if (isCalculateTicket)
@@ -2540,12 +2538,10 @@ public class TicketInputTableVM
 				BuildTableCellForAllTicketCell_FixedOneRow();
 				return;
 			}
-			_ = _ticket.Kind;
-			_ = 4;
-		}
 	}
+}
 
-	private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM ticketCell, Auditai.Model.Row tableRow)
+private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM ticketCell, Auditai.Model.Row tableRow)
 	{
 		return ticketCell.TableCell = (ticketCell.TempCell = Table[tableRow.Index, ticketCell.Column.Index]);
 	}
@@ -5080,6 +5076,11 @@ public class TicketInputTableVM
 			if (column != null)
 			{
 				Auditai.Model.Cell cell = Table[mr.Index, column.Index];
+				if (cell == null)
+				{
+					Debug.WriteLine($"[TicketInputTableVM] IsTableRowKeyColumnEmpty_MixTicket: cell is null! mr.Index={mr.Index}, column.Index={column.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
+					continue;
+				}
 				if (!cell.IsEmpty)
 				{
 					return false;
@@ -5097,6 +5098,7 @@ public class TicketInputTableVM
 	{
 		if (!_rows[index].IsNew)
 		{
+			Debug.WriteLine($"[IsDataRowEmpty] index={index}: IsNew=false → return false");
 			return false;
 		}
 		for (int i = 0; i < _columns.Count; i++)
@@ -5106,14 +5108,17 @@ public class TicketInputTableVM
 			{
 				if (cellVM.Attachments != null && cellVM.Attachments.Attachments.Count > 0)
 				{
+					Debug.WriteLine($"[IsDataRowEmpty] index={index}, col[{i}]: has attachments → return false");
 					return false;
 				}
 				if (!cellVM.TableCell.IsEmpty)
 				{
+					Debug.WriteLine($"[IsDataRowEmpty] index={index}, col[{i}]='{cellVM.TableCell.Value}': not empty → return false");
 					return false;
 				}
 			}
 		}
+		Debug.WriteLine($"[IsDataRowEmpty] index={index}: all data columns empty → return true");
 		return true;
 	}
 
@@ -5135,6 +5140,11 @@ public class TicketInputTableVM
 			if (ticketInputColumnVM.TableColumn != null)
 			{
 				Auditai.Model.Cell cell = Table[mr.Index, ticketInputColumnVM.TableColumn.Index];
+				if (cell == null)
+				{
+					Debug.WriteLine($"[TicketInputTableVM] IsTableRowDataColumnEmpty_DynamicRowTicket: cell is null! mr.Index={mr.Index}, column.Index={ticketInputColumnVM.TableColumn.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
+					continue;
+				}
 				if (!cell.IsEmpty)
 				{
 					return false;
@@ -5156,6 +5166,11 @@ public class TicketInputTableVM
 			if (column != null)
 			{
 				Auditai.Model.Cell cell = Table[mr.Index, column.Index];
+				if (cell == null)
+				{
+					Debug.WriteLine($"[TicketInputTableVM] IsTableRowKeyColumnEmpty_DynamicRowTicket: cell is null! mr.Index={mr.Index}, column.Index={column.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
+					continue;
+				}
 				if (!cell.IsEmpty)
 				{
 					return false;
@@ -5172,6 +5187,20 @@ public class TicketInputTableVM
 	public bool IsKeyCellsRefTableRowBeNewAddedRow_DynamicRow()
 	{
 		return DynamicRowKeyCellsRefEmptyTableRow != null;
+	}
+
+	public void ClearDynamicRowKeyCellsRefIfRowDeleted(Auditai.Model.Row deletedRow)
+	{
+		if (deletedRow == null || DynamicRowKeyCellsRefEmptyTableRow != deletedRow)
+		{
+			return;
+		}
+		DynamicRowKeyCellsRefEmptyTableRow = null;
+		foreach (TicketInputCellVM dynamicRowKeyCell in DynamicRowKeyCells)
+		{
+			dynamicRowKeyCell.TableCell = null;
+			dynamicRowKeyCell.TempCell = null;
+		}
 	}
 
 	public bool IsFixedOneRowTicketRefTableRowEmpty()

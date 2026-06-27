@@ -449,7 +449,6 @@ public class dlgProjectEditor : C1RibbonForm
 
 	private async Task PopulateTeamUsers()
 	{
-		_ = 1;
 		try
 		{
 			if (StorageRouter.IsLocalMode)

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10629,8 +10629,13 @@ public class TableEditor : ISetTheme
 		{
 			cell.UpdateCollectSource(frmCellCollect.Formula);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			ex.Log("单元格采账设置确定时出现异常");
+			if (!string.IsNullOrEmpty(frmCellCollect.Formula))
+			{
+				cell.UpdateCollectSource(frmCellCollect.Formula);
+			}
 		}
 	}
 
@@ -10707,8 +10712,6 @@ public class TableEditor : ISetTheme
 		}
 		else
 		{
-			_ = e.Button;
-			_ = 1048576;
 		}
 	}
 
