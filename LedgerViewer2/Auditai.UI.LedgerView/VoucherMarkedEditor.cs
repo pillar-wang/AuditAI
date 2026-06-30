@@ -339,6 +339,8 @@ public class VoucherMarkedEditor : ISetTheme
 	{
 		grdVouchers.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdDetail.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdVouchers.Styles.Fixed.Font = grdVouchers.Font;
+		grdDetail.Styles.Fixed.Font = grdDetail.Font;
 		Tree.Styles.Fixed.Border.Width = 0;
 		Tree.Styles.Normal.Border.Width = 0;
 		Tree.Styles.EmptyArea.BackColor = Color.Transparent;

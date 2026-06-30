@@ -46,7 +46,7 @@ public class TableListDropDownForm : ListDropDownFormBase
 			AllowMergingFixed = AllowMergingEnum.None,
 			AllowSorting = AllowSortingEnum.None,
 			SelectionMode = SelectionModeEnum.Row,
-			Font = new Font("微软雅黑", 9f)
+			Font = new Font("Noto Sans SC", 9f)
 		};
 		Grid.Cols.Count = 0;
 		Grid.Cols.Fixed = 0;

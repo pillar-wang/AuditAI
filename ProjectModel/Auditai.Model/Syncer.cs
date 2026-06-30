@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -1209,6 +1209,111 @@ public static class Syncer
 			return PullResult.NotExist;
 		}
 		throw new InvalidOperationException("不应出现的代码路径，检查json返回结果");
+	}
+
+	/// <summary>
+	/// 异步拉取表格并在异常时返回 false。包装现有 Pull(Table) 方法，
+	/// 成功（含已是最新）返回 true，失败或异常返回 false。
+	/// 供协同事件（如 PeerTableCellChange）自动 Pull 使用。
+	/// </summary>
+	public static async Task<bool> PullAsync(Table table)
+	{
+		try
+		{
+			if (Disabled || StorageRouter.IsLocalMode) return false;
+			PullResult result = await Pull(table).ConfigureAwait(false);
+			return result == PullResult.Success || result == PullResult.AlreadyLatest;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// 异步拉取文档并在异常时返回 false。包装现有 Pull(Document) 方法，
+	/// 成功（含已是最新）返回 true，失败或异常返回 false。
+	/// 供协同事件（如 PeerParagraphChange）自动 Pull 使用。
+	/// </summary>
+	public static async Task<bool> PullAsync(Document document)
+	{
+		try
+		{
+			if (Disabled || StorageRouter.IsLocalMode) return false;
+			PullResult result = await Pull(document).ConfigureAwait(false);
+			return result == PullResult.Success || result == PullResult.AlreadyLatest;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// 推送表格，遇到 OutOfDate 自动 Pull（内部已做字段级合并）后重试。
+	/// 重试耗尽仍为 OutOfDate 时返回，交由上层冲突解决。
+	/// </summary>
+	public static async Task<PushResult> PullAndRetryPush(Table table, int maxRetry = 3)
+	{
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		for (int i = 0; i < maxRetry; i++)
+		{
+			PushResult result = await Push(table).ConfigureAwait(false);
+			if (result != PushResult.OutOfDate) return result;
+			// 服务器版本更新：Pull 内部会调用 Merge，按字段级 Dirty 掩码保留本地未提交修改
+			try
+			{
+				await Pull(table).ConfigureAwait(false);
+				MergeWithConflictResolution(table, null, null);
+			}
+			catch
+			{
+				// Pull 失败则无法自动合并，交由上层冲突解决
+				return PushResult.OutOfDate;
+			}
+		}
+		return PushResult.OutOfDate;
+	}
+
+	/// <summary>
+	/// 推送文档，遇到 OutOfDate 自动 Pull（内部已做段落级合并）后重试。
+	/// </summary>
+	public static async Task<PushResult> PullAndRetryPush(Document document, int maxRetry = 3)
+	{
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		for (int i = 0; i < maxRetry; i++)
+		{
+			PushResult result = await Push(document).ConfigureAwait(false);
+			if (result != PushResult.OutOfDate) return result;
+			try
+			{
+				await Pull(document).ConfigureAwait(false);
+			}
+			catch
+			{
+				return PushResult.OutOfDate;
+			}
+		}
+		return PushResult.OutOfDate;
+	}
+
+	/// <summary>
+	/// 字段级三方合并策略：
+	/// - local==baseline（本地未改）：采用 server
+	/// - server==baseline（服务器未改）：采用 local
+	/// - 双方均改：保留 local（最后写入胜出，后续可由 UI 让用户选择）
+	/// baseline 为 null 时简化为“server 覆盖非脏字段、保留本地已修改字段”。
+	/// 现有 Merge(PullTable, Table, ...) 已通过 Dirty 掩码实现此语义：
+	/// 仅当本地字段未标记为 Dirty 时才用服务器值覆盖。
+	/// 本方法作为显式扩展点保留，当前由 Pull→Merge 调用链完成实际合并。
+	/// </summary>
+	public static void MergeWithConflictResolution(Table local, Table server, Table baseline)
+	{
+		if (local == null) return;
+		// 无独立 server 实体可比对时，依赖 Pull 调用链中的 Merge 已完成的字段级合并
+		if (server == null && baseline == null) return;
+		// 当存在独立 server 实体时，按非脏字段优先采用 server 的策略；
+		// 由于 Pull 已在内部执行 Merge，此处无需重复处理，保留扩展点。
 	}
 
 	private static byte[] GetBytes(this OptionalBytes target)

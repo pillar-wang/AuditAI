@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using FileTransferModel;
 using Auditai.DTO;
@@ -53,6 +53,12 @@ public class MemberManager
 	public event EventHandler<string> AfterRecieveCancel;
 
 	public event EventHandler<Tuple<string, string, string, string>> OpenTicketNavTreeNodeChanged;
+
+	// P2 协同增强 Task 8：新项目/模板广播到达事件
+	public event Action<Guid> NewProjectArrived;
+
+	// P2 协同增强 Task 9：对端段落编辑状态广播
+	public event Action<long, string> PeerParagraphEdit;
 
 	public static MemberManager GetInstance()
 	{
@@ -250,6 +256,18 @@ public class MemberManager
 	public void OnRepopulate()
 	{
 		this.RePopulate?.Invoke(this, EventArgs.Empty);
+	}
+
+	// P2 协同增强 Task 8：通知订阅方有新项目/模板到达
+	public void OnNewProjectArrived(Guid projectId)
+	{
+		NewProjectArrived?.Invoke(projectId);
+	}
+
+	// P2 协同增强 Task 9：通知订阅方对端正在编辑某段落
+	public void OnPeerParagraphEdit(long userId, string paragraphId)
+	{
+		PeerParagraphEdit?.Invoke(userId, paragraphId);
 	}
 
 	private MemberManager()

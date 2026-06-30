@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -898,7 +898,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.grdProjectMembers.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdProjectMembers.ColumnInfo = "0,0,0,0,0,100,Columns:";
 		this.grdProjectMembers.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.grdProjectMembers.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdProjectMembers.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdProjectMembers.Location = new System.Drawing.Point(0, 0);
 		this.grdProjectMembers.Name = "grdProjectMembers";
 		this.grdProjectMembers.Rows.Count = 0;
@@ -916,7 +916,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.grdTeamMembers.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdTeamMembers.ColumnInfo = "0,0,0,0,0,100,Columns:";
 		this.grdTeamMembers.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.grdTeamMembers.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdTeamMembers.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdTeamMembers.Location = new System.Drawing.Point(0, 0);
 		this.grdTeamMembers.Name = "grdTeamMembers";
 		this.grdTeamMembers.Rows.Count = 0;
@@ -967,7 +967,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.lblSelfName.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
 		this.lblSelfName.BackColor = System.Drawing.Color.Transparent;
 		this.lblSelfName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblSelfName.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblSelfName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblSelfName.ForeColor = System.Drawing.Color.Black;
 		this.lblSelfName.Location = new System.Drawing.Point(355, 3);
 		this.lblSelfName.Name = "lblSelfName";
@@ -986,7 +986,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.btnChangeHeader.TabStop = false;
 		this.lblchatName.BackColor = System.Drawing.Color.Transparent;
 		this.lblchatName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblchatName.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblchatName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblchatName.ForeColor = System.Drawing.Color.Black;
 		this.lblchatName.Location = new System.Drawing.Point(39, 2);
 		this.lblchatName.Name = "lblchatName";
@@ -1041,7 +1041,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.c1ToolBar1.CommandHolder = this.c1CommandHolder1;
 		this.c1ToolBar1.CommandLinks.AddRange(new C1.Win.C1Command.C1CommandLink[3] { this.c1CommandLink4, this.c1CommandLink5, this.c1CommandLink6 });
 		this.c1ToolBar1.Dock = System.Windows.Forms.DockStyle.Right;
-		this.c1ToolBar1.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1ToolBar1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1ToolBar1.Location = new System.Drawing.Point(539, 0);
 		this.c1ToolBar1.Movable = false;
 		this.c1ToolBar1.Name = "c1ToolBar1";
@@ -1080,7 +1080,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.pnlSendButton.SizeRatio = 27.778;
 		this.pnlSendButton.TabIndex = 1;
 		this.btnSend.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnSend.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnSend.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnSend.Location = new System.Drawing.Point(516, 14);
 		this.btnSend.Name = "btnSend";
 		this.btnSend.Size = new System.Drawing.Size(75, 23);
@@ -1097,7 +1097,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.pnlSendContent.TabIndex = 0;
 		this.txtMessage.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.txtMessage.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.txtMessage.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtMessage.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtMessage.Location = new System.Drawing.Point(0, 0);
 		this.txtMessage.Multiline = true;
 		this.txtMessage.Name = "txtMessage";

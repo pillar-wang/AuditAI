@@ -1,5 +1,6 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Auditai.Model;
 
 namespace AuditAI.McpServer.State
@@ -112,6 +113,136 @@ namespace AuditAI.McpServer.State
                     status.IsCompleted = true;
             }
         }
+
+        // ===== 云端测试上下文 =====
+        //
+        // 说明：所有云端测试状态已迁移至 TestSession 实例中（CurrentSession）。
+        // 此处保留静态属性仅为向后兼容，内部均委托到 CurrentSession 对应字段，
+        // 确保每个会话拥有独立的状态空间，避免多会话/多线程并发时的竞争条件。
+        //
+        // 多会话访问通过 _sessionLock 进行同步，避免 Dictionary 并发写入异常。
+
+        public static TestResponse LastResponse
+        {
+            get => CurrentSession.LastResponse;
+            set => CurrentSession.LastResponse = value;
+        }
+
+        public static string CurrentAuthToken
+        {
+            get => CurrentSession.AuthToken;
+            set => CurrentSession.AuthToken = value;
+        }
+
+        public static long CurrentUserId
+        {
+            get => CurrentSession.UserId;
+            set => CurrentSession.UserId = value;
+        }
+
+        public static Guid? CurrentTeamId
+        {
+            get => CurrentSession.TeamId;
+            set => CurrentSession.TeamId = value;
+        }
+
+        public static Guid? CurrentProjectId
+        {
+            get => CurrentSession.ProjectId;
+            set => CurrentSession.ProjectId = value;
+        }
+
+        public static HttpClient CurrentHttpClient
+        {
+            get => CurrentSession.HttpClient;
+            set => CurrentSession.HttpClient = value;
+        }
+
+        // 多会话隔离
+        private static readonly object _sessionLock = new object();
+        private static readonly Dictionary<string, TestSession> _testSessions = new Dictionary<string, TestSession>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 返回会话字典的快照（线程安全）。仅在需要遍历所有会话时使用；
+        /// 不要通过返回值直接增删会话，请改用 GetOrCreateSession / RemoveSession。
+        /// </summary>
+        public static Dictionary<string, TestSession> TestSessions
+        {
+            get
+            {
+                lock (_sessionLock)
+                {
+                    return new Dictionary<string, TestSession>(_testSessions, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+        }
+
+        public static TestSession GetOrCreateSession(string sessionName)
+        {
+            if (string.IsNullOrEmpty(sessionName))
+                sessionName = "main";
+
+            lock (_sessionLock)
+            {
+                if (!_testSessions.TryGetValue(sessionName, out var session))
+                {
+                    session = new TestSession
+                    {
+                        SessionName = sessionName,
+                        HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) }
+                    };
+                    _testSessions[sessionName] = session;
+                }
+                return session;
+            }
+        }
+
+        /// <summary>
+        /// 移除指定会话（Dispose HttpClient 并从字典删除）。线程安全。
+        /// </summary>
+        public static bool RemoveSession(string sessionName)
+        {
+            if (string.IsNullOrEmpty(sessionName))
+                return false;
+
+            lock (_sessionLock)
+            {
+                if (_testSessions.TryGetValue(sessionName, out var session))
+                {
+                    try { session.HttpClient?.Dispose(); } catch { /* 忽略 Dispose 异常 */ }
+                    _testSessions.Remove(sessionName);
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 原子地替换指定会话：若已存在则先 Dispose 旧 HttpClient，再用新会话覆盖。线程安全。
+        /// 用于 BeginSession 场景（重置会话状态）。
+        /// </summary>
+        public static void ReplaceSession(string sessionName, TestSession session)
+        {
+            if (string.IsNullOrEmpty(sessionName))
+                sessionName = "main";
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+
+            lock (_sessionLock)
+            {
+                if (_testSessions.TryGetValue(sessionName, out var existing))
+                {
+                    try { existing.HttpClient?.Dispose(); } catch { /* 忽略 Dispose 异常 */ }
+                }
+                _testSessions[sessionName] = session;
+            }
+        }
+
+        public static TestSession CurrentSession => GetOrCreateSession("main");
+
+        // 测试断言结果收集（委托到 CurrentSession，确保会话隔离）
+        public static List<AssertionResult> AssertionResults => CurrentSession.AssertionResults;
+        public static void ClearAssertionResults() => CurrentSession.ClearAssertionResults();
     }
 
     /// <summary>
@@ -125,5 +256,18 @@ namespace AuditAI.McpServer.State
         public string Error { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime StartTime { get; set; } = DateTime.Now;
+    }
+
+    /// <summary>
+    /// 测试断言结果
+    /// </summary>
+    public class AssertionResult
+    {
+        public string AssertionType { get; set; }
+        public bool Passed { get; set; }
+        public string Actual { get; set; }
+        public string Expected { get; set; }
+        public string Message { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 }

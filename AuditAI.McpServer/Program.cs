@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Configuration;
 
 namespace AuditAI.McpServer
@@ -47,6 +47,29 @@ namespace AuditAI.McpServer
             AuditAI.McpServer.Tools.FormulaInspectionTools.Register();
             AuditAI.McpServer.Tools.NodeSearchTools.Register();
             AuditAI.McpServer.Tools.ImportTools.Register();
+
+            // 加载云端验证测试夹具（Task 3）
+            try
+            {
+                AuditAI.McpServer.Services.TestFixtures.Load();
+                Console.Error.WriteLine("[Program] TestFixtures loaded.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[Program] TestFixtures.Load failed: " + ex.Message);
+            }
+
+            // 云端全自动验证平台工具集（Task 4-10）
+            AuditAI.McpServer.Tools.CloudApiTools.Register();
+            AuditAI.McpServer.Tools.AssertionTools.Register();
+            AuditAI.McpServer.Tools.SignalRTestTools.Register();
+            AuditAI.McpServer.Tools.ScenarioTools.Register();
+            AuditAI.McpServer.Tools.ServerOpsTools.Register();
+            AuditAI.McpServer.Tools.AutoFixTools.Register();
+            AuditAI.McpServer.Tools.TestReportTools.Register();
+            AuditAI.McpServer.Tools.CollaborationReadinessTools.Register();
+            AuditAI.McpServer.Tools.AcceptanceReportTools.Register();
+            Console.Error.WriteLine("[Program] Cloud verification toolsets registered.");
 
             // 启动 MCP 协议主循环
             AuditAI.McpServer.Protocol.McpServer.Run();

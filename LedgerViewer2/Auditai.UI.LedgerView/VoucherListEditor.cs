@@ -1008,6 +1008,7 @@ public class VoucherListEditor : ISetTheme
 	public void SetTheme()
 	{
 		_grid.Styles.Fixed.Border.Color = Color.DarkGray;
+		_grid.Styles.Fixed.Font = _grid.Font;
 		Tree.Styles.Alternate.BackColor = Color.Transparent;
 		Tree.Styles.Fixed.Border.Width = 0;
 		Tree.Styles.Normal.Border.Width = 0;

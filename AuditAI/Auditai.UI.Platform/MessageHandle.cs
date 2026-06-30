@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -146,6 +146,8 @@ public class MessageHandle
 					}
 					member12.UserState.DocParagraphId = e.ParagraphId;
 					manager.OnDocParagraphChanged(result4);
+					// P2 协同增强 Task 9：通知订阅方对端正在编辑该段落
+					manager.OnPeerParagraphEdit(result4, e.ParagraphId);
 				}
 				break;
 			}
@@ -349,9 +351,15 @@ public class MessageHandle
 					break;
 				}
 				Member member20 = manager.GetMember(e.FromId);
-				if (member20 != null && !(e.FromId == text) && NotifyMessage.TryParse(e.Message, out var mpg4))
+			if (member20 != null && !(e.FromId == text) && NotifyMessage.TryParse(e.Message, out var mpg4))
+			{
+				// P2 协同增强 Task 8：新项目/模板广播到达，通知订阅方刷新项目列表
+				if (mpg4.Kind == "newproject" && mpg4.Value != null
+					&& Guid.TryParse(mpg4.Value.ToString(), out var newProjectId))
 				{
-					string projectId2 = SignalRClient.UserState.ProjectId;
+					manager.OnNewProjectArrived(newProjectId);
+				}
+				string projectId2 = SignalRClient.UserState.ProjectId;
 					TempRecord item3 = new TempRecord
 					{
 						ChatId = projectId2,

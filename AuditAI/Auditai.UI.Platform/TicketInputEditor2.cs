@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -954,7 +954,7 @@ public class TicketInputEditor2 : ISetTheme
 			Alignment = StringAlignment.Center,
 			LineAlignment = StringAlignment.Center
 		};
-		_rowNumberFont = new Font("微软雅黑", 9f);
+		_rowNumberFont = new Font("Noto Sans SC", 9f);
 		_dateEdit.EditFormat.FormatType = FormatTypeEnum.CustomFormat;
 		_timeEdit.FormatType = FormatTypeEnum.CustomFormat;
 		_timeEdit.ErrorInfo.ShowErrorMessage = false;

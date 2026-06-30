@@ -1,0 +1,22 @@
+{
+  "projects": [
+    {
+      "name": "测试项目-2025审计",
+      "year": 2025,
+      "templateType": "audit",
+      "ownerUserName": "admin",
+      "teamName": "测试团队A",
+      "tableNodeName": "资产负债表",
+      "documentNodeName": "审计报告"
+    },
+    {
+      "name": "测试项目-2024审计",
+      "year": 2024,
+      "templateType": "audit",
+      "ownerUserName": "testuser1",
+      "teamName": "测试团队B",
+      "tableNodeName": "利润表",
+      "documentNodeName": "管理建议书"
+    }
+  ]
+}

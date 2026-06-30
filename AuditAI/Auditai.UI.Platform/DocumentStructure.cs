@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -656,7 +656,7 @@ public class DocumentStructure : ISetTheme
 			// 绘制标签
 			string label = isStart ? "起" : "止";
 			using (var brush = new SolidBrush(Color.White))
-			using (var font = new Font("微软雅黑", 9, FontStyle.Bold))
+			using (var font = new Font("Noto Sans SC", 9, FontStyle.Bold))
 			{
 				var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
 				e.Graphics.DrawString(label, font, brush, e.Bounds, sf);

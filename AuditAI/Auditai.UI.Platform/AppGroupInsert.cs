@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using Auditai.UI.Platform.Properties;
 
 namespace Auditai.UI.Platform;
@@ -12,6 +12,7 @@ public class AppGroupInsert : AppCommandGroup
 	public AppGroupInsert()
 	{
 		base.Commands.Add(AppCommands.InsertRefTable);
+		base.Commands.Add(AppCommands.InsertVariable);
 		base.Commands.Add(AppCommands.InsertMisc);
 	}
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -477,7 +477,7 @@ public class MainForm
 		View = new C1RibbonForm
 		{
 			WindowState = FormWindowState.Maximized,
-			Font = new Font("微软雅黑", Control.DefaultFont.Size),
+			Font = new Font("Noto Sans SC", Control.DefaultFont.Size),
 			Icon = Resources.icon,
 			VisualStyle = C1.Win.C1Ribbon.VisualStyle.Custom,
 			Size = new Size(1024, 768)
@@ -588,6 +588,8 @@ public class MainForm
 		MemberManager.GetInstance().PushTreeNode += MainForm_PushTreeNode;
 		MemberManager.GetInstance().RecieveFileMesssage += MainForm_RecieveFileMesssage;
 		MemberManager.GetInstance().MessageArrived += MainForm_MessageArrived;
+		// P2 协同增强 Task 8：订阅新项目/模板广播，刷新项目列表
+		MemberManager.GetInstance().NewProjectArrived += MainForm_NewProjectArrived;
 		try { _soundPlayer.Stream = Resources.NotifySound1; } catch { }
 		MultiLedgerViewer.IsShowToolBar = _showSideToolbar;
 		MultiLedgerViewer.AfterOpenLedger += MultiLedgerViewer_AfterOpenLedger;
@@ -602,6 +604,96 @@ public class MainForm
 		MemberManager.GetInstance().AfterSendComplete += MultiLedgerViewer.LedgerDefaultPanel.LedgerDefaultPanel_AfterSendComplete;
 		MemberManager.GetInstance().AfterSendCancel += MultiLedgerViewer.LedgerDefaultPanel.LedgerDefaultPanel_AfterSendCancel;
 		MemberManager.GetInstance().AfterRecieveCancel += MultiLedgerViewer.LedgerDefaultPanel.LedgerDefaultPanel_AfterRecieveCancel;
+		// P2 协同增强 Task 11：订阅网络状态变化，更新标题栏指示器
+		try
+		{
+			NetworkMonitor.Instance.NetworkStatusChanged += UpdateNetworkStatus;
+		}
+		catch { /* 订阅失败不影响主流程 */ }
+	}
+
+	// P2 协同增强 Task 11：标题栏网络状态指示器
+	// 在线 ● / 离线 ○，并显示待同步条目数
+	private DateTime _lastSyncTime = DateTime.Now;
+
+	private void UpdateNetworkStatus(bool online)
+	{
+		if (View == null) return;
+		try
+		{
+			if (View.InvokeRequired)
+			{
+				View.Invoke((Action<bool>)UpdateNetworkStatus, online);
+				return;
+			}
+			RefreshTitleBar();
+		}
+		catch
+		{
+			// UI 线程未就绪时忽略
+		}
+	}
+
+	/// <summary>
+	/// 刷新标题栏：在原有项目名 + 应用名后追加网络状态与待同步数。
+	/// 由 MainForm 自身在状态变化时调用，避免覆盖 PopulateProject 设置的项目名。
+	/// </summary>
+	private void RefreshTitleBar()
+	{
+		try
+		{
+			if (View == null || View.IsDisposed) return;
+			string baseTitle = GetAppName();
+			if (CurrentProject?.Dal != null)
+			{
+				baseTitle = CurrentProject.Name + " - " + baseTitle;
+			}
+			bool online = NetworkMonitor.Instance.IsOnline;
+			int pending = 0;
+			try { pending = OfflinePushQueue.Instance.Count; } catch { }
+			if (online)
+			{
+				View.Text = $"{baseTitle}  ● 在线 | 上次同步: {_lastSyncTime:HH:mm} | 待同步: {pending}";
+			}
+			else
+			{
+				View.Text = $"{baseTitle}  ○ 离线 | 待同步: {pending}";
+			}
+		}
+		catch
+		{
+			// 标题栏刷新失败不影响主流程
+		}
+	}
+
+	/// <summary>外部模块（如 Syncer）在完成同步后调用，更新"上次同步"时间。</summary>
+	public void NotifySynced()
+	{
+		_lastSyncTime = DateTime.Now;
+		RefreshTitleBar();
+	}
+
+	// P2 协同增强 Task 8：对端新建项目/模板到达，刷新最近项目列表
+	private void MainForm_NewProjectArrived(Guid projectId)
+	{
+		try
+		{
+			if (View == null) return;
+			if (View.InvokeRequired)
+				View.Invoke((Action)RefreshProjectListSafe);
+			else
+				RefreshProjectListSafe();
+		}
+		catch { }
+	}
+
+	private void RefreshProjectListSafe()
+	{
+		try
+		{
+			PopulateRecents();
+		}
+		catch { }
 	}
 
 	private void View_Deactivate(object sender, EventArgs e)
@@ -739,7 +831,60 @@ public class MainForm
 		}
 	}
 
-	private void MainForm_ProjectSynced(object sender, string e)
+	// 配置开关：AutoPullOnProjectSynced，默认启用（值不为 "false" 即启用）
+	// 通过 CollaborationConfig 统一读取 app.config（P2 协同增强 Task 12）
+	private static bool AutoPullEnabled => CollaborationConfig.AutoPullOnProjectSynced;
+
+	// 配置开关：AutoPushOnSave，默认启用（值不为 "false" 即启用）
+	// 通过 CollaborationConfig 统一读取 app.config（P2 协同增强 Task 12）
+	private static bool AutoPushEnabled => CollaborationConfig.AutoPushOnSave;
+
+	// 已订阅自动 Push 的实体 Id，避免重复订阅导致多次 Push
+	private readonly HashSet<Id64> _autoPushSubscribedTables = new HashSet<Id64>();
+	private readonly HashSet<Id64> _autoPushSubscribedDocuments = new HashSet<Id64>();
+
+	/// <summary>
+	/// 为表格订阅 Saved 事件以触发自动 Push（仅订阅一次）。
+	/// 失败时记录日志，不影响本地保存（后续离线队列可补传）。
+	/// </summary>
+	private void EnsureAutoPushSubscribed(Auditai.Model.Table table)
+	{
+		if (table == null || !_autoPushSubscribedTables.Add(table.Id)) return;
+		table.Saved += async (s, e) =>
+		{
+			if (!AutoPushEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			try
+			{
+				await Syncer.Push(table).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Auto Push (table) failed: " + ex.Message);
+			}
+		};
+	}
+
+	/// <summary>
+	/// 为文档订阅 Saved 事件以触发自动 Push（仅订阅一次）。
+	/// </summary>
+	private void EnsureAutoPushSubscribed(Auditai.Model.Document document)
+	{
+		if (document == null || !_autoPushSubscribedDocuments.Add(document.Id)) return;
+		document.Saved += async (s, e) =>
+		{
+			if (!AutoPushEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			try
+			{
+				await Syncer.Push(document).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine("Auto Push (document) failed: " + ex.Message);
+			}
+		};
+	}
+
+	private async void MainForm_ProjectSynced(object sender, string e)
 	{
 		_serverDataChangedProject[e] = true;
 		SyncTwinkle.Start();
@@ -747,6 +892,95 @@ public class MainForm
 		{
 			HandleSyncMessage(e);
 		}
+		// 自动后台 Pull：项目已打开且无未保存本地修改时，异步拉取最新项目结构
+		if (!AutoPullEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return;
+		}
+		Guid projectId;
+		if (!Guid.TryParse(e, out projectId))
+		{
+			return;
+		}
+		if (!IsProjectCurrentlyOpen(projectId) || HasUnsavedLocalChanges(projectId))
+		{
+			return;
+		}
+		Auditai.Model.Project proj;
+		if (!RecentProjects.TryGetValue(projectId, out proj))
+		{
+			return;
+		}
+		try
+		{
+			// 在 UI 线程异步等待，避免阻塞；Pull 内部 Merge 也在 UI 线程执行，避免与视图竞态
+			await Syncer.Pull(proj).ConfigureAwait(true);
+		}
+		catch (Exception ex)
+		{
+			// 记录日志，不显示给用户
+			Debug.WriteLine($"Auto Pull failed: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// 判断指定项目是否当前已打开。
+	/// </summary>
+	private bool IsProjectCurrentlyOpen(Guid projectId)
+	{
+		return RecentProjects.ContainsKey(projectId);
+	}
+
+	/// <summary>
+	/// 判断指定项目是否存在未保存的本地修改（表格/文档节点脏或表格 NeedSave）。
+	/// </summary>
+	private bool HasUnsavedLocalChanges(Guid projectId)
+	{
+		Auditai.Model.Project proj;
+		if (!RecentProjects.TryGetValue(projectId, out proj))
+		{
+			return false;
+		}
+		foreach (TreeTableNode ttn in proj.GetAllTableNodes())
+		{
+			if (ttn.IsEntityDirty) return true;
+			if (ttn.Table != null && ttn.Table.NeedSave) return true;
+		}
+		foreach (TreeDocumentNode dtn in proj.GetAllDocumentNodes())
+		{
+			if (dtn.IsEntityDirty) return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// 冲突解决提示（简化版）：OutOfDate 重试耗尽后提示用户本地修改已被他人覆盖性修改。
+	/// </summary>
+	private void ShowConflictResolutionDialog(object entity)
+	{
+		string display = string.Empty;
+		Auditai.Model.Table t = entity as Auditai.Model.Table;
+		if (t != null && t.TreeNode != null)
+		{
+			display = t.TreeNode.Name;
+		}
+		else
+		{
+			Auditai.Model.Document d = entity as Auditai.Model.Document;
+			if (d != null && d.TreeNode != null)
+			{
+				display = d.TreeNode.Name;
+			}
+		}
+		if (string.IsNullOrEmpty(display))
+		{
+			display = entity == null ? string.Empty : entity.ToString();
+		}
+		System.Windows.Forms.MessageBox.Show(
+			"\"" + display + "\" 已被他人修改，请确认本地修改是否保留",
+			"冲突解决",
+			MessageBoxButtons.OK,
+			MessageBoxIcon.Warning);
 	}
 
 	public async Task<Auditai.Model.Project> OpenOrSwitchToProject(Guid id, string willOpenProjectTypeName = null)
@@ -1539,7 +1773,7 @@ public class MainForm
 			PageSetupWaterMark.WaterMarkSetting waterMarkSetting = new PageSetupWaterMark.WaterMarkSetting();
 			waterMarkSetting.LeftText = platformName;
 			waterMarkSetting.RightText = empty;
-			waterMarkSetting.FontName = "微软雅黑";
+			waterMarkSetting.FontName = "Noto Sans SC";
 			waterMarkSetting.Height = 12.0;
 			pageSetupWaterMark = new PageSetupWaterMark();
 			pageSetupWaterMark.Header = waterMarkSetting;
@@ -1958,6 +2192,7 @@ public class MainForm
 			}
 			try
 			{
+				EnsureAutoPushSubscribed(tables[j]);
 				tables[j].Save(null, bypassMapRowIndex: false, progressUpdater);
 			}
 			catch (Exception ex2)
@@ -1979,10 +2214,11 @@ public class MainForm
 				try
 				{
 					Progress<Tuple<int, int>> iProg = new Progress<Tuple<int, int>>(delegate
-					{
-					});
-					pair.kv.Value.SaveToModel(iProg);
-					pair.kv.Value.Document.Save();
+				{
+				});
+				pair.kv.Value.SaveToModel(iProg);
+				EnsureAutoPushSubscribed(pair.kv.Key);
+				pair.kv.Value.Document.Save();
 				}
 				catch (ParagraphTooLongException ex)
 				{
@@ -1997,6 +2233,7 @@ public class MainForm
 			{
 				progressUpdater.UpdateMessage("正在保存文档 " + document.TreeNode.Name);
 				progressUpdater.UpdateProgress(hasProcessCount++, totalCount);
+				EnsureAutoPushSubscribed(document);
 				document.Save();
 			}
 		}
@@ -2276,8 +2513,16 @@ public class MainForm
 				doc.LoadAndReturn();
 				try
 				{
-					await Syncer.Push(doc);
-					anyEntityPushed = true;
+					PushResult docPushResult = await Syncer.PullAndRetryPush(doc);
+					if (docPushResult == PushResult.Success)
+					{
+						anyEntityPushed = true;
+					}
+					else if (docPushResult == PushResult.OutOfDate)
+					{
+						// 重试耗尽仍冲突，提示用户手动解决
+						ShowConflictResolutionDialog(doc);
+					}
 				}
 				catch (Exception ex2)
 				{
@@ -2424,8 +2669,16 @@ public class MainForm
 			{
 				try
 				{
-					await Syncer.Push(table);
-					anyEntityPushed = true;
+					PushResult tablePushResult = await Syncer.PullAndRetryPush(table);
+					if (tablePushResult == PushResult.Success)
+					{
+						anyEntityPushed = true;
+					}
+					else if (tablePushResult == PushResult.OutOfDate)
+					{
+						// 重试耗尽仍冲突，提示用户手动解决
+						ShowConflictResolutionDialog(table);
+					}
 				}
 				catch (Exception ex7)
 				{

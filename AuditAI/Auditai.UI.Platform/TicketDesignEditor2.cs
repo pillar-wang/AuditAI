@@ -236,11 +236,11 @@ public class TicketDesignEditor2
 
 	private static readonly SolidBrush _brushText = new SolidBrush(Color.Black);
 
-	private static readonly Font _columnNameFont = new Font("微软雅黑", 7f);
+	private static readonly Font _columnNameFont = new Font("Noto Sans SC", 7f);
 
 	private static readonly SolidBrush _columnNameBrush = new SolidBrush(Color.Gray);
 
-	private static readonly Font _rowNumberFont = new Font("微软雅黑", 9f);
+	private static readonly Font _rowNumberFont = new Font("Noto Sans SC", 9f);
 
 	private static readonly SolidBrush _rowNumberBrush = new SolidBrush(Color.Gray);
 

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -2333,19 +2333,45 @@ public class TableEditor : ISetTheme
 
 	private void CmdRemoveFormula_Click(object sender, ClickEventArgs e)
 	{
-		C1.Win.C1FlexGrid.CellRange bodySelection = _grid.BodySelection;
-		for (int i = bodySelection.TopRow; i <= bodySelection.BottomRow; i++)
+		try
 		{
-			for (int j = bodySelection.LeftCol; j <= bodySelection.RightCol; j++)
+			C1.Win.C1FlexGrid.CellRange bodySelection = _grid.BodySelection;
+			File.AppendAllText("E:\\trace_remove_formula.log", $"[{DateTime.Now:HH:mm:ss.fff}] CmdRemoveFormula_Click: TopRow={bodySelection.TopRow}, BottomRow={bodySelection.BottomRow}, LeftCol={bodySelection.LeftCol}, RightCol={bodySelection.RightCol}, Table={(_table?.GetType().Name ?? "null")}\r\n");
+			int processedCount = 0;
+			int skippedNullCount = 0;
+			int skippedNoPermCount = 0;
+			for (int i = bodySelection.TopRow; i <= bodySelection.BottomRow; i++)
 			{
-				Auditai.Model.Cell cell = _table[i, j];
-				if (CanEditRow(cell.Row) && CanEditColumn(cell.Column))
+				for (int j = bodySelection.LeftCol; j <= bodySelection.RightCol; j++)
 				{
-					cell.UpdateFormula(string.Empty);
+					Auditai.Model.Cell cell = _table[i, j];
+					if (cell == null)
+					{
+						skippedNullCount++;
+						continue;
+					}
+					if (CanEditRow(cell.Row) && CanEditColumn(cell.Column))
+					{
+						bool hadFormula = cell.HasFormula;
+						cell.UpdateFormula(string.Empty);
+						processedCount++;
+						File.AppendAllText("E:\\trace_remove_formula.log", $"  -> Cell[{i},{j}] processed. HadFormula={hadFormula}, NowFormula='{cell.Formula}'\r\n");
+					}
+					else
+					{
+						skippedNoPermCount++;
+					}
 				}
 			}
+			File.AppendAllText("E:\\trace_remove_formula.log", $"  Summary: processed={processedCount}, skippedNull={skippedNullCount}, skippedNoPerm={skippedNoPermCount}\r\n");
+			SetFormulaContext();
+			_grid.Invalidate();
 		}
-		SetFormulaContext();
+		catch (Exception ex)
+		{
+			ex.Log("CmdRemoveFormula_Click 执行时发生了未预期的异常");
+			File.AppendAllText("E:\\trace_remove_formula.log", $"[{DateTime.Now:HH:mm:ss.fff}] EXCEPTION: {ex}\r\n");
+		}
 	}
 
 	private void CmdPasteColumnFormula_Click(object sender, ClickEventArgs e)
@@ -8930,13 +8956,59 @@ public class TableEditor : ISetTheme
 		MemberManager.GetInstance().TableCellChanged += TableEditor_TableCellChanged;
 	}
 
-	private void TableEditor_TableCellChanged(object sender, long e)
+	// 自动 Pull 防抖：5 秒内同一表格的多次对端变更事件只 Pull 一次
+	private DateTime _lastPullTime = DateTime.MinValue;
+	private static readonly TimeSpan _pullDebounceInterval = TimeSpan.FromSeconds(5);
+
+	// 配置开关：AutoPullOnPeerEvent，默认启用（值不为 "false" 即启用）
+	// 通过 CollaborationConfig 统一读取 app.config（P2 协同增强 Task 12）
+	private static bool AutoPullOnPeerEventEnabled => CollaborationConfig.AutoPullOnPeerEvent;
+
+	private async void TableEditor_TableCellChanged(object sender, long e)
 	{
 		Program.MainForm.TableEditor.FlagSomeUserStayedCellChanged();
 		Program.MainForm.TicketInputEditor.FlagSomeUserStayedCellChanged();
 		Invalidate();
 		// 单元格变化后更新撤销/恢复按钮状态
 		Program.MainForm.UpdateUndoRedoButtonState();
+
+		// 自动 Pull：对端单元格变更后拉取最新数据（配置可控，默认启用）
+		if (!AutoPullOnPeerEventEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return;
+		}
+		Auditai.Model.Table currentTable = Table;
+		if (currentTable == null || currentTable.Project == null)
+		{
+			return;
+		}
+		// 防抖：间隔不足时跳过，避免高频事件触发过多 Pull
+		if (DateTime.Now - _lastPullTime < _pullDebounceInterval)
+		{
+			return;
+		}
+		_lastPullTime = DateTime.Now;
+		try
+		{
+			bool ok = await Syncer.PullAsync(currentTable).ConfigureAwait(false);
+			if (ok)
+			{
+				// TableEditor 非 Control，通过 MainForm.View 调度回 UI 线程刷新
+				var mainView = Program.MainForm?.View;
+				if (mainView != null && mainView.IsHandleCreated)
+				{
+					mainView.Invoke((Action)Invalidate);
+				}
+				else
+				{
+					Invalidate();
+				}
+			}
+		}
+		catch
+		{
+			// 静默忽略自动 Pull 异常，不影响 UI
+		}
 	}
 
 	public void SetTheme()

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -399,6 +399,7 @@ public class TrendencyEditor : ISetTheme
 	{
 		Auditai.UI.Controls.Theme.SetCurrentTree(View);
 		grdTrendTable.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdTrendTable.Styles.Fixed.Font = grdTrendTable.Font;
 		switch (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.Name)
 		{
 		case "auditai_Office2013LightGray":

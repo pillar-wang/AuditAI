@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -54,7 +54,7 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         this.Text = "跨项目数据引用状态仪表板";
         this.Size = new Size(850, 650);
         this.StartPosition = FormStartPosition.CenterScreen;
-        this.Font = new Font("Microsoft YaHei", 9f);
+        this.Font = new Font("Noto Sans SC", 9f);
         this.MinimumSize = new Size(700, 500);
 
         // 顶部关键指标卡片
@@ -66,10 +66,10 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         int startY = 20;
         var labels = new Dictionary<string, Label>
         {
-            {"引用总数", _lblTotalRefs = new Label{Text="0", Font=new Font("Microsoft YaHei", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
-            {"已启用", _lblEnabledRefs = new Label{Text="0", Font=new Font("Microsoft YaHei", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Green}},
-            {"异常", _lblErrorRefs = new Label{Text="0", Font=new Font("Microsoft YaHei", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Red}},
-            {"缓存命中", _lblCacheHitRate = new Label{Text="0%", Font=new Font("Microsoft YaHei", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
+            {"引用总数", _lblTotalRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
+            {"已启用", _lblEnabledRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Green}},
+            {"异常", _lblErrorRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Red}},
+            {"缓存命中", _lblCacheHitRate = new Label{Text="0%", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
         };
 
         int idx = 0;
@@ -82,7 +82,7 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
             };
-            var title = new Label { Text = kv.Key, Location = new Point(5, 5), AutoSize = true, ForeColor = Color.Gray, Font = new Font("Microsoft YaHei", 9f) };
+            var title = new Label { Text = kv.Key, Location = new Point(5, 5), AutoSize = true, ForeColor = Color.Gray, Font = new Font("Noto Sans SC", 9f) };
             kv.Value.Location = new Point(5, 30);
             card.Controls.Add(title);
             card.Controls.Add(kv.Value);

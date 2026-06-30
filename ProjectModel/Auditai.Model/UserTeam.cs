@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Auditai.DTO;
 
@@ -23,6 +23,10 @@ public class UserTeam
 	public PayStatus PayStatus { get; set; }
 
 	public int Type { get; set; }
+
+	public int EnterpriseId { get; set; }
+
+	public int PlanType { get; set; }
 
 	public TeamLevel Level { get; set; }
 

@@ -91,7 +91,7 @@ public class frmAdvancedFilter : C1RibbonForm
         _lblPreviewStats.AutoSize = true;
         _lblPreviewStats.BackColor = Color.Transparent;
         _lblPreviewStats.BorderStyle = BorderStyle.None;
-        _lblPreviewStats.Font = new Font("Microsoft YaHei", 9f, FontStyle.Bold);
+        _lblPreviewStats.Font = new Font("Noto Sans SC", 9f, FontStyle.Bold);
         _lblPreviewStats.ForeColor = Color.Black;
         _lblPreviewStats.Location = new Point(600, 12);
         _lblPreviewStats.Name = "_lblPreviewStats";
@@ -114,7 +114,7 @@ public class frmAdvancedFilter : C1RibbonForm
 
         // 添加条件按钮
         _btnAddCondition = new C1Button();
-        _btnAddCondition.Font = new Font("Microsoft YaHei", 9f);
+        _btnAddCondition.Font = new Font("Noto Sans SC", 9f);
         _btnAddCondition.Location = new Point(12, 400);
         _btnAddCondition.Name = "_btnAddCondition";
         _btnAddCondition.Size = new Size(90, 30);
@@ -125,7 +125,7 @@ public class frmAdvancedFilter : C1RibbonForm
 
         // 删除条件按钮
         _btnDeleteCondition = new C1Button();
-        _btnDeleteCondition.Font = new Font("Microsoft YaHei", 9f);
+        _btnDeleteCondition.Font = new Font("Noto Sans SC", 9f);
         _btnDeleteCondition.Location = new Point(108, 400);
         _btnDeleteCondition.Name = "_btnDeleteCondition";
         _btnDeleteCondition.Size = new Size(90, 30);
@@ -136,7 +136,7 @@ public class frmAdvancedFilter : C1RibbonForm
 
         // 清除所有条件按钮
         _btnClearAll = new C1Button();
-        _btnClearAll.Font = new Font("Microsoft YaHei", 9f);
+        _btnClearAll.Font = new Font("Noto Sans SC", 9f);
         _btnClearAll.Location = new Point(204, 400);
         _btnClearAll.Name = "_btnClearAll";
         _btnClearAll.Size = new Size(110, 30);
@@ -147,7 +147,7 @@ public class frmAdvancedFilter : C1RibbonForm
 
         // 预览按钮
         _btnPreview = new C1Button();
-        _btnPreview.Font = new Font("Microsoft YaHei", 9f);
+        _btnPreview.Font = new Font("Noto Sans SC", 9f);
         _btnPreview.Location = new Point(600, 320);
         _btnPreview.Name = "_btnPreview";
         _btnPreview.Size = new Size(90, 30);
@@ -159,7 +159,7 @@ public class frmAdvancedFilter : C1RibbonForm
         // 确定按钮
         _btnOk = new C1Button();
         _btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        _btnOk.Font = new Font("Microsoft YaHei", 9f);
+        _btnOk.Font = new Font("Noto Sans SC", 9f);
         _btnOk.Location = new Point(696, 530);
         _btnOk.Name = "_btnOk";
         _btnOk.Size = new Size(87, 33);
@@ -171,7 +171,7 @@ public class frmAdvancedFilter : C1RibbonForm
         // 取消按钮
         _btnCancel = new C1Button();
         _btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        _btnCancel.Font = new Font("Microsoft YaHei", 9f);
+        _btnCancel.Font = new Font("Noto Sans SC", 9f);
         _btnCancel.Location = new Point(789, 530);
         _btnCancel.Name = "_btnCancel";
         _btnCancel.Size = new Size(87, 33);
@@ -193,7 +193,7 @@ public class frmAdvancedFilter : C1RibbonForm
         this.Controls.Add(this._btnPreview);
         this.Controls.Add(this._btnOk);
         this.Controls.Add(this._btnCancel);
-        this.Font = new Font("Microsoft YaHei", 9f);
+        this.Font = new Font("Noto Sans SC", 9f);
         this.Name = "frmAdvancedFilter";
         this.StartPosition = FormStartPosition.CenterParent;
         this.Text = "高级筛选条件配置";

@@ -2440,6 +2440,8 @@ internal class SubsidiaryEditor : ISetTheme
 		btnCloseVoucher.FlatAppearance.MouseDownBackColor = Color.LightGray;
 		grdSubsidiary.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdVoucher.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdSubsidiary.Styles.Fixed.Font = grdSubsidiary.Font;
+		grdVoucher.Styles.Fixed.Font = grdVoucher.Font;
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
 			imageProcess.SetImageStrategy(new WhiteImageStrategy());

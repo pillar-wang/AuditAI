@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -793,6 +793,16 @@ public class Table
 		LoadAndReturn();
 	}
 
+	/// <summary>
+	/// 表格保存成功后触发，供订阅方执行自动 Push 等协同逻辑。
+	/// </summary>
+	public event EventHandler Saved;
+
+	protected virtual void OnSaved()
+	{
+		Saved?.Invoke(this, EventArgs.Empty);
+	}
+
 	public void Save(IProgress<ProgressInfo> progress = null, bool bypassMapRowIndex = false, TaskProgressValueUpdater taskProgressValueUpdater = null)
 	{
 		bool flag = false;
@@ -918,6 +928,7 @@ public class Table
 			}
 			throw;
 		}
+		OnSaved();
 	}
 
 	public void TagTitleDirty()

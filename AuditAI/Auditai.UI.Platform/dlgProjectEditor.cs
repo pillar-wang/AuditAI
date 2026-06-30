@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -632,7 +632,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.inputPanel.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.inputPanel.DesignScaleFactor = 1.293737f;
 		this.inputPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.inputPanel.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.inputPanel.Items.Add(this.inputGroupHeader1);
 		this.inputPanel.Items.Add(this.lblNumber);
 		this.inputPanel.Items.Add(this.txtNumber);
@@ -740,7 +740,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.pnlButtons.TabIndex = 1;
 		this.pnlButtons.Width = 846;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(749, 21);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -750,7 +750,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnOk.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnOk.Location = new System.Drawing.Point(656, 21);
 		this.btnOk.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnOk.Name = "btnOk";
@@ -781,7 +781,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.c1SplitterPanel1.Width = 8;
 		this.c1InputPanel2.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel2.Name = "c1InputPanel2";
 		this.c1InputPanel2.Size = new System.Drawing.Size(8, 421);
@@ -835,7 +835,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.DesignScaleFactor = 1.293737f;
 		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel1.Items.Add(this.inputGroupHeader2);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Margin = new System.Windows.Forms.Padding(0, 4, 3, 4);
@@ -856,7 +856,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.pnlEmpty.TabIndex = 4;
 		this.c1InputPanel3.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel3.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel3.Name = "c1InputPanel3";
 		this.c1InputPanel3.Size = new System.Drawing.Size(346, 16);
@@ -877,7 +877,7 @@ public class dlgProjectEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(846, 481);
 		base.Controls.Add(this.ctnMain);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

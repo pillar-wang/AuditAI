@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -299,6 +299,7 @@ internal class SummaryEditor : ISetTheme
 	public void SetTheme()
 	{
 		grdMonthSummary.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdMonthSummary.Styles.Fixed.Font = grdMonthSummary.Font;
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
 			imageProcess.SetImageStrategy(new WhiteImageStrategy());

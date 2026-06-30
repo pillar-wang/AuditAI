@@ -557,7 +557,7 @@ public class ReportPreview
 				renderText = ((j % 2 != 0) ? new RenderText(empty) : new RenderText(platformName));
 				TableCell tableCell = renderTable.Cells[i, j];
 				tableCell.RenderObject = renderText;
-				tableCell.Style.FontName = "微软雅黑";
+				tableCell.Style.FontName = "Noto Sans SC";
 				tableCell.Style.FontSize = 14f;
 				tableCell.Style.TextColor = Color.LightGray;
 				tableCell.Style.TextAngle = 45f;

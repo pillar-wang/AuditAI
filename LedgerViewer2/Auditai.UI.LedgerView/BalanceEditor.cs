@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1202,6 +1202,7 @@ internal class BalanceEditor : ISetTheme
 		btnBalanceBack.FlatAppearance.BorderSize = 0;
 		btnBalanceBack.FlatAppearance.MouseOverBackColor = Color.LightGray;
 		grdBalance.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdBalance.Styles.Fixed.Font = grdBalance.Font;
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
 			imageProcess.SetImageStrategy(new WhiteImageStrategy());

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -29,9 +29,8 @@ public class frmCrossProjectDataRef : Form
     /// </summary>
     public bool DataRefreshed { get; private set; }
 
-    // 名称查询缓存
-    private readonly Dictionary<Guid, string> _projectNameCache = new Dictionary<Guid, string>();
-    private readonly Dictionary<(Guid, long), string> _tableNameCache = new Dictionary<(Guid, long), string>();
+    // 项目元数据查询服务（带缓存）
+    private readonly ProjectMetadataService _metadataService = ProjectMetadataService.Instance;
 
     // UI 控件
     private Label _lblTitle;
@@ -105,6 +104,13 @@ public class frmCrossProjectDataRef : Form
                 }).ToList();
             }
 
+            // 批量预加载项目名称，减少数据库访问次数
+            var projectIdsToLoad = filteredList
+                .Where(item => string.IsNullOrEmpty(item.SourceProjectName))
+                .Select(item => item.SourceProjectId)
+                .Distinct();
+            var projectNames = await _metadataService.GetProjectNamesAsync(projectIdsToLoad);
+
             for (int i = 0; i < filteredList.Count; i++)
             {
                 var item = filteredList[i];
@@ -120,8 +126,14 @@ public class frmCrossProjectDataRef : Form
                 var (targetArea, sourceArea) = ParseRefConfigArea(item);
                 row[3] = targetArea;      // 目标区域
 
-                row[4] = !string.IsNullOrEmpty(item.SourceProjectName) ? item.SourceProjectName : await GetProjectNameByIdAsync(item.SourceProjectId);  // 来源项目
-                row[5] = !string.IsNullOrEmpty(item.SourceTableName) ? item.SourceTableName : await GetTableNameByIdAsync(item.SourceProjectId, item.SourceTableId);  // 来源表
+                // 来源项目（优先使用预加载的批量结果）
+                row[4] = !string.IsNullOrEmpty(item.SourceProjectName)
+                    ? item.SourceProjectName
+                    : (projectNames.TryGetValue(item.SourceProjectId, out var projName) ? projName : item.SourceProjectId.ToString());
+                // 来源表
+                row[5] = !string.IsNullOrEmpty(item.SourceTableName)
+                    ? item.SourceTableName
+                    : await _metadataService.GetTableNameAsync(item.SourceProjectId, item.SourceTableId);
                 row[6] = sourceArea;      // 数据来源区域
 
                 row[7] = GetRefModeDisplay(item.RefMode);  // 引用模式
@@ -285,163 +297,16 @@ public class frmCrossProjectDataRef : Form
     }
 
     /// <summary>
-    /// 通过项目ID获取项目名称（同步版本，用于非 UI 线程调用）
+    /// 通过项目ID获取项目名称（同步版本，委托给 ProjectMetadataService，保持向后兼容）
     /// </summary>
     internal static string GetProjectNameById(Guid projectId)
-    {
-        try
-        {
-            var projects = Task.Run(async () => await Auditai.LocalDataStore.StorageRouter.GetProjects()).GetAwaiter().GetResult();
-            var project = projects.FirstOrDefault(p => p.Id == projectId);
-            if (project != null)
-                return project.Name ?? projectId.ToString();
-
-            string dbPath = MainForm.GetDbPathByGuid(projectId);
-            if (!System.IO.File.Exists(dbPath))
-                return projectId.ToString();
-
-            var dal = new Auditai.DTO.ProjectDAL(dbPath);
-            var projectDto = dal.GetProject();
-            return projectDto?.Name ?? projectId.ToString();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
-            return projectId.ToString();
-        }
-    }
+        => ProjectMetadataService.GetProjectNameById(projectId);
 
     /// <summary>
-    /// 通过项目ID和表ID获取表格名称（同步版本，用于非 UI 线程调用）
+    /// 通过项目ID和表ID获取表格名称（同步版本，委托给 ProjectMetadataService，保持向后兼容）
     /// </summary>
     internal static string GetTableNameById(Guid projectId, Id64 tableId)
-    {
-        try
-        {
-            string dbPath = MainForm.GetDbPathByGuid(projectId);
-            if (!System.IO.File.Exists(dbPath))
-                return tableId.Value.ToString();
-
-            var dal = new Auditai.DTO.ProjectDAL(dbPath);
-            var dto = dal.GetProject();
-            if (dto == null)
-                return tableId.Value.ToString();
-
-            var project = new Auditai.Model.Project
-            {
-                Id = projectId,
-                Name = dto.Name,
-                Dal = dal
-            };
-            project.PopulateFieldsFromDto(dto);
-            project.Load();
-
-            var tableNode = project.GetAllTableNodes().FirstOrDefault(n => n.Id == tableId);
-            if (tableNode != null)
-                return tableNode.Number + " " + tableNode.Name;
-
-            var tableDto = dal.GetTable(tableId);
-            return tableDto?.Title ?? tableId.Value.ToString();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"获取表名称失败: {ex.Message}");
-            return tableId.Value.ToString();
-        }
-    }
-
-    /// <summary>
-    /// 通过项目ID异步获取项目名称（带缓存）
-    /// </summary>
-    private async Task<string> GetProjectNameByIdAsync(Guid projectId)
-    {
-        if (_projectNameCache.TryGetValue(projectId, out string cachedName))
-            return cachedName;
-
-        try
-        {
-            var projects = await Auditai.LocalDataStore.StorageRouter.GetProjects();
-            var project = projects.FirstOrDefault(p => p.Id == projectId);
-            if (project != null)
-            {
-                _projectNameCache[projectId] = project.Name ?? projectId.ToString();
-                return _projectNameCache[projectId];
-            }
-
-            string dbPath = MainForm.GetDbPathByGuid(projectId);
-            if (!System.IO.File.Exists(dbPath))
-            {
-                _projectNameCache[projectId] = projectId.ToString();
-                return _projectNameCache[projectId];
-            }
-
-            var dal = new Auditai.DTO.ProjectDAL(dbPath);
-            var projectDto = dal.GetProject();
-            _projectNameCache[projectId] = projectDto?.Name ?? projectId.ToString();
-            return _projectNameCache[projectId];
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
-            return projectId.ToString();
-        }
-    }
-
-    /// <summary>
-    /// 通过项目ID和表ID异步获取表格名称（带缓存）
-    /// </summary>
-    private async Task<string> GetTableNameByIdAsync(Guid projectId, Id64 tableId)
-    {
-        var key = (projectId, tableId.Value);
-        if (!_tableNameCache.TryGetValue(key, out string cachedName))
-        {
-            cachedName = await LoadTableNameFromDbAsync(projectId, tableId);
-            _tableNameCache[key] = cachedName;
-        }
-        return cachedName;
-    }
-
-    /// <summary>
-    /// 从数据库加载表格名称
-    /// </summary>
-    private async Task<string> LoadTableNameFromDbAsync(Guid projectId, Id64 tableId)
-    {
-        return await Task.Run(() =>
-        {
-            try
-            {
-                string dbPath = MainForm.GetDbPathByGuid(projectId);
-                if (!System.IO.File.Exists(dbPath))
-                    return tableId.Value.ToString();
-
-                var dal = new Auditai.DTO.ProjectDAL(dbPath);
-                var dto = dal.GetProject();
-                if (dto == null)
-                    return tableId.Value.ToString();
-
-                var project = new Auditai.Model.Project
-                {
-                    Id = projectId,
-                    Name = dto.Name,
-                    Dal = dal
-                };
-                project.PopulateFieldsFromDto(dto);
-                project.Load();
-
-                var tableNode = project.GetAllTableNodes().FirstOrDefault(n => n.Id == tableId);
-                if (tableNode != null)
-                    return tableNode.Number + " " + tableNode.Name;
-
-                var tableDto = dal.GetTable(tableId);
-                return tableDto?.Title ?? tableId.Value.ToString();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"获取表名称失败: {ex.Message}");
-                return tableId.Value.ToString();
-            }
-        });
-    }
+        => ProjectMetadataService.GetTableNameById(projectId, tableId);
 
     /// <summary>
     /// 获取当前项目中目标表的名称
@@ -712,10 +577,10 @@ public class frmCrossProjectDataRef : Form
         this._cmbStatusFilter = new C1ComboBox();
 
         // ---- 字体常量 ----
-        var fontTitle = new Font("Microsoft YaHei", 11f, FontStyle.Bold);
-        var fontNormal = new Font("Microsoft YaHei", 9f);
-        var fontBtn = new Font("Microsoft YaHei", 9f);
-        var fontBtnBold = new Font("Microsoft YaHei", 9f, FontStyle.Bold);
+        var fontTitle = new Font("Noto Sans SC", 11f, FontStyle.Bold);
+        var fontNormal = new Font("Noto Sans SC", 9f);
+        var fontBtn = new Font("Noto Sans SC", 9f);
+        var fontBtnBold = new Font("Noto Sans SC", 9f, FontStyle.Bold);
 
         // ---- 颜色常量（与向导/主界面一致） ----
         var colorHeaderBg = Color.FromArgb(0, 120, 215);       // 顶部标题栏深蓝
@@ -810,7 +675,7 @@ public class frmCrossProjectDataRef : Form
         this._grid.Styles.Normal.Border.Style = BorderStyleEnum.Flat;
         this._grid.Styles.Normal.Border.Width = 1;
         this._grid.Styles.Normal.Border.Color = Color.FromArgb(234, 236, 240);
-        this._grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 9.5f, FontStyle.Bold);
+        this._grid.Styles.Fixed.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
         this._grid.Styles.Fixed.ForeColor = Color.FromArgb(50, 55, 65);
         this._grid.Styles.Fixed.BackColor = colorGridFixedBg;
         this._grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
@@ -1097,14 +962,14 @@ internal class frmCrossProjectDataRefEditDialog : Form
 
             var treeView = new TreeView();
             treeView.Dock = DockStyle.Fill;
-            treeView.Font = new Font("Microsoft YaHei", 9f);
+            treeView.Font = new Font("Noto Sans SC", 9f);
             tableForm.Controls.Add(treeView);
 
             var btnOk = new Button();
             btnOk.Text = "选择此表格";
             btnOk.Dock = DockStyle.Bottom;
             btnOk.Height = 36;
-            btnOk.Font = new Font("Microsoft YaHei", 9f);
+            btnOk.Font = new Font("Noto Sans SC", 9f);
             btnOk.Click += (s, ev) =>
             {
                 if (treeView.SelectedNode?.Tag is TreeTableNode tableNode)
@@ -1174,8 +1039,8 @@ internal class frmCrossProjectDataRefEditDialog : Form
         _txtName.Text = _existing.Name;
 
         // 编辑模式下用已有数据显示，获取项目名称和表格名称
-        string projectName = frmCrossProjectDataRef.GetProjectNameById(_existing.SourceProjectId);
-        string tableName = frmCrossProjectDataRef.GetTableNameById(_existing.SourceProjectId, _existing.SourceTableId);
+        string projectName = ProjectMetadataService.GetProjectNameById(_existing.SourceProjectId);
+        string tableName = ProjectMetadataService.GetTableNameById(_existing.SourceProjectId, _existing.SourceTableId);
 
         _selectedProject = new Auditai.DTO.Project
         {
@@ -1266,20 +1131,20 @@ internal class frmCrossProjectDataRefEditDialog : Form
         this._btnOk = new C1Button();
         this._btnCancel = new C1Button();
 
-        var lblName = new Label { Text = "引用名称：", Location = new Point(12, 15), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(12, 48), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(12, 81), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(12, 114), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(12, 147), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(12, 180), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(12, 213), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(12, 246), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
-        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(12, 279), Size = new Size(100, 24), Font = new Font("Microsoft YaHei", 9f) };
+        var lblName = new Label { Text = "引用名称：", Location = new Point(12, 15), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(12, 48), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(12, 81), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(12, 114), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(12, 147), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(12, 180), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(12, 213), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(12, 246), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(12, 279), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
 
         //
         // _txtName
         //
-        this._txtName.Font = new Font("Microsoft YaHei", 9f);
+        this._txtName.Font = new Font("Noto Sans SC", 9f);
         this._txtName.Location = new Point(118, 12);
         this._txtName.Name = "_txtName";
         this._txtName.Size = new Size(350, 24);
@@ -1288,7 +1153,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtSourceProject
         //
-        this._txtSourceProject.Font = new Font("Microsoft YaHei", 9f);
+        this._txtSourceProject.Font = new Font("Noto Sans SC", 9f);
         this._txtSourceProject.Location = new Point(118, 45);
         this._txtSourceProject.Name = "_txtSourceProject";
         this._txtSourceProject.ReadOnly = true;
@@ -1299,7 +1164,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _btnSelectProject
         //
-        this._btnSelectProject.Font = new Font("Microsoft YaHei", 9f);
+        this._btnSelectProject.Font = new Font("Noto Sans SC", 9f);
         this._btnSelectProject.Location = new Point(382, 44);
         this._btnSelectProject.Name = "_btnSelectProject";
         this._btnSelectProject.Size = new Size(90, 26);
@@ -1310,7 +1175,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtSourceTable
         //
-        this._txtSourceTable.Font = new Font("Microsoft YaHei", 9f);
+        this._txtSourceTable.Font = new Font("Noto Sans SC", 9f);
         this._txtSourceTable.Location = new Point(118, 78);
         this._txtSourceTable.Name = "_txtSourceTable";
         this._txtSourceTable.ReadOnly = true;
@@ -1321,7 +1186,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _btnSelectTable
         //
-        this._btnSelectTable.Font = new Font("Microsoft YaHei", 9f);
+        this._btnSelectTable.Font = new Font("Noto Sans SC", 9f);
         this._btnSelectTable.Location = new Point(382, 77);
         this._btnSelectTable.Name = "_btnSelectTable";
         this._btnSelectTable.Size = new Size(90, 26);
@@ -1332,7 +1197,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtTargetTableId
         //
-        this._txtTargetTableId.Font = new Font("Microsoft YaHei", 9f);
+        this._txtTargetTableId.Font = new Font("Noto Sans SC", 9f);
         this._txtTargetTableId.Location = new Point(118, 111);
         this._txtTargetTableId.Name = "_txtTargetTableId";
         this._txtTargetTableId.ReadOnly = true;
@@ -1343,7 +1208,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _cmbRefMode
         //
         this._cmbRefMode.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
-        this._cmbRefMode.Font = new Font("Microsoft YaHei", 9f);
+        this._cmbRefMode.Font = new Font("Noto Sans SC", 9f);
         this._cmbRefMode.Location = new Point(118, 144);
         this._cmbRefMode.Name = "_cmbRefMode";
         this._cmbRefMode.Size = new Size(350, 24);
@@ -1352,7 +1217,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtRefConfig
         //
-        this._txtRefConfig.Font = new Font("Microsoft YaHei", 9f);
+        this._txtRefConfig.Font = new Font("Noto Sans SC", 9f);
         this._txtRefConfig.Location = new Point(118, 177);
         this._txtRefConfig.Name = "_txtRefConfig";
         this._txtRefConfig.Size = new Size(350, 24);
@@ -1361,7 +1226,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtFilterConfig
         //
-        this._txtFilterConfig.Font = new Font("Microsoft YaHei", 9f);
+        this._txtFilterConfig.Font = new Font("Noto Sans SC", 9f);
         this._txtFilterConfig.Location = new Point(118, 210);
         this._txtFilterConfig.Name = "_txtFilterConfig";
         this._txtFilterConfig.Size = new Size(350, 24);
@@ -1370,7 +1235,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtFormulaExpression
         //
-        this._txtFormulaExpression.Font = new Font("Microsoft YaHei", 9f);
+        this._txtFormulaExpression.Font = new Font("Noto Sans SC", 9f);
         this._txtFormulaExpression.Location = new Point(118, 243);
         this._txtFormulaExpression.Name = "_txtFormulaExpression";
         this._txtFormulaExpression.Size = new Size(350, 24);
@@ -1379,7 +1244,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtColumnMapping
         //
-        this._txtColumnMapping.Font = new Font("Microsoft YaHei", 9f);
+        this._txtColumnMapping.Font = new Font("Noto Sans SC", 9f);
         this._txtColumnMapping.Location = new Point(118, 276);
         this._txtColumnMapping.Name = "_txtColumnMapping";
         this._txtColumnMapping.Size = new Size(350, 24);
@@ -1389,7 +1254,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnOk
         //
         this._btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnOk.Font = new Font("Microsoft YaHei", 9f);
+        this._btnOk.Font = new Font("Noto Sans SC", 9f);
         this._btnOk.Location = new Point(291, 315);
         this._btnOk.Name = "_btnOk";
         this._btnOk.Size = new Size(87, 33);
@@ -1439,7 +1304,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnCancel
         //
         this._btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnCancel.Font = new Font("Microsoft YaHei", 9f);
+        this._btnCancel.Font = new Font("Noto Sans SC", 9f);
         this._btnCancel.Location = new Point(384, 315);
         this._btnCancel.Name = "_btnCancel";
         this._btnCancel.Size = new Size(87, 33);
@@ -1469,7 +1334,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
             lblColumnMapping, this._txtColumnMapping,
             this._btnOk, this._btnCancel
         });
-        this.Font = new Font("Microsoft YaHei", 9f);
+        this.Font = new Font("Noto Sans SC", 9f);
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
         this.MaximizeBox = false;
         this.MinimizeBox = false;

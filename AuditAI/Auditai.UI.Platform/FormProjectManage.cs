@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -1564,6 +1564,16 @@ public class FormProjectManage : ISetTheme
 			ProjectInfoManager.GetInstance().UpdateOpenTime(project.Id.ToString(), DateTime.Now);
 			await Populate();
 			FindAndSelectRow(project);
+			// P2 协同增强 Task 8：新建项目成功后广播通知团队成员
+			try
+			{
+				var msg = new NotifyMessage { Kind = "newproject", Value = project.Id.ToString() };
+				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
+			}
 		}
 		catch (HttpRequestException ex)
 		{
@@ -1954,6 +1964,16 @@ public class FormProjectManage : ISetTheme
 			ProjectInfoManager.GetInstance().UpdateOpenTime(newProject.Id.ToString(), DateTime.Now);
 			await Populate();
 			FindAndSelectRow(newProject);
+			// P2 协同增强 Task 8：复制项目成功后广播通知团队成员
+			try
+			{
+				var msg = new NotifyMessage { Kind = "newproject", Value = newProject.Id.ToString() };
+				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
+			}
 		}
 		catch (HttpRequestException ex)
 		{
@@ -2207,6 +2227,16 @@ public class FormProjectManage : ISetTheme
 			_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
 			await Populate();
 			FindAndSelectRow(newTemplate);
+			// P2 协同增强 Task 8：另存为模板成功后广播通知团队成员
+			try
+			{
+				var msg = new NotifyMessage { Kind = "newproject", Value = newTemplate.Id.ToString() };
+				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
+			}
 		}
 		catch (HttpRequestException ex)
 		{
@@ -2370,6 +2400,16 @@ public class FormProjectManage : ISetTheme
 			ProjectInfoManager.GetInstance().UpdateOpenTime(newTemplate.Id.ToString(), DateTime.Now);
 			await Populate();
 			FindAndSelectRow(newTemplate);
+			// P2 协同增强 Task 8：复制模板成功后广播通知团队成员
+			try
+			{
+				var msg = new NotifyMessage { Kind = "newproject", Value = newTemplate.Id.ToString() };
+				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
+			}
 		}
 		catch (HttpRequestException ex)
 		{

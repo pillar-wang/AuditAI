@@ -51,7 +51,7 @@ public class frmIntelliFormat
 		{
 			StartPosition = FormStartPosition.CenterScreen,
 			Size = new Size(300, 300),
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("Noto Sans SC", 9f),
 			Text = "智能排版",
 			MaximizeBox = false,
 			MinimizeBox = false,

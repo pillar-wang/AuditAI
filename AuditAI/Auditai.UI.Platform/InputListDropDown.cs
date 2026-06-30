@@ -84,7 +84,7 @@ public class InputListDropDown
 			Options = (DropDownFormOptionsFlags.Focusable | DropDownFormOptionsFlags.AlwaysPostChanges | DropDownFormOptionsFlags.NoPostOnEnter),
 			BorderStyle = BorderStyle.Fixed3D
 		};
-		_dropDownForm.Font = new Font("微软雅黑", 9f);
+		_dropDownForm.Font = new Font("Noto Sans SC", 9f);
 		DropDown.DropDownForm = _dropDownForm;
 		_grid = new C1FlexGridEx
 		{

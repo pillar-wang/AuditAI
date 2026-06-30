@@ -70,7 +70,7 @@ public class frmBatchApplyRange : Form
 			Text = "批量应用表格样式向导",
 			Location = new Point(15, y),
 			Size = new Size(580, 25),
-			Font = new Font("微软雅黑", 12, FontStyle.Bold)
+			Font = new Font("Noto Sans SC", 12, FontStyle.Bold)
 		};
 		y += 35;
 
@@ -91,7 +91,7 @@ public class frmBatchApplyRange : Form
 			Checked = true,
 			BackColor = Color.FromArgb(230, 240, 255),
 			FlatStyle = FlatStyle.Standard,
-			Font = new Font("微软雅黑", 9, FontStyle.Bold)
+			Font = new Font("Noto Sans SC", 9, FontStyle.Bold)
 		};
 		grpRange.Controls.Add(_rbSetStart);
 
@@ -102,7 +102,7 @@ public class frmBatchApplyRange : Form
 			Size = new Size(110, 22),
 			BackColor = Color.FromArgb(255, 235, 235),
 			FlatStyle = FlatStyle.Standard,
-			Font = new Font("微软雅黑", 9, FontStyle.Bold)
+			Font = new Font("Noto Sans SC", 9, FontStyle.Bold)
 		};
 		grpRange.Controls.Add(_rbSetEnd);
 
@@ -407,7 +407,7 @@ public class frmBatchApplyRange : Form
 			e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(120, 51, 153, 255)), e.Bounds);
 			string label = isStart ? "起" : "止";
 			using (var brush = new SolidBrush(Color.White))
-			using (var font = new Font("微软雅黑", 9, FontStyle.Bold))
+			using (var font = new Font("Noto Sans SC", 9, FontStyle.Bold))
 			{
 				var sf = new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center };
 				var labelBounds = new Rectangle(e.Bounds.Right - 30, e.Bounds.Top, 30, e.Bounds.Height);

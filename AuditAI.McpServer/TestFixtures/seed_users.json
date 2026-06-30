@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "userName": "admin",
+      "password": "admin",
+      "displayName": "管理员",
+      "role": "SystemAdmin",
+      "email": "admin@auditai.local",
+      "phone": "13800000001"
+    },
+    {
+      "userName": "testuser1",
+      "password": "Test@2024",
+      "displayName": "测试用户1",
+      "role": "TeamAdmin",
+      "email": "testuser1@auditai.local",
+      "phone": "13800000002"
+    },
+    {
+      "userName": "testuser2",
+      "password": "Test@2024",
+      "displayName": "测试用户2",
+      "role": "TeamMember",
+      "email": "testuser2@auditai.local",
+      "phone": "13800000003"
+    }
+  ]
+}

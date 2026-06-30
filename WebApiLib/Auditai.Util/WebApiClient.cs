@@ -1110,7 +1110,7 @@ public static class WebApiClient
 			Permissions = c.Value<string>("Permissions")
 		}))
 		{
-			string text = item.Picture.Value<string>();
+			string text = item.Picture?.Value<string>();
 			users.Add(new User
 			{
 				Id = item.Id,
@@ -1181,7 +1181,7 @@ public static class WebApiClient
 			UserRole = (UserRole)c.Value<int>("Role")
 		}))
 		{
-			string text = item.Picture.Value<string>();
+			string text = item.Picture?.Value<string>();
 			users.Add(new User
 			{
 				Id = item.Id,
@@ -1316,7 +1316,7 @@ public static class WebApiClient
 			Body = userInfo,
 			Timeout = TimeSpan.FromMinutes(1.0),
 			WithMachineCode = true,
-			ValidationCode = validateCode
+			ActivationCode = validateCode
 		});
 	}
 
@@ -1440,7 +1440,7 @@ public static class WebApiClient
 		}
 		RequestOptions requestOptions = new RequestOptions();
 		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/AccountLogin?userName={userName}&password={hashPassword}&version={AppVersion}&hasProcess={IsProcessExist()}";
+		requestOptions.Url = $"User/AccountLogin?userName={userName}&password={hashPassword}&version={AppVersion}&hasProcess={IsProcessExist()}&machineCode={Uri.EscapeDataString(MachineCode.Code)}";
 		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
@@ -1953,25 +1953,158 @@ public static class WebApiClient
 		});
 	}
 
-	#region Local-mode SendAsStream
+	/// <summary>激活 License（绑定当前机器）</summary>
+	public static async Task<JObject> ActivateLicense(string licenseKey, string machineCode)
+	{
+		if (IsLocalMode)
+		{
+			return new JObject { ["activated"] = true };
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "License/Activate",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true,
+			Body = new { licenseKey, machineCode }
+		});
+	}
+
+	/// <summary>查询当前用户 License 状态</summary>
+	public static async Task<JObject> GetLicenseStatus()
+	{
+		if (IsLocalMode)
+		{
+			return new JObject { ["isExpired"] = false, ["inGracePeriod"] = false, ["daysRemaining"] = 365 };
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "License/Status",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>续费 License</summary>
+	public static async Task<JObject> RenewLicense(int licenseId, int years)
+	{
+		if (IsLocalMode)
+		{
+			return new JObject();
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "License/Renew",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true,
+			Body = new { licenseId, years }
+		});
+	}
+
+	/// <summary>批量导入用户到团队</summary>
+	public static async Task<JObject> BatchImportUsers(Guid teamId, JArray users)
+	{
+		if (IsLocalMode)
+		{
+			return new JObject { ["successCount"] = 0, ["failedCount"] = 0 };
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "User/BatchImport",
+			Timeout = TimeSpan.FromMinutes(2.0),
+			WithAuthorization = true,
+			Body = new { teamId = teamId.ToString("D"), users }
+		});
+	}
+
+	/// <summary>邀请用户加入团队</summary>
+	public static async Task<JObject> InviteUser(Guid teamId, string phone, string email, int role = 0)
+	{
+		if (IsLocalMode)
+		{
+			return new JObject();
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/InviteUser",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true,
+			Body = new { teamId = teamId.ToString("D"), phone, email, role }
+		});
+	}
+
+	/// <summary>获取待接受邀请列表</summary>
+	public static async Task<JArray> GetPendingInvitations(Guid teamId)
+	{
+		if (IsLocalMode)
+		{
+			return new JArray();
+		}
+		return await SendAsObject<JArray>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "Project/GetPendingInvitations?teamId=" + teamId.ToString("D"),
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	#region SendAsStream
 	private static async Task<Stream> SendAsStream(RequestOptions options)
 	{
 		string url = options.Url ?? "";
+		DebugLog($"[SendAsStream] START url={url} method={options.Method} localMode={IsLocalMode} hasLocalHandler={LocalApiHandler != null}");
 
 		// ★ 本地模式：优先使用 LocalApiHandler
 		if (LocalApiHandler != null)
 		{
+			DebugLog($"[SendAsStream] using LocalApiHandler for url={url}");
 			return await LocalApiHandler(url);
 		}
 
-		// ★ 无 Handler 时的兜底 mock
-		string mockJson = "{}";
-		if (url.Contains("TableCollectDic") || url.Contains("CellCollectDic") || url.Contains("LedgerValidateDic"))
-			mockJson = "{\"update\":\"0\"}";
+		// ★ 服务器模式：发送实际 HTTP 请求
+		try
+		{
+			HttpRequestMessage request = GetRequest(options);
+			DebugLog($"[SendAsStream] sending HTTP request to: {request.RequestUri}");
+			HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(continueOnCapturedContext: false);
+			DebugLog($"[SendAsStream] response: {(int)response.StatusCode} {response.StatusCode}");
 
-		return new MemoryStream(Encoding.UTF8.GetBytes(mockJson));
+			// 检查响应状态码
+			if (!response.IsSuccessStatusCode)
+			{
+				string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+				DebugLog($"[SendAsStream] ERROR response body: {errorContent}");
+				response.Dispose();
+				throw new HttpRequestException($"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}");
+			}
+
+			return await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
+		}
+		catch (Exception ex)
+		{
+			DebugLog($"[SendAsStream] EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+			throw;
+		}
 	}
 	#endregion
+
+	/// <summary>临时调试日志（写文件），联调完成后移除</summary>
+	private static void DebugLog(string message)
+	{
+		try
+		{
+			string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+			if (!Directory.Exists(logPath)) Directory.CreateDirectory(logPath);
+			string logFile = Path.Combine(logPath, "debug_apicalls.txt");
+			File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}");
+		}
+		catch { }
+	}
 
 	private static async Task Relogin()
 	{
@@ -2017,6 +2150,10 @@ public static class WebApiClient
 		{
 			httpRequestMessage.Headers.TryAddWithoutValidation("ValidateCode", options.ValidationCode);
 		}
+		if (options.ActivationCode != null)
+		{
+			httpRequestMessage.Headers.TryAddWithoutValidation("ActivationCode", options.ActivationCode);
+		}
 		if (options.FileId.HasValue)
 		{
 			httpRequestMessage.Headers.TryAddWithoutValidation("FileId", options.FileId.Value.ToString());
@@ -2060,12 +2197,45 @@ public static class WebApiClient
 			Stream stream = await SendAsStream(options).ConfigureAwait(continueOnCapturedContext: false);
 			JsonSerializer jsonSerializer = new JsonSerializer();
 			using StreamReader reader = new StreamReader(stream);
-			using JsonTextReader reader2 = new JsonTextReader(reader);
-			return jsonSerializer.Deserialize<T>(reader2);
+			string responseText = await reader.ReadToEndAsync().ConfigureAwait(continueOnCapturedContext: false);
+			using JsonTextReader reader2 = new JsonTextReader(new StringReader(responseText));
+			T result = jsonSerializer.Deserialize<T>(reader2);
+			if (result == null && typeof(T) != typeof(string))
+			{
+				try
+				{
+					var errorObj = JsonConvert.DeserializeObject<JObject>(responseText);
+					if (errorObj != null && errorObj.ContainsKey("error"))
+					{
+						string errorMessage = errorObj["error"]?.ToString() ?? "请求失败";
+						string message = errorObj["message"]?.ToString();
+						if (!string.IsNullOrEmpty(message))
+						{
+							errorMessage = message;
+						}
+						throw new ServerException
+						{
+							ExceptionMessage = errorMessage,
+							ExceptionType = "ServerError"
+						};
+					}
+				}
+				catch { }
+			}
+			return result;
 		}
 		catch (IOException ex)
 		{
 			throw new HttpRequestException(ex.Message, ex);
+		}
+		catch (JsonSerializationException ex)
+		{
+			throw new ServerException
+			{
+				ExceptionMessage = "服务器返回数据格式错误: " + ex.Message,
+				ExceptionType = "JsonSerializationError",
+				ExceptionStackTrace = ex.StackTrace
+			};
 		}
 	}
 

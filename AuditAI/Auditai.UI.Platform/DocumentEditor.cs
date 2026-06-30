@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -10,6 +10,8 @@ using System.Xml.Linq;
 using C1.Win.C1Command;
 using C1.Win.C1SplitContainer;
 using Auditai.Model;
+using Auditai.LocalDataStore;
+using Auditai.SignalR;
 using Auditai.UI.Controls;
 using Auditai.UI.Platform.Properties;
 using Auditai.Util;
@@ -104,8 +106,12 @@ public class DocumentEditor : UserControl
 			// 监听 TextChanged 事件，文本变化时更新撤销/恢复按钮状态
 			_textControl.TextChanged += _textControl_TextChanged;
 			// 监听右键菜单打开事件，选区非空时追加"添加为校验点"菜单项
-			_textControl.TextContextMenuOpening += _textControl_TextContextMenuOpening;
-			InitializeValidationContextMenu();
+		_textControl.TextContextMenuOpening += _textControl_TextContextMenuOpening;
+		// P2 协同增强 Task 9：监听光标位置变化，广播段落编辑状态（SelectionChanged 在 TX TextControl 中对应 InputPositionChanged）
+		_textControl.InputPositionChanged += TextControl_SelectionChanged;
+		// P2 协同增强 Task 9：订阅对端段落编辑事件，显示协同提示
+		MemberManager.GetInstance().PeerParagraphEdit += DocumentEditor_PeerParagraphEdit;
+		InitializeValidationContextMenu();
 		}
 		catch (Exception ex)
 		{
@@ -169,6 +175,67 @@ public class DocumentEditor : UserControl
 		{
 			_innerPanel.Controls.Add(_textControl);
 			_textControl.CreateControl();
+		}
+		// 订阅对端段落变更事件，触发自动 Pull
+		MemberManager.GetInstance().DocParagraphChanged += DocumentEditor_DocParagraphChanged;
+	}
+
+	// 配置开关：AutoPullOnPeerEvent，默认启用（值不为 "false" 即启用）
+	// 通过 CollaborationConfig 统一读取 app.config（P2 协同增强 Task 12）
+	private static bool AutoPullOnPeerEventEnabled => CollaborationConfig.AutoPullOnPeerEvent;
+
+	private async void DocumentEditor_DocParagraphChanged(object sender, long e)
+	{
+		if (!AutoPullOnPeerEventEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return;
+		}
+		Auditai.Model.Document currentDocument = Document as Auditai.Model.Document;
+		if (currentDocument == null || currentDocument.Project == null)
+		{
+			return;
+		}
+		// 仅当当前文档所属项目为正在打开的项目时才处理
+		if (Auditai.Model.Project.Current == null || currentDocument.Project.Id != Auditai.Model.Project.Current.Id)
+		{
+			return;
+		}
+		try
+		{
+			bool ok = await Syncer.PullAsync(currentDocument).ConfigureAwait(false);
+			if (ok)
+			{
+				if (InvokeRequired) Invoke((Action)RefreshDocumentAll);
+				else RefreshDocumentAll();
+			}
+		}
+		catch
+		{
+			// 自动 Pull 失败时提示用户手动同步
+			ShowSyncHint("文档已被他人修改，请手动同步");
+		}
+	}
+
+	/// <summary>
+	/// 显示同步提示（参考 MainForm.HandleSyncMessage 的 TooltipBox 实现）。
+	/// </summary>
+	private void ShowSyncHint(string message)
+	{
+		try
+		{
+			TooltipBox tooltipBox = new TooltipBox
+			{
+				Duration = 5000,
+				IsBalloon = true
+			};
+			XElement xElement = new XElement("p", new XAttribute("style", "color:red;"), message);
+			tooltipBox.SetText("同步提示", xElement.ToString());
+			Control anchor = _textControl != null ? (Control)_textControl : (Control)this;
+			tooltipBox.Show(anchor, new Point(anchor.Width / 2, anchor.Height / 2));
+		}
+		catch
+		{
+			// 提示显示失败不影响主流程
 		}
 	}
 
@@ -420,6 +487,10 @@ public class DocumentEditor : UserControl
 			}
 		}
 		catch (Exception) { }
+
+		// 重建 _dicPara 缓存：ParaIdBase64 → DocumentTarget
+		// 用于 ModifyBookmark 等场景的 O(1) 精确查找，替代遍历 DocumentTargets
+		RebuildDicParaCache();
 
 		// 文档加载完成后执行文档校验健康检查
 		try
@@ -1085,15 +1156,86 @@ public class DocumentEditor : UserControl
 	public void InsertPageBreak(params object[] args) { _textControl.Sections.Add(TXTextControl.SectionBreakKind.BeginAtNewPage); }
 	public void InsertSectionBreak(params object[] args) { _textControl.Sections.Add(TXTextControl.SectionBreakKind.BeginAtNewLine); }
 	public void InsertTextFrame(params object[] args) { _textControl.TextFrames.Add(new TXTextControl.TextFrame(new System.Drawing.Size(3000, 2000)), _textControl.InputPosition.TextPosition); }
-	public void InsertMergeField(params object[] args)
+	/// <summary>
+	/// 插入函证合并域（MERGEFIELD），绑定到指定列。
+	/// 域参数格式：{"MailMerge", tableId, columnId}，域文本：{表格标题}[列标题]。
+	/// 一个文档只能关联一个表的函证设置；若已存在其他表的关联则弹窗拒绝。
+	/// 若光标位于表格第一行第一列起始位置，会清空选区后再插入。
+	/// </summary>
+	public void InsertMergeField(Auditai.Model.Column column)
 	{
+		long columnId = column.Id.Value;
+		long tableId = column.Table.Id.Value;
+		string columnCaption = column.CaptionDisplay.Replace("\n", "").Replace("\r", "");
+		string tableTitle = column.Table.Title.TitleCell.GetDisplayValue().Replace("\n", "").Replace("\r", "");
+
+		string fieldText = "{" + tableTitle + "}[" + columnCaption + "]";
+		string[] parameters = new string[] { "MailMerge", tableId.ToString(), columnId.ToString() };
+
 		var field = new TXTextControl.ApplicationField(
 			TXTextControl.ApplicationFieldFormat.MSWord,
 			"MERGEFIELD",
-			"«FieldName»",
-			new string[] { "Formula", "" }
+			fieldText,
+			parameters
 		);
-		_textControl.ApplicationFields.Add(field);
+		field.DoubledInputPosition = true;
+		field.Name = columnId.ToString();
+		field.HighlightMode = TXTextControl.HighlightMode.Always;
+		field.HighlightColor = GetFieldColor();
+		field.Deleteable = true;
+		field.Editable = false;
+
+		// 检查文档中是否已存在其他表的函证关联
+		if (TryGetMergeTable(out object mergeTable, out long existingTableId)
+			&& mergeTable != null && existingTableId != tableId)
+		{
+			var conflictTable = Document.Project.GetTableById(new Auditai.DTO.Id64(existingTableId))?.LoadAndReturn(false);
+			string conflictTitle = conflictTable?.Title?.TitleCell?.GetDisplayValue() ?? string.Empty;
+			Auditai.UI.Controls.MessageBox.Show(
+				MessageBoxIcon.None,
+				"文档中已存在对" + conflictTitle + "的函证关联设置，无法再设置其他表的函证关联。",
+				MessageBoxButtons.OK,
+				"",
+				false
+			);
+			return;
+		}
+
+		var headerFooter = GetActiveHeaderFooter();
+		var table = _textControl.Tables.GetItem();
+		var cell = table?.Cells.GetItem();
+
+		// 若光标在表格第一行第一列起始位置，清空选区后插入域
+		if (table != null && cell != null && cell.Row == 1 && cell.Column == 1
+			&& _textControl.Selection.Start == cell.Start - 1)
+		{
+			int selStart = _textControl.Selection.Start;
+			_textControl.Selection.Text = "";
+
+			if (headerFooter != null)
+				headerFooter.ApplicationFields.Add(field);
+			else
+				_textControl.ApplicationFields.Add(field);
+
+			_textControl.Select(selStart, 1);
+			_textControl.Selection.Text = "";
+			_textControl.ClearUndo();
+			return;
+		}
+
+		// 否则直接在当前位置插入域
+		if (headerFooter != null)
+			headerFooter.ApplicationFields.Add(field);
+		else
+			_textControl.ApplicationFields.Add(field);
+	}
+
+	/// <summary>
+	/// 获取当前激活的页眉/页脚，若光标不在页眉页脚中则返回 null。
+	/// </summary>
+	private TXTextControl.HeaderFooter GetActiveHeaderFooter()
+	{
+		return _textControl.TextParts.GetItem() as TXTextControl.HeaderFooter;
 	}
 
 	/// <summary>
@@ -1317,10 +1459,54 @@ public class DocumentEditor : UserControl
 		}
 		return null;
 	}
-	public void InsertVariable(params object[] args)
+	/// <summary>
+	/// 插入引用变量域：弹出 ReferenceEditor 让用户选择数据引用，
+	/// 然后创建 MERGEFIELD 域（参数 {"Variable", bookmarkString, fieldId}），
+	/// 域文本为引用计算值。若光标已在域内则不插入（避免嵌套）。
+	/// </summary>
+	public void InsertVariable()
 	{
-		var field = new TXTextControl.TextField("Variable");
-		_textControl.TextFields.Add(field);
+		if (GetCurrentApplicationField() != null) return;
+		if (GetParaStartApplicationField() != null) return;
+		InsertVariableImpl(_textControl.ApplicationFields);
+	}
+
+	/// <summary>
+	/// 引用变量域的实际插入逻辑：弹出引用选择对话框，创建 ApplicationField 并添加到指定集合。
+	/// </summary>
+	private void InsertVariableImpl(TXTextControl.ApplicationFieldCollection collection)
+	{
+		var editor = new ReferenceEditor();
+		if (editor.ShowSelect() != DialogResult.OK) return;
+
+		var reference = editor.SelectedReference;
+		var bookmark = new AuditaiBookmark();
+		bookmark.VariableId = reference.Key;
+
+		var context = new DataReferenceEvaluationContext();
+		context.Project = Document.Project;
+		context.CurrentTreeNode = Document.TreeNode;
+		string value = reference.GetValue(context);
+
+		if (string.IsNullOrEmpty(value))
+			value = reference.Key;
+
+		string bookmarkString = bookmark.GetString();
+
+		var field = new TXTextControl.ApplicationField(
+			TXTextControl.ApplicationFieldFormat.MSWord,
+			"MERGEFIELD",
+			value,
+			new string[] { "Variable", bookmarkString, Auditai.Model.Project.Current.GetNextId().ToString() }
+		);
+		field.DoubledInputPosition = true;
+		field.HighlightMode = TXTextControl.HighlightMode.Always;
+		field.HighlightColor = GetFieldColor();
+		field.Deleteable = true;
+		field.Editable = false;
+		field.Name = bookmarkString;
+		field.Text = value;
+		collection.Add(field);
 	}
 	public void MergeCells(params object[] args)
 	{
@@ -1475,11 +1661,104 @@ public class DocumentEditor : UserControl
 		{
 			var item = table.Cells.GetItem(1, 1);
 			int start = item.Start - 1;
+
+			// 先清理该位置附近的旧书签（防御性）：
+			// 1. 处理 DeleteTable 修复前残留的孤儿书签
+			// 2. 避免同位置存在多个 DocumentTarget 导致 Add 失败或位置错乱
+			RemoveBookmarkForTable(table);
+
 			_tx.Select(start, 0);
-			DocumentTarget documentTarget = new DocumentTarget(lsbm.GetString());
-			_tx.DocumentTargets.Add(documentTarget);
+		DocumentTarget documentTarget = new DocumentTarget(lsbm.GetString());
+		_tx.DocumentTargets.Add(documentTarget);
+
+		// 同步缓存
+		if (lsbm.ParaIdBase64 != null)
+		{
+			_dicPara[lsbm.ParaIdBase64] = documentTarget;
+			if (lsbm.TableId != null)
+				_bookmarkTableIdCache[lsbm.ParaIdBase64] = lsbm.TableId;
+		}
 		}
 		catch (Exception ex) { ex.Log("DocumentEditor.AddNewBookmark"); }
+	}
+
+	/// <summary>
+	/// 删除表格前的 DocumentTarget 书签（AuditaiBookmark 格式）。
+	/// 用于 DeleteTable 清理和 AddNewBookmark 防御性清理，避免孤儿书签残留导致：
+	/// 1. 后续 GetRefTable 位置查找取到错误书签
+	/// 2. AddNewBookmark 在同位置添加新书签失败
+	///
+	/// 安全性：只删除"紧贴表格前"的书签（distance == 最小距离），
+	/// 不会误删前一个表格的书签（其 distance 会更大）。
+	/// </summary>
+	private void RemoveBookmarkForTable(TXTextControl.Table table)
+	{
+		try
+		{
+			if (table == null) return;
+			var firstCell = table.Cells.GetItem(1, 1);
+			if (firstCell == null) return;
+			int tableStart = firstCell.Start;
+
+			var allTargets = _textControl.DocumentTargets;
+			if (allTargets == null || allTargets.Count == 0) return;
+
+			// 收集表格前的候选书签（distance 1~50）
+			var candidates = new List<(TXTextControl.DocumentTarget dt, AuditaiBookmark bm, int distance)>();
+			foreach (TXTextControl.DocumentTarget dt in allTargets)
+			{
+				try
+				{
+					if (string.IsNullOrEmpty(dt.TargetName)) continue;
+					if (!AuditaiBookmark.TryParse(dt.TargetName, out var bm)) continue;
+
+					int distance = tableStart - dt.Start;
+					if (distance > 0 && distance < 50)
+						candidates.Add((dt, bm, distance));
+				}
+				catch { }
+			}
+
+			if (candidates.Count == 0) return;
+
+			// 找最小距离：书签正常就在 firstCell.Start - 1，distance = 1
+			int minDistance = candidates.Min(c => c.distance);
+
+			// 如果最小距离 > 5，说明没有紧贴当前表格的书签（可能是前一个表格的）
+			// 保守起见不删除任何书签，避免误删
+			if (minDistance > 5) return;
+
+			var toRemove = new List<TXTextControl.DocumentTarget>();
+			var paraIdsToRemove = new List<string>();
+
+			// 只删除距离 == 最小距离的书签（处理重复书签，但不动距离更大的前一个表格书签）
+			foreach (var (dt, bm, distance) in candidates)
+			{
+				if (distance == minDistance)
+				{
+					toRemove.Add(dt);
+					if (!string.IsNullOrEmpty(bm.ParaIdBase64))
+						paraIdsToRemove.Add(bm.ParaIdBase64);
+				}
+			}
+
+			if (toRemove.Count == 0) return;
+
+			// 倒序删除（与原始代码 ClearDocumentTargets 风格一致，避免索引错位）
+			for (int i = toRemove.Count - 1; i >= 0; i--)
+			{
+				try { _textControl.DocumentTargets.Remove(toRemove[i]); }
+				catch { }
+			}
+
+			// 清理缓存中对应的 ParaId
+			foreach (var paraId in paraIdsToRemove)
+			{
+				try { _bookmarkTableIdCache.Remove(paraId); } catch { }
+				try { _dicPara.Remove(paraId); } catch { }
+			}
+		}
+		catch (Exception ex) { ex.Log("DocumentEditor.RemoveBookmarkForTable"); }
 	}
 
 	private bool _isCheckingTableRef;
@@ -1490,6 +1769,50 @@ public class DocumentEditor : UserControl
 	/// 每次成功找到 TableId 时更新，找不到时从中恢复。
 	/// </summary>
 	private Dictionary<string, string> _bookmarkTableIdCache = new Dictionary<string, string>();
+
+	/// <summary>
+	/// ParaIdBase64 → DocumentTarget 的运行时缓存。
+	/// 文档加载时重建，书签增删改时同步更新。
+	/// 用于 ModifyBookmark 等场景的 O(1) 精确查找，替代遍历 DocumentTargets。
+	/// 原始 LeqiAudit 实现中存在此字段（full.il 行 160066），当前实现恢复。
+	/// </summary>
+	private Dictionary<string, TXTextControl.DocumentTarget> _dicPara
+		= new Dictionary<string, TXTextControl.DocumentTarget>();
+
+	/// <summary>
+	/// 重建 _dicPara 缓存。在文档加载完成后调用。
+	/// 遍历所有 DocumentTargets，解析 AuditaiBookmark，建立 ParaIdBase64 → DocumentTarget 映射。
+	/// </summary>
+	private void RebuildDicParaCache()
+	{
+		try
+		{
+			_dicPara.Clear();
+			_bookmarkTableIdCache.Clear();
+
+			var allTargets = _textControl.DocumentTargets;
+			if (allTargets == null || allTargets.Count == 0) return;
+
+			foreach (TXTextControl.DocumentTarget dt in allTargets)
+			{
+				try
+				{
+					if (string.IsNullOrEmpty(dt.TargetName)) continue;
+					if (!AuditaiBookmark.TryParse(dt.TargetName, out var bm)) continue;
+					if (string.IsNullOrEmpty(bm.ParaIdBase64)) continue;
+
+					// ParaId → DocumentTarget
+					_dicPara[bm.ParaIdBase64] = dt;
+
+					// 顺带重建 ParaId → TableId 缓存
+					if (!string.IsNullOrEmpty(bm.TableId))
+						_bookmarkTableIdCache[bm.ParaIdBase64] = bm.TableId;
+				}
+				catch { }
+			}
+		}
+		catch (Exception ex) { ex.Log("DocumentEditor.RebuildDicParaCache"); }
+	}
 
 	/// <summary>
 	/// 通过书签的 ParaIdBase64 查找来源表格。
@@ -1681,6 +2004,9 @@ public class DocumentEditor : UserControl
 				}
 
 				// 方法2：枚举所有 DocumentTarget，查找位置在表格前面的最近 AuditaiBookmark
+				// 注意：此方法作为方法1（精确 Select+GetItem）的回退，仅在书签位置不匹配时使用。
+				// distance 阈值必须严格（≤50），因为书签正常就在 firstCell.Start-1 位置，
+				// distance 过大会导致取到其它表格的书签（尤其全文刷新时多个表格位置变化）。
 				var allTargets = _textControl.DocumentTargets;
 				if (allTargets != null)
 				{
@@ -1698,8 +2024,9 @@ public class DocumentEditor : UserControl
 
 							int dtStart = dt.Start;
 							int distance = tableStart - dtStart;
-							// 放宽范围到 500，应对刷新后表格位置变化
-							if (distance > 0 && distance < 500 && distance < bestDistance)
+							// 严格阈值 50：书签正常就在 firstCell.Start-1，distance≈1；
+							// 50 已足够容纳刷新过程中的微小位置漂移，且不会误取邻近表格的书签。
+							if (distance > 0 && distance < 50 && distance < bestDistance)
 							{
 								bestDistance = distance;
 								bestBookmark = bm;
@@ -2124,12 +2451,16 @@ public class DocumentEditor : UserControl
 				Application.DoEvents();
 
 				// 创建引用表格的 DocumentTarget 书签
-				var lsbm = new AuditaiBookmark
-				{
-					TableId = sourceTable.Id.ToBase64(),
-					Status = AuditaiBookmarkStatus.New
-				};
-				AddNewBookmark(txTable, lsbm);
+			// 注意：必须设置 ParaIdBase64，与 InsertModelTable 保持一致。
+			// 否则 ModifyBookmark 无法通过 ParaIdBase64 精确匹配，会走位置回退逻辑，
+			// 在全文/全表刷新时导致书签错乱（详见 ModifyBookmark 注释）。
+			var lsbm = new AuditaiBookmark
+			{
+				ParaIdBase64 = Project.Current.GetNextId().ToBase64(),
+				TableId = sourceTable.Id.ToBase64(),
+				Status = AuditaiBookmarkStatus.New
+			};
+			AddNewBookmark(txTable, lsbm);
 
 				// 设置 Document.MergeTable 用于持久化
 				var doc = Document as Auditai.Model.Document;
@@ -3637,29 +3968,88 @@ public class DocumentEditor : UserControl
 		if (bookmark.ParaIdBase64 != null && bookmark.TableId != null)
 			_bookmarkTableIdCache[bookmark.ParaIdBase64] = bookmark.TableId;
 
-		// 通过 ParaIdBase64 匹配找到正确的 DocumentTarget，而不是用位置查找
-		// （刷新后表格位置可能变化，位置查找会找到错误的书签）
-		var allTargets = _textControl.DocumentTargets;
-		if (allTargets != null && !string.IsNullOrEmpty(bookmark.ParaIdBase64))
+		// 策略1：通过 _dicPara 缓存 O(1) 精确匹配 ParaIdBase64
+		if (!string.IsNullOrEmpty(bookmark.ParaIdBase64)
+			&& _dicPara.TryGetValue(bookmark.ParaIdBase64, out var cachedDt))
 		{
-			foreach (TXTextControl.DocumentTarget dt in allTargets)
+			try
 			{
-				try
+				cachedDt.TargetName = newName;
+				// 缓存中的 DocumentTarget 对象引用不变，TargetName 已更新，无需重新缓存
+				return;
+			}
+			catch { }
+		}
+
+		var allTargets = _textControl.DocumentTargets;
+		if (allTargets != null)
+		{
+			// 策略1b：_dicPara 未命中时，遍历 DocumentTargets 通过 ParaIdBase64 匹配
+			if (!string.IsNullOrEmpty(bookmark.ParaIdBase64))
+			{
+				foreach (TXTextControl.DocumentTarget dt in allTargets)
 				{
-					if (dt.TargetName != null && AuditaiBookmark.TryParse(dt.TargetName, out var bm))
+					try
 					{
-						if (bm.ParaIdBase64 == bookmark.ParaIdBase64)
+						if (dt.TargetName != null && AuditaiBookmark.TryParse(dt.TargetName, out var bm)
+							&& bm.ParaIdBase64 == bookmark.ParaIdBase64)
 						{
 							dt.TargetName = newName;
+							_dicPara[bookmark.ParaIdBase64] = dt;
 							return;
 						}
 					}
+					catch { }
 				}
-				catch { }
+			}
+
+			// 策略2：ParaIdBase64 为空时（旧版 InsertRefTable 创建的引用表格书签），
+			// 通过 TableId + 位置匹配表格前最近的同 TableId 书签并更新。
+			if (!string.IsNullOrEmpty(bookmark.TableId))
+			{
+				var firstCellForMatch = table.Cells.GetItem(1, 1);
+				if (firstCellForMatch != null)
+				{
+					int tableStart = firstCellForMatch.Start;
+					TXTextControl.DocumentTarget bestDt = null;
+					int bestDistance = int.MaxValue;
+
+					foreach (TXTextControl.DocumentTarget dt in allTargets)
+					{
+						try
+						{
+							if (dt.TargetName == null) continue;
+							if (!AuditaiBookmark.TryParse(dt.TargetName, out var bm)) continue;
+							if (bm.TableId != bookmark.TableId) continue;
+
+							int dtStart = dt.Start;
+							int distance = tableStart - dtStart;
+							if (distance > 0 && distance < bestDistance)
+							{
+								bestDistance = distance;
+								bestDt = dt;
+							}
+						}
+						catch { }
+					}
+
+					if (bestDt != null)
+					{
+						bestDt.TargetName = newName;
+						// 同步缓存
+						try
+						{
+							if (AuditaiBookmark.TryParse(newName, out var newBm) && !string.IsNullOrEmpty(newBm.ParaIdBase64))
+								_dicPara[newBm.ParaIdBase64] = bestDt;
+						}
+						catch { }
+						return;
+					}
+				}
 			}
 		}
 
-		// 回退：如果没找到匹配的书签，在表格前位置创建新的
+		// 最终回退：确实没找到任何匹配书签时，在表格前位置创建新的
 		var firstCell = table.Cells.GetItem(1, 1);
 		if (firstCell == null) return;
 
@@ -3669,6 +4059,9 @@ public class DocumentEditor : UserControl
 			_tx.Select(firstCell.Start - 1, 0);
 			var newDt = new TXTextControl.DocumentTarget(newName);
 			_tx.DocumentTargets.Add(newDt);
+			// 同步缓存
+			if (!string.IsNullOrEmpty(bookmark.ParaIdBase64))
+				_dicPara[bookmark.ParaIdBase64] = newDt;
 		}
 		catch (Exception ex) { ex.Log("DocumentEditor.ModifyBookmark"); }
 		finally
@@ -4764,6 +5157,7 @@ public class DocumentEditor : UserControl
 				return true;
 
 			// 方法2：枚举所有 DocumentTarget，查找位置在表格前面的 AuditaiBookmark
+			// 注意：distance 阈值与 GetRefTable 保持一致（≤50），避免误判邻近表格的书签。
 			var allTargets = _textControl.DocumentTargets;
 			if (allTargets != null)
 			{
@@ -4776,7 +5170,7 @@ public class DocumentEditor : UserControl
 						if (!AuditaiBookmark.TryParse(target.TargetName, out _)) continue;
 						int dtStart = target.Start;
 						int distance = tableStart - dtStart;
-						if (distance > 0 && distance < 100)
+						if (distance > 0 && distance < 50)
 							return true;
 					}
 					catch { }
@@ -4815,6 +5209,44 @@ public class DocumentEditor : UserControl
 	{
 		// 文本变化时更新撤销/恢复按钮状态
 		Program.MainForm.UpdateUndoRedoButtonState();
+	}
+
+	// P2 协同增强 Task 9：光标位置变化时广播段落编辑状态
+	// 注：TX TextControl 无 SelectionChanged 事件，InputPositionChanged 为等价事件
+	private void TextControl_SelectionChanged(object sender, EventArgs e)
+	{
+		if (!CollaborationConfig.AutoPushOnSave || StorageRouter.IsLocalMode) return;
+		try
+		{
+			string userId = Auditai.Model.User.Current.Id.ToString();
+			string paragraphId = _textControl.Selection.Start.ToString();
+			_ = SignalRClient.UploadParagraphId(userId, paragraphId);
+		}
+		catch { }
+	}
+
+	// P2 协同增强 Task 9：对端正在编辑某段落，显示协同提示
+	private void DocumentEditor_PeerParagraphEdit(long userId, string paragraphId)
+	{
+		try
+		{
+			if (this.InvokeRequired)
+				this.Invoke((Action)(() => ShowPeerEditingHint(userId)));
+			else
+				ShowPeerEditingHint(userId);
+		}
+		catch { }
+	}
+
+	private void ShowPeerEditingHint(long userId)
+	{
+		try
+		{
+			Member member = MemberManager.GetInstance().GetMember(userId.ToString());
+			string name = member?.Name ?? ("用户" + userId);
+			_ttpComment?.SetText("协同编辑", name + " 正在编辑此段落", canClose: false);
+		}
+		catch { }
 	}
 
 	private void _textControl_InputPositionChanged(object sender, EventArgs e)
@@ -5214,6 +5646,11 @@ public class DocumentEditor : UserControl
 				DetachEvents();
 				try
 				{
+					// 先删除表格前的 DocumentTarget 书签，避免残留孤儿书签。
+					// 孤儿书签会导致后续 GetRefTable 位置查找取到错误书签，
+					// 以及 AddNewBookmark 在同位置添加新书签失败。
+					RemoveBookmarkForTable(table);
+
 					// 使用TX Text Control的Tables.Remove()真正删除整个表格结构
 					table.Select();
 					_textControl.Tables.Remove();

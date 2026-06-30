@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -2129,7 +2129,7 @@ public class frmLedgerCollectFormulaEdit : Form
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size (960, 620);
 		base.Controls.Add (this.ctnAll);
-		this.Font = new System.Drawing.Font ("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font ("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.AcceptButton = this.btnConfirm;
 		base.CancelButton = this.btnCancle;
 		base.Margin = new System.Windows.Forms.Padding (3, 4, 3, 4);

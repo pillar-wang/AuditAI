@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -2329,24 +2329,16 @@ public class ProjectHierarchy
     private void CmdEmptyImportFile_Click(object sender, ClickEventArgs e) => OnImportFile(null, EventArgs.Empty);
     private void CmdEmptyImportFile_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
-    private void CmdEmptyImportExcel_Click(object sender, ClickEventArgs e)
-    {
-    }
+    private void CmdEmptyImportExcel_Click(object sender, ClickEventArgs e) => SelectNodeImportExcel();
     private void CmdEmptyImportExcel_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
-    private void CmdEmptyImportWord_Click(object sender, ClickEventArgs e)
-    {
-    }
+    private void CmdEmptyImportWord_Click(object sender, ClickEventArgs e) => SelectNodeImportWord();
     private void CmdEmptyImportWord_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
-    private void CmdEmptyImportImage_Click(object sender, ClickEventArgs e)
-    {
-    }
+    private void CmdEmptyImportImage_Click(object sender, ClickEventArgs e) => SelectNodeImportImage();
     private void CmdEmptyImportImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
-    private void CmdEmptyImportPdf_Click(object sender, ClickEventArgs e)
-    {
-    }
+    private void CmdEmptyImportPdf_Click(object sender, ClickEventArgs e) => SelectNodeImportPdf();
     private void CmdEmptyImportPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
 
     private void CmdEmptyImportFolder_Click(object sender, ClickEventArgs e) => OnImportFolder(null, EventArgs.Empty);
@@ -2592,15 +2584,16 @@ public class ProjectHierarchy
             {
                 ImportProject.ImportFiles(dirNode, dirNode.Children.Count, dialog.FileNames);
             }
-            else
+            else if (selectedNode is TreeDocumentNode || selectedNode is TreeTableNode
+                     || selectedNode is TreeImageNode || selectedNode is TreePdfNode)
             {
-                if (SelectedNode.Parent == null)
+                if (selectedNode.Parent == null)
                 {
-                    ImportProject.ImportFiles(SelectedNode.Group, SelectedNode.Index, dialog.FileNames);
+                    ImportProject.ImportFiles(selectedNode.Group, selectedNode.Index, dialog.FileNames);
                 }
                 else
                 {
-                    ImportProject.ImportFiles(SelectedNode.Parent, SelectedNode.Index, dialog.FileNames);
+                    ImportProject.ImportFiles(selectedNode.Parent, selectedNode.Index, dialog.FileNames);
                 }
             }
         }
@@ -3074,14 +3067,86 @@ public class ProjectHierarchy
 
     private void CreateImportIfNotExist()
     {
+        if (ImportProject == null)
+        {
+            ImportProject = new ProjectImport(View);
+        }
     }
 
-    private void ImportProject_AfterImportNode(object sender, EventArgs e)
+    private void ImportProject_AfterImportNode(object sender, ImportNodeArgs e)
     {
+        if (firstImportNode == null && !(e.AppendNode is TreeDirectoryNode))
+        {
+            firstImportNode = e.AppendNode;
+        }
+        try
+        {
+            AddImportedNodeToGrid(e);
+        }
+        catch (Exception ex)
+        {
+            ex.Log();
+        }
+    }
+
+    private void AddImportedNodeToGrid(ImportNodeArgs e)
+    {
+        var appendNode = e.AppendNode;
+        if (appendNode == null) return;
+        var img = GetNodeImage(e.Type);
+        Node parentNode = null;
+
+        if (e.ParentNode is TreeGroup treeGroup)
+        {
+            // 在单网格架构中，分组为根级节点，Key == TreeGroup
+            for (int i = _grid.Rows.Fixed; i < _grid.Rows.Count; i++)
+            {
+                var row = _grid.Rows[i];
+                if (row.IsNode && row.Node.Level == 0 && Equals(row.Node.Key, treeGroup))
+                {
+                    parentNode = row.Node;
+                    break;
+                }
+            }
+        }
+        else if (e.ParentNode is TreeDirectoryNode dirNode)
+        {
+            parentNode = FindNode(dirNode);
+        }
+
+        if (parentNode == null) return;
+
+        var siblings = parentNode.Nodes.Cast<Node>().Where(n => n.Level == parentNode.Level + 1).ToList();
+        if (e.Index >= siblings.Count)
+        {
+            parentNode.AddNode(NodeTypeEnum.LastChild, appendNode.Name, appendNode, img);
+        }
+        else
+        {
+            siblings[e.Index].AddNode(NodeTypeEnum.PreviousSibling, appendNode.Name, appendNode, img);
+        }
+
+        static Bitmap GetNodeImage(ImportTypeEnum tp)
+        {
+            switch (tp)
+            {
+                case ImportTypeEnum.Dir: return Resources.TreeDir;
+                case ImportTypeEnum.Doc: return Resources.TreeDoc;
+                case ImportTypeEnum.Table:
+                case ImportTypeEnum.Sheet: return Resources.TreeTable;
+                case ImportTypeEnum.Image: return Auditai.UI.Platform.Properties.Resources.TreeImage;
+                case ImportTypeEnum.Pdf: return Auditai.UI.Platform.Properties.Resources.TreePdf;
+                default: return Resources.TreeDoc;
+            }
+        }
     }
 
     private void AddDocumentEditor(List<DocumentEditor> editors)
     {
+        foreach (var editor in editors)
+        {
+            Program.MainForm.AddDocumentEditor(editor);
+        }
     }
 
     private void DuplicateDirectory(TreeDirectoryNode source, TreeDirectoryNode dup, Node node, System.Text.StringBuilder sb)

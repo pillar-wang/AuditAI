@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -315,6 +315,7 @@ public class StructureEditor : ISetTheme
 	{
 		Auditai.UI.Controls.Theme.SetCurrentTree(View);
 		grdStructureTable.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdStructureTable.Styles.Fixed.Font = grdStructureTable.Font;
 		switch (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.Name)
 		{
 		case "auditai_Office2013LightGray":

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -175,7 +175,7 @@ public class ProjectUsersTileSelector
 			};
 			tt.Paint += delegate(object s1, PaintEventArgs e1)
 			{
-				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, new Font("微软雅黑", 9f));
+				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, new Font("Noto Sans SC", 9f));
 				e1.Graphics.DrawLine(new Pen(Color.FromArgb(0, 73, 92), 1f), new Point(8, tt.Height - 9), new Point(8 + (int)sizeF.Width, tt.Height - 9));
 			};
 			group2.Tiles.Add(tt);
@@ -310,7 +310,7 @@ public class ProjectUsersTileSelector
 		TextElement textElement = new TextElement();
 		textElement.ForeColor = Color.Black;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
+		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(textElement);

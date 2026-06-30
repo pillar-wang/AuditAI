@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -94,6 +94,16 @@ public class Document
 		}
 	}
 
+	/// <summary>
+	/// 文档保存成功后触发，供订阅方执行自动 Push 等协同逻辑。
+	/// </summary>
+	public event EventHandler Saved;
+
+	protected virtual void OnSaved()
+	{
+		Saved?.Invoke(this, EventArgs.Empty);
+	}
+
 	public void Save(IProgress<ProgressInfo> progress = null, TaskProgressValueUpdater taskProgressValueUpdater = null)
 	{
 		Project.Dal.BeginTransaction();
@@ -123,6 +133,7 @@ public class Document
 			MainProgress = 100
 		});
 		taskProgressValueUpdater?.UpdateProgress(100L, 100L);
+		OnSaved();
 	}
 
 	public Document LoadAndReturn()

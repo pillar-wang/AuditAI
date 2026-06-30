@@ -1,0 +1,18 @@
+{
+  "teams": [
+    {
+      "name": "测试团队A",
+      "description": "用于云端验证的测试团队A",
+      "ownerUserName": "admin",
+      "maxMembers": 10,
+      "licenseSeats": 5
+    },
+    {
+      "name": "测试团队B",
+      "description": "用于跨团队越权测试的团队B",
+      "ownerUserName": "testuser1",
+      "maxMembers": 5,
+      "licenseSeats": 3
+    }
+  ]
+}

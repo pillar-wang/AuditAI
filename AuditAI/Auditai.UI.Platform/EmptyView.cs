@@ -42,7 +42,7 @@ public static class EmptyView
 			Height = 47,
 			Top = _sl.Height,
 			FlatStyle = FlatStyle.Flat,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("Noto Sans SC", 9f),
 			Left = left,
 			Anchor = AnchorStyles.Top,
 			Text = "帮助中心",
@@ -93,6 +93,6 @@ public static class EmptyView
 
 	private static string GetHtml(string qq)
 	{
-		return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n<html>\r\n<head><tidtle></title></head>\r\n<body>\r\n<span style=\"height:80px;\"></span>\r\n<p align = 'center' style = \"color:#484848;font: bold 18px 微软雅黑\" > 保持沟通，享受更好服务 </ p >\r\n<p align = 'center' style = \"color:#909090;font: bold 15px 微软雅黑\" > AuditAI 提供全程性服务，为您在使用上保驾护航 </ p >\r\n<p align = 'center' style = \"color:#9c9c9c;font: bold 12px 微软雅黑\" > 官方qq群：" + qq + " </ p >\r\n</body>\r\n</html>";
+		return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n<html>\r\n<head><tidtle></title></head>\r\n<body>\r\n<span style=\"height:80px;\"></span>\r\n<p align = 'center' style = \"color:#484848;font: bold 18px Noto Sans SC\" > 保持沟通，享受更好服务 </ p >\r\n<p align = 'center' style = \"color:#909090;font: bold 15px Noto Sans SC\" > AuditAI 提供全程性服务，为您在使用上保驾护航 </ p >\r\n<p align = 'center' style = \"color:#9c9c9c;font: bold 12px Noto Sans SC\" > 官方qq群：" + qq + " </ p >\r\n</body>\r\n</html>";
 	}
 }

@@ -1,8 +1,9 @@
-namespace Auditai.Model;
+﻿namespace Auditai.Model;
 
 public enum PayStatus
 {
-	Trial,
-	Payed,
-	Free
+	Trial = 0,
+	Payed = 1,
+	Expired = 2,
+	Free = 3
 }

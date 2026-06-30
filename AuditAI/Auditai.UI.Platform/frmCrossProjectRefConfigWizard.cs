@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -24,10 +24,10 @@ namespace Auditai.UI.Platform;
 public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一致
 {
     // 缓存的常用字体（避免重复创建 GDI 资源）
-    private static readonly Font _fontStepTitle = new Font("Microsoft YaHei", 12f, FontStyle.Bold);
-    private static readonly Font _fontNormal = new Font("Microsoft YaHei", 9f);
-    private static readonly Font _fontStatus = new Font("Microsoft YaHei", 10f);
-    private static readonly Font _fontHint = new Font("Microsoft YaHei", 8.5f);
+    private static readonly Font _fontStepTitle = new Font("Noto Sans SC", 12f, FontStyle.Bold);
+    private static readonly Font _fontNormal = new Font("Noto Sans SC", 9f);
+    private static readonly Font _fontStatus = new Font("Noto Sans SC", 10f);
+    private static readonly Font _fontHint = new Font("Noto Sans SC", 8.5f);
 
     private readonly Auditai.Model.Project _currentProject;
     private readonly CrossProjectDataRefStore _store;

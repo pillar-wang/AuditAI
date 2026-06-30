@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -505,7 +505,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.inputPanel.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.inputPanel.DesignScaleFactor = 1.293737f;
 		this.inputPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.inputPanel.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.inputPanel.Items.Add(this.基本信息);
 		this.inputPanel.Items.Add(this.lblNumber);
 		this.inputPanel.Items.Add(this.txtNumber);
@@ -592,7 +592,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlButtons.Size = new System.Drawing.Size(846, 63);
 		this.pnlButtons.TabIndex = 1;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(740, 21);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(70, 26);
@@ -601,7 +601,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnOk.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnOk.Location = new System.Drawing.Point(635, 21);
 		this.btnOk.Name = "btnOk";
 		this.btnOk.Size = new System.Drawing.Size(70, 26);
@@ -630,7 +630,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1SplitterPanel1.Width = 6;
 		this.c1InputPanel3.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel3.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel3.Name = "c1InputPanel3";
 		this.c1InputPanel3.Size = new System.Drawing.Size(6, 416);
@@ -647,7 +647,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlUserHead.SizeRatio = 9.662;
 		this.pnlUserHead.TabIndex = 3;
 		this.txbSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txbSearch.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txbSearch.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txbSearch.Location = new System.Drawing.Point(64, 4);
 		this.txbSearch.Name = "txbSearch";
 		this.txbSearch.Size = new System.Drawing.Size(227, 21);
@@ -682,7 +682,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1InputPanel2.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel2.DesignScaleFactor = 1.293737f;
 		this.c1InputPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel2.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel2.Items.Add(this.inputGroupHeader1);
 		this.c1InputPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel2.Name = "c1InputPanel2";
@@ -702,7 +702,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlEmpty.TabIndex = 4;
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9f);
+		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Name = "c1InputPanel1";
 		this.c1InputPanel1.Size = new System.Drawing.Size(346, 16);
@@ -718,7 +718,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(846, 481);
 		base.Controls.Add(this.ctnMain);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

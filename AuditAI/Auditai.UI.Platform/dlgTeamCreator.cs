@@ -119,7 +119,7 @@ public class dlgTeamCreator : C1RibbonForm
 		C1.Win.C1Tile.TextElement textElement = new C1.Win.C1Tile.TextElement();
 		textElement.ForeColor = Color.Black;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
+		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(panelElement2);
@@ -423,7 +423,7 @@ public class dlgTeamCreator : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(434, 118);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "dlgTeamCreator";
 		this.Text = "创建组织";

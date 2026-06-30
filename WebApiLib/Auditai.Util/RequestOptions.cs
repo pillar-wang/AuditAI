@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 
@@ -25,6 +25,9 @@ public class RequestOptions
 	public bool WithMachineSign { get; set; }
 
 	public string ValidationCode { get; set; }
+
+	/// <summary>激活码，注册时通过 Header 传递给服务端</summary>
+	public string ActivationCode { get; set; }
 
 	public int OutFileLength { get; set; }
 

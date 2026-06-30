@@ -80,7 +80,7 @@ public class FormControlFormula
 			Size = new Size(800, 600),
 			Text = "控制公式",
 			DialogResult = DialogResult.Cancel,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("Noto Sans SC", 9f),
 			StartPosition = FormStartPosition.CenterScreen,
 			ShowInTaskbar = false
 		};

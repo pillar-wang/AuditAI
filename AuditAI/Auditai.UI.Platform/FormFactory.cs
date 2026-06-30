@@ -10,7 +10,7 @@ public static class FormFactory
 
 	static FormFactory()
 	{
-		_font = new Font("微软雅黑", 9f);
+		_font = new Font("Noto Sans SC", 9f);
 	}
 
 	public static C1RibbonForm Create()

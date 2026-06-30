@@ -47,7 +47,7 @@ public class TreeListDropDownForm : ListDropDownFormBase
 			AllowMerging = AllowMergingEnum.None,
 			AllowMergingFixed = AllowMergingEnum.None,
 			AllowSorting = AllowSortingEnum.None,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("Noto Sans SC", 9f),
 			ExtendLastCol = true
 		};
 		Grid.Cols.Count = 1;

@@ -81,7 +81,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("微软雅黑", 9f)
+				Font = new Font("Noto Sans SC", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -310,7 +310,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("微软雅黑", 9f)
+				Font = new Font("Noto Sans SC", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -583,7 +583,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
 				SelectionMode = SelectionModeEnum.Row,
-				Font = new Font("微软雅黑", 9f)
+				Font = new Font("Noto Sans SC", 9f)
 			};
 			Grid.Cols.Count = 0;
 			Grid.Cols.Fixed = 0;
@@ -774,7 +774,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
 				SelectionMode = SelectionModeEnum.Row,
-				Font = new Font("微软雅黑", 9f)
+				Font = new Font("Noto Sans SC", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -1013,7 +1013,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("微软雅黑", 9f)
+				Font = new Font("Noto Sans SC", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -1481,7 +1481,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 		{
 			Dock = DockStyle.Fill,
 			ShowScrollButtons = false,
-			Font = new Font("微软雅黑", 9f)
+			Font = new Font("Noto Sans SC", 9f)
 		};
 		View.SelectedPageChanged += View_SelectedPageChanged;
 		base.Form.Controls.Add(View);
