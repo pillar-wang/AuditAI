@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿﻿﻿﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1FlexGrid;
@@ -334,6 +334,20 @@ public static class Theme
 			BulletColor = Color.FromArgb(72, 97, 140),
 			RibbonTabBorder = Color.FromArgb(198, 198, 198),
 			FormulaEditorBorderColor = Color.FromArgb(200, 200, 200)
+		});
+		RegisterTheme(Auditai.ThemeResource.Properties.Resource1.auditai_FreshLightBlue, "auditai_FreshLightBlue", "小清新浅蓝", ThemeEnum.Typical, new ThemeContext
+		{
+			GradientColor = Color.FromArgb(179, 217, 242),
+			TileColor = Color.FromArgb(255, 74, 144, 217),
+			LargeImage = null,
+			SmallImage = null,
+			BackColor = Color.FromArgb(245, 249, 252),
+			LineColor = Color.FromArgb(74, 144, 217),
+			DarkColor = Color.FromArgb(46, 123, 199),
+			BulletColor = Color.FromArgb(255, 74, 144, 217),
+			RibbonTabBorder = Color.FromArgb(168, 200, 232),
+			FormulaEditorBorderColor = Color.FromArgb(168, 200, 232),
+			ProgressBarColor = Color.FromArgb(74, 144, 217)
 		});
 	}
 

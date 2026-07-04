@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -192,7 +192,7 @@ public class TemplateUsersTileSelector
 			Tile tile = new Tile
 			{
 				Template = _userTemplate,
-				Image1 = Auditai.UI.Controls.Util.GetHeadPic(user, 32, withManagerMark: false),
+				Image1 = Auditai.UI.Controls.Util.GetHeadPic(user, 42, withManagerMark: false),
 				Text1 = user.Name,
 				Text2 = null,
 				Tag = tileTag,
@@ -273,8 +273,8 @@ public class TemplateUsersTileSelector
 	{
 		return new C1TileControlEx
 		{
-			CellWidth = 90,
-			CellHeight = 30,
+			CellWidth = 130,
+			CellHeight = 50,
 			AllowChecking = false,
 			Dock = DockStyle.Fill,
 			CellSpacing = 20,
@@ -320,40 +320,40 @@ public class TemplateUsersTileSelector
 		template.Description = "Win32";
 		PanelElement panelElement = new PanelElement();
 		panelElement.FixedWidth = 50;
-		panelElement.Margin = new Padding(0, 10, 0, 0);
+		panelElement.Margin = new Padding(0, 8, 0, 0);
 		panelElement.Alignment = ContentAlignment.TopCenter;
 		ImageElement imageElement = new ImageElement();
 		imageElement.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement.FixedHeight = 60;
+		imageElement.FixedHeight = 52;
 		imageElement.FixedWidth = 50;
 		imageElement.ImageSelector = ImageSelector.Image1;
 		panelElement.Children.Add(imageElement);
 		PanelElement panelElement2 = new PanelElement();
-		panelElement2.FixedHeight = 20;
+		panelElement2.FixedHeight = 18;
 		panelElement2.FixedWidth = 130;
 		panelElement2.Alignment = ContentAlignment.BottomCenter;
 		TextElement textElement = new TextElement();
 		textElement.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
-		textElement.SingleLine = false;
-		textElement.FixedHeight = 20;
+		textElement.SingleLine = true;
+		textElement.FixedHeight = 18;
 		textElement.FixedWidth = 130;
-		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+		textElement.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
 		textElement.TextSelector = TextSelector.Text1;
 		panelElement2.Children.Add(textElement);
 		panelElement2.Dock = DockStyle.Bottom;
 		PanelElement panelElement3 = new PanelElement();
-		panelElement3.FixedHeight = 20;
+		panelElement3.FixedHeight = 18;
 		panelElement3.FixedWidth = 130;
 		panelElement3.Alignment = ContentAlignment.BottomCenter;
 		TextElement textElement2 = new TextElement();
 		textElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		textElement2.TextTrimming = TextTrimming.EndEllipsis;
-		textElement2.SingleLine = false;
-		textElement2.FixedHeight = 20;
+		textElement2.SingleLine = true;
+		textElement2.FixedHeight = 18;
 		textElement2.FixedWidth = 130;
+		textElement2.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
 		textElement2.TextSelector = TextSelector.Text2;
-		textElement2.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
 		panelElement3.Children.Add(textElement2);
 		panelElement3.Dock = DockStyle.Bottom;
 		template.Elements.Add(panelElement3);

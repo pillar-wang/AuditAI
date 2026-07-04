@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -243,7 +243,7 @@ namespace Auditai.LocalDataStore
                 jObj["OldProject"] = sourceProjectId;
                 jObj["NewProject"] = JToken.FromObject(newTemplate);
                 jObj["ClearPermissions"] = true;
-                await WebApiClient.DuplicateProject(jObj);
+                await WebApiClient.SaveProjectAsTemplate(jObj);
             }
         }
 

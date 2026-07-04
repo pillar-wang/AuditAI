@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -219,7 +219,23 @@ public class Project
 			return;
 		}
 		isLoaded = true;
-		Version = Dal.GetProject().Version;
+		var projectDto = Dal.GetProject();
+		if (projectDto == null)
+		{
+			Dal.SaveProject(new Auditai.DTO.Project
+			{
+				Id = Id,
+				Name = Name ?? "",
+				ParentId = Id,
+				Version = 0,
+				Number = Number ?? "",
+				Category = Category ?? "",
+				Note = Note ?? "",
+				CreateTime = CreateTime
+			});
+			projectDto = Dal.GetProject();
+		}
+		Version = projectDto?.Version ?? 0;
 		TreeGroups.Clear();
 		RemovedTreeGroups.Clear();
 		RemovedTreeNodes.Clear();

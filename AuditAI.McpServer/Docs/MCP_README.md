@@ -310,3 +310,85 @@ AuditAI MCP Server 将审计系统的核心功能暴露为 MCP (Model Context Pr
 2. `publish_server`
 3. `deploy_to_production`
 4. `get_server_health`（验证部署成功）
+
+## 云端功能全面自动化测试覆盖（34 个新工具）
+
+> 来源 spec: cloud-comprehensive-automation-coverage  
+> 新增工具: 26 admin_* + 3 cloud_* + 5 scenario + 3 comprehensive = 37 个  
+> 总工具数: 278
+
+### AdminApiTools — 管理后台 API 工具集（26 个）
+
+管理后台端口 8958，使用 AdminAuthToken 认证。
+
+**统计模块**
+- `admin_get_stats` — 获取系统统计数据
+
+**用户管理（6 个）**
+- `admin_list_users` — 列出所有用户
+- `admin_create_user` — 创建用户
+- `admin_update_user` — 更新用户信息
+- `admin_reset_user_password` — 重置用户密码
+- `admin_toggle_user_active` — 切换用户激活状态
+- `admin_delete_user` — 删除用户
+
+**许可管理（6 个）**
+- `admin_list_licenses` — 列出所有许可证
+- `admin_create_license` — 创建许可证
+- `admin_renew_license` — 续期许可证
+- `admin_update_license_quota` — 更新许可配额
+- `admin_deactivate_machine` — 停用机器码
+- `admin_list_expiring_licenses` — 列出即将过期许可证
+
+**激活码（5 个）**
+- `admin_import_activation_codes` — 导入激活码
+- `admin_generate_activation_codes` — 生成激活码
+- `admin_list_activation_codes` — 列出激活码
+- `admin_disable_activation_code` — 禁用激活码
+- `admin_delete_activation_code` — 删除激活码
+
+**团队与邀请（7 个）**
+- `admin_list_teams` — 列出所有团队
+- `admin_create_team` — 创建团队
+- `admin_update_team` — 更新团队
+- `admin_list_team_members` — 列出团队成员
+- `admin_remove_team_member` — 移除团队成员
+- `admin_list_invitations` — 列出邀请
+- `admin_revoke_invitation` — 撤销邀请
+
+**管理员操作**
+- `admin_change_password` — 修改管理员密码
+
+### CloudApiTools 新增工具（3 个）
+
+- `cloud_get_username_by_email` — 通过邮箱获取用户名（GET /api/User/GetUsernameByEmail）
+- `cloud_get_validate_code_by_email` — 通过邮箱获取验证码（GET /api/User/GetValidateCodeByEmail）
+- `cloud_delete_project_from_server` — 从服务器物理删除项目（POST /api/Project/DeleteProjectFromServer）
+
+### ScenarioTools 新增场景（5 个）
+
+- `run_admin_module_flow` — 管理后台全模块测试（23 步：登录→统计→用户CRUD→许可CRUD→团队CRUD→激活码CRUD→清理）
+- `run_team_advanced_flow` — 团队高级管理测试（14 步：登录→创建团队→更新名称→用户分组→合并请求→清理）
+- `run_user_query_flow` — 用户查询全场景（12 步：用户名/手机/邮箱/验证码等查询端点）
+- `run_table_advanced_query_flow` — 表格高级查询（10 步：登录→项目→推送→时间线→版本查询→回滚→列信息→拉取）
+- `run_full_cloud_regression_suite` — 全云端回归套件（18 个场景依次执行，continueOnFailure=true）
+
+### ComprehensiveReportTools — 综合报告工具集（3 个）
+
+- `list_uncovered_endpoints` — 扫描服务端 Program.cs 所有 HTTP 端点，与已注册工具映射对比，计算未覆盖端点列表与覆盖率百分比
+- `generate_comprehensive_report` — 汇总当前会话所有断言结果，按 10 个模块分组生成 Markdown 综合报告（含 Go/No-Go 结论）
+- `compare_with_comprehensive_baseline` — 与历史基线报告对比
+
+### 配置要求（管理后台）
+
+在 `App.config` 中新增以下配置项：
+
+```xml
+<add key="AdminBaseUrl" value="http://82.156.108.218:8958" />
+<add key="AdminTestUser" value="admin" />
+<add key="AdminTestPassword" value="admin" />
+```
+
+### 测试夹具
+
+`TestFixtures/seed_admin_users.json` 包含管理后台测试账号配置。

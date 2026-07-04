@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -60,7 +60,7 @@ public class FormProjectMembers
 		}
 		set
 		{
-			UserSet.Config.ProjectMembersViewMode = (dynamic)value;
+			UserSet.Config.ProjectMembersViewMode = value;
 		}
 	}
 
@@ -304,7 +304,7 @@ public class FormProjectMembers
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 		catch (TimeoutException ex2)
 		{

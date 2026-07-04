@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Auditai.Model;
@@ -157,6 +157,20 @@ namespace AuditAI.McpServer.State
             get => CurrentSession.HttpClient;
             set => CurrentSession.HttpClient = value;
         }
+
+        // ===== 管理后台测试上下文 =====
+        //
+        // 说明：管理后台（端口 8958）的测试上下文。AdminBaseUrl 由 App.config 加载，
+        // AdminAuthToken/AdminUserId 在管理后台登录后由 AdminApiTools 设置。
+
+        /// <summary>管理后台 Token（默认 null）</summary>
+        public static string AdminAuthToken;
+
+        /// <summary>管理后台用户 ID（默认 0）</summary>
+        public static long AdminUserId;
+
+        /// <summary>管理后台地址（默认 null，由 App.config 加载）</summary>
+        public static string AdminBaseUrl;
 
         // 多会话隔离
         private static readonly object _sessionLock = new object();

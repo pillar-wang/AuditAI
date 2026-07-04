@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -1028,7 +1028,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1577,7 +1577,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1791,7 +1791,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1808,71 +1808,6 @@ public class FormProjectManage : ISetTheme
 		}
 		else
 		{
-			if (Program.ClientPlatformType == PlatformType.EnterpriseManagerPlatform || Program.ClientPlatformType == PlatformType.EnterpriseReportPlatform || Program.ClientPlatformType == PlatformType.TableDevelopPlatform || Program.ClientPlatformType == PlatformType.ProductionCostAccountingSystem || Program.ClientPlatformType == PlatformType.ContractLedgerManagementSystem || Program.ClientPlatformType == PlatformType.RDExpenseLedgerSystem || Program.ClientPlatformType == PlatformType.SalesOrderManagementSystem || Program.ClientPlatformType == PlatformType.PSIManagementSystem || Program.ClientPlatformType == PlatformType.ProjectLedgerManagementSystem || Program.ClientPlatformType == PlatformType.Custom)
-			{
-				if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Exclamation, "警告：此操作将彻底删除所选" + text + "的数据，无法恢复，请谨慎确认此次操作！\n\n若确认要删除【" + SelectedProject.Name + "】，点击“确定”。", MessageBoxButtons.OKCancel) != DialogResult.OK)
-				{
-					return;
-				}
-				if (TokenTimer.LoginInfo != null && TokenTimer.LoginInfo.LoginMode == LoginMode.SMS)
-				{
-					try
-					{
-						if (!StorageRouter.IsLocalMode)
-						{
-							string text2 = await WebApiClient.GetDeleteProjectValidateCode(UserSet.LoginPhone);
-							string text3 = InputForm.Text("删除验证", "请输入您收到的验证码以防止是在您的误操作下删除" + text + "：", null, 256);
-							if (text3 == null)
-							{
-								return;
-							}
-							if (text3.Trim() != text2)
-							{
-								Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "输入的验证码不正确，终止删除操作！");
-								return;
-							}
-						}
-					}
-					catch (HttpRequestException ex)
-					{
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
-						return;
-					}
-					catch (Exception ex2)
-					{
-						ex2.Log();
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.Message);
-						return;
-					}
-				}
-				else
-				{
-					string text4 = InputForm.Password("删除验证", "请输入您的登录密码以防止是在您的误操作下删除" + text + "：", null, 256);
-					if (text4 == null)
-					{
-						return;
-					}
-					if (frmLogin.GetPasswordEncryptValue(text4.Trim()) != UserSet.LoginPassword)
-					{
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "输入的密码不正确，终止删除操作！");
-						return;
-					}
-				}
-				try
-				{
-					List<Guid> o = new List<Guid> { SelectedProject.Id };
-					JObject jObject = new JObject();
-					jObject["Ids"] = JToken.FromObject(o);
-					await StorageRouter.DeleteProjectFromServer(jObject);
-					await Populate();
-					return;
-				}
-				catch (HttpRequestException ex3)
-				{
-					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
-					return;
-				}
-			}
 			if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, "确定要删除" + text + "吗？", MessageBoxButtons.OKCancel) == DialogResult.OK)
 			{
 				try
@@ -1977,7 +1912,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2023,7 +1958,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2240,7 +2175,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2315,7 +2250,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2344,7 +2279,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2413,7 +2348,7 @@ public class FormProjectManage : ISetTheme
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -2505,14 +2440,18 @@ public class FormProjectManage : ISetTheme
 		{
 			return false;
 		}
-		if (SelectedProject.Users == null)
+		// 服务端列表接口（QueryProjectsAsync/ReadProject）返回的 Users 可能为空集合，
+		// 此时若当前用户可见该项目，视为 Manager（实际删除/修改由服务端最终鉴权）。
+		var users = SelectedProject.Users;
+		if (users == null || !users.Any())
 		{
-			return false;
+			return true;
 		}
-		Auditai.DTO.User user = SelectedProject.Users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
+		Auditai.DTO.User user = users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
 		if (user == null)
 		{
-			return false;
+			// 当前用户不在成员列表中（服务端未返回完整成员），按可见即允许处理
+			return true;
 		}
 		return user.Role == UserRole.Manager;
 	}
@@ -2523,14 +2462,16 @@ public class FormProjectManage : ISetTheme
 		{
 			return false;
 		}
-		if (SelectedProject.Users == null)
+		// 同 CanModifyProject：服务端返回空 Users 时按可见即允许处理。
+		var users = SelectedProject.Users;
+		if (users == null || !users.Any())
 		{
-			return false;
+			return true;
 		}
-		Auditai.DTO.User user = SelectedProject.Users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
+		Auditai.DTO.User user = users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
 		if (user == null)
 		{
-			return false;
+			return true;
 		}
 		if (user.Role != 0)
 		{
@@ -2579,14 +2520,16 @@ public class FormProjectManage : ISetTheme
 		{
 			return true;
 		}
-		if (SelectedProject.Users == null)
+		// 同 CanModifyProject：服务端返回空 Users 时按可见即允许处理。
+		var users = SelectedProject.Users;
+		if (users == null || !users.Any())
 		{
-			return false;
+			return true;
 		}
-		Auditai.DTO.User user = SelectedProject.Users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
+		Auditai.DTO.User user = users.FirstOrDefault((Auditai.DTO.User u) => u.Id == Auditai.Model.User.Current.Id);
 		if (user == null)
 		{
-			return false;
+			return true;
 		}
 		return user.Role == UserRole.Editor;
 	}
@@ -2734,21 +2677,30 @@ public class FormProjectManage : ISetTheme
 
 	private async void _form_Shown(object sender, EventArgs e)
 	{
-		if (Program.MainForm.CurrentEdition is AppEditionGeneral)
+		try
 		{
-			_ribbon.HideTabHeaderRow = true;
-		}
-		PopulateViewMode();
-		PopulateSearch();
-		Theme.SetCurrentTree(_form);
-		SetTheme();
-		State = ViewState.Project;
-		await Populate();
-		if (!(Program.MainForm.CurrentEdition is AppEditionGeneral) && _projects.Count == 0)
-		{
-			State = ViewState.Template;
-			_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+			if (Program.MainForm.CurrentEdition is AppEditionGeneral)
+			{
+				_ribbon.HideTabHeaderRow = true;
+			}
+			PopulateViewMode();
+			PopulateSearch();
+			Theme.SetCurrentTree(_form);
+			SetTheme();
+			State = ViewState.Project;
 			await Populate();
+			if (!(Program.MainForm.CurrentEdition is AppEditionGeneral) && _projects.Count == 0)
+			{
+				State = ViewState.Template;
+				_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+				await Populate();
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.Log("FormProjectManage._form_Shown 异常");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "加载项目管理界面异常：" + ex.Message + "\n" + ex.StackTrace);
+			_form.Close();
 		}
 	}
 

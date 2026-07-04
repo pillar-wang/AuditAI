@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -807,7 +807,7 @@ public class FormTimelineViewer
 			}
 			catch (HttpRequestException ex)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 		}
 		PopulateTable();
@@ -834,7 +834,7 @@ public class FormTimelineViewer
 			}
 			catch (HttpRequestException ex)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 		}
 		await Task.Yield();
@@ -876,7 +876,7 @@ public class FormTimelineViewer
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, string.Format(ex.InnerException.Message, StringConstBase.Current.Manager));
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, string.Format(ex.InnerException?.Message ?? ex.Message, StringConstBase.Current.Manager));
 		}
 	}
 
@@ -909,7 +909,7 @@ public class FormTimelineViewer
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 

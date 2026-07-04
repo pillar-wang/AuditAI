@@ -1,4 +1,4 @@
-﻿namespace Auditai.UI.Platform;
+namespace Auditai.UI.Platform;
 
 /// <summary>
 /// 可选的表格导航树状态缓存辅助类。

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -61,6 +61,11 @@ public static class SignalRClient
 			catch (HttpRequestException)
 			{
 			}
+			catch (Exception)
+			{
+				// 必须捕获所有异常：async void 中未捕获的非 Timeout/HttpRequest 异常
+				// 会触发 UnobservedTaskException 导致进程崩溃。
+			}
 		}
 		_callingStop = false;
 	}
@@ -111,18 +116,27 @@ public static class SignalRClient
 			_hubProxies.Add(_hp.On<string, FileSection>("PeerFileSectionArrived", PeerFileSectionArrived));
 			_hubProxies.Add(_hp.On<string, string, string, string>("PeerOpenTicketNavTreeNode", PeerOpenTicketNavTreeNode));
 			try
+		{
+			// 加 15 秒超时保护：HubConnection.Start() 在 URL 错误或服务端不响应时
+			// 可能阻塞 15-90 秒（HttpClient 默认 100s + TransportConnectTimeout × 3 传输），
+			// 期间 UI 会卡死。超时后让 Start 静默失败，State 保持 Disconnected，
+			// 后续 Login/QueryOnlineTeam 等方法的 State 检查会立即短路返回。
+			Task startTask = _hc.Start();
+			if (await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(15.0))) != startTask)
 			{
-				await _hc.Start();
+				// 超时：尝试停止连接以释放底层资源
+				try { _hc.Stop(TimeSpan.FromSeconds(2.0)); } catch { }
 			}
-			catch (TimeoutException)
-			{
-			}
-			catch (HttpRequestException)
-			{
-			}
-			catch (Exception)
-			{
-			}
+		}
+		catch (TimeoutException)
+		{
+		}
+		catch (HttpRequestException)
+		{
+		}
+		catch (Exception)
+		{
+		}
 		}
 	}
 
@@ -431,7 +445,7 @@ public static class SignalRClient
 
 	public static async Task ChangeTeamMember(string userId, string oldTeamId, string newTeamId)
 	{
-		if (_hc == null || _hp == null)
+		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
 			return;
 		}
@@ -456,7 +470,7 @@ public static class SignalRClient
 
 	public static async Task ChangeProjectMember(string projectId)
 	{
-		if (_hc == null || _hp == null)
+		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
 			return;
 		}
@@ -477,7 +491,7 @@ public static class SignalRClient
 
 	public static async Task ChangeMemberInfo(string userId)
 	{
-		if (_hc == null || _hp == null)
+		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
 			return;
 		}
@@ -498,7 +512,9 @@ public static class SignalRClient
 
 	public static async Task<IEnumerable<UserState>> QueryOnlineTeam(string teamId)
 	{
-		if (_hc == null || _hp == null)
+		// 必须检查 _hc.State == Connected：未连接时 _hp.Invoke 会阻塞或抛异常导致登录卡死。
+		// 与 Login (line 156) 保持一致。
+		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
 			return null;
 		}
@@ -506,15 +522,19 @@ public static class SignalRClient
 		{
 			return await _hp.Invoke<IEnumerable<UserState>>("QueryOnlineTeam", new object[1] { teamId });
 		}
-		catch (Exception ex) when (!(ex is TimeoutException) || !(ex is HttpRequestException))
+		catch (Exception)
 		{
+			// 原代码 catch when (!(ex is TimeoutException) || !(ex is HttpRequestException))
+			// 是永真式（德摩根律：!(A) || !(B) == !(A && B)，而异常不可能同时是两种类型）
+			// 等价于 catch (Exception)，此处简化为明确语义。
 			return null;
 		}
 	}
 
 	public static async Task<IEnumerable<UserState>> QueryOnlineProject(string projectId)
 	{
-		if (_hc == null || _hp == null)
+		// 必须检查 _hc.State == Connected（同 QueryOnlineTeam）。
+		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
 			return null;
 		}
@@ -522,8 +542,9 @@ public static class SignalRClient
 		{
 			return await _hp.Invoke<IEnumerable<UserState>>("QueryOnlineProject", new object[1] { projectId });
 		}
-		catch (Exception ex) when (!(ex is TimeoutException) || !(ex is HttpRequestException))
+		catch (Exception)
 		{
+			// 同 QueryOnlineTeam：原 catch when 是永真式，简化为 catch (Exception)。
 			return null;
 		}
 	}

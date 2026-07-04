@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -96,6 +96,8 @@ public class frmSelectProjectData : C1RibbonForm
         _mode = mode;
         _currentStep = 0;
         InitializeComponent();
+
+
         UpdateStepUI();
     }
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Configuration;
 
 namespace AuditAI.McpServer
@@ -21,6 +21,9 @@ namespace AuditAI.McpServer
 
             // 初始化本地存储模式
             Auditai.LocalDataStore.StorageRouter.Initialize();
+
+            // 加载管理后台基地址（Task 1：管理后台上下文，端口 8958）
+            AuditAI.McpServer.State.SessionState.AdminBaseUrl = ConfigurationManager.AppSettings["AdminBaseUrl"] ?? "http://82.156.108.218:8958";
 
             // 初始化本地用户和团队（复用 Program.cs 中的逻辑）
             InitializeLocalUser();
@@ -69,7 +72,10 @@ namespace AuditAI.McpServer
             AuditAI.McpServer.Tools.TestReportTools.Register();
             AuditAI.McpServer.Tools.CollaborationReadinessTools.Register();
             AuditAI.McpServer.Tools.AcceptanceReportTools.Register();
-            Console.Error.WriteLine("[Program] Cloud verification toolsets registered.");
+            // 云端功能全面自动化测试覆盖（cloud-comprehensive-automation-coverage spec）
+            AuditAI.McpServer.Tools.AdminApiTools.Register();
+            AuditAI.McpServer.Tools.ComprehensiveReportTools.Register();
+            Console.Error.WriteLine("[Program] Cloud verification toolsets registered (incl. Admin + Comprehensive).");
 
             // 启动 MCP 协议主循环
             AuditAI.McpServer.Protocol.McpServer.Run();

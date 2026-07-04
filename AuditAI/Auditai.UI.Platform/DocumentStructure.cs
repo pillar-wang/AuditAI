@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -140,7 +140,7 @@ public class DocumentStructure : ISetTheme
 		int selLen = _tx.Selection.Length;
 		View.BeginUpdate();
 		View.Rows.Count = 0;
-		int pc = ((dynamic)_tx).Paragraphs.Count;
+		int pc = _tx.Paragraphs.Count;
 		List<NumberingHelper.Numbering> list = new List<NumberingHelper.Numbering>();
 		ProgressForm<object> progressForm = new ProgressForm<object>(delegate(IProgress<ProgressInfo> iProg)
 		{
@@ -158,11 +158,11 @@ public class DocumentStructure : ISetTheme
 						});
 						Application.DoEvents();
 					}
-					var paragraph = ((dynamic)_tx).Paragraphs[j];
+					var paragraph = _tx.Paragraphs[j];
 					_tx.Select(paragraph.Start - 1, 0);
 					if (_tx.Tables.GetItem() == null)
 					{
-						var item = ((dynamic)_tx).DocumentTargets.GetItem();
+						object item = _tx.DocumentTargets.GetItem();
 						string text = paragraph.Text;
 						NumberingHelper.Numbering i = NumberingHelper.Matches(text);
 						if (i != null)
@@ -204,7 +204,7 @@ public class DocumentStructure : ISetTheme
 
 	public int AutoNumber()
 	{
-		int pc = ((dynamic)_tx).Paragraphs.Count;
+		int pc = _tx.Paragraphs.Count;
 		List<NumberingHelper.Numbering> list = new List<NumberingHelper.Numbering>();
 		List<AutoNumberChange> changes = new List<AutoNumberChange>();
 		try
@@ -212,7 +212,7 @@ public class DocumentStructure : ISetTheme
 			_de.DetachEvents();
 			for (int j = 1; j <= pc; j++)
 			{
-				var paragraph = ((dynamic)_tx).Paragraphs[j];
+				var paragraph = _tx.Paragraphs[j];
 				_tx.Select(paragraph.Start - 1, 0);
 				if (_tx.Tables.GetItem() != null)
 				{

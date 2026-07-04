@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -161,7 +161,6 @@ public class TicketNavGrid : UserControl, ISetTheme
     private bool _shouldSkipBodyAfterRowColChange = true;
     private int _hasFilledVirtualNodeCount;
     private List<NavNode> _needSortNodeList = new List<NavNode>();
-    private bool _shouldSkipBodyAfterRowColChange2 = true;
 
     public List<TicketRecord> RecordList { get; private set; } = new List<TicketRecord>();
     public int SelectedVirtualNodeRowIndex { get; set; } = -1;

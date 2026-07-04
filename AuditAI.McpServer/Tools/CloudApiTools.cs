@@ -1,9 +1,12 @@
-using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using AuditAI.McpServer.Protocol;
 using AuditAI.McpServer.Services;
 using AuditAI.McpServer.State;
@@ -32,6 +35,7 @@ namespace AuditAI.McpServer.Tools
             RegisterTaskTools();        // SubTask 4.7
             RegisterDictionaryTools();  // SubTask 4.8
             RegisterLicenseTools();     // SubTask 4.9
+            RegisterExtendedTools();    // Task 4-7 扩展：未覆盖端点
         }
 
         // =====================================================================
@@ -44,7 +48,10 @@ namespace AuditAI.McpServer.Tools
 
         private static void RegisterAuthTools()
         {
-            // cloud_login: GET /api/User/AccountLogin?userName=&password=&version=
+            // cloud_login: GET /api/User/AccountLogin?userName=&password=&version=&machineCode=
+            // 注意：服务器期望 password 字段为 Base64(SHA256(明文)) 格式，既不是明文，
+            // 也不是小写16进制 SHA256（与服务端种子数据 Convert.ToBase64String(SHA256.HashData(...)) 一致）。
+            // 工具内部会自动完成明文 → Base64(SHA256) 的转换，调用方传入明文即可。
             ToolRegistry.Register("cloud_login",
                 "登录服务端并获取 Token。登录成功后自动保存 Token 和 UserId 到当前会话，后续 cloud_* 工具会自动携带。",
                 new JObject
@@ -53,8 +60,9 @@ namespace AuditAI.McpServer.Tools
                     ["properties"] = new JObject
                     {
                         ["userName"] = new JObject { ["type"] = "string", ["description"] = "用户名" },
-                        ["password"] = new JObject { ["type"] = "string", ["description"] = "密码" },
+                        ["password"] = new JObject { ["type"] = "string", ["description"] = "密码（明文，工具内部会自动转换为 Base64(SHA256) 格式发送）" },
                         ["version"] = new JObject { ["type"] = "string", ["description"] = "客户端版本号（可选，默认 1.0.0）" },
+                        ["machineCode"] = new JObject { ["type"] = "string", ["description"] = "机器码（可选，默认 TEST-MC-MCP-001）" },
                         ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选，用于多会话场景，默认 main）" }
                     },
                     ["required"] = new JArray { "userName", "password" }
@@ -62,15 +70,27 @@ namespace AuditAI.McpServer.Tools
                 (args) =>
                 {
                     string userName = args["userName"] != null ? args["userName"].ToString() : null;
-                    string password = args["password"] != null ? args["password"].ToString() : null;
+                    string plainPassword = args["password"] != null ? args["password"].ToString() : null;
                     string version = args["version"] != null ? args["version"].ToString() : "1.0.0";
+                    string machineCode = args["machineCode"] != null ? args["machineCode"].ToString() : "TEST-MC-MCP-001";
                     string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
+
+                    // 明文密码 → Base64(SHA256(明文))，匹配服务端期望的密码格式
+                    // 注：SHA256.HashData 为 .NET 5+ API，本项目目标为 .NET Framework，
+                    // 故使用等价的 SHA256.Create().ComputeHash() 写法。
+                    byte[] passwordHash;
+                    using (var sha256 = SHA256.Create())
+                    {
+                        passwordHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainPassword ?? ""));
+                    }
+                    string password = Convert.ToBase64String(passwordHash);
 
                     var query = new Dictionary<string, string>
                     {
                         { "userName", userName },
                         { "password", password },
-                        { "version", version }
+                        { "version", version },
+                        { "machineCode", machineCode }
                     };
 
                     var resp = CloudApiClient.GetAsync("/api/User/AccountLogin", query, sessionName, withAuth: false);
@@ -2751,6 +2771,86 @@ namespace AuditAI.McpServer.Tools
         }
 
         // =====================================================================
+        // Task 4-7 扩展：未覆盖端点工具（3 个）
+        // 现有 101 个 cloud_* 工具已覆盖大部分端点；以下补齐 3 个尚未覆盖的端点：
+        //   - User: GetUsernameByEmail、GetValidateCodeByEmail
+        //   - Project: DeleteProjectFromServer
+        // 其余 42 个任务清单中的端点已由现有工具覆盖（部分以不同名称注册），
+        // 按任务要求跳过重复端点。
+        // =====================================================================
+
+        private static void RegisterExtendedTools()
+        {
+            // cloud_get_username_by_email: GET /api/User/GetUsernameByEmail?email={email}
+            ToolRegistry.Register("cloud_get_username_by_email",
+                "按邮箱反查用户名。GET /api/User/GetUsernameByEmail?email={email}。",
+                new JObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JObject
+                    {
+                        ["email"] = new JObject { ["type"] = "string", ["description"] = "邮箱地址" },
+                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
+                    },
+                    ["required"] = new JArray { "email" }
+                },
+                (args) =>
+                {
+                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
+                    var query = new Dictionary<string, string>();
+                    if (args["email"] != null) query["email"] = args["email"].ToString();
+                    return ExecuteCloudWithAutoLogin(() =>
+                        CloudApiClient.GetAsync("/api/User/GetUsernameByEmail", query, sessionName, withAuth: true));
+                });
+
+            // cloud_get_validate_code_by_email: GET /api/User/GetValidateCodeByEmail?email={email}
+            // 不需要 Token（邮箱验证码发送端点）
+            ToolRegistry.Register("cloud_get_validate_code_by_email",
+                "按邮箱发送验证码。GET /api/User/GetValidateCodeByEmail?email={email}。服务端生成验证码并通过邮件发送。",
+                new JObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JObject
+                    {
+                        ["email"] = new JObject { ["type"] = "string", ["description"] = "已注册的邮箱地址" },
+                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
+                    },
+                    ["required"] = new JArray { "email" }
+                },
+                (args) =>
+                {
+                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
+                    var query = new Dictionary<string, string>();
+                    if (args["email"] != null) query["email"] = args["email"].ToString();
+                    var resp = CloudApiClient.GetAsync("/api/User/GetValidateCodeByEmail", query, sessionName, withAuth: false);
+                    return resp.ToJson();
+                });
+
+            // cloud_delete_project_from_server: POST /api/Project/DeleteProjectFromServer
+            // Body: { projectId }；物理删除项目及关联数据（不可恢复，区别于软删除 cloud_delete_project）
+            ToolRegistry.Register("cloud_delete_project_from_server",
+                "物理删除项目（从服务器永久删除 Projects + ProjectMembers + 关联数据，不可恢复）。请求体 { projectId }。",
+                new JObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JObject
+                    {
+                        ["projectId"] = new JObject { ["type"] = "string", ["description"] = "项目 Id（GUID）" },
+                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
+                    },
+                    ["required"] = new JArray { "projectId" }
+                },
+                (args) =>
+                {
+                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
+                    var body = new JObject();
+                    if (args["projectId"] != null) body["projectId"] = args["projectId"].ToString();
+                    return ExecuteCloudWithAutoLogin(() =>
+                        CloudApiClient.PostJsonAsync("/api/Project/DeleteProjectFromServer", body, sessionName, withAuth: true));
+                });
+        }
+
+        // =====================================================================
         // 内部辅助方法
         // =====================================================================
 
@@ -2946,6 +3046,140 @@ namespace AuditAI.McpServer.Tools
             SessionState.CurrentSession.LastResponse = tr;
             Console.Error.WriteLine("[CloudApi] " + method + " " + url + " -> EX " + msg);
             return tr;
+        }
+
+        /// <summary>
+        /// 统一执行需要认证的云端 API 调用：若 CurrentAuthToken 为空先自动登录，
+        /// 调用 action 发起请求，捕获异常并返回结构化 JSON。
+        /// 登录失败不中断流程，继续调用 API（让服务端返回 401 以便断言）。
+        /// </summary>
+        /// <param name="action">发起云端请求的委托（返回 TestResponse）</param>
+        /// <returns>结构化 JSON 字符串（TestResponse.ToJson 或错误对象）</returns>
+        private static string ExecuteCloudWithAutoLogin(Func<TestResponse> action)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(SessionState.CurrentAuthToken))
+                {
+                    try
+                    {
+                        string loginErr = TryLoginAsync().GetAwaiter().GetResult();
+                        if (loginErr != null)
+                        {
+                            Console.Error.WriteLine("[CloudApi] 自动登录失败: " + loginErr);
+                        }
+                    }
+                    catch (Exception lex)
+                    {
+                        Console.Error.WriteLine("[CloudApi] 自动登录异常: " + lex.Message);
+                    }
+                }
+                TestResponse resp = action();
+                return resp != null ? resp.ToJson() : "{\"error\":\"no response\",\"statusCode\":0}";
+            }
+            catch (Exception ex)
+            {
+                string msg = EscapeJsonString(ex.Message);
+                return "{\"error\":\"" + msg + "\",\"statusCode\":0}";
+            }
+        }
+
+        /// <summary>
+        /// 尝试使用配置的测试账号登录云端服务端（8957 端口），提取 Token/UserId 存入 SessionState。
+        /// 从 App.config 的 TestUserName / TestPassword 读取，未配置时返回错误。
+        /// 调用 GET /api/User/AccountLogin，解析 Item1.TokenValue 与 Item2.Id。
+        /// </summary>
+        /// <param name="userName">用户名（可选，默认从配置读取）</param>
+        /// <param name="password">密码（可选，默认从配置读取）</param>
+        /// <returns>null 表示成功，非 null 字符串表示错误消息</returns>
+        private static Task<string> TryLoginAsync(string userName = null, string password = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userName))
+                {
+                    try { userName = ConfigurationManager.AppSettings["TestUserName"]; }
+                    catch { /* 读取配置异常 */ }
+                }
+                if (string.IsNullOrEmpty(password))
+                {
+                    try { password = ConfigurationManager.AppSettings["TestPassword"]; }
+                    catch { /* 读取配置异常 */ }
+                }
+
+                if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+                {
+                    return Task.FromResult("TestUserName/TestPassword not configured in App.config");
+                }
+
+                // 明文密码 → Base64(SHA256(明文))，匹配服务端期望的密码格式
+                // 注：SHA256.HashData 为 .NET 5+ API，本项目目标为 .NET Framework 4.6.2，
+                // 故使用等价的 SHA256.Create().ComputeHash() 写法。
+                string hashedPassword;
+                using (var sha256 = SHA256.Create())
+                {
+                    byte[] passwordHash = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                    hashedPassword = Convert.ToBase64String(passwordHash);
+                }
+
+                // 读取 machineCode（首次登录会自动绑定）
+                string machineCode = "TEST-MC-MCP-001";
+                try
+                {
+                    string configMachineCode = ConfigurationManager.AppSettings["TestMachineCode"];
+                    if (!string.IsNullOrEmpty(configMachineCode)) machineCode = configMachineCode;
+                }
+                catch { /* 读取配置异常时使用默认值 */ }
+
+                var query = new Dictionary<string, string>
+                {
+                    { "userName", userName },
+                    { "password", hashedPassword },
+                    { "version", "1" },
+                    { "machineCode", machineCode }
+                };
+
+                TestResponse resp = CloudApiClient.GetAsync("/api/User/AccountLogin", query, null, withAuth: false);
+                if (resp.StatusCode != 200)
+                {
+                    return Task.FromResult("Cloud login HTTP " + resp.StatusCode + ": " + (resp.Body ?? ""));
+                }
+
+                var body = JObject.Parse(resp.Body ?? "{}");
+                var token = body["Item1"] != null
+                    ? (body["Item1"]["TokenValue"] ?? body["Item1"]["Token"] ?? body["Item1"]["LastToken"])
+                    : null;
+                string tokenStr = token != null ? token.ToString() : null;
+                long userId = 0;
+                var userIdToken = body["Item2"] != null ? body["Item2"]["Id"] : null;
+                if (userIdToken != null) userId = userIdToken.Value<long>();
+
+                if (string.IsNullOrEmpty(tokenStr) || userId <= 0)
+                {
+                    return Task.FromResult("Cloud login response missing Token/UserId");
+                }
+
+                CloudApiClient.SetAuthToken(null, tokenStr, userId);
+                return Task.FromResult<string>(null);
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult("Cloud login exception: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 转义字符串以便安全嵌入 JSON 字符串字面量。
+        /// 与 CloudApiClient.CaptureException 的转义逻辑保持一致。
+        /// </summary>
+        private static string EscapeJsonString(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            return s
+                .Replace("\\", "\\\\")
+                .Replace("\"", "\\\"")
+                .Replace("\r", " ")
+                .Replace("\n", " ");
         }
     }
 }

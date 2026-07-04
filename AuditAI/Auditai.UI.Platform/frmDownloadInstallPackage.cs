@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -23,6 +23,8 @@ public class frmDownloadInstallPackage : C1RibbonForm
 	public frmDownloadInstallPackage(bool isExitApplication)
 	{
 		InitializeComponent();
+
+
 		_isExistApplication = isExitApplication;
 		base.Icon = Resources.warningIcon16;
 		base.FormClosed += FrmDownloadInstallPackage_FormClosed;
@@ -77,23 +79,23 @@ public class frmDownloadInstallPackage : C1RibbonForm
 		base.SuspendLayout();
 		this.label1.BackColor = System.Drawing.Color.Transparent;
 		this.label1.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.label1.Location = new System.Drawing.Point(12, 13);
+		this.label1.Location = new System.Drawing.Point(16, 17);
 		this.label1.Name = "label1";
-		this.label1.Size = new System.Drawing.Size(541, 23);
+		this.label1.Size = new System.Drawing.Size(703, 30);
 		this.label1.TabIndex = 0;
 		this.label1.Text = "找不到更新程序AuditAIUpdater.exe，请登录官方网站下载安装包重新进行安装！";
 		this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 		this.label2.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.label2.Location = new System.Drawing.Point(159, 56);
+		this.label2.Location = new System.Drawing.Point(207, 73);
 		this.label2.Name = "label2";
-		this.label2.Size = new System.Drawing.Size(70, 23);
+		this.label2.Size = new System.Drawing.Size(91, 30);
 		this.label2.TabIndex = 1;
 		this.label2.Text = "下载地址:";
 		this.linkLabel1.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(0, 102, 204);
-		this.linkLabel1.Location = new System.Drawing.Point(228, 55);
+		this.linkLabel1.Location = new System.Drawing.Point(296, 72);
 		this.linkLabel1.Name = "linkLabel1";
-		this.linkLabel1.Size = new System.Drawing.Size(222, 23);
+		this.linkLabel1.Size = new System.Drawing.Size(289, 30);
 		this.linkLabel1.TabIndex = 2;
 		this.linkLabel1.TabStop = true;
 		this.linkLabel1.Text = "about:blank";
@@ -102,7 +104,7 @@ public class frmDownloadInstallPackage : C1RibbonForm
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.BackgroundColor = System.Drawing.SystemColors.Control;
-		base.ClientSize = new System.Drawing.Size(565, 108);
+		base.ClientSize = new System.Drawing.Size(735, 140);
 		base.Controls.Add(this.linkLabel1);
 		base.Controls.Add(this.label2);
 		base.Controls.Add(this.label1);

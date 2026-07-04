@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -1049,12 +1049,12 @@ public class MainForm
 				}
 			}
 			catch (HttpRequestException ex)
-			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
-				return null;
-			}
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
+			return null;
 		}
-		View.ActiveControl = null;
+	}
+	View.ActiveControl = null;
 		CurrentProject = toOpen;
 		PopulateRecents();
 		FormulaEditor.Context.Project = CurrentProject;
@@ -1250,7 +1250,7 @@ public class MainForm
 			}
 			catch (HttpRequestException ex4)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
 				return null;
 			}
 			catch (IOException ex5)
@@ -1679,7 +1679,7 @@ public class MainForm
 		TicketPrinter.View.BringToFront();
 		TicketPrinter.Populate();
 		SwitchStateTo(MainFormView.TicketPrint);
-		LoadPrintSetup(((dynamic)TicketPrinter.Ticket).PageSetup);
+		LoadPrintSetup(TicketPrinter.Ticket.PageSetup);
 	}
 
 	public void ExportExcelDialog()
@@ -2331,7 +2331,7 @@ public class MainForm
 			}
 			else
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.InnerException?.Message ?? ex2.Message);
 			}
 		}
 		if (anyNodeUpdated)
@@ -2406,7 +2406,7 @@ public class MainForm
 			}
 			else
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 		}
 		return anyNodeUpdated;
@@ -4123,14 +4123,45 @@ public class MainForm
 		}
 	}
 
-	public void SwitchTeam()
+	public async void SwitchTeam()
 	{
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "本地模式不支持切换组织");
 			return;
 		}
-		using dlgTeamSelector dlg = new dlgTeamSelector(UserTeam.Teams);
+		// 必须重新拉取最新团队列表：UserTeam.Teams 是登录时的缓存，
+		// 用户可能在其他客户端加入了新团队或被移出团队，直接用陈旧缓存会看不到新团队。
+		List<UserTeam> teams;
+		try
+		{
+			teams = await Program.GetUserTeams();
+		}
+		catch (Exception ex)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "获取组织列表失败: " + ex.Message);
+			return;
+		}
+		if (teams == null || teams.Count == 0)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "未获取到组织信息");
+			return;
+		}
+		using dlgTeamSelector dlg = new dlgTeamSelector(teams);
+		// 切换组织场景：用户取消（点 X 关闭）不应触发 Logout，只是放弃切换。
+		dlg.IsLogoutOnCancel = false;
+		// 切换成功后刷新 UI：关闭当前项目视图，刷新最近项目列表与标题栏。
+		// AfterTeamOpened 在 Program.OpenTeam 成功返回后由 dlgTeamSelector 触发。
+		dlg.AfterTeamOpened += (s, e) =>
+		{
+			try
+			{
+				SwitchToEmptyView();
+				PopulateRecents();
+				RefreshTitleBar();
+			}
+			catch { }
+		};
 		dlg.ShowDialog();
 	}
 
@@ -5681,7 +5712,7 @@ public class MainForm
 								}
 								catch (HttpRequestException ex)
 								{
-									Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+									Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 									return;
 								}
 								catch (IOException)
@@ -5714,7 +5745,7 @@ public class MainForm
 							}
 							catch (HttpRequestException ex3)
 							{
-								Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+								Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 							}
 							catch (IOException)
 							{

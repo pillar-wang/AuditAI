@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -89,6 +89,8 @@ public class frmAlterPwd : C1RibbonForm
 	public frmAlterPwd()
 	{
 		InitializeComponent();
+
+
 		Initialize();
 	}
 
@@ -221,7 +223,7 @@ public class frmAlterPwd : C1RibbonForm
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 			if (_bindPhone)
 			{
 				btnGetValidateCode.Reset("获取验证码");
@@ -271,7 +273,7 @@ public class frmAlterPwd : C1RibbonForm
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 			btnGetValidateCode.Reset("获取验证码");
 		}
 		catch (TimeoutException ex4)
@@ -394,10 +396,10 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtPassword.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPassword.Location = new System.Drawing.Point(97, 20);
+		this.txtPassword.Location = new System.Drawing.Point(126, 26);
 		this.txtPassword.Name = "txtPassword";
 		this.txtPassword.PasswordChar = '●';
-		this.txtPassword.Size = new System.Drawing.Size(230, 32);
+		this.txtPassword.Size = new System.Drawing.Size(299, 42);
 		this.txtPassword.TabIndex = 0;
 		this.txtPassword.Tag = null;
 		this.txtPassword.TextDetached = true;
@@ -407,10 +409,10 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtNewPassword.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtNewPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtNewPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtNewPassword.Location = new System.Drawing.Point(97, 174);
+		this.txtNewPassword.Location = new System.Drawing.Point(126, 226);
 		this.txtNewPassword.Name = "txtNewPassword";
 		this.txtNewPassword.PasswordChar = '●';
-		this.txtNewPassword.Size = new System.Drawing.Size(230, 32);
+		this.txtNewPassword.Size = new System.Drawing.Size(299, 42);
 		this.txtNewPassword.TabIndex = 1;
 		this.txtNewPassword.Tag = null;
 		this.txtNewPassword.TextDetached = true;
@@ -421,10 +423,10 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtNewPassword2.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtNewPassword2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtNewPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtNewPassword2.Location = new System.Drawing.Point(97, 234);
+		this.txtNewPassword2.Location = new System.Drawing.Point(126, 304);
 		this.txtNewPassword2.Name = "txtNewPassword2";
 		this.txtNewPassword2.PasswordChar = '●';
-		this.txtNewPassword2.Size = new System.Drawing.Size(230, 32);
+		this.txtNewPassword2.Size = new System.Drawing.Size(299, 42);
 		this.txtNewPassword2.TabIndex = 2;
 		this.txtNewPassword2.Tag = null;
 		this.txtNewPassword2.TextDetached = true;
@@ -435,9 +437,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtVerification.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtVerification.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtVerification.Location = new System.Drawing.Point(97, 120);
+		this.txtVerification.Location = new System.Drawing.Point(126, 156);
 		this.txtVerification.Name = "txtVerification";
-		this.txtVerification.Size = new System.Drawing.Size(148, 32);
+		this.txtVerification.Size = new System.Drawing.Size(192, 42);
 		this.txtVerification.TabIndex = 3;
 		this.txtVerification.Tag = null;
 		this.txtVerification.TextDetached = true;
@@ -445,9 +447,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.btnCertain.FlatAppearance.BorderSize = 0;
 		this.btnCertain.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCertain.Location = new System.Drawing.Point(62, 315);
+		this.btnCertain.Location = new System.Drawing.Point(81, 410);
 		this.btnCertain.Name = "btnCertain";
-		this.btnCertain.Size = new System.Drawing.Size(100, 33);
+		this.btnCertain.Size = new System.Drawing.Size(130, 43);
 		this.btnCertain.TabIndex = 5;
 		this.btnCertain.Text = "确定";
 		this.btnCertain.UseVisualStyleBackColor = true;
@@ -457,9 +459,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.warnNewPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.warnNewPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnNewPassword.ForeColor = System.Drawing.Color.Black;
-		this.warnNewPassword.Location = new System.Drawing.Point(102, 210);
+		this.warnNewPassword.Location = new System.Drawing.Point(133, 273);
 		this.warnNewPassword.Name = "warnNewPassword";
-		this.warnNewPassword.Size = new System.Drawing.Size(166, 17);
+		this.warnNewPassword.Size = new System.Drawing.Size(216, 22);
 		this.warnNewPassword.TabIndex = 14;
 		this.warnNewPassword.Tag = null;
 		this.warnNewPassword.Text = "长度在6-20个字符区分大小写";
@@ -470,9 +472,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.warnNewPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.warnNewPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnNewPassword2.ForeColor = System.Drawing.Color.Black;
-		this.warnNewPassword2.Location = new System.Drawing.Point(102, 270);
+		this.warnNewPassword2.Location = new System.Drawing.Point(133, 351);
 		this.warnNewPassword2.Name = "warnNewPassword2";
-		this.warnNewPassword2.Size = new System.Drawing.Size(116, 17);
+		this.warnNewPassword2.Size = new System.Drawing.Size(151, 22);
 		this.warnNewPassword2.TabIndex = 15;
 		this.warnNewPassword2.Tag = null;
 		this.warnNewPassword2.Text = "请再输入一次密码！";
@@ -483,9 +485,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword.ForeColor = System.Drawing.Color.Black;
-		this.lblPassword.Location = new System.Drawing.Point(35, 26);
+		this.lblPassword.Location = new System.Drawing.Point(46, 34);
 		this.lblPassword.Name = "lblPassword";
-		this.lblPassword.Size = new System.Drawing.Size(56, 17);
+		this.lblPassword.Size = new System.Drawing.Size(73, 22);
 		this.lblPassword.TabIndex = 18;
 		this.lblPassword.Tag = null;
 		this.lblPassword.Text = "登录密码";
@@ -495,9 +497,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPassword1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPassword1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword1.ForeColor = System.Drawing.Color.Black;
-		this.lblPassword1.Location = new System.Drawing.Point(24, 241);
+		this.lblPassword1.Location = new System.Drawing.Point(31, 313);
 		this.lblPassword1.Name = "lblPassword1";
-		this.lblPassword1.Size = new System.Drawing.Size(68, 17);
+		this.lblPassword1.Size = new System.Drawing.Size(88, 22);
 		this.lblPassword1.TabIndex = 19;
 		this.lblPassword1.Tag = null;
 		this.lblPassword1.Text = "确认新密码";
@@ -507,9 +509,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblVerification.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblVerification.ForeColor = System.Drawing.Color.Black;
-		this.lblVerification.Location = new System.Drawing.Point(23, 126);
+		this.lblVerification.Location = new System.Drawing.Point(30, 164);
 		this.lblVerification.Name = "lblVerification";
-		this.lblVerification.Size = new System.Drawing.Size(68, 17);
+		this.lblVerification.Size = new System.Drawing.Size(88, 22);
 		this.lblVerification.TabIndex = 25;
 		this.lblVerification.Tag = null;
 		this.lblVerification.Text = "短信验证码";
@@ -521,7 +523,7 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPassword2.ForeColor = System.Drawing.Color.Black;
 		this.lblPassword2.Location = new System.Drawing.Point(47, 181);
 		this.lblPassword2.Name = "lblPassword2";
-		this.lblPassword2.Size = new System.Drawing.Size(44, 17);
+		this.lblPassword2.Size = new System.Drawing.Size(57, 22);
 		this.lblPassword2.TabIndex = 27;
 		this.lblPassword2.Tag = null;
 		this.lblPassword2.Text = "新密码";
@@ -530,9 +532,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar1.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar1.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar1.Location = new System.Drawing.Point(24, 28);
+		this.lblMustInputStar1.Location = new System.Drawing.Point(31, 36);
 		this.lblMustInputStar1.Name = "lblMustInputStar1";
-		this.lblMustInputStar1.Size = new System.Drawing.Size(11, 12);
+		this.lblMustInputStar1.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar1.TabIndex = 34;
 		this.lblMustInputStar1.Tag = null;
 		this.lblMustInputStar1.Text = "*";
@@ -541,9 +543,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar2.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar2.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar2.Location = new System.Drawing.Point(36, 183);
+		this.lblMustInputStar2.Location = new System.Drawing.Point(47, 238);
 		this.lblMustInputStar2.Name = "lblMustInputStar2";
-		this.lblMustInputStar2.Size = new System.Drawing.Size(11, 12);
+		this.lblMustInputStar2.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar2.TabIndex = 35;
 		this.lblMustInputStar2.Tag = null;
 		this.lblMustInputStar2.Text = "*";
@@ -552,9 +554,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar3.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar3.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar3.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar3.Location = new System.Drawing.Point(12, 244);
+		this.lblMustInputStar3.Location = new System.Drawing.Point(16, 317);
 		this.lblMustInputStar3.Name = "lblMustInputStar3";
-		this.lblMustInputStar3.Size = new System.Drawing.Size(11, 12);
+		this.lblMustInputStar3.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar3.TabIndex = 36;
 		this.lblMustInputStar3.Tag = null;
 		this.lblMustInputStar3.Text = "*";
@@ -562,9 +564,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.btnCancel.FlatAppearance.BorderSize = 0;
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(202, 315);
+		this.btnCancel.Location = new System.Drawing.Point(263, 410);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(100, 33);
+		this.btnCancel.Size = new System.Drawing.Size(130, 43);
 		this.btnCancel.TabIndex = 6;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
@@ -573,9 +575,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.btnGetValidateCode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnGetValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnGetValidateCode.Format = "(0s)";
-		this.btnGetValidateCode.Location = new System.Drawing.Point(251, 120);
+		this.btnGetValidateCode.Location = new System.Drawing.Point(326, 156);
 		this.btnGetValidateCode.Name = "btnGetValidateCode";
-		this.btnGetValidateCode.Size = new System.Drawing.Size(76, 32);
+		this.btnGetValidateCode.Size = new System.Drawing.Size(99, 42);
 		this.btnGetValidateCode.TabIndex = 4;
 		this.btnGetValidateCode.Text = "获取验证码";
 		this.btnGetValidateCode.UseVisualStyleBackColor = true;
@@ -585,9 +587,9 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPhone.ForeColor = System.Drawing.Color.Black;
-		this.lblPhone.Location = new System.Drawing.Point(34, 77);
+		this.lblPhone.Location = new System.Drawing.Point(44, 100);
 		this.lblPhone.Name = "lblPhone";
-		this.lblPhone.Size = new System.Drawing.Size(56, 17);
+		this.lblPhone.Size = new System.Drawing.Size(73, 22);
 		this.lblPhone.TabIndex = 37;
 		this.lblPhone.Tag = null;
 		this.lblPhone.Text = "预留手机";
@@ -597,10 +599,10 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPhone.Enabled = false;
 		this.txtPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPhone.Location = new System.Drawing.Point(97, 71);
+		this.txtPhone.Location = new System.Drawing.Point(126, 92);
 		this.txtPhone.Name = "txtPhone";
 		this.txtPhone.ReadOnly = true;
-		this.txtPhone.Size = new System.Drawing.Size(230, 32);
+		this.txtPhone.Size = new System.Drawing.Size(299, 42);
 		this.txtPhone.TabIndex = 38;
 		this.txtPhone.Tag = null;
 		this.txtPhone.TextDetached = true;
@@ -610,7 +612,7 @@ public class frmAlterPwd : C1RibbonForm
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-		base.ClientSize = new System.Drawing.Size(370, 369);
+		base.ClientSize = new System.Drawing.Size(481, 480);
 		base.Controls.Add(this.txtPhone);
 		base.Controls.Add(this.lblPhone);
 		base.Controls.Add(this.btnGetValidateCode);

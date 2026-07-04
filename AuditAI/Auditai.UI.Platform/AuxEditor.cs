@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Auditai.Model;
 using Auditai.UI.Controls;
@@ -28,7 +28,7 @@ public class AuxEditor
 	{
 		View.Text = "下拉列表";
 		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ComboList);
-		((dynamic)View.DockingTab).SelectedTab = View.tabDropList;
+		View.DockingTab.SelectedTab = View.tabDropList;
 		View.Show(owner);
 	}
 
@@ -36,7 +36,7 @@ public class AuxEditor
 	{
 		View.Text = "编辑注释";
 		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.AuxEditComment);
-		((dynamic)View.DockingTab).SelectedTab = View.tabEdit;
+		View.DockingTab.SelectedTab = View.tabEdit;
 		return View.ShowDialog();
 	}
 

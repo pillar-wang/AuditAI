@@ -22,9 +22,7 @@
     <Reference Include="Google.Protobuf">
       <HintPath>..\Libs\Google.Protobuf.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\Libs\System.Data.SQLite.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
     <Reference Include="System.Memory">
       <HintPath>..\Libs\System.Memory.dll</HintPath>
     </Reference>

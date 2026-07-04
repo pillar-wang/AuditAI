@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -41,6 +41,8 @@ internal class frmLoginQQ : C1RibbonForm
 	public frmLoginQQ()
 	{
 		InitializeComponent();
+
+
 		// Cef.Initialize 未执行，不创建 ChromiumWebBrowser 实例
 		// 避免析构时 Cef.RemoveDisposable() 因 Cef 运行时未初始化而崩溃
 		base.Shown += FrmLoginQQ_Shown;
@@ -66,7 +68,7 @@ internal class frmLoginQQ : C1RibbonForm
 					}
 					catch (HttpRequestException ex)
 					{
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 					}
 					catch (TimeoutException ex2)
 					{
@@ -116,16 +118,16 @@ internal class frmLoginQQ : C1RibbonForm
 		this.btnClose.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
 		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Red;
 		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnClose.Location = new System.Drawing.Point(771, -1);
+		this.btnClose.Location = new System.Drawing.Point(1002, -1);
 		this.btnClose.Name = "btnClose";
-		this.btnClose.Size = new System.Drawing.Size(25, 25);
+		this.btnClose.Size = new System.Drawing.Size(33, 33);
 		this.btnClose.TabIndex = 2;
 		this.btnClose.UseVisualStyleBackColor = true;
 		this.btnClose.Visible = false;
 		this.btnClose.Click += new System.EventHandler(btnClose_Click);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(796, 493);
+		base.ClientSize = new System.Drawing.Size(1035, 641);
 		base.Controls.Add(this.btnClose);
 		base.Name = "frmLoginQQ";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -26,7 +26,7 @@ public class FormMergeTeam
 	public FormMergeTeam()
 	{
 		_form = FormFactory.Create();
-		_form.Size = new Size(400, 300);
+		_form.Size = new Size(420, 280);
 		_form.FormBorderStyle = FormBorderStyle.FixedDialog;
 		_form.MinimizeBox = false;
 		_form.MaximizeBox = false;
@@ -36,20 +36,24 @@ public class FormMergeTeam
 			TextDetached = true,
 			Text = "请输入被合并组织的系统管理员用户名及登录密码：",
 			AutoSize = true,
-			Location = new Point(60, 30)
+			Location = new Point(20, 20),
+			Font = new Font("Microsoft YaHei", 9f)
 		});
 		_form.Controls.Add(new C1Label
 		{
 			TextDetached = true,
 			Text = "被合并组织的系统管理员用户名：",
 			AutoSize = true,
-			Location = new Point(60, 80)
+			Location = new Point(20, 65),
+			Font = new Font("Microsoft YaHei", 9f)
 		});
 		_txbUsername = new C1TextBox
 		{
 			TextDetached = true,
-			Location = new Point(60, 110),
-			Width = 200
+			Location = new Point(20, 90),
+			Width = 380,
+			Height = 25,
+			Font = new Font("Microsoft YaHei", 9f)
 		};
 		_form.Controls.Add(_txbUsername);
 		_form.Controls.Add(new C1Label
@@ -57,28 +61,33 @@ public class FormMergeTeam
 			TextDetached = true,
 			Text = "被合并组织的系统管理员密码：",
 			AutoSize = true,
-			Location = new Point(60, 150)
+			Location = new Point(20, 130),
+			Font = new Font("Microsoft YaHei", 9f)
 		});
 		_txbPassword = new C1TextBox
 		{
-			Location = new Point(60, 180),
+			Location = new Point(20, 155),
 			PasswordChar = '●',
-			Width = 200
+			Width = 380,
+			Height = 25,
+			Font = new Font("Microsoft YaHei", 9f)
 		};
 		_form.Controls.Add(_txbPassword);
 		_btnOk = new C1Button
 		{
 			Text = "确定",
-			Location = new Point(240, 230),
-			Size = new Size(70, 30)
+			Location = new Point(250, 210),
+			Size = new Size(75, 28),
+			Font = new Font("Microsoft YaHei", 9f)
 		};
 		_btnOk.Click += _btnOk_Click;
 		_form.Controls.Add(_btnOk);
 		_btnCancel = new C1Button
 		{
 			Text = "取消",
-			Location = new Point(320, 230),
-			Size = new Size(70, 30)
+			Location = new Point(340, 210),
+			Size = new Size(75, 28),
+			Font = new Font("Microsoft YaHei", 9f)
 		};
 		_btnCancel.Click += _btnCancel_Click;
 		_form.Controls.Add(_btnCancel);

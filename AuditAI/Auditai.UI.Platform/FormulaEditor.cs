@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -1162,11 +1162,11 @@ public class FormulaEditor : ISetTheme
 						HighlightColor = Program.MainForm.CurrentDocumentEditor.GetFieldColor()
 					};
 					TextControlEx tx = Program.MainForm.CurrentDocumentEditor._tx;
-					if (!((dynamic)tx.ApplicationFields).Add(applicationField))
+					if (!tx.ApplicationFields.Add(applicationField))
 					{
 						tx.Selection.Text = " ";
 						tx.Select(tx.Selection.Start, 0);
-						((dynamic)tx.ApplicationFields).Add(applicationField);
+						tx.ApplicationFields.Add(applicationField);
 						tx.Selection.Text = "";
 						tx.Select(applicationField.Start - 1 + applicationField.Length, 0);
 					}
@@ -1726,7 +1726,7 @@ public class FormulaEditor : ISetTheme
 				Program.MainForm.TableEditor.TitleEditor.Select(formulaContext.TitleOrFootRow, formulaContext.TitleOrFootCol);
 				break;
 			case FormulaContextKind.Foot:
-				((dynamic)Program.MainForm.TableEditor.FootEditor).Select(formulaContext.TitleOrFootRow, formulaContext.TitleOrFootCol);
+				Program.MainForm.TableEditor.FootEditor.Select(formulaContext.TitleOrFootRow, formulaContext.TitleOrFootCol);
 				break;
 			}
 		}

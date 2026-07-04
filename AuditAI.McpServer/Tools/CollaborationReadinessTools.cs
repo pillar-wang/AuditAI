@@ -23,9 +23,12 @@ namespace AuditAI.McpServer.Tools
     public static class CollaborationReadinessTools
     {
         // AuditAI 主项目根目录（用于源代码扫描）
-        private const string AuditAiRoot = @"e:\lq\AuditAI";
-        private const string MemberManagerPath = @"e:\lq\AuditAI\AuditAI\Auditai.UI.Platform\MemberManager.cs";
-        private const string ReportsDir = @"e:\lq\.trae\specs\cloud-collaboration-readiness\reports";
+        private static readonly string AuditAiRoot = Environment.GetEnvironmentVariable("AUDITAI_ROOT")
+            ?? @"e:\lq\AuditAI";
+        private static readonly string MemberManagerPath = Environment.GetEnvironmentVariable("AUDITAI_MEMBER_MANAGER_PATH")
+            ?? @"e:\lq\AuditAI\AuditAI\Auditai.UI.Platform\MemberManager.cs";
+        private static readonly string ReportsDir = Environment.GetEnvironmentVariable("AUDITAI_COLLAB_REPORTS_DIR")
+            ?? @"e:\lq\.trae\specs\cloud-collaboration-readiness\reports";
 
         /// <summary>
         /// 注册所有协同就绪度评估工具（5 个）。

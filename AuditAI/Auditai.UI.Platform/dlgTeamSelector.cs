@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -79,6 +79,13 @@ public class dlgTeamSelector : C1RibbonForm
 	public string SelectedTeamId { get; private set; }
 
 	public bool PreventExit { get; set; }
+
+	/// <summary>
+	/// 用户取消选择（点 X 关闭）时是否触发 Logout。
+	/// 登录场景（frmLogin）需设为 true，用户取消等于放弃登录；
+	/// 切换组织场景（MainForm.SwitchTeam）需设为 false，用户取消只是放弃切换，不应退出登录。
+	/// </summary>
+	public bool IsLogoutOnCancel { get; set; } = true;
 
 	public dlgTeamSelector(List<UserTeam> teamList)
 	{
@@ -247,7 +254,9 @@ public class dlgTeamSelector : C1RibbonForm
 	private async void toolCmdOpenTeam_Click(object sender, ClickEventArgs e)
 	{
 		Tile selectedTile = _tileControl.SelectedTile;
-		if (selectedTile != null && !(selectedTile.Tag.ToString() == "create") && !(selectedTile.Tag.ToString() == "refresh"))
+		// 必须检查 Tag != null（与 C1TileControl1_DoubleClickTile 保持一致）：
+		// 标题 Tile 未显式设置 Tag，选中后点"进入组织"会触发 NRE。
+		if (selectedTile != null && selectedTile.Tag != null && !(selectedTile.Tag.ToString() == "create") && !(selectedTile.Tag.ToString() == "refresh"))
 		{
 			await OpenTeam();
 		}
@@ -277,9 +286,12 @@ public class dlgTeamSelector : C1RibbonForm
 			else if (Guid.TryParse(selectedTile.Tag.ToString(), out result) && await Program.OpenTeam(result))
 			{
 				PreventExit = true;
-				Close();
 				success = true;
+				// 必须先触发 AfterTeamOpened 再 Close()：
+				// Close() 会启动窗体关闭流程（FormClosing → 释放句柄），事件处理器若访问
+				// dlg 控件或 SelectedTeamId 可能遇到 ObjectDisposedException。
 				AfterTeamOpened?.Invoke(this, EventArgs.Empty);
+				Close();
 			}
 		}
 		finally
@@ -298,11 +310,25 @@ public class dlgTeamSelector : C1RibbonForm
 		try
 		{
 			dlgTeamCreator creator = new dlgTeamCreator();
-			if (creator.ShowDialog() == DialogResult.OK && await Program.GetUserTeams() != null && await Program.OpenTeam(creator.TeamId.Value))
+			if (creator.ShowDialog() != DialogResult.OK || !creator.TeamId.HasValue)
+			{
+				return;
+			}
+			// 原 `GetUserTeams() != null` 是永真检查（catch 块返回空列表非 null），
+			// 改为校验返回列表中确实包含刚创建的团队，避免创建失败后误调用 OpenTeam。
+			List<UserTeam> teams = await Program.GetUserTeams();
+			Guid newTeamId = creator.TeamId.Value;
+			if (teams == null || teams.Find(t => t.Id == newTeamId) == null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "创建组织失败，请重试");
+				return;
+			}
+			if (await Program.OpenTeam(newTeamId))
 			{
 				PreventExit = true;
-				Close();
+				// 同 OpenTeam：先触发 AfterTeamOpened 再 Close()，避免 ObjectDisposedException。
 				AfterTeamOpened?.Invoke(this, EventArgs.Empty);
+				Close();
 			}
 		}
 		finally
@@ -540,7 +566,9 @@ public class dlgTeamSelector : C1RibbonForm
 
 	private async void dlgTeamSelector_FormClosing(object sender, FormClosingEventArgs e)
 	{
-		if (e.CloseReason != CloseReason.ApplicationExitCall && e.CloseReason == CloseReason.UserClosing && !PreventExit)
+		// 仅在登录场景（IsLogoutOnCancel=true）下用户主动关闭时触发 Logout；
+		// 切换组织场景（MainForm.SwitchTeam）会设置 IsLogoutOnCancel=false，用户取消只是放弃切换。
+		if (IsLogoutOnCancel && e.CloseReason != CloseReason.ApplicationExitCall && e.CloseReason == CloseReason.UserClosing && !PreventExit)
 		{
 			await Program.Logout();
 		}
@@ -588,17 +616,17 @@ public class dlgTeamSelector : C1RibbonForm
 		this.c1SplitContainer1.Panels.Add(this.pnlToolbar);
 		this.c1SplitContainer1.Panels.Add(this.pnlSearch);
 		this.c1SplitContainer1.Panels.Add(this.pnlTeamList);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(792, 519);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(1030, 675);
 		this.c1SplitContainer1.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.c1SplitContainer1.TabIndex = 0;
 		this.c1SplitContainer1.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
 		this.pnlToolbar.Controls.Add(this.toolbar);
-		this.pnlToolbar.Height = 67;
+		this.pnlToolbar.Height = 87;
 		this.pnlToolbar.KeepRelativeSize = false;
 		this.pnlToolbar.Location = new System.Drawing.Point(0, 0);
 		this.pnlToolbar.Name = "pnlToolbar";
 		this.pnlToolbar.Resizable = false;
-		this.pnlToolbar.Size = new System.Drawing.Size(792, 67);
+		this.pnlToolbar.Size = new System.Drawing.Size(1030, 87);
 		this.pnlToolbar.SizeRatio = 16.834;
 		this.pnlToolbar.TabIndex = 0;
 		this.toolbar.AccessibleName = "Tool Bar";
@@ -612,7 +640,7 @@ public class dlgTeamSelector : C1RibbonForm
 		this.toolbar.MinButtonSize = 42;
 		this.toolbar.Movable = false;
 		this.toolbar.Name = "toolbar";
-		this.toolbar.Size = new System.Drawing.Size(792, 67);
+		this.toolbar.Size = new System.Drawing.Size(1030, 87);
 		this.toolbar.Text = "c1ToolBar1";
 		this.toolbar.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.toolbar.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
@@ -642,10 +670,10 @@ public class dlgTeamSelector : C1RibbonForm
 		this.toolCmdExitTeam.Click += new C1.Win.C1Command.ClickEventHandler(toolCmdExitTeam_Click);
 		this.toolLnkExitTeam.Command = this.toolCmdExitTeam;
 		this.toolLnkExitTeam.SortOrder = 3;
-		this.pnlTeamList.Height = 425;
-		this.pnlTeamList.Location = new System.Drawing.Point(0, 94);
+		this.pnlTeamList.Height = 553;
+		this.pnlTeamList.Location = new System.Drawing.Point(0, 122);
 		this.pnlTeamList.Name = "pnlTeamList";
-		this.pnlTeamList.Size = new System.Drawing.Size(792, 425);
+		this.pnlTeamList.Size = new System.Drawing.Size(1030, 553);
 		this.pnlTeamList.TabIndex = 2;
 		this.toolCmdOpenTeam.Image = Auditai.UI.Platform.Properties.Resources.toolOpenTeam;
 		this.toolCmdOpenTeam.Name = "toolCmdOpenTeam";
@@ -658,18 +686,18 @@ public class dlgTeamSelector : C1RibbonForm
 		this.c1CommandHolder1.Commands.Add(this.toolCmdSearchTeam);
 		this.c1CommandHolder1.Commands.Add(this.toolCmdExitTeam);
 		this.c1CommandHolder1.Owner = this;
-		this.pnlSearch.Height = 25;
+		this.pnlSearch.Height = 33;
 		this.pnlSearch.KeepRelativeSize = false;
-		this.pnlSearch.Location = new System.Drawing.Point(0, 68);
+		this.pnlSearch.Location = new System.Drawing.Point(0, 88);
 		this.pnlSearch.MinHeight = 25;
 		this.pnlSearch.Name = "pnlSearch";
 		this.pnlSearch.Resizable = false;
-		this.pnlSearch.Size = new System.Drawing.Size(792, 25);
+		this.pnlSearch.Size = new System.Drawing.Size(1030, 33);
 		this.pnlSearch.SizeRatio = 5.556;
 		this.pnlSearch.TabIndex = 1;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(792, 519);
+		base.ClientSize = new System.Drawing.Size(1030, 675);
 		base.Controls.Add(this.c1SplitContainer1);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

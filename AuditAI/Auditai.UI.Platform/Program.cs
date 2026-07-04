@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -73,13 +73,11 @@ internal static class Program
 	[STAThread]
 	private static void Main()
 	{
-		// 启用 Per-Monitor DPI 感知，解决高 DPI 屏幕字体模糊问题
+		// 启用 Per-Monitor DPI 感知，确保文字清晰
 		try
 		{
-			// 优先尝试 PerMonitorV2（Windows 10 1703+）
 			if (!SetProcessDpiAwarenessContext(-4))
 			{
-				// 回退到 PerMonitor（Windows 8.1+）
 				SetProcessDpiAwareness(2);
 			}
 		}
@@ -291,35 +289,6 @@ internal static class Program
 			}
 		}
 		StartAuditaiPlatform();
-		static void CreateOrRestoreUserAndTeam()
-		{
-			// 注意：此方法仅在非本地模式（云端模式）下调用，用于创建/恢复用户和团队信息。
-			// 本地模式下的用户/团队由 LocalDataStore.Initialize() 创建。
-			Guid teamId = Guid.NewGuid();
-			UserTeam.Current = new UserTeam
-			{
-				Id = teamId,
-				Name = "本地团队",
-				Type = AppEditions.Audit.Code,
-				LicenseDate = DateTime.Now.AddYears(10)
-			};
-			UserTeam.Teams = new List<UserTeam>();
-			UserTeam.Teams.Add(UserTeam.Current);
-			UserTeam.CurrentTeamIsPayByProject = true;
-			Auditai.Model.User.Current = new Auditai.Model.User
-			{
-				Id = 1,
-				Name = "管理员",
-				TelPhone = "13800138000",
-				TeamId = teamId,
-				IsTeamAdmin = true,
-				IsSystemSupporter = true
-			};
-			// 同步 TokenTimer.LoginInfo，确保 WebApiClient 发送请求时 UserId header = 1
-			// 否则服务端 HeaderParser.ParseUserId 返回 0，导致 401 Unauthorized
-			TokenTimer.LoginInfo.userId = 1;
-			TokenTimer.LoginInfo.userName = "管理员";
-		}
 		static void StartAuditaiPlatform()
 		{
 			
@@ -359,13 +328,35 @@ internal static class Program
 			LedgerViewer.LicenseCheckHandleIsOpenedLedgerCountInLimit = SoftwareLicenseManager.IsOpenedLedgerCountInLicenseLimit;
 			LedgerViewer.IsAuditPlatform = ClientPlatformType == PlatformType.AuditPlatform;
 			frmTableCollect2.LicenseCheckHandleOnCopyLedgerData = SoftwareLicenseManager.IsLicenseAllowToCopyLedgerData;
-			FormProjectManage formProjectManage = new FormProjectManage();
-			if (formProjectManage.ShowDialog() == DialogResult.OK)
+			FormProjectManage formProjectManage = null;
+			try
 			{
-				MainForm.View.Show();
+				formProjectManage = new FormProjectManage();
 			}
-			else
+			catch (Exception ex)
 			{
+				ex.Log("创建 FormProjectManage 失败");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "创建项目管理界面失败：" + ex.Message);
+				ApplicationExit();
+				return;
+			}
+			try
+			{
+				if (formProjectManage.ShowDialog() == DialogResult.OK)
+				{
+					MainForm.View.WindowState = FormWindowState.Maximized;
+					MainForm.View.Show();
+				}
+				else
+				{
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "项目管理界面已关闭，程序退出");
+					ApplicationExit();
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.Log("FormProjectManage.ShowDialog 异常");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "项目管理界面异常：" + ex.Message);
 				ApplicationExit();
 			}
 		}
@@ -376,7 +367,7 @@ internal static class Program
 		switch (ClientPlatformType)
 		{
 		case PlatformType.AuditPlatform:
-			return "0";
+			return "20";
 		case PlatformType.EnterpriseManagerPlatform:
 		case PlatformType.TableDevelopPlatform:
 		case PlatformType.ProductionCostAccountingSystem:
@@ -599,18 +590,32 @@ internal static class Program
 			List<UserTeam> teams = new List<UserTeam>();
 			foreach (JToken item in await WebApiClient.GetUserTeams())
 			{
+				string teamIdStr = item.Value<string>("teamId");
+				if (string.IsNullOrEmpty(teamIdStr))
+				{
+					continue;
+				}
+				Guid teamIdGuid;
+				try
+				{
+					teamIdGuid = Guid.Parse(teamIdStr);
+				}
+				catch
+				{
+					continue;
+				}
 				if (UserGetTeamCallback != null)
 				{
-					UserGetTeamCallback(Guid.Parse(item.Value<string>("teamId")));
+					UserGetTeamCallback(teamIdGuid);
 				}
 				if (item.Value<int>("type") == clientSupportTeamType)
 				{
 					int num = item.Value<int>("payStatus");
 					teams.Add(new UserTeam
 					{
-						Id = Guid.Parse(item.Value<string>("teamId")),
+						Id = teamIdGuid,
 						ManagerId = item.Value<long>("managerId"),
-						Name = item.Value<string>("teamName"),
+						Name = item.Value<string>("teamName") ?? "",
 						Type = item.Value<int>("type"),
 						PayStatus = num switch
 						{
@@ -626,21 +631,13 @@ internal static class Program
 			UserTeam.Teams = teams;
 			return teams;
 		}
-		catch (NormalException ex)
-		{
-			if (withNotice)
-			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
-			}
-			return null;
-		}
 		catch (TimeoutException ex2)
 		{
 			if (withNotice)
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.Message);
 			}
-			return null;
+			return new List<UserTeam>();
 		}
 		catch (ServerException ex3)
 		{
@@ -648,15 +645,24 @@ internal static class Program
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.ToString());
 			}
-			return null;
+			return new List<UserTeam>();
 		}
 		catch (HttpRequestException ex4)
 		{
 			if (withNotice)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException.Message);
+				// InnerException 可能为 null（并非所有 HttpRequestException 都有 InnerException）
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
 			}
-			return null;
+			return new List<UserTeam>();
+		}
+		catch (Exception ex)
+		{
+			if (withNotice)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
+			}
+			return new List<UserTeam>();
 		}
 	}
 
@@ -684,8 +690,8 @@ internal static class Program
 			UserTeam.Current = userTeam;
 			current.TeamId = teamId;
 			current.LicenseDate = userTeam.LicenseDate;
-			current.IsTeamAdmin = (bool)jObject["IsTeamAdmin"];
-			current.IsLicenseOutOfDate = !IsOnPremise && (bool)jObject["IsLicenseOutOfDate"];
+			current.IsTeamAdmin = jObject["IsTeamAdmin"] != null ? (bool)jObject["IsTeamAdmin"] : false;
+			current.IsLicenseOutOfDate = !IsOnPremise && (jObject["IsLicenseOutOfDate"] != null ? (bool)jObject["IsLicenseOutOfDate"] : false);
 			if (ClientPlatformType == PlatformType.Custom && !IsOnPremise)
 			{
 				UserTeam.CurrentTeamIsPayByProject = ClientCustomizeData.Current.GetOptionValueInSettingIniFile_Bool("is_pay_by_project", defaultValue: true);
@@ -722,22 +728,28 @@ internal static class Program
 		{
 			if (withNotice)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException.Message);
+				// InnerException 可能为 null（并非所有 HttpRequestException 都有 InnerException）
+				// 直接访问 .Message 会抛 NRE 掩盖原始异常。与 frmLogin.btnLogin_Click 保持一致。
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
+			}
+			return false;
+		}
+		catch (Exception ex5)
+		{
+			if (withNotice)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "OpenTeam异常: " + ex5.Message + "\n" + ex5.StackTrace);
 			}
 			return false;
 		}
 	}
 
-	private static void ShowAbleOpenTeamClientPlatformMessage(UserTeam userTeam)
+	public static void ShowAbleOpenTeamClientPlatformMessage(UserTeam userTeam)
 	{
 		string text = "";
 		if (userTeam.Type == AppEditions.Audit.Code || userTeam.Type == AppEditions.Tax.Code)
 		{
 			text = AppEditions.Audit.PlatformName;
-		}
-		else if (userTeam.Type == AppEditions.EnterpriseReport.Code)
-		{
-			text = AppEditions.EnterpriseReport.PlatformName;
 		}
 		else if (userTeam.Type == AppEditions.EnterpriseReport.Code)
 		{
@@ -908,7 +920,9 @@ internal static class Program
 		{
 			if (withNotice)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException.Message);
+				// InnerException 可能为 null（并非所有 HttpRequestException 都有 InnerException）
+				// 直接访问 .Message 会抛 NRE 掩盖原始异常。与 frmLogin.btnLogin_Click 保持一致。
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
 			}
 			return false;
 		}
@@ -961,7 +975,9 @@ internal static class Program
 		{
 			if (withNotice)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException.Message);
+				// InnerException 可能为 null（并非所有 HttpRequestException 都有 InnerException）
+				// 直接访问 .Message 会抛 NRE 掩盖原始异常。与 frmLogin.btnLogin_Click 保持一致。
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
 			}
 			return false;
 		}

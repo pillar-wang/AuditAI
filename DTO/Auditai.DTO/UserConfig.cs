@@ -1,4 +1,4 @@
-using Auditai.UI.Platform;
+﻿﻿﻿﻿using Auditai.UI.Platform;
 using Newtonsoft.Json;
 
 namespace Auditai.DTO;
@@ -133,7 +133,7 @@ public class UserConfig
 		AutoAreaMerge = true;
 		SelectionStatsEnabled = true;
 		AutoSpellCheck = true;
-		CurrentTheme = "3";
+		CurrentTheme = "20";
 	}
 
 	public string SaveConfig()

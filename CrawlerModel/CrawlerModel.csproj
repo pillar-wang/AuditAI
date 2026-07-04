@@ -19,8 +19,6 @@
     <Reference Include="Devart.Data.Oracle">
       <HintPath>..\Libs\Devart.Data.Oracle.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\Libs\System.Data.SQLite.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
   </ItemGroup>
 </Project>

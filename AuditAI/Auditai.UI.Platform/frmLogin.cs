@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -594,6 +594,9 @@ public class frmLogin : Form
 		UserSet.Config.PhoneNumber = phoneNumher;
 		UserSet.Config.LoginType = (int)_loginType;
 		UserSet.Config.IsLoginByPhoneNumber = isLoginByPhoneNumber;
+		// 立即落盘：原实现仅在 Program.Application_Run 退出时 Save，
+		// VS 调试按停止按钮会强杀进程导致 exit handler 不执行，记住密码永远丢失。
+		UserSet.Save();
 	}
 
 	private void InitTextboxInitValue()
@@ -670,6 +673,8 @@ public class frmLogin : Form
 		UserSet.Config.Machine = null;
 		UserSet.Config.PhoneNumber = null;
 		UserSet.Config.IsLoginByPhoneNumber = false;
+		// 同 SaveLogin：取消记住密码也要立即落盘，否则下次启动仍会读到旧密码。
+		UserSet.Save();
 	}
 
 	private async void btnLogin_Click(object sender, EventArgs e)

@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -161,7 +161,7 @@ public class TemplateUsersListSelector
 		C1.Win.C1FlexGrid.Row row = ((parentNode == null) ? _grid.Rows.AddNode(0).Row : parentNode.AddNode(NodeTypeEnum.LastChild, string.Empty).Row);
 		row.UserData = user;
 		row["UserName"] = user.UserName;
-		System.Drawing.Image headPic = Auditai.UI.Controls.Util.GetHeadPic(user, 16, withManagerMark: true);
+		System.Drawing.Image headPic = Auditai.UI.Controls.Util.GetHeadPic(user, 21, withManagerMark: true);
 		_grid.SetCellImage(row.Index, "UserName", headPic);
 		row["UserName"] = user.Name;
 		if (Context?.Project?.Users == null)

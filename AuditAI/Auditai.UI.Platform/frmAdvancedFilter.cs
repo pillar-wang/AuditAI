@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -49,6 +49,8 @@ public class frmAdvancedFilter : C1RibbonForm
         _sourceColumns = sourceColumns ?? new List<DTO.Column>();
         _sampleData = sampleData ?? new List<List<object>>();
         InitializeComponent();
+
+
         PopulateColumnNames();
         AddDefaultRow();
         UpdatePreview();

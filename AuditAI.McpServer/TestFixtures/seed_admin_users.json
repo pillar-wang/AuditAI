@@ -1,0 +1,10 @@
+{
+  "adminUsers": [
+    {
+      "userName": "admin",
+      "password": "admin",
+      "userId": 1,
+      "role": "SystemAdmin"
+    }
+  ]
+}

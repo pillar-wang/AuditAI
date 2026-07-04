@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13865,7 +13865,7 @@ public class TableEditor : ISetTheme
 				}
 				else
 				{
-					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 				}
 				return false;
 			}
@@ -13881,7 +13881,7 @@ public class TableEditor : ISetTheme
 			}
 			catch (HttpRequestException ex3)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 				return false;
 			}
 			s.GroupSrc = new List<Auditai.Model.Column>();

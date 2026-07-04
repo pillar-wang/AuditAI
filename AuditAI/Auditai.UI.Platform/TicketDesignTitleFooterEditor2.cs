@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -464,11 +464,11 @@ public class TicketDesignTitleFooterEditor2
 			AdjustVMWidthByOwnerGridColumnWidthImpl();
 			if (_editor_type == EditorType.Title)
 			{
-				((dynamic)_owner.FooterEditor).AutoAdjustGridWidth();
+				(_owner.FooterEditor).AutoAdjustGridWidth();
 			}
 			else
 			{
-				((dynamic)_owner.TitleEditor).AutoAdjustGridWidth();
+				(_owner.TitleEditor).AutoAdjustGridWidth();
 			}
 		}
 		finally

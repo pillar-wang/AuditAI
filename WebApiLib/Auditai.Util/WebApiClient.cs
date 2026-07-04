@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -106,7 +106,7 @@ public static class WebApiClient
 	/// <summary>本地模式下载文件处理器</summary>
 	public static Func<Guid, Task<Stream>> LocalDownloadFileHandler { get; set; }
 
-	public static string AppVersion => _version ?? (_version = Assembly.GetEntryAssembly().GetName().Version.ToString());
+	public static string AppVersion => _version ?? (_version = Assembly.GetEntryAssembly()?.GetName()?.Version?.ToString() ?? "1.0.0.0");
 
 	static WebApiClient()
 	{
@@ -260,15 +260,16 @@ public static class WebApiClient
 		if (IsLocalMode)
 		{
 			var result = LocalGetUserTeamsHandler != null ? await LocalGetUserTeamsHandler() : new JObject();
-			return (JArray)result["teams"];
+			return result["teams"] as JArray ?? new JArray();
 		}
-		return (JArray)(await SendAsObject<JObject>(new RequestOptions
+		JObject resp = await SendAsObject<JObject>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = "Project/GetUserTeams",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		})).GetValue("teams");
+		});
+		return resp?.GetValue("teams") as JArray ?? new JArray();
 	}
 
 	public static async Task<JObject> UpdateCurrentTeam(Guid teamId)
@@ -468,8 +469,24 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, null);
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		await WaitingServerTaskRunOver(taskId, serverProgressUpdater);
+	}
+
+	public static async Task SaveProjectAsTemplate(JObject info)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		JObject jObject = await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/SaveProjectAsTemplate",
+			Body = info,
+			Timeout = TimeSpan.FromMinutes(2.0),
+			WithAuthorization = true
+		});
 	}
 
 	public static async Task ShareProject(JObject dupInfo)
@@ -487,7 +504,7 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, null);
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		await WaitingServerTaskRunOver(taskId, serverProgressUpdater);
 	}
 
@@ -507,7 +524,7 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, null);
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		await WaitingServerTaskRunOver(taskId, serverProgressUpdater);
 	}
 
@@ -550,7 +567,9 @@ public static class WebApiClient
 		{
 			return new JObject { ["Result"] = "ok" };
 		}
-		if (project["Nodes"].Count() + project["VFs"].Count() <= 500)
+		int nodesCount = project["Nodes"]?.Count() ?? 0;
+		int vfsCount = project["VFs"]?.Count() ?? 0;
+		if (nodesCount + vfsCount <= 500)
 		{
 			return await SendAsObject<JObject>(new RequestOptions
 			{
@@ -585,11 +604,11 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		string text = (string)jObject["Result"];
-		if (!text.StartsWith("WaitingTaskEnd:"))
+		if (text == null || !text.StartsWith("WaitingTaskEnd:"))
 		{
 			return jObject;
 		}
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		string taskResultFileDownloadUrl = (string)jObject["url"];
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, reportCallback);
 		TaskProgressValueUpdater downloadProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, reportCallback);
@@ -659,7 +678,7 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		return JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
 	}
 
@@ -677,7 +696,7 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromMinutes(2.0),
 			WithAuthorization = true
 		});
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		string taskResultFileDownloadUrl = (string)jObject["url"];
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, reportCallback);
 		TaskProgressValueUpdater downloadProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, reportCallback);
@@ -704,7 +723,7 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromMinutes(2.0),
 			WithAuthorization = true
 		});
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		string taskResultFileDownloadUrl = (string)jObject["url"];
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, reportCallback);
 		TaskProgressValueUpdater downloadProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, reportCallback);
@@ -731,7 +750,7 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromMinutes(2.0),
 			WithAuthorization = true
 		});
-		long taskId = (long)jObject["taskId"];
+		long taskId = (long?)jObject["taskId"] ?? 0;
 		string taskResultFileDownloadUrl = (string)jObject["url"];
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, reportCallback);
 		TaskProgressValueUpdater downloadProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, reportCallback);
@@ -976,7 +995,7 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
-		return Tuple.Create((int)jObject["OperationId"], (int)jObject["ServerVersion"]);
+		return Tuple.Create((int?)jObject["OperationId"] ?? 0, (int?)jObject["ServerVersion"] ?? 0);
 	}
 
 	public static async Task<JObject> CreateTeam(string teamName, int type)
@@ -1117,7 +1136,7 @@ public static class WebApiClient
 				UserName = item.UserName,
 				Name = item.Name,
 				Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-				TeamId = Guid.Parse(item.TeamId),
+				TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
 				Email = item.Email,
 				Company = item.Company,
 				Sex = item.Sex,
@@ -1188,7 +1207,7 @@ public static class WebApiClient
 				UserName = item.UserName,
 				Name = item.Name,
 				Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-				TeamId = Guid.Parse(item.TeamId),
+				TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
 				Email = item.Email,
 				Company = item.Company,
 				Sex = item.Sex,
@@ -1207,23 +1226,28 @@ public static class WebApiClient
 			return Tuple.Create(new List<User>(), new List<UserGroup>());
 		}
 		List<UserGroup> userGroups = new List<UserGroup>();
-		foreach (JToken item in (IEnumerable<JToken>)(await SendAsObject<JObject>(new RequestOptions
+		JObject resp = await SendAsObject<JObject>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = "Project/GetTeamUserGroups",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		}))["userGroups"])
+		});
+		JToken userGroupsToken = resp?["userGroups"];
+		if (userGroupsToken != null)
 		{
-			long id = item.Value<long>("id");
-			string name = item.Value<string>("name");
-			long? parentId = item.Value<long?>("parentid");
-			userGroups.Add(new UserGroup
+			foreach (JToken item in userGroupsToken)
 			{
-				Id = id,
-				Name = name,
-				ParentId = parentId
-			});
+				long id = item.Value<long>("id");
+				string name = item.Value<string>("name");
+				long? parentId = item.Value<long?>("parentid");
+				userGroups.Add(new UserGroup
+				{
+					Id = id,
+					Name = name,
+					ParentId = parentId
+				});
+			}
 		}
 		Dictionary<long, UserGroup> userGroupMap = userGroups.ToDictionary((UserGroup g) => g.Id, (UserGroup g) => g);
 		List<UserGroup> topUserGroup = new List<UserGroup>();
@@ -1234,8 +1258,16 @@ public static class WebApiClient
 				topUserGroup.Add(item2);
 				continue;
 			}
-			item2.ParentGroup = userGroupMap[item2.ParentId.Value];
-			item2.ParentGroup.Children.Add(item2);
+			// 父组 id 可能指向不存在的组（服务器数据不一致），用 TryGetValue 防御 KeyNotFoundException
+			if (userGroupMap.TryGetValue(item2.ParentId.Value, out var parentGroup))
+			{
+				item2.ParentGroup = parentGroup;
+				item2.ParentGroup.Children.Add(item2);
+			}
+			else
+			{
+				topUserGroup.Add(item2);
+			}
 		}
 		IEnumerable<User> enumerable = await GetTeamUsersWithPic();
 		List<User> list = new List<User>();
@@ -1246,8 +1278,16 @@ public static class WebApiClient
 				list.Add(item3);
 				continue;
 			}
-			UserGroup userGroup2 = (item3.UserGroup = userGroupMap[item3.GroupId.Value]);
-			userGroup2.Users.Add(item3);
+			// 同上：用户所属组 id 可能不存在，用 TryGetValue 防御
+			if (userGroupMap.TryGetValue(item3.GroupId.Value, out var userGroup2))
+			{
+				item3.UserGroup = userGroup2;
+				userGroup2.Users.Add(item3);
+			}
+			else
+			{
+				list.Add(item3);
+			}
 		}
 		return Tuple.Create(list, topUserGroup);
 	}
@@ -1286,10 +1326,17 @@ public static class WebApiClient
 				Timeout = TimeSpan.FromMinutes(2.0),
 				WithAuthorization = true
 			};
-			long taskId = (long)(await SendAsObject<JObject>(options))["taskId"];
+			JObject respObj = await SendAsObject<JObject>(options);
+			long taskId = (long?)respObj["taskId"] ?? 0;
 			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
 			JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
-			string requestUri = jObject.Value<string>("Url");
+			string requestUri = jObject?.Value<string>("Url");
+			if (string.IsNullOrEmpty(requestUri))
+			{
+				// Url 字段缺失时 HttpRequestMessage 构造会抛 ArgumentNullException，
+				// 此处提前返回空流，避免无意义的异常。
+				return Tuple.Create((Stream)new MemoryStream(), 0);
+			}
 			return Tuple.Create(item2: jObject.Value<int>("Length"), item1: await (await _ossClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, requestUri), HttpCompletionOption.ResponseHeadersRead)).Content.ReadAsStreamAsync());
 		}
 		catch (Exception)
@@ -1445,6 +1492,14 @@ public static class WebApiClient
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
 		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
+		if (tuple == null || tuple.Item2 == null)
+		{
+			throw new ServerException
+			{
+				ExceptionMessage = "登录失败：服务器返回无效数据",
+				ExceptionType = "NullResponse"
+			};
+		}
 		LoginInfo loginInfo = new LoginInfo
 		{
 			userId = tuple.Item2.Id,
@@ -1483,6 +1538,14 @@ public static class WebApiClient
 			WithMachineSign = true,
 			ValidationCode = validateCode
 		});
+		if (tuple == null || tuple.Item2 == null)
+		{
+			throw new ServerException
+			{
+				ExceptionMessage = "登录失败：服务器返回无效数据",
+				ExceptionType = "NullResponse"
+			};
+		}
 		LoginInfo loginInfo = new LoginInfo
 		{
 			userId = tuple.Item2.Id,
@@ -1560,7 +1623,8 @@ public static class WebApiClient
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
 		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-		if (tuple.Item1 != null)
+		// 与 AccountLogin 保持一致：检查 tuple、Item1、Item2 三者非 null
+		if (tuple != null && tuple.Item1 != null && tuple.Item2 != null)
 		{
 			LoginInfo loginInfo = new LoginInfo
 			{
@@ -1600,7 +1664,8 @@ public static class WebApiClient
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
 		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-		if (tuple.Item1 != null)
+		// 与 AccountLogin 保持一致：检查 tuple、Item1、Item2 三者非 null
+		if (tuple != null && tuple.Item1 != null && tuple.Item2 != null)
 		{
 			LoginInfo loginInfo = new LoginInfo
 			{
@@ -1695,7 +1760,7 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(password, isUrl: true);
+		string text = Encrypts.SHA256Encrypt(password, isUrl: false);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
@@ -1712,8 +1777,8 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: true);
-		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: true);
+		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: false);
+		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: false);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
@@ -1731,8 +1796,8 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: true);
-		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: true);
+		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: false);
+		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: false);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
@@ -1783,6 +1848,36 @@ public static class WebApiClient
 		{
 			Method = HttpMethod.Get,
 			Url = "User/GetUsernameByPhone?phone=" + phone,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithMachineCode = true
+		});
+	}
+
+	public static async Task<string> GetUsernameByEmail(string email)
+	{
+		if (IsLocalMode)
+		{
+			return "admin";
+		}
+		return await SendAsObject<string>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "User/GetUsernameByEmail?email=" + email,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithMachineCode = true
+		});
+	}
+
+	public static async Task GetValidateCodeByEmail(string email)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "User/GetValidateCodeByEmail?email=" + email,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true
 		});
@@ -2125,7 +2220,11 @@ public static class WebApiClient
 			tuple = await SMSReLogin(loginInfo.userName);
 			break;
 		}
-		TokenTimer.Token = tuple.Item1;
+		// tuple 可能为 null（如 LoginMode 不在枚举中），访问 Item1 会抛 NRE
+		if (tuple != null)
+		{
+			TokenTimer.Token = tuple.Item1;
+		}
 	}
 
 	private static HttpRequestMessage GetRequest(RequestOptions options)
@@ -2373,14 +2472,19 @@ public static class WebApiClient
 		{
 			using Stream stream = await SendAsStream(options).ConfigureAwait(continueOnCapturedContext: false);
 			PullTable pullTable = Auditai.DTO.PullTable.Parser.ParseFrom(stream);
-			if (!pullTable.Result.StartsWith("WaitingTaskEnd:"))
+			if (string.IsNullOrEmpty(pullTable.Result) || !pullTable.Result.StartsWith("WaitingTaskEnd:"))
 			{
 				return pullTable;
 			}
 			string value = pullTable.Result.Substring("WaitingTaskEnd:".Length);
 			JObject jObject = JsonConvert.DeserializeObject<JObject>(value);
-			long taskId = (long)jObject["taskId"];
+			long taskId = (long?)jObject["taskId"] ?? 0;
 			string taskResultFileDownloadUrl = (string)jObject["url"];
+			if (string.IsNullOrEmpty(taskResultFileDownloadUrl))
+			{
+				// url 字段缺失时 OSS 下载会抛 ArgumentNullException，提前返回空对象。
+				return new PullTable();
+			}
 			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, progressReportCallback);
 			TaskProgressValueUpdater clientProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, progressReportCallback);
 			pullTable = new PullTable();
@@ -2937,14 +3041,19 @@ public static class WebApiClient
 		{
 			using Stream stream = await SendAsStream(options).ConfigureAwait(continueOnCapturedContext: false);
 			PullDocument pullDocument = Auditai.DTO.PullDocument.Parser.ParseFrom(stream);
-			if (!pullDocument.Result.StartsWith("WaitingTaskEnd:"))
+			if (string.IsNullOrEmpty(pullDocument.Result) || !pullDocument.Result.StartsWith("WaitingTaskEnd:"))
 			{
 				return pullDocument;
 			}
 			string value = pullDocument.Result.Substring("WaitingTaskEnd:".Length);
 			JObject jObject = JsonConvert.DeserializeObject<JObject>(value);
-			long taskId = (long)jObject["taskId"];
+			long taskId = (long?)jObject["taskId"] ?? 0;
 			string taskResultFileDownloadUrl = (string)jObject["url"];
+			if (string.IsNullOrEmpty(taskResultFileDownloadUrl))
+			{
+				// url 字段缺失时 OSS 下载会抛 ArgumentNullException，提前返回空对象。
+				return new PullDocument();
+			}
 			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 0.8f, progressReportCallback);
 			TaskProgressValueUpdater clientProcessProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.2f, progressReportCallback);
 			pullDocument = new PullDocument();

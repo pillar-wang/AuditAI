@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -6957,7 +6957,6 @@ public class TicketInputEditor2 : ISetTheme
 
 	public static object ConvertCopyValueToCellValue(object value, Type dataType)
 	{
-		object obj = null;
 		if (dataType == typeof(double) && value is string text && text.EndsWith("%") && double.TryParse(text.TrimEnd('%'), out var result))
 		{
 			return result / 100.0;
@@ -10046,7 +10045,8 @@ public class TicketInputEditor2 : ISetTheme
 
 	private void SendBodySelectionChanged_SignalR(int rowIndex, int colIndex)
 	{
-		BodySelectionChanged_SignalR(rowIndex, colIndex);
+		// 异步通知其他客户端当前行/列选择变更（fire-and-forget 模式，不阻塞 UI）
+		_ = BodySelectionChanged_SignalR(rowIndex, colIndex);
 		async Task BodySelectionChanged_SignalR(int bodyRowIndex, int bodyColIndex)
 		{
 			try
@@ -11711,7 +11711,8 @@ public class TicketInputEditor2 : ISetTheme
 
 	private void SendTicketNavTreeNodeChangeEventToOtherClient()
 	{
-		TicketNavTreeNodeChanged_SignalR();
+		// 异步通知其他客户端导航树节点变更（fire-and-forget 模式，不阻塞 UI）
+		_ = TicketNavTreeNodeChanged_SignalR();
 	}
 
 	private void SaveRecordFilterSetting(bool isSaveToPreSelectedNavGrid = false)

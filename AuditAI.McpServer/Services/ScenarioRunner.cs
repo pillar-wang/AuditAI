@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -171,7 +171,10 @@ namespace AuditAI.McpServer.Services
                 {
                     int idx = i;
                     Func<ScenarioStep> fn = steps[i];
-                    tasks[idx] = Task.Run(() =>
+                    // 修复: 使用 LongRunning 创建专用线程,避免 Task.Run 使用线程池导致 sync-over-async 死锁。
+                    // CloudApiClient 内部使用 SendAsync().Result 阻塞线程,如果占用线程池线程,
+                    // Task.Delay 的定时器回调无法调度,导致 Task.WhenAny(...).Result 永久阻塞。
+                    tasks[idx] = Task.Factory.StartNew(() =>
                     {
                         try
                         {
@@ -192,7 +195,7 @@ namespace AuditAI.McpServer.Services
                             RecordAssertion(s);
                             return s;
                         }
-                    });
+                    }, TaskCreationOptions.LongRunning);
                 }
                 Task allTask = Task.WhenAll(tasks);
                 Task timeoutTask = Task.Delay(Math.Max(0, timeoutMs));

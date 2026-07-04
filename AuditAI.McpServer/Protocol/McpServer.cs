@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
@@ -44,7 +44,11 @@ namespace AuditAI.McpServer.Protocol
                 }
             }
 
-            Console.Error.WriteLine("[MCP] Server 主循环结束");
+            Console.Error.WriteLine("[MCP] Server MCP_EXITING_NOW");
+            // 强制退出进程：HttpClient 连接池、Timer 等后台线程会阻止进程正常退出
+            // 确保所有 stdout 缓冲已刷新
+            Console.Out.Flush();
+            Environment.Exit(0);
         }
     }
 }

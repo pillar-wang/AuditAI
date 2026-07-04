@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -50,6 +50,8 @@ internal class frmParagraphComment : C1RibbonForm
 	public frmParagraphComment()
 	{
 		InitializeComponent();
+
+
 	}
 
 	private void btnConfirm_Click(object sender, EventArgs e)
@@ -121,13 +123,13 @@ internal class frmParagraphComment : C1RibbonForm
 		this.ctnDock.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctnDock.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.ctnDock.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
-		this.ctnDock.HeaderHeight = 27;
+		this.ctnDock.HeaderHeight = 35;
 		this.ctnDock.Location = new System.Drawing.Point(0, 0);
 		this.ctnDock.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.ctnDock.Name = "ctnDock";
 		this.ctnDock.Panels.Add(this.pnlButtons);
 		this.ctnDock.Panels.Add(this.pnlInputBox);
-		this.ctnDock.Size = new System.Drawing.Size(592, 419);
+		this.ctnDock.Size = new System.Drawing.Size(770, 545);
 		this.ctnDock.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.ctnDock.SplitterWidth = 0;
 		this.ctnDock.TabIndex = 1;
@@ -135,49 +137,49 @@ internal class frmParagraphComment : C1RibbonForm
 		this.pnlButtons.Controls.Add(this.btnCancel);
 		this.pnlButtons.Controls.Add(this.btnConfirm);
 		this.pnlButtons.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlButtons.Height = 40;
+		this.pnlButtons.Height = 52;
 		this.pnlButtons.KeepRelativeSize = false;
-		this.pnlButtons.Location = new System.Drawing.Point(0, 379);
+		this.pnlButtons.Location = new System.Drawing.Point(0, 493);
 		this.pnlButtons.Name = "pnlButtons";
 		this.pnlButtons.Resizable = false;
-		this.pnlButtons.Size = new System.Drawing.Size(592, 40);
+		this.pnlButtons.Size = new System.Drawing.Size(770, 52);
 		this.pnlButtons.TabIndex = 2;
-		this.pnlButtons.Width = 592;
+		this.pnlButtons.Width = 770;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Location = new System.Drawing.Point(499, 7);
+		this.btnCancel.Location = new System.Drawing.Point(649, 9);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(70, 26);
+		this.btnCancel.Size = new System.Drawing.Size(91, 34);
 		this.btnCancel.TabIndex = 1;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Location = new System.Drawing.Point(396, 7);
+		this.btnConfirm.Location = new System.Drawing.Point(515, 9);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(70, 26);
+		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
 		this.btnConfirm.TabIndex = 0;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.pnlInputBox.Controls.Add(this.DockingTab);
-		this.pnlInputBox.Height = 378;
+		this.pnlInputBox.Height = 491;
 		this.pnlInputBox.Location = new System.Drawing.Point(0, 0);
 		this.pnlInputBox.MinHeight = 0;
-		this.pnlInputBox.MinWidth = 52;
+		this.pnlInputBox.MinWidth = 68;
 		this.pnlInputBox.Name = "pnlInputBox";
-		this.pnlInputBox.Size = new System.Drawing.Size(592, 378);
+		this.pnlInputBox.Size = new System.Drawing.Size(770, 491);
 		this.pnlInputBox.SizeRatio = 100.0;
 		this.pnlInputBox.TabIndex = 1;
-		this.pnlInputBox.Width = 592;
+		this.pnlInputBox.Width = 770;
 		this.DockingTab.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.DockingTab.Controls.Add(this.tabEdit);
 		this.DockingTab.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.DockingTab.Location = new System.Drawing.Point(0, 0);
 		this.DockingTab.Name = "DockingTab";
 		this.DockingTab.ShowTabs = false;
-		this.DockingTab.Size = new System.Drawing.Size(592, 378);
+		this.DockingTab.Size = new System.Drawing.Size(770, 491);
 		this.DockingTab.TabIndex = 1;
 		this.DockingTab.TabsShowFocusCues = false;
 		this.DockingTab.TabsSpacing = 5;
@@ -187,7 +189,7 @@ internal class frmParagraphComment : C1RibbonForm
 		this.tabEdit.Controls.Add(this.ctnCommentInput);
 		this.tabEdit.Location = new System.Drawing.Point(0, 1);
 		this.tabEdit.Name = "tabEdit";
-		this.tabEdit.Size = new System.Drawing.Size(592, 377);
+		this.tabEdit.Size = new System.Drawing.Size(770, 490);
 		this.tabEdit.TabIndex = 2;
 		this.tabEdit.Text = "编辑注释";
 		this.ctnCommentInput.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
@@ -198,14 +200,14 @@ internal class frmParagraphComment : C1RibbonForm
 		this.ctnCommentInput.Location = new System.Drawing.Point(0, 0);
 		this.ctnCommentInput.Name = "ctnCommentInput";
 		this.ctnCommentInput.Panels.Add(this.c1SplitterPanel4);
-		this.ctnCommentInput.Size = new System.Drawing.Size(592, 377);
+		this.ctnCommentInput.Size = new System.Drawing.Size(770, 490);
 		this.ctnCommentInput.SplitterWidth = 0;
 		this.ctnCommentInput.TabIndex = 1;
 		this.c1SplitterPanel4.Controls.Add(this.txbCommentInput);
-		this.c1SplitterPanel4.Height = 377;
+		this.c1SplitterPanel4.Height = 490;
 		this.c1SplitterPanel4.Location = new System.Drawing.Point(0, 0);
 		this.c1SplitterPanel4.Name = "c1SplitterPanel4";
-		this.c1SplitterPanel4.Size = new System.Drawing.Size(592, 377);
+		this.c1SplitterPanel4.Size = new System.Drawing.Size(770, 490);
 		this.c1SplitterPanel4.TabIndex = 1;
 		this.txbCommentInput.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.txbCommentInput.Location = new System.Drawing.Point(0, 0);
@@ -213,7 +215,7 @@ internal class frmParagraphComment : C1RibbonForm
 		this.txbCommentInput.Multiline = true;
 		this.txbCommentInput.Name = "txbCommentInput";
 		this.txbCommentInput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-		this.txbCommentInput.Size = new System.Drawing.Size(592, 377);
+		this.txbCommentInput.Size = new System.Drawing.Size(770, 490);
 		this.txbCommentInput.TabIndex = 0;
 		this.txbCommentInput.Tag = null;
 		this.txbCommentInput.TextDetached = true;
@@ -229,7 +231,7 @@ internal class frmParagraphComment : C1RibbonForm
 		this.txbDropInputContextMenu.ShortcutText = "";
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(592, 419);
+		base.ClientSize = new System.Drawing.Size(770, 545);
 		base.Controls.Add(this.ctnDock);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;

@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -78,6 +78,8 @@ public class frmCustomFillConfig : C1RibbonForm
 	public frmCustomFillConfig()
 	{
 		InitializeComponent();
+
+
 		Load += OnLoad;
 		FormClosing += OnFormClosing;
 		KeyPreview = true;

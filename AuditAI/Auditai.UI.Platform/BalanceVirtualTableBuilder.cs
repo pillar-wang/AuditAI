@@ -559,19 +559,19 @@ public class BalanceVirtualTableBuilder
 		return rowDataList;
 		void AddAuxiliaryItem(Account account, VirtualTableRowKey parentAccountRowData)
 		{
-			Dictionary<string, AuxiliaryItem> dictionary = new Dictionary<string, AuxiliaryItem>();
+			Dictionary<string, Auditai.Model.AuxiliaryItem> dictionary = new Dictionary<string, Auditai.Model.AuxiliaryItem>();
 			GetAccountAuxiliaryItem(account, balanceSheet.Start, dictionary);
 			GetAccountAuxiliaryItem(account, balanceSheet.Debit, dictionary);
 			GetAccountAuxiliaryItem(account, balanceSheet.Credit, dictionary);
-			List<AuxiliaryItem> list = dictionary.Values.ToList();
+			List<Auditai.Model.AuxiliaryItem> list = dictionary.Values.ToList();
 			if (list.Count == 0)
 			{
 				return;
 			}
-			list.Sort((AuxiliaryItem left, AuxiliaryItem right) => left.Code.CompareTo(right.Code));
-			foreach (AuxiliaryItem item2 in list)
+			list.Sort((Auditai.Model.AuxiliaryItem left, Auditai.Model.AuxiliaryItem right) => left.Code.CompareTo(right.Code));
+			foreach (Auditai.Model.AuxiliaryItem item2 in list)
 			{
-				if (isShowEmtpyAccount || !ledgerViewer.IsEmptyAuxiliaryItem(account, (dynamic)item2))
+				if (isShowEmtpyAccount || !ledgerViewer.IsEmptyAuxiliaryItem(account, item2))
 				{
 					VirtualTableRowKey virtualTableRowKey = new VirtualTableRowKey();
 					rowDataList.Add(virtualTableRowKey);
@@ -583,8 +583,8 @@ public class BalanceVirtualTableBuilder
 					virtualTableRowKey.AccountFullName = string.Join("-", account.GetFullName(), item2.Name);
 					virtualTableRowKey.AccountLevel = parentAccountRowData.AccountLevel + 1;
 					virtualTableRowKey.IsLastLevel = true;
-					virtualTableRowKey.AuxiliaryItem = (dynamic)item2;
-					virtualTableRowKey.AuxiliaryClassName = item2.ClassName;
+					virtualTableRowKey.AuxiliaryItem = item2;
+					virtualTableRowKey.AuxiliaryClassName = item2.Class.Name;
 					virtualTableRowKey.AuxiliaryCode = item2.Code;
 					virtualTableRowKey.AuxiliaryName = item2.Name;
 					virtualTableRowKey.FirstLevelAccountName = GetFirstLevelAccountName(account);
@@ -611,7 +611,7 @@ public class BalanceVirtualTableBuilder
 				AddAuxiliaryItem(account, virtualTableRowKey2);
 			}
 		}
-		static void GetAccountAuxiliaryItem(Account account, DateBalance accountBlance, Dictionary<string, AuxiliaryItem> auxItemDic)
+		static void GetAccountAuxiliaryItem(Account account, DateBalance accountBlance, Dictionary<string, Auditai.Model.AuxiliaryItem> auxItemDic)
 		{
 			if (!accountBlance.TryGetValue(account, out var value) || value.ClassBalances.Count == 0)
 			{
@@ -624,7 +624,7 @@ public class BalanceVirtualTableBuilder
 					string key = string.Join("-", key2.Class.Code, key2.Code);
 					if (!auxItemDic.ContainsKey(key))
 					{
-						auxItemDic.Add(key, (dynamic)key2);
+						auxItemDic.Add(key, key2);
 					}
 				}
 			}

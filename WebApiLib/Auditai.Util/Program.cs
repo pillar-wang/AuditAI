@@ -41,7 +41,7 @@ public static class Program
 			};
 			sw.Write(await WebApiClient.SingleRegister(user2));
 			sw.Write("," + user2.UserName + "," + password2 + ",");
-			await WebApiClient.AccountLogin(user2.UserName, Encrypts.SHA256Encrypt(password2, isUrl: true));
+			await WebApiClient.AccountLogin(user2.UserName, Encrypts.SHA256Encrypt(password2, isUrl: false));
 			Guid guid = (Guid)(await WebApiClient.CreateTeam(null, 1))["TeamId"];
 			sw.Write(guid);
 			await WebApiClient.CreateDemo();

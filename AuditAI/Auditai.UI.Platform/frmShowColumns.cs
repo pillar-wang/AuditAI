@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,6 +29,8 @@ public class frmShowColumns : C1RibbonForm
 	public frmShowColumns()
 	{
 		InitializeComponent();
+
+
 	}
 
 	private void frmShowColumns_Shown(object sender, EventArgs e)
@@ -78,13 +80,13 @@ public class frmShowColumns : C1RibbonForm
 		this.ctn.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctn.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.ctn.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
-		this.ctn.HeaderHeight = 27;
+		this.ctn.HeaderHeight = 35;
 		this.ctn.Location = new System.Drawing.Point(0, 0);
 		this.ctn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.ctn.Name = "ctn";
 		this.ctn.Panels.Add(this.c1SplitterPanel1);
 		this.ctn.Panels.Add(this.c1SplitterPanel2);
-		this.ctn.Size = new System.Drawing.Size(288, 293);
+		this.ctn.Size = new System.Drawing.Size(374, 381);
 		this.ctn.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.ctn.SplitterWidth = 0;
 		this.ctn.TabIndex = 0;
@@ -92,47 +94,47 @@ public class frmShowColumns : C1RibbonForm
 		this.c1SplitterPanel1.Controls.Add(this.btnCancel);
 		this.c1SplitterPanel1.Controls.Add(this.btnOk);
 		this.c1SplitterPanel1.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.c1SplitterPanel1.Height = 52;
+		this.c1SplitterPanel1.Height = 68;
 		this.c1SplitterPanel1.KeepRelativeSize = false;
-		this.c1SplitterPanel1.Location = new System.Drawing.Point(0, 241);
-		this.c1SplitterPanel1.MinHeight = 52;
-		this.c1SplitterPanel1.MinWidth = 52;
+		this.c1SplitterPanel1.Location = new System.Drawing.Point(0, 313);
+		this.c1SplitterPanel1.MinHeight = 68;
+		this.c1SplitterPanel1.MinWidth = 68;
 		this.c1SplitterPanel1.Name = "c1SplitterPanel1";
 		this.c1SplitterPanel1.Resizable = false;
-		this.c1SplitterPanel1.Size = new System.Drawing.Size(288, 52);
+		this.c1SplitterPanel1.Size = new System.Drawing.Size(374, 68);
 		this.c1SplitterPanel1.SizeRatio = 8.176;
 		this.c1SplitterPanel1.TabIndex = 0;
-		this.c1SplitterPanel1.Width = 288;
+		this.c1SplitterPanel1.Width = 374;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-		this.btnCancel.Location = new System.Drawing.Point(200, 14);
+		this.btnCancel.Location = new System.Drawing.Point(260, 18);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(70, 26);
+		this.btnCancel.Size = new System.Drawing.Size(91, 34);
 		this.btnCancel.TabIndex = 1;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-		this.btnOk.Location = new System.Drawing.Point(109, 14);
+		this.btnOk.Location = new System.Drawing.Point(142, 18);
 		this.btnOk.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnOk.Name = "btnOk";
-		this.btnOk.Size = new System.Drawing.Size(70, 26);
+		this.btnOk.Size = new System.Drawing.Size(91, 34);
 		this.btnOk.TabIndex = 0;
 		this.btnOk.Text = "确定";
 		this.btnOk.UseVisualStyleBackColor = true;
 		this.btnOk.Click += new System.EventHandler(btnOk_Click);
 		this.c1SplitterPanel2.Controls.Add(this._clb);
-		this.c1SplitterPanel2.Height = 240;
+		this.c1SplitterPanel2.Height = 312;
 		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 0);
-		this.c1SplitterPanel2.MinHeight = 52;
-		this.c1SplitterPanel2.MinWidth = 52;
+		this.c1SplitterPanel2.MinHeight = 68;
+		this.c1SplitterPanel2.MinWidth = 68;
 		this.c1SplitterPanel2.Name = "c1SplitterPanel2";
 		this.c1SplitterPanel2.Resizable = false;
-		this.c1SplitterPanel2.Size = new System.Drawing.Size(288, 240);
+		this.c1SplitterPanel2.Size = new System.Drawing.Size(374, 312);
 		this.c1SplitterPanel2.SizeRatio = 100.0;
 		this.c1SplitterPanel2.TabIndex = 1;
-		this.c1SplitterPanel2.Width = 288;
+		this.c1SplitterPanel2.Width = 374;
 		this._clb.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this._clb.CheckOnClick = true;
 		this._clb.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -141,11 +143,11 @@ public class frmShowColumns : C1RibbonForm
 		this._clb.Location = new System.Drawing.Point(0, 0);
 		this._clb.Margin = new System.Windows.Forms.Padding(3, 0, 3, 0);
 		this._clb.Name = "_clb";
-		this._clb.Size = new System.Drawing.Size(288, 240);
+		this._clb.Size = new System.Drawing.Size(374, 312);
 		this._clb.TabIndex = 0;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(288, 293);
+		base.ClientSize = new System.Drawing.Size(374, 381);
 		base.Controls.Add(this.ctn);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;

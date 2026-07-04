@@ -1,4 +1,4 @@
-﻿using System.CodeDom.Compiler;
+﻿﻿﻿﻿﻿using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -165,6 +165,15 @@ public class Resource1
 		get
 		{
 			object obj = ResourceManager.GetObject("auditai_VS2013Tan", resourceCulture);
+			return (byte[])obj;
+		}
+	}
+
+	public static byte[] auditai_FreshLightBlue
+	{
+		get
+		{
+			object obj = ResourceManager.GetObject("auditai_FreshLightBlue", resourceCulture);
 			return (byte[])obj;
 		}
 	}

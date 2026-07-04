@@ -981,12 +981,12 @@ public class TicketDesignTableVM
 								outTarget.FailureReason = TicketDesignFailureReason.InvalidCol;
 								return false;
 							}
-							if (((dynamic)fieldCellSetting2.TicketMergeRange).LeftColumn != ((dynamic)fieldCellSetting3.TicketMergeRange).LeftColumn)
+							if (((TicketMerge)fieldCellSetting2.TicketMergeRange).LeftColumn != ((TicketMerge)fieldCellSetting3.TicketMergeRange).LeftColumn)
 							{
 								outTarget.FailureReason = TicketDesignFailureReason.DataRowMergeInvalidLeftCol;
 								return false;
 							}
-							if (((dynamic)fieldCellSetting2.TicketMergeRange).RightColumn != ((dynamic)fieldCellSetting3.TicketMergeRange).RightColumn)
+							if (((TicketMerge)fieldCellSetting2.TicketMergeRange).RightColumn != ((TicketMerge)fieldCellSetting3.TicketMergeRange).RightColumn)
 							{
 								outTarget.FailureReason = TicketDesignFailureReason.DataRowMergeInvalidRightCol;
 								return false;

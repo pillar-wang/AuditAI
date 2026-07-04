@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -624,7 +624,7 @@ public class DocumentEditor : UserControl
 			{
 				try
 				{
-					var dts = ((dynamic)_textControl).DocumentTargets;
+					var dts = _textControl.DocumentTargets;
 					int count = dts.Count;
 					for (int i = 1; i <= count; i++)
 					{
@@ -2268,8 +2268,10 @@ public class DocumentEditor : UserControl
 
 	private void TagTableStyle(TXTextControl.Table table, int style)
 	{
-		try { ((dynamic)table).Tag = style; }
-		catch { }
+		if (table == null) return;
+		if (!GetRefTable(table, out AuditaiBookmark bookmark, out _)) return;
+		bookmark.TableStyle = style;
+		ModifyBookmark(table, bookmark);
 	}
 
 	private void MergeCells(TXTextControl.Table table, int r1, int c1, int r2, int c2)
@@ -3667,7 +3669,7 @@ public class DocumentEditor : UserControl
 			// 选中表格前位置以获取 DocumentTarget（书签）
 			int firstCellStart = txTable.Cells.GetItem(1, 1).Start;
 			_tx.Select(firstCellStart - 1, 0);
-			var dt = ((dynamic)_tx).DocumentTargets.GetItem() as TXTextControl.DocumentTarget;
+			var dt = _textControl.DocumentTargets.GetItem() as TXTextControl.DocumentTarget;
 
 			if (refTable.Columns.VisibleCount == 0)
 			{

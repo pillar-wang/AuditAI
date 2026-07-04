@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Auditai.UI.Controls.Properties;
@@ -14,7 +14,7 @@ public class AppCommandCustomFillConfig : AppCommandButton
 
 	protected override Func<Task> ClickedTask => delegate
 	{
-		return Task.Run(async () =>
+		return Task.Run(() =>
 		{
 			Program.MainForm.ShowCustomFillConfig();
 		});

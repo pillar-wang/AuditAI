@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -26,7 +26,6 @@ public class frmRegister : Form
 
 	private static Color _auditaiMainColor = Color.FromArgb(50, 150, 220);
 
-	// UI 缩放因子（用于 Paint 事件绘制坐标）
 	private float _scaleFactor = 1.5f;
 
 	private static Color _auditaiMainColorButton = Color.FromArgb(50, 150, 220);
@@ -36,8 +35,6 @@ public class frmRegister : Form
 	private bool _whetherTxtPass = true;
 
 	private bool _thirdLogin;
-
-	private bool _getsms;
 
 	private string _identCode;
 
@@ -147,6 +144,12 @@ public class frmRegister : Form
 
 	private C1Label c1Label5;
 
+	private Panel pnlCard;
+
+	private Panel pnlLeftColumn;
+
+	private Panel pnlRightColumn;
+
 	public long UserId { get; set; }
 
 	public string QQId { get; set; }
@@ -179,7 +182,6 @@ public class frmRegister : Form
 	{
 	}
 
-	/// <summary>给窗体应用圆角区域</summary>
 	private void ApplyRoundedRegion(int radius)
 	{
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
@@ -193,7 +195,6 @@ public class frmRegister : Form
 		}
 	}
 
-	/// <summary>给按钮应用圆角区域</summary>
 	private void ApplyRoundedButton(Control btn, int radius)
 	{
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
@@ -284,68 +285,46 @@ public class frmRegister : Form
 
 	private void InitPlatform_Audit()
 	{
-		BackgroundImage = Resources.register_bg_audit;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Audit);
 	}
 
 	private void InitPlatform_Report()
 	{
-		BackgroundImage = Resources.register_bg_report;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Report);
 	}
 
 	private void InitPlatform_Manager()
 	{
-		BackgroundImage = Resources.register_bg_manager;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Manager);
 	}
 
 	private void InitPlatform_TableDevelop()
 	{
-		BackgroundImage = Resources.register_bg_table;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_ProductionCostAccountingSystem()
 	{
-		BackgroundImage = Resources.register_bg_production_cost;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_ContractLedgerManagementSystem()
 	{
-		BackgroundImage = Resources.register_bg_contract_ledger;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_RDExpenseLedgerSystem()
 	{
-		BackgroundImage = Resources.register_bg_rd_expense;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_SalesOrderManagementSystem()
 	{
-		BackgroundImage = Resources.register_bg_sales_order;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_PSIManagementSystem()
 	{
-		BackgroundImage = Resources.register_bg_psi_management;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_ProjectLedgerManagementSystem()
 	{
-		BackgroundImage = Resources.register_bg_project_ledger;
-		base.Icon = IconGenerator.CreateFromImage(Resources.frmRegisterIcon_Table);
 	}
 
 	private void InitPlatform_Custom()
 	{
-		BackgroundImage = System.Drawing.Image.FromStream(new MemoryStream(ClientCustomizeData.Current.GetFileData("image\\register_form_bg.png")));
-		base.Icon = IconGenerator.CreateFromImage((Bitmap)System.Drawing.Image.FromStream(new MemoryStream(ClientCustomizeData.Current.GetFileData("image\\register_form_icon.png"))));
 	}
 
 	private bool ValidateAllText()
@@ -382,7 +361,7 @@ public class frmRegister : Form
 	{
 		AnimateWindow(base.Handle, 100, 524288);
 		Refresh();
-		foreach (object control in base.Controls)
+		foreach (object control in pnlCard.Controls)
 		{
 			C1TextBox tb = control as C1TextBox;
 			if (tb != null)
@@ -392,9 +371,9 @@ public class frmRegister : Form
 					tb.BorderColor = _auditaiMainColor;
 				};
 				tb.MouseLeave += delegate
-			{
-				tb.BorderColor = Color.FromArgb(210, 210, 210);
-			};
+				{
+					tb.BorderColor = Color.FromArgb(210, 210, 210);
+				};
 			}
 		}
 		txtUserName.Focus();
@@ -443,7 +422,7 @@ public class frmRegister : Form
 				UserName = txtUserName.Text.Trim();
 				TelPhone = txtPhone.Text.Trim();
 				Truename = txtName.Text.Trim();
-				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: true);
+				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: false);
 			}
 			else
 			{
@@ -456,7 +435,7 @@ public class frmRegister : Form
 				UserName = txtUserName.Text.Trim();
 				TelPhone = txtPhone.Text.Trim();
 				Truename = txtName.Text.Trim();
-				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: true);
+				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: false);
 			}
 			base.DialogResult = DialogResult.OK;
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "注册成功");
@@ -472,7 +451,7 @@ public class frmRegister : Form
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 		}
 		catch (TimeoutException ex4)
 		{
@@ -512,7 +491,6 @@ public class frmRegister : Form
 				await WebApiClient.GetValidateCode(txtPhone.Text.Trim(), "1");
 				txtPhone.ReadOnly = true;
 				txtValidateCode.Focus();
-				_getsms = true;
 			}
 		}
 		catch (NormalException ex)
@@ -525,7 +503,7 @@ public class frmRegister : Form
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 		}
 		catch (TimeoutException ex4)
 		{
@@ -677,19 +655,24 @@ public class frmRegister : Form
 	{
 		var g = e.Graphics;
 		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-		
-		// 1. 浅天蓝渐变背景
+
 		Rectangle bgRect = new Rectangle(0, 0, base.Width, base.Height);
 		using (var bgBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
-			bgRect, 
-			Color.FromArgb(240, 248, 255), 
-			Color.FromArgb(225, 240, 255), 
+			bgRect, Color.FromArgb(240, 248, 255), Color.FromArgb(225, 240, 255),
 			System.Drawing.Drawing2D.LinearGradientMode.Vertical))
 		{
 			g.FillRectangle(bgBrush, bgRect);
 		}
-		
-		// 2. 顶部细光带
+
+		using (var bgBrush2 = new System.Drawing.Drawing2D.LinearGradientBrush(
+			new Point(base.Width, 0),
+			new Point(0, base.Height),
+			Color.FromArgb(150, 220, 235, 255),
+			Color.FromArgb(150, 240, 248, 255)))
+		{
+			g.FillRectangle(bgBrush2, bgRect);
+		}
+
 		Rectangle topBar = new Rectangle(0, 0, base.Width, (int)(3 * _scaleFactor));
 		using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
 			topBar, Color.FromArgb(80, 170, 240), Color.FromArgb(50, 150, 220),
@@ -698,9 +681,8 @@ public class frmRegister : Form
 			g.FillRectangle(topBrush, topBar);
 		}
 
-		// 3. 白色圆角卡片（圆角按缩放因子调整）
-		int cardX = (int)(20 * _scaleFactor), cardY = (int)(20 * _scaleFactor);
-		int cardW = (int)(400 * _scaleFactor), cardH = (int)(700 * _scaleFactor);
+		int cardX = (int)(30 * _scaleFactor), cardY = (int)(30 * _scaleFactor);
+		int cardW = (int)(740 * _scaleFactor), cardH = (int)(480 * _scaleFactor);
 		int radius = (int)(12 * _scaleFactor);
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
 		{
@@ -709,20 +691,17 @@ public class frmRegister : Form
 			path.AddArc(cardX + cardW - radius * 2, cardY + cardH - radius * 2, radius * 2, radius * 2, 0, 90);
 			path.AddArc(cardX, cardY + cardH - radius * 2, radius * 2, radius * 2, 90, 90);
 			path.CloseFigure();
-			
-			// 卡片阴影
+
 			using (var shadowBrush = new SolidBrush(Color.FromArgb(30, 100, 150, 200)))
 			{
 				g.TranslateTransform(2, 3);
 				g.FillPath(shadowBrush, path);
 				g.TranslateTransform(-2, -3);
 			}
-			// 卡片白色背景
 			using (var cardBrush = new SolidBrush(Color.White))
 			{
 				g.FillPath(cardBrush, path);
 			}
-			// 卡片浅蓝边框
 			using (var borderPen = new Pen(Color.FromArgb(180, 215, 245), 1f))
 			{
 				g.DrawPath(borderPen, path);
@@ -789,6 +768,9 @@ public class frmRegister : Form
 		this.c1Label4 = new C1.Win.C1Input.C1Label();
 		this.lblwarnName = new C1.Win.C1Input.C1Label();
 		this.c1Label5 = new C1.Win.C1Input.C1Label();
+		this.pnlCard = new System.Windows.Forms.Panel();
+		this.pnlLeftColumn = new System.Windows.Forms.Panel();
+		this.pnlRightColumn = new System.Windows.Forms.Panel();
 		((System.ComponentModel.ISupportInitialize)this.txtUserName).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.txtPassword).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.txtPassword2).BeginInit();
@@ -829,15 +811,79 @@ public class frmRegister : Form
 		((System.ComponentModel.ISupportInitialize)this.c1Label4).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.lblwarnName).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.c1Label5).BeginInit();
+		this.pnlCard.SuspendLayout();
+		this.pnlLeftColumn.SuspendLayout();
+		this.pnlRightColumn.SuspendLayout();
 		base.SuspendLayout();
+
+		// pnlCard
+		this.pnlCard.BackColor = System.Drawing.Color.White;
+		this.pnlCard.Controls.Add(this.lblRegister);
+		this.pnlCard.Controls.Add(this.pnlLeftColumn);
+		this.pnlCard.Controls.Add(this.pnlRightColumn);
+		this.pnlCard.Controls.Add(this.dockverify);
+		this.pnlCard.Controls.Add(this.btnRegister);
+		this.pnlCard.Location = new System.Drawing.Point(58, 58);
+		this.pnlCard.Name = "pnlCard";
+		this.pnlCard.Size = new System.Drawing.Size(962, 624);
+		this.pnlCard.TabIndex = 0;
+
+		// lblRegister
+		this.lblRegister.AutoSize = false;
+		this.lblRegister.BackColor = System.Drawing.Color.Transparent;
+		this.lblRegister.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblRegister.Font = new System.Drawing.Font("Noto Sans SC", 16f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblRegister.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.lblRegister.Location = new System.Drawing.Point(351, 32);
+		this.lblRegister.Name = "lblRegister";
+		this.lblRegister.Size = new System.Drawing.Size(260, 52);
+		this.lblRegister.TabIndex = 30;
+		this.lblRegister.Tag = null;
+		this.lblRegister.Text = "注册账号";
+		this.lblRegister.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+		this.lblRegister.TextDetached = true;
+
+		// pnlLeftColumn - 左列：账号信息
+		this.pnlLeftColumn.Controls.Add(this.lblUserName);
+		this.pnlLeftColumn.Controls.Add(this.txtUserName);
+		this.pnlLeftColumn.Controls.Add(this.warnUserName);
+		this.pnlLeftColumn.Controls.Add(this.lblMustInputStar1);
+		this.pnlLeftColumn.Controls.Add(this.lblPassword);
+		this.pnlLeftColumn.Controls.Add(this.txtPassword);
+		this.pnlLeftColumn.Controls.Add(this.warnPassword);
+		this.pnlLeftColumn.Controls.Add(this.lblMustInputStar2);
+		this.pnlLeftColumn.Controls.Add(this.lblPassword2);
+		this.pnlLeftColumn.Controls.Add(this.txtPassword2);
+		this.pnlLeftColumn.Controls.Add(this.warnPassword2);
+		this.pnlLeftColumn.Controls.Add(this.lblMustInputStar3);
+		this.pnlLeftColumn.Location = new System.Drawing.Point(46, 98);
+		this.pnlLeftColumn.Name = "pnlLeftColumn";
+		this.pnlLeftColumn.Size = new System.Drawing.Size(429, 416);
+		this.pnlLeftColumn.TabIndex = 0;
+
+		// lblUserName
+		this.lblUserName.AutoSize = true;
+		this.lblUserName.BackColor = System.Drawing.Color.Transparent;
+		this.lblUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblUserName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblUserName.Location = new System.Drawing.Point(0, 0);
+		this.lblUserName.Name = "lblUserName";
+		this.lblUserName.Size = new System.Drawing.Size(104, 34);
+		this.lblUserName.TabIndex = 18;
+		this.lblUserName.Tag = null;
+		this.lblUserName.Text = "用户名";
+		this.lblUserName.TextDetached = true;
+
+		// txtUserName
 		this.txtUserName.AutoSize = false;
 		this.txtUserName.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtUserName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtUserName.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtUserName.Location = new System.Drawing.Point(105, 158);
+		this.txtUserName.Location = new System.Drawing.Point(0, 39);
 		this.txtUserName.Name = "txtUserName";
-		this.txtUserName.Size = new System.Drawing.Size(450, 54);
+		this.txtUserName.Size = new System.Drawing.Size(429, 57);
 		this.txtUserName.TabIndex = 0;
 		this.txtUserName.Tag = null;
 		this.txtUserName.TextDetached = true;
@@ -845,83 +891,252 @@ public class frmRegister : Form
 		this.txtUserName.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		this.txtUserName.Enter += new System.EventHandler(txtUserName_Enter);
 		this.txtUserName.Validated += new System.EventHandler(txtUserName_Validated);
+
+		// warnUserName
+		this.warnUserName.AutoSize = true;
+		this.warnUserName.BackColor = System.Drawing.Color.Transparent;
+		this.warnUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.warnUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnUserName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
+		this.warnUserName.Location = new System.Drawing.Point(0, 99);
+		this.warnUserName.Name = "warnUserName";
+		this.warnUserName.Size = new System.Drawing.Size(390, 29);
+		this.warnUserName.TabIndex = 13;
+		this.warnUserName.Tag = null;
+		this.warnUserName.Text = "长度在2-20个字符不区分大小写";
+		this.warnUserName.TextDetached = true;
+		this.warnUserName.Visible = false;
+
+		// lblMustInputStar1
+		this.lblMustInputStar1.AutoSize = true;
+		this.lblMustInputStar1.BackColor = System.Drawing.Color.Transparent;
+		this.lblMustInputStar1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblMustInputStar1.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+		this.lblMustInputStar1.Location = new System.Drawing.Point(104, 0);
+		this.lblMustInputStar1.Name = "lblMustInputStar1";
+		this.lblMustInputStar1.Size = new System.Drawing.Size(26, 34);
+		this.lblMustInputStar1.TabIndex = 34;
+		this.lblMustInputStar1.Tag = null;
+		this.lblMustInputStar1.Text = "*";
+		this.lblMustInputStar1.TextDetached = true;
+
+		// lblPassword
+		this.lblPassword.AutoSize = true;
+		this.lblPassword.BackColor = System.Drawing.Color.Transparent;
+		this.lblPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPassword.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblPassword.Location = new System.Drawing.Point(0, 136);
+		this.lblPassword.Name = "lblPassword";
+		this.lblPassword.Size = new System.Drawing.Size(104, 34);
+		this.lblPassword.TabIndex = 27;
+		this.lblPassword.Tag = null;
+		this.lblPassword.Text = "登录密码";
+		this.lblPassword.TextDetached = true;
+
+		// txtPassword
 		this.txtPassword.AutoSize = false;
 		this.txtPassword.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPassword.Location = new System.Drawing.Point(105, 274);
+		this.txtPassword.Location = new System.Drawing.Point(0, 176);
 		this.txtPassword.Name = "txtPassword";
 		this.txtPassword.PasswordChar = '·';
-		this.txtPassword.Size = new System.Drawing.Size(450, 54);
+		this.txtPassword.Size = new System.Drawing.Size(429, 57);
 		this.txtPassword.TabIndex = 1;
 		this.txtPassword.Tag = null;
 		this.txtPassword.TextDetached = true;
 		this.txtPassword.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		this.txtPassword.Enter += new System.EventHandler(txtPassword_Enter);
 		this.txtPassword.Validated += new System.EventHandler(txtPassword_Validated);
+
+		// warnPassword
+		this.warnPassword.AutoSize = true;
+		this.warnPassword.BackColor = System.Drawing.Color.Transparent;
+		this.warnPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.warnPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnPassword.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
+		this.warnPassword.Location = new System.Drawing.Point(0, 235);
+		this.warnPassword.Name = "warnPassword";
+		this.warnPassword.Size = new System.Drawing.Size(390, 29);
+		this.warnPassword.TabIndex = 14;
+		this.warnPassword.Tag = null;
+		this.warnPassword.Text = "长度在6-20个字母或数字";
+		this.warnPassword.TextDetached = true;
+		this.warnPassword.Visible = false;
+
+		// lblMustInputStar2
+		this.lblMustInputStar2.AutoSize = true;
+		this.lblMustInputStar2.BackColor = System.Drawing.Color.Transparent;
+		this.lblMustInputStar2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblMustInputStar2.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+		this.lblMustInputStar2.Location = new System.Drawing.Point(104, 136);
+		this.lblMustInputStar2.Name = "lblMustInputStar2";
+		this.lblMustInputStar2.Size = new System.Drawing.Size(26, 34);
+		this.lblMustInputStar2.TabIndex = 35;
+		this.lblMustInputStar2.Tag = null;
+		this.lblMustInputStar2.Text = "*";
+		this.lblMustInputStar2.TextDetached = true;
+
+		// lblPassword2
+		this.lblPassword2.AutoSize = true;
+		this.lblPassword2.BackColor = System.Drawing.Color.Transparent;
+		this.lblPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPassword2.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblPassword2.Location = new System.Drawing.Point(0, 273);
+		this.lblPassword2.Name = "lblPassword2";
+		this.lblPassword2.Size = new System.Drawing.Size(104, 34);
+		this.lblPassword2.TabIndex = 19;
+		this.lblPassword2.Tag = null;
+		this.lblPassword2.Text = "确认密码";
+		this.lblPassword2.TextDetached = true;
+
+		// txtPassword2
 		this.txtPassword2.AutoSize = false;
 		this.txtPassword2.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPassword2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPassword2.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPassword2.Location = new System.Drawing.Point(105, 392);
+		this.txtPassword2.Location = new System.Drawing.Point(0, 312);
 		this.txtPassword2.Name = "txtPassword2";
 		this.txtPassword2.PasswordChar = '·';
-		this.txtPassword2.Size = new System.Drawing.Size(450, 54);
+		this.txtPassword2.Size = new System.Drawing.Size(429, 57);
 		this.txtPassword2.TabIndex = 2;
 		this.txtPassword2.Tag = null;
 		this.txtPassword2.TextDetached = true;
 		this.txtPassword2.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		this.txtPassword2.Enter += new System.EventHandler(txtPassword2_Enter);
 		this.txtPassword2.Validated += new System.EventHandler(txtPassword2_Validated);
+
+		// warnPassword2
+		this.warnPassword2.AutoSize = true;
+		this.warnPassword2.BackColor = System.Drawing.Color.Transparent;
+		this.warnPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.warnPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnPassword2.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
+		this.warnPassword2.Location = new System.Drawing.Point(0, 372);
+		this.warnPassword2.Name = "warnPassword2";
+		this.warnPassword2.Size = new System.Drawing.Size(390, 29);
+		this.warnPassword2.TabIndex = 15;
+		this.warnPassword2.Tag = null;
+		this.warnPassword2.Text = "与上面输入要一致";
+		this.warnPassword2.TextDetached = true;
+		this.warnPassword2.Visible = false;
+
+		// lblMustInputStar3
+		this.lblMustInputStar3.AutoSize = true;
+		this.lblMustInputStar3.BackColor = System.Drawing.Color.Transparent;
+		this.lblMustInputStar3.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblMustInputStar3.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+		this.lblMustInputStar3.Location = new System.Drawing.Point(104, 273);
+		this.lblMustInputStar3.Name = "lblMustInputStar3";
+		this.lblMustInputStar3.Size = new System.Drawing.Size(26, 34);
+		this.lblMustInputStar3.TabIndex = 36;
+		this.lblMustInputStar3.Tag = null;
+		this.lblMustInputStar3.Text = "*";
+		this.lblMustInputStar3.TextDetached = true;
+
+		// pnlRightColumn - 右列：个人信息
+		this.pnlRightColumn.Controls.Add(this.lblName);
+		this.pnlRightColumn.Controls.Add(this.txtName);
+		this.pnlRightColumn.Controls.Add(this.lblwarnName);
+		this.pnlRightColumn.Controls.Add(this.c1Label4);
+		this.pnlRightColumn.Controls.Add(this.lblPhone);
+		this.pnlRightColumn.Controls.Add(this.txtPhone);
+		this.pnlRightColumn.Controls.Add(this.warnPhone);
+		this.pnlRightColumn.Controls.Add(this.c1Label5);
+		this.pnlRightColumn.Controls.Add(this.lblEmail);
+		this.pnlRightColumn.Controls.Add(this.txtEmail);
+		this.pnlRightColumn.Controls.Add(this.lblCompany);
+		this.pnlRightColumn.Controls.Add(this.txtCompany);
+		this.pnlRightColumn.Location = new System.Drawing.Point(494, 98);
+		this.pnlRightColumn.Name = "pnlRightColumn";
+		this.pnlRightColumn.Size = new System.Drawing.Size(429, 416);
+		this.pnlRightColumn.TabIndex = 1;
+
+		// lblName
+		this.lblName.AutoSize = true;
+		this.lblName.BackColor = System.Drawing.Color.Transparent;
+		this.lblName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblName.Location = new System.Drawing.Point(0, 0);
+		this.lblName.Name = "lblName";
+		this.lblName.Size = new System.Drawing.Size(78, 34);
+		this.lblName.TabIndex = 20;
+		this.lblName.Tag = null;
+		this.lblName.Text = "姓名";
+		this.lblName.TextDetached = true;
+
+		// txtName
 		this.txtName.AutoSize = false;
 		this.txtName.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtName.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtName.Location = new System.Drawing.Point(105, 508);
+		this.txtName.Location = new System.Drawing.Point(0, 39);
 		this.txtName.Name = "txtName";
-		this.txtName.Size = new System.Drawing.Size(450, 54);
+		this.txtName.Size = new System.Drawing.Size(429, 57);
 		this.txtName.TabIndex = 6;
 		this.txtName.Tag = null;
 		this.txtName.TextDetached = true;
 		this.txtName.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		this.txtName.Enter += new System.EventHandler(txtName_Enter);
 		this.txtName.Validated += new System.EventHandler(txtName_Validated);
-		this.txtEmail.AutoSize = false;
-		this.txtEmail.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
-		this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtEmail.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtEmail.Location = new System.Drawing.Point(105, 742);
-		this.txtEmail.Name = "txtEmail";
-		this.txtEmail.Size = new System.Drawing.Size(450, 54);
-		this.txtEmail.TabIndex = 8;
-		this.txtEmail.Tag = null;
-		this.txtEmail.TextDetached = true;
-		this.txtEmail.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
-		this.txtCompany.AutoSize = false;
-		this.txtCompany.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
-		this.txtCompany.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtCompany.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtCompany.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtCompany.Location = new System.Drawing.Point(158, 177);
-		this.txtCompany.Name = "txtCompany";
-		this.txtCompany.Size = new System.Drawing.Size(345, 48);
-		this.txtCompany.TabIndex = 3;
-		this.txtCompany.Tag = null;
-		this.txtCompany.TextDetached = true;
-		this.txtCompany.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
-		this.txtCompany.Visible = false;
+
+		// lblwarnName
+		this.lblwarnName.AutoSize = true;
+		this.lblwarnName.BackColor = System.Drawing.Color.Transparent;
+		this.lblwarnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblwarnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblwarnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
+		this.lblwarnName.Location = new System.Drawing.Point(0, 99);
+		this.lblwarnName.Name = "lblwarnName";
+		this.lblwarnName.Size = new System.Drawing.Size(390, 29);
+		this.lblwarnName.TabIndex = 48;
+		this.lblwarnName.Tag = null;
+		this.lblwarnName.Text = "长度在2-20个字符";
+		this.lblwarnName.TextDetached = true;
+		this.lblwarnName.Visible = false;
+
+		// c1Label4
+		this.c1Label4.AutoSize = true;
+		this.c1Label4.BackColor = System.Drawing.Color.Transparent;
+		this.c1Label4.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.c1Label4.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+		this.c1Label4.Location = new System.Drawing.Point(78, 0);
+		this.c1Label4.Name = "c1Label4";
+		this.c1Label4.Size = new System.Drawing.Size(26, 34);
+		this.c1Label4.TabIndex = 47;
+		this.c1Label4.Tag = null;
+		this.c1Label4.Text = "*";
+		this.c1Label4.TextDetached = true;
+
+		// lblPhone
+		this.lblPhone.AutoSize = true;
+		this.lblPhone.BackColor = System.Drawing.Color.Transparent;
+		this.lblPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPhone.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblPhone.Location = new System.Drawing.Point(0, 136);
+		this.lblPhone.Name = "lblPhone";
+		this.lblPhone.Size = new System.Drawing.Size(78, 34);
+		this.lblPhone.TabIndex = 28;
+		this.lblPhone.Tag = null;
+		this.lblPhone.Text = "手机号";
+		this.lblPhone.TextDetached = true;
+
+		// txtPhone
 		this.txtPhone.AutoSize = false;
 		this.txtPhone.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPhone.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPhone.Location = new System.Drawing.Point(105, 626);
+		this.txtPhone.Location = new System.Drawing.Point(0, 176);
 		this.txtPhone.Name = "txtPhone";
-		this.txtPhone.Size = new System.Drawing.Size(450, 54);
+		this.txtPhone.Size = new System.Drawing.Size(429, 57);
 		this.txtPhone.TabIndex = 7;
 		this.txtPhone.Tag = null;
 		this.txtPhone.TextDetached = true;
@@ -929,332 +1144,211 @@ public class frmRegister : Form
 		this.txtPhone.TextChanged += new System.EventHandler(txtPhone_TextChanged);
 		this.txtPhone.Enter += new System.EventHandler(txtPhone_Enter);
 		this.txtPhone.Validated += new System.EventHandler(txtPhone_Validated);
-		this.txtVerification.AutoSize = false;
-		this.txtVerification.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
-		this.txtVerification.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtVerification.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtVerification.Location = new System.Drawing.Point(140, 9);
-		this.txtVerification.Name = "txtVerification";
-		this.txtVerification.Size = new System.Drawing.Size(180, 54);
-		this.txtVerification.TabIndex = 10;
-		this.txtVerification.Tag = null;
-		this.txtVerification.TextDetached = true;
-		this.txtVerification.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
-		this.btnRegister.BackColor = System.Drawing.Color.FromArgb(50, 150, 220);
-		this.btnRegister.FlatAppearance.BorderSize = 0;
-		this.btnRegister.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(80, 170, 240);
-		this.btnRegister.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 120, 190);
-		this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnRegister.Font = new System.Drawing.Font("Noto Sans SC", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnRegister.ForeColor = System.Drawing.Color.White;
-		this.btnRegister.Location = new System.Drawing.Point(105, 930);
-		this.btnRegister.Name = "btnRegister";
-		this.btnRegister.Size = new System.Drawing.Size(450, 66);
-		this.btnRegister.TabIndex = 12;
-		this.btnRegister.Text = "注册";
-		this.btnRegister.UseVisualStyleBackColor = false;
-		this.btnRegister.Click += new System.EventHandler(btnRegister_Click);
-		this.warnUserName.AutoSize = true;
-		this.warnUserName.BackColor = System.Drawing.Color.Transparent;
-		this.warnUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.warnUserName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.warnUserName.Location = new System.Drawing.Point(105, 214);
-		this.warnUserName.Name = "warnUserName";
-		this.warnUserName.Size = new System.Drawing.Size(300, 22);
-		this.warnUserName.TabIndex = 13;
-		this.warnUserName.Tag = null;
-		this.warnUserName.Text = "长度在2-20个字符不区分大小写";
-		this.warnUserName.TextDetached = true;
-		this.warnUserName.Visible = false;
-		this.warnPassword.AutoSize = true;
-		this.warnPassword.BackColor = System.Drawing.Color.Transparent;
-		this.warnPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.warnPassword.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.warnPassword.Location = new System.Drawing.Point(105, 332);
-		this.warnPassword.Name = "warnPassword";
-		this.warnPassword.Size = new System.Drawing.Size(300, 22);
-		this.warnPassword.TabIndex = 14;
-		this.warnPassword.Tag = null;
-		this.warnPassword.Text = "长度在6-20个字母或数字";
-		this.warnPassword.TextDetached = true;
-		this.warnPassword.Visible = false;
-		this.warnPassword2.AutoSize = true;
-		this.warnPassword2.BackColor = System.Drawing.Color.Transparent;
-		this.warnPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.warnPassword2.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.warnPassword2.Location = new System.Drawing.Point(105, 448);
-		this.warnPassword2.Name = "warnPassword2";
-		this.warnPassword2.Size = new System.Drawing.Size(300, 22);
-		this.warnPassword2.TabIndex = 15;
-		this.warnPassword2.Tag = null;
-		this.warnPassword2.Text = "与上面输入要一致";
-		this.warnPassword2.TextDetached = true;
-		this.warnPassword2.Visible = false;
-		this.warnName.AutoSize = true;
-		this.warnName.BackColor = System.Drawing.Color.Transparent;
-		this.warnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.warnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.warnName.Location = new System.Drawing.Point(651, 399);
-		this.warnName.Name = "warnName";
-		this.warnName.Size = new System.Drawing.Size(0, 26);
-		this.warnName.TabIndex = 16;
-		this.warnName.Tag = null;
-		this.warnName.TextDetached = true;
-		this.warnName.Visible = false;
+
+		// warnPhone
 		this.warnPhone.AutoSize = true;
 		this.warnPhone.BackColor = System.Drawing.Color.Transparent;
 		this.warnPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.warnPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnPhone.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.warnPhone.Location = new System.Drawing.Point(105, 682);
+		this.warnPhone.Location = new System.Drawing.Point(0, 235);
 		this.warnPhone.Name = "warnPhone";
-		this.warnPhone.Size = new System.Drawing.Size(450, 22);
+		this.warnPhone.Size = new System.Drawing.Size(429, 29);
 		this.warnPhone.TabIndex = 17;
 		this.warnPhone.Tag = null;
-		this.warnPhone.Text = "找回密码唯一途径（我们比您更注重保护隐私）";
+		this.warnPhone.Text = "找回密码唯一途径";
 		this.warnPhone.TextDetached = true;
 		this.warnPhone.Visible = false;
-		this.lblUserName.AutoSize = true;
-		this.lblUserName.BackColor = System.Drawing.Color.Transparent;
-		this.lblUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblUserName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblUserName.Location = new System.Drawing.Point(105, 120);
-		this.lblUserName.Name = "lblUserName";
-		this.lblUserName.Size = new System.Drawing.Size(120, 26);
-		this.lblUserName.TabIndex = 18;
-		this.lblUserName.Tag = null;
-		this.lblUserName.Text = "用户名";
-		this.lblUserName.TextDetached = true;
-		this.lblPassword2.AutoSize = true;
-		this.lblPassword2.BackColor = System.Drawing.Color.Transparent;
-		this.lblPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblPassword2.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblPassword2.Location = new System.Drawing.Point(105, 354);
-		this.lblPassword2.Name = "lblPassword2";
-		this.lblPassword2.Size = new System.Drawing.Size(120, 26);
-		this.lblPassword2.TabIndex = 19;
-		this.lblPassword2.Tag = null;
-		this.lblPassword2.Text = "确认密码";
-		this.lblPassword2.TextDetached = true;
-		this.lblName.AutoSize = true;
-		this.lblName.BackColor = System.Drawing.Color.Transparent;
-		this.lblName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblName.Location = new System.Drawing.Point(105, 470);
-		this.lblName.Name = "lblName";
-		this.lblName.Size = new System.Drawing.Size(120, 26);
-		this.lblName.TabIndex = 20;
-		this.lblName.Tag = null;
-		this.lblName.Text = "姓名";
-		this.lblName.TextDetached = true;
+
+		// c1Label5
+		this.c1Label5.AutoSize = true;
+		this.c1Label5.BackColor = System.Drawing.Color.Transparent;
+		this.c1Label5.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.c1Label5.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+		this.c1Label5.Location = new System.Drawing.Point(78, 136);
+		this.c1Label5.Name = "c1Label5";
+		this.c1Label5.Size = new System.Drawing.Size(26, 34);
+		this.c1Label5.TabIndex = 49;
+		this.c1Label5.Tag = null;
+		this.c1Label5.Text = "*";
+		this.c1Label5.TextDetached = true;
+
+		// lblEmail
 		this.lblEmail.AutoSize = true;
 		this.lblEmail.BackColor = System.Drawing.Color.Transparent;
 		this.lblEmail.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblEmail.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblEmail.Location = new System.Drawing.Point(105, 704);
+		this.lblEmail.Location = new System.Drawing.Point(0, 273);
 		this.lblEmail.Name = "lblEmail";
-		this.lblEmail.Size = new System.Drawing.Size(120, 26);
+		this.lblEmail.Size = new System.Drawing.Size(78, 34);
 		this.lblEmail.TabIndex = 21;
 		this.lblEmail.Tag = null;
 		this.lblEmail.Text = "邮箱";
 		this.lblEmail.TextDetached = true;
+
+		// txtEmail
+		this.txtEmail.AutoSize = false;
+		this.txtEmail.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
+		this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+		this.txtEmail.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtEmail.Location = new System.Drawing.Point(0, 312);
+		this.txtEmail.Name = "txtEmail";
+		this.txtEmail.Size = new System.Drawing.Size(429, 57);
+		this.txtEmail.TabIndex = 8;
+		this.txtEmail.Tag = null;
+		this.txtEmail.TextDetached = true;
+		this.txtEmail.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
+
+		// lblCompany
 		this.lblCompany.AutoSize = true;
 		this.lblCompany.BackColor = System.Drawing.Color.Transparent;
 		this.lblCompany.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblCompany.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblCompany.Location = new System.Drawing.Point(28, 188);
+		this.lblCompany.Location = new System.Drawing.Point(0, 384);
 		this.lblCompany.Name = "lblCompany";
-		this.lblCompany.Size = new System.Drawing.Size(120, 26);
+		this.lblCompany.Size = new System.Drawing.Size(130, 34);
 		this.lblCompany.TabIndex = 22;
 		this.lblCompany.Tag = null;
-		this.lblCompany.Text = "所在单位全称";
+		this.lblCompany.Text = "所在单位";
 		this.lblCompany.TextDetached = true;
 		this.lblCompany.Visible = false;
-		this.lblVerification.AutoSize = true;
-		this.lblVerification.BackColor = System.Drawing.Color.Transparent;
-		this.lblVerification.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblVerification.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblVerification.Location = new System.Drawing.Point(30, 21);
-		this.lblVerification.Name = "lblVerification";
-		this.lblVerification.Size = new System.Drawing.Size(102, 26);
-		this.lblVerification.TabIndex = 25;
-		this.lblVerification.Tag = null;
-		this.lblVerification.Text = "激活码";
-		this.lblVerification.TextDetached = true;
-		this.lblPassword.AutoSize = true;
-		this.lblPassword.BackColor = System.Drawing.Color.Transparent;
-		this.lblPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblPassword.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblPassword.Location = new System.Drawing.Point(105, 236);
-		this.lblPassword.Name = "lblPassword";
-		this.lblPassword.Size = new System.Drawing.Size(120, 26);
-		this.lblPassword.TabIndex = 27;
-		this.lblPassword.Tag = null;
-		this.lblPassword.Text = "登录密码";
-		this.lblPassword.TextDetached = true;
-		this.lblPhone.AutoSize = true;
-		this.lblPhone.BackColor = System.Drawing.Color.Transparent;
-		this.lblPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblPhone.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.lblPhone.Location = new System.Drawing.Point(105, 588);
-		this.lblPhone.Name = "lblPhone";
-		this.lblPhone.Size = new System.Drawing.Size(66, 26);
-		this.lblPhone.TabIndex = 28;
-		this.lblPhone.Tag = null;
-		this.lblPhone.Text = "手机号";
-		this.lblPhone.TextDetached = true;
-		this.lblRegister.AutoSize = false;
-		this.lblRegister.BackColor = System.Drawing.Color.Transparent;
-		this.lblRegister.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblRegister.Font = new System.Drawing.Font("Noto Sans SC", 18f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblRegister.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.lblRegister.Location = new System.Drawing.Point(105, 52);
-		this.lblRegister.Name = "lblRegister";
-		this.lblRegister.Size = new System.Drawing.Size(450, 52);
-		this.lblRegister.TabIndex = 30;
-		this.lblRegister.Tag = null;
-		this.lblRegister.Text = "注册账号";
-		this.lblRegister.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.lblRegister.TextDetached = true;
-		this.lblMustInputStar1.AutoSize = true;
-		this.lblMustInputStar1.BackColor = System.Drawing.Color.Transparent;
-		this.lblMustInputStar1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblMustInputStar1.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.lblMustInputStar1.Location = new System.Drawing.Point(228, 128);
-		this.lblMustInputStar1.Name = "lblMustInputStar1";
-		this.lblMustInputStar1.Size = new System.Drawing.Size(20, 26);
-		this.lblMustInputStar1.TabIndex = 34;
-		this.lblMustInputStar1.Tag = null;
-		this.lblMustInputStar1.Text = "*";
-		this.lblMustInputStar1.TextDetached = true;
-		this.lblMustInputStar2.AutoSize = true;
-		this.lblMustInputStar2.BackColor = System.Drawing.Color.Transparent;
-		this.lblMustInputStar2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblMustInputStar2.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.lblMustInputStar2.Location = new System.Drawing.Point(228, 244);
-		this.lblMustInputStar2.Name = "lblMustInputStar2";
-		this.lblMustInputStar2.Size = new System.Drawing.Size(20, 26);
-		this.lblMustInputStar2.TabIndex = 35;
-		this.lblMustInputStar2.Tag = null;
-		this.lblMustInputStar2.Text = "*";
-		this.lblMustInputStar2.TextDetached = true;
-		this.lblMustInputStar3.AutoSize = true;
-		this.lblMustInputStar3.BackColor = System.Drawing.Color.Transparent;
-		this.lblMustInputStar3.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblMustInputStar3.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.lblMustInputStar3.Location = new System.Drawing.Point(228, 362);
-		this.lblMustInputStar3.Size = new System.Drawing.Size(20, 26);
-		this.lblMustInputStar3.TabIndex = 36;
-		this.lblMustInputStar3.Tag = null;
-		this.lblMustInputStar3.Text = "*";
-		this.lblMustInputStar3.TextDetached = true;
-		this.btnClose.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
-		this.btnClose.BackColor = System.Drawing.Color.Transparent;
-		this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-		this.btnClose.FlatAppearance.BorderSize = 0;
-		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(255, 200, 200);
-		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnClose.Image = Auditai.UI.Platform.Properties.Resources.close2;
-		this.btnClose.Location = new System.Drawing.Point(592, 12);
-		this.btnClose.Name = "btnClose";
-		this.btnClose.Size = new System.Drawing.Size(38, 38);
-		this.btnClose.TabIndex = 40;
-		this.btnClose.UseVisualStyleBackColor = false;
-		this.btnClose.Click += new System.EventHandler(btnClose_Click);
+
+		// txtCompany
+		this.txtCompany.AutoSize = false;
+		this.txtCompany.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
+		this.txtCompany.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+		this.txtCompany.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtCompany.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtCompany.Location = new System.Drawing.Point(0, 384);
+		this.txtCompany.Name = "txtCompany";
+		this.txtCompany.Size = new System.Drawing.Size(429, 57);
+		this.txtCompany.TabIndex = 3;
+		this.txtCompany.Tag = null;
+		this.txtCompany.TextDetached = true;
+		this.txtCompany.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
+		this.txtCompany.Visible = false;
+
+		// dockverify - 验证码区（跨列）
 		this.dockverify.BackColor = System.Drawing.Color.White;
 		this.dockverify.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.dockverify.Controls.Add(this.tabImage);
 		this.dockverify.Controls.Add(this.tabSMS);
-		this.dockverify.Location = new System.Drawing.Point(105, 825);
+		this.dockverify.Location = new System.Drawing.Point(46, 520);
 		this.dockverify.Name = "dockverify";
 		this.dockverify.ShowTabs = false;
-		this.dockverify.Size = new System.Drawing.Size(450, 75);
+		this.dockverify.Size = new System.Drawing.Size(878, 78);
 		this.dockverify.TabIndex = 46;
 		this.dockverify.TabsSpacing = 0;
+
+		// tabImage
 		this.tabImage.Controls.Add(this.c1Label2);
 		this.tabImage.Controls.Add(this.VerifyImg);
 		this.tabImage.Controls.Add(this.c1Label1);
 		this.tabImage.Controls.Add(this.txtValidateCode);
 		this.tabImage.BackColor = System.Drawing.Color.White;
-		this.tabImage.Location = new System.Drawing.Point(0, 2);
+		this.tabImage.Location = new System.Drawing.Point(0, 3);
 		this.tabImage.Name = "tabImage";
-		this.tabImage.Size = new System.Drawing.Size(450, 72);
+		this.tabImage.Size = new System.Drawing.Size(878, 73);
 		this.tabImage.TabIndex = 0;
 		this.tabImage.Text = "第1页";
+
 		this.c1Label2.AutoSize = true;
 		this.c1Label2.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label2.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.c1Label2.Location = new System.Drawing.Point(8, 22);
+		this.c1Label2.Location = new System.Drawing.Point(10, 23);
 		this.c1Label2.Name = "c1Label2";
-		this.c1Label2.Size = new System.Drawing.Size(20, 26);
+		this.c1Label2.Size = new System.Drawing.Size(26, 34);
 		this.c1Label2.TabIndex = 47;
 		this.c1Label2.Tag = null;
 		this.c1Label2.Text = "*";
 		this.c1Label2.TextDetached = true;
-		this.VerifyImg.Location = new System.Drawing.Point(330, 9);
+
+		this.VerifyImg.Location = new System.Drawing.Point(702, 8);
 		this.VerifyImg.Name = "VerifyImg";
-		this.VerifyImg.Size = new System.Drawing.Size(114, 54);
+		this.VerifyImg.Size = new System.Drawing.Size(156, 57);
 		this.VerifyImg.TabIndex = 29;
 		this.VerifyImg.TabStop = false;
 		this.VerifyImg.Click += new System.EventHandler(VerifyImg_Click);
+
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
-		this.c1Label1.Location = new System.Drawing.Point(30, 21);
+		this.c1Label1.Location = new System.Drawing.Point(39, 23);
 		this.c1Label1.Name = "c1Label1";
-		this.c1Label1.Size = new System.Drawing.Size(66, 26);
+		this.c1Label1.Size = new System.Drawing.Size(86, 34);
 		this.c1Label1.TabIndex = 28;
 		this.c1Label1.Tag = null;
 		this.c1Label1.Text = "验证码";
 		this.c1Label1.TextDetached = true;
+
 		this.txtValidateCode.AutoSize = false;
 		this.txtValidateCode.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtValidateCode.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtValidateCode.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
 		this.txtValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtValidateCode.Location = new System.Drawing.Point(112, 9);
+		this.txtValidateCode.Location = new System.Drawing.Point(130, 8);
 		this.txtValidateCode.Name = "txtValidateCode";
-		this.txtValidateCode.Size = new System.Drawing.Size(210, 54);
+		this.txtValidateCode.Size = new System.Drawing.Size(260, 57);
 		this.txtValidateCode.TabIndex = 26;
 		this.txtValidateCode.Tag = null;
 		this.txtValidateCode.TextDetached = true;
 		this.txtValidateCode.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
+
+		// tabSMS
 		this.tabSMS.BackColor = System.Drawing.Color.White;
 		this.tabSMS.Controls.Add(this.c1Label3);
 		this.tabSMS.Controls.Add(this.lblVerification);
 		this.tabSMS.Controls.Add(this.txtVerification);
 		this.tabSMS.Controls.Add(this.btnGetValidateCode);
-		this.tabSMS.Location = new System.Drawing.Point(0, 2);
+		this.tabSMS.Location = new System.Drawing.Point(0, 3);
 		this.tabSMS.Name = "tabSMS";
-		this.tabSMS.Size = new System.Drawing.Size(450, 72);
+		this.tabSMS.Size = new System.Drawing.Size(878, 73);
 		this.tabSMS.TabIndex = 1;
 		this.tabSMS.Text = "第2页";
+
 		this.c1Label3.AutoSize = true;
 		this.c1Label3.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label3.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label3.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.c1Label3.Location = new System.Drawing.Point(8, 22);
+		this.c1Label3.Location = new System.Drawing.Point(10, 23);
 		this.c1Label3.Name = "c1Label3";
-		this.c1Label3.Size = new System.Drawing.Size(20, 26);
+		this.c1Label3.Size = new System.Drawing.Size(26, 34);
 		this.c1Label3.TabIndex = 48;
 		this.c1Label3.Tag = null;
 		this.c1Label3.Text = "*";
 		this.c1Label3.TextDetached = true;
+
+		this.lblVerification.AutoSize = true;
+		this.lblVerification.BackColor = System.Drawing.Color.Transparent;
+		this.lblVerification.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.lblVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblVerification.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.lblVerification.Location = new System.Drawing.Point(39, 23);
+		this.lblVerification.Name = "lblVerification";
+		this.lblVerification.Size = new System.Drawing.Size(104, 34);
+		this.lblVerification.TabIndex = 25;
+		this.lblVerification.Tag = null;
+		this.lblVerification.Text = "激活码";
+		this.lblVerification.TextDetached = true;
+
+		this.txtVerification.AutoSize = false;
+		this.txtVerification.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
+		this.txtVerification.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+		this.txtVerification.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtVerification.Location = new System.Drawing.Point(156, 8);
+		this.txtVerification.Name = "txtVerification";
+		this.txtVerification.Size = new System.Drawing.Size(260, 57);
+		this.txtVerification.TabIndex = 10;
+		this.txtVerification.Tag = null;
+		this.txtVerification.TextDetached = true;
+		this.txtVerification.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
+
 		this.btnGetValidateCode.BackColor = System.Drawing.Color.FromArgb(50, 150, 220);
 		this.btnGetValidateCode.FlatAppearance.BorderSize = 0;
 		this.btnGetValidateCode.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(80, 170, 240);
@@ -1263,87 +1357,70 @@ public class frmRegister : Form
 		this.btnGetValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnGetValidateCode.ForeColor = System.Drawing.Color.White;
 		this.btnGetValidateCode.Format = null;
-		this.btnGetValidateCode.Location = new System.Drawing.Point(330, 9);
+		this.btnGetValidateCode.Location = new System.Drawing.Point(702, 8);
 		this.btnGetValidateCode.Name = "btnGetValidateCode";
-		this.btnGetValidateCode.Size = new System.Drawing.Size(114, 54);
+		this.btnGetValidateCode.Size = new System.Drawing.Size(156, 57);
 		this.btnGetValidateCode.TabIndex = 11;
 		this.btnGetValidateCode.Text = "获取验证码";
 		this.btnGetValidateCode.UseVisualStyleBackColor = false;
 		this.btnGetValidateCode.Visible = false;
 		this.btnGetValidateCode.Click += new System.EventHandler(btnGetValidateCode_Click);
-		this.c1Label4.AutoSize = true;
-		this.c1Label4.BackColor = System.Drawing.Color.Transparent;
-		this.c1Label4.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label4.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.c1Label4.Location = new System.Drawing.Point(228, 478);
-		this.c1Label4.Name = "c1Label4";
-		this.c1Label4.Size = new System.Drawing.Size(20, 26);
-		this.c1Label4.TabIndex = 47;
-		this.c1Label4.Tag = null;
-		this.c1Label4.Text = "*";
-		this.c1Label4.TextDetached = true;
-		this.lblwarnName.AutoSize = true;
-		this.lblwarnName.BackColor = System.Drawing.Color.Transparent;
-		this.lblwarnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblwarnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblwarnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
-		this.lblwarnName.Location = new System.Drawing.Point(105, 566);
-		this.lblwarnName.Name = "lblwarnName";
-		this.lblwarnName.Size = new System.Drawing.Size(300, 22);
-		this.lblwarnName.TabIndex = 48;
-		this.lblwarnName.Tag = null;
-		this.lblwarnName.Text = "长度在2-20个字符";
-		this.lblwarnName.TextDetached = true;
-		this.lblwarnName.Visible = false;
-		this.c1Label5.AutoSize = true;
-		this.c1Label5.BackColor = System.Drawing.Color.Transparent;
-		this.c1Label5.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label5.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
-		this.c1Label5.Location = new System.Drawing.Point(228, 596);
-		this.c1Label5.Name = "c1Label5";
-		this.c1Label5.Size = new System.Drawing.Size(20, 26);
-		this.c1Label5.TabIndex = 49;
-		this.c1Label5.Tag = null;
-		this.c1Label5.Text = "*";
-		this.c1Label5.TextDetached = true;
+
+		// btnRegister
+		this.btnRegister.BackColor = System.Drawing.Color.FromArgb(50, 150, 220);
+		this.btnRegister.FlatAppearance.BorderSize = 0;
+		this.btnRegister.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(80, 170, 240);
+		this.btnRegister.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 120, 190);
+		this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+		this.btnRegister.Font = new System.Drawing.Font("Noto Sans SC", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnRegister.ForeColor = System.Drawing.Color.White;
+		this.btnRegister.Location = new System.Drawing.Point(364, 533);
+		this.btnRegister.Name = "btnRegister";
+		this.btnRegister.Size = new System.Drawing.Size(234, 70);
+		this.btnRegister.TabIndex = 12;
+		this.btnRegister.Text = "注册";
+		this.btnRegister.UseVisualStyleBackColor = false;
+		this.btnRegister.Click += new System.EventHandler(btnRegister_Click);
+
+		// btnClose
+		this.btnClose.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+		this.btnClose.BackColor = System.Drawing.Color.Transparent;
+		this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.btnClose.FlatAppearance.BorderSize = 0;
+		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(255, 200, 200);
+		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+		this.btnClose.Image = Auditai.UI.Platform.Properties.Resources.close2;
+		this.btnClose.Location = new System.Drawing.Point(988, 16);
+		this.btnClose.Name = "btnClose";
+		this.btnClose.Size = new System.Drawing.Size(49, 49);
+		this.btnClose.TabIndex = 40;
+		this.btnClose.UseVisualStyleBackColor = false;
+		this.btnClose.Click += new System.EventHandler(btnClose_Click);
+
+		// warnName
+		this.warnName.AutoSize = true;
+		this.warnName.BackColor = System.Drawing.Color.Transparent;
+		this.warnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		this.warnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
+		this.warnName.Location = new System.Drawing.Point(0, 99);
+		this.warnName.Name = "warnName";
+		this.warnName.Size = new System.Drawing.Size(0, 34);
+		this.warnName.TabIndex = 16;
+		this.warnName.Tag = null;
+		this.warnName.TextDetached = true;
+		this.warnName.Visible = false;
+
 		base.AcceptButton = this.btnRegister;
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 		this.BackColor = System.Drawing.Color.FromArgb(240, 248, 255);
 		this.BackgroundImage = null;
 		this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-		base.ClientSize = new System.Drawing.Size(660, 1110);
-		base.Controls.Add(this.c1Label5);
-		base.Controls.Add(this.lblwarnName);
-		base.Controls.Add(this.c1Label4);
-		base.Controls.Add(this.dockverify);
+		base.ClientSize = new System.Drawing.Size(1066, 741);
 		base.Controls.Add(this.btnClose);
-		base.Controls.Add(this.lblMustInputStar3);
-		base.Controls.Add(this.lblMustInputStar2);
-		base.Controls.Add(this.lblMustInputStar1);
-		base.Controls.Add(this.lblRegister);
-		base.Controls.Add(this.lblPhone);
-		base.Controls.Add(this.lblPassword);
-		base.Controls.Add(this.lblCompany);
-		base.Controls.Add(this.lblEmail);
-		base.Controls.Add(this.lblName);
-		base.Controls.Add(this.lblPassword2);
-		base.Controls.Add(this.lblUserName);
-		base.Controls.Add(this.warnPhone);
-		base.Controls.Add(this.warnName);
-		base.Controls.Add(this.warnPassword2);
-		base.Controls.Add(this.warnPassword);
-		base.Controls.Add(this.warnUserName);
-		base.Controls.Add(this.btnRegister);
-		base.Controls.Add(this.txtPhone);
-		base.Controls.Add(this.txtCompany);
-		base.Controls.Add(this.txtEmail);
-		base.Controls.Add(this.txtName);
-		base.Controls.Add(this.txtPassword2);
-		base.Controls.Add(this.txtPassword);
-		base.Controls.Add(this.txtUserName);
+		base.Controls.Add(this.pnlCard);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-		base.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
 		base.Name = "frmRegister";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 		this.Text = " 注册";
@@ -1393,6 +1470,12 @@ public class frmRegister : Form
 		((System.ComponentModel.ISupportInitialize)this.c1Label4).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.lblwarnName).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.c1Label5).EndInit();
+		this.pnlCard.ResumeLayout(false);
+		this.pnlCard.PerformLayout();
+		this.pnlLeftColumn.ResumeLayout(false);
+		this.pnlLeftColumn.PerformLayout();
+		this.pnlRightColumn.ResumeLayout(false);
+		this.pnlRightColumn.PerformLayout();
 		base.ResumeLayout(false);
 		base.PerformLayout();
 	}

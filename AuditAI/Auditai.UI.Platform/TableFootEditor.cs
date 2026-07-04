@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
@@ -825,6 +825,42 @@ public class TableFootEditor : UserControl
 	private TableTitleCell GetCell(int row, int col)
 	{
 		return Foot.GetCell(row, col);
+	}
+
+	public void Select(int row, int col)
+	{
+		_grid.Select(row, col);
+		SetFormulaContext();
+	}
+
+	private void SetFormulaContext()
+	{
+		if (!IsEditing)
+		{
+			return;
+		}
+		C1.Win.C1FlexGrid.CellRange mergedRange = _grid.GetMergedRange(_grid.Selection.TopRow, _grid.Selection.LeftCol);
+		if (!mergedRange.IsValid)
+		{
+			_owner.FormulaEditor.View.Enabled = false;
+			return;
+		}
+		TableTitleCell cell = GetCell(mergedRange.TopRow, mergedRange.LeftCol);
+		if (!IsEditingFormula())
+		{
+			FormulaContext context = Program.MainForm.FormulaEditor.Context;
+			context.TitleOrFoot = cell;
+			context.Kind = FormulaContextKind.Foot;
+			context.TitleOrFootRow = mergedRange.TopRow;
+			context.TitleOrFootCol = mergedRange.LeftCol;
+			_owner.FormulaEditor.Populate();
+			_owner.FormulaEditor.View.Enabled = _owner.HasSchemaPermission();
+		}
+	}
+
+	private bool IsEditingFormula()
+	{
+		return Program.MainForm.FormulaEditor.IsEditing;
 	}
 
 	private void _grid_Enter(object sender, EventArgs e)

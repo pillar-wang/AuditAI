@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -20,6 +20,7 @@ namespace AuditAI.McpServer.Services
         private static IReadOnlyList<TestUser> _users = new List<TestUser>();
         private static IReadOnlyList<TestTeam> _teams = new List<TestTeam>();
         private static IReadOnlyList<TestProject> _projects = new List<TestProject>();
+        private static List<AdminUserFixture> _adminUsers = new List<AdminUserFixture>();
 
         /// <summary>种子用户列表（admin/testuser1/testuser2）</summary>
         public static IReadOnlyList<TestUser> Users
@@ -42,6 +43,13 @@ namespace AuditAI.McpServer.Services
             private set { _projects = value; }
         }
 
+        /// <summary>管理后台种子用户列表（admin）</summary>
+        public static List<AdminUserFixture> AdminUsers
+        {
+            get { return _adminUsers; }
+            private set { _adminUsers = value; }
+        }
+
         /// <summary>
         /// 加载所有夹具：3 个 JSON + 2 个 .bin（.bin 缺失时通过 Protobuf 生成）。
         /// 加载失败不抛异常，仅输出错误日志并将集合设为空列表。
@@ -51,6 +59,7 @@ namespace AuditAI.McpServer.Services
             var emptyUsers = new List<TestUser>();
             var emptyTeams = new List<TestTeam>();
             var emptyProjects = new List<TestProject>();
+            var emptyAdminUsers = new List<AdminUserFixture>();
 
             try
             {
@@ -60,12 +69,14 @@ namespace AuditAI.McpServer.Services
                     _users = emptyUsers;
                     _teams = emptyTeams;
                     _projects = emptyProjects;
+                    _adminUsers = emptyAdminUsers;
                     return;
                 }
 
                 _users = LoadUsers();
                 _teams = LoadTeams();
                 _projects = LoadProjects();
+                _adminUsers = LoadAdminUsers();
 
                 EnsureSamplePushTable();
                 EnsureSamplePushDocument();
@@ -73,7 +84,8 @@ namespace AuditAI.McpServer.Services
                 Console.Error.WriteLine(
                     "[TestFixtures] 加载完成: Users=" + _users.Count
                     + " Teams=" + _teams.Count
-                    + " Projects=" + _projects.Count);
+                    + " Projects=" + _projects.Count
+                    + " AdminUsers=" + _adminUsers.Count);
             }
             catch (Exception ex)
             {
@@ -81,6 +93,7 @@ namespace AuditAI.McpServer.Services
                 _users = emptyUsers;
                 _teams = emptyTeams;
                 _projects = emptyProjects;
+                _adminUsers = emptyAdminUsers;
             }
         }
 
@@ -208,6 +221,17 @@ namespace AuditAI.McpServer.Services
             if (wrapper == null || wrapper.Projects == null)
                 return new List<TestProject>();
             return wrapper.Projects;
+        }
+
+        private static List<AdminUserFixture> LoadAdminUsers()
+        {
+            string json = GetFixtureText("seed_admin_users");
+            if (string.IsNullOrEmpty(json))
+                return new List<AdminUserFixture>();
+            var wrapper = JsonConvert.DeserializeObject<AdminUsersWrapper>(json);
+            if (wrapper == null || wrapper.AdminUsers == null)
+                return new List<AdminUserFixture>();
+            return wrapper.AdminUsers;
         }
 
         // ===== Protobuf 样本生成 =====
@@ -425,6 +449,12 @@ namespace AuditAI.McpServer.Services
             [JsonProperty("projects")]
             public List<TestProject> Projects { get; set; }
         }
+
+        private class AdminUsersWrapper
+        {
+            [JsonProperty("adminUsers")]
+            public List<AdminUserFixture> AdminUsers { get; set; }
+        }
     }
 
     /// <summary>种子用户</summary>
@@ -458,5 +488,14 @@ namespace AuditAI.McpServer.Services
         [JsonProperty("teamName")] public string TeamName;
         [JsonProperty("tableNodeName")] public string TableNodeName;
         [JsonProperty("documentNodeName")] public string DocumentNodeName;
+    }
+
+    /// <summary>管理后台种子用户</summary>
+    public class AdminUserFixture
+    {
+        [JsonProperty("userName")] public string UserName;
+        [JsonProperty("password")] public string Password;
+        [JsonProperty("userId")] public long UserId;
+        [JsonProperty("role")] public string Role;
     }
 }

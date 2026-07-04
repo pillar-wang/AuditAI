@@ -1,14 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using Newtonsoft.Json;
 
 namespace Auditai.UI.Platform;
-
-public enum ListTileViewMode
-{
-	List,
-	Tile
-}
 
 public class DisplayStyle
 {

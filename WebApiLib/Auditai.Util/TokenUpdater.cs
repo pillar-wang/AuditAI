@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Configuration;
 using System.Net.Http;
 using System.Threading;
@@ -60,8 +60,15 @@ public class TokenUpdater
 				return;
 			TokenTimer.Token = await WebApiClient.UpdateToken(TokenTimer.LoginInfo.userId);
 		}
-		catch (HttpRequestException)
+		catch (HttpRequestException ex)
 		{
+			// 401「无效的 Token」表示服务端已不认可当前 Token（DB 重置/过期/被踢），
+			// 继续刷新只会无限 401。停止定时器，下次业务请求会抛 HttpRequestException 提示用户重新登录。
+			var msg = ex.Message ?? "";
+			if (msg.Contains("401") || msg.IndexOf("Unauthorized", StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				try { timer.Stop(); } catch { }
+			}
 		}
 		catch (TimeoutException)
 		{

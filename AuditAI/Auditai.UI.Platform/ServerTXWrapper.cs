@@ -1,4 +1,4 @@
-﻿using TXTextControl;
+using TXTextControl;
 
 namespace Auditai.UI.Platform;
 

@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -49,6 +49,9 @@ public class dlgTeamCreator : C1RibbonForm
 	public dlgTeamCreator()
 	{
 		InitializeComponent();
+
+
+
 		base.Shown += DlgTeamCreator_Shown;
 		base.StartPosition = FormStartPosition.CenterScreen;
 		_tileControl = new C1TileControlEx
@@ -253,7 +256,7 @@ public class dlgTeamCreator : C1RibbonForm
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 		}
 		catch (TimeoutException ex4)
 		{
@@ -355,73 +358,73 @@ public class dlgTeamCreator : C1RibbonForm
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
-		this.c1SplitContainer1.HeaderHeight = 27;
+		this.c1SplitContainer1.HeaderHeight = 35;
 		this.c1SplitContainer1.Location = new System.Drawing.Point(0, 0);
 		this.c1SplitContainer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.c1SplitContainer1.Name = "c1SplitContainer1";
 		this.c1SplitContainer1.Panels.Add(this.pnlHeader);
 		this.c1SplitContainer1.Panels.Add(this.pnlButtons);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(434, 118);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(564, 153);
 		this.c1SplitContainer1.SplitterWidth = 1;
 		this.c1SplitContainer1.TabIndex = 0;
 		this.pnlHeader.Controls.Add(this.lblTeamName);
 		this.pnlHeader.Controls.Add(this.txtTeamName);
-		this.pnlHeader.Height = 58;
+		this.pnlHeader.Height = 75;
 		this.pnlHeader.KeepRelativeSize = false;
 		this.pnlHeader.Location = new System.Drawing.Point(0, 0);
-		this.pnlHeader.MinWidth = 52;
+		this.pnlHeader.MinWidth = 68;
 		this.pnlHeader.Name = "pnlHeader";
 		this.pnlHeader.Resizable = false;
-		this.pnlHeader.Size = new System.Drawing.Size(434, 58);
+		this.pnlHeader.Size = new System.Drawing.Size(564, 75);
 		this.pnlHeader.TabIndex = 0;
-		this.pnlHeader.Width = 434;
+		this.pnlHeader.Width = 564;
 		this.lblTeamName.AutoSize = true;
 		this.lblTeamName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblTeamName.Location = new System.Drawing.Point(14, 24);
+		this.lblTeamName.Location = new System.Drawing.Point(18, 31);
 		this.lblTeamName.Name = "lblTeamName";
-		this.lblTeamName.Size = new System.Drawing.Size(104, 17);
+		this.lblTeamName.Size = new System.Drawing.Size(135, 22);
 		this.lblTeamName.TabIndex = 1;
 		this.lblTeamName.Tag = null;
 		this.lblTeamName.Text = "请输入组织名称：";
 		this.lblTeamName.TextDetached = true;
-		this.txtTeamName.Location = new System.Drawing.Point(123, 22);
+		this.txtTeamName.Location = new System.Drawing.Point(160, 29);
 		this.txtTeamName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.txtTeamName.Name = "txtTeamName";
-		this.txtTeamName.Size = new System.Drawing.Size(234, 21);
+		this.txtTeamName.Size = new System.Drawing.Size(304, 27);
 		this.txtTeamName.TabIndex = 0;
 		this.txtTeamName.Tag = null;
 		this.txtTeamName.TextDetached = true;
 		this.pnlButtons.Controls.Add(this.btnCancel);
 		this.pnlButtons.Controls.Add(this.btnConfirm);
 		this.pnlButtons.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlButtons.Height = 59;
+		this.pnlButtons.Height = 77;
 		this.pnlButtons.KeepRelativeSize = false;
-		this.pnlButtons.Location = new System.Drawing.Point(0, 59);
-		this.pnlButtons.MinWidth = 52;
+		this.pnlButtons.Location = new System.Drawing.Point(0, 77);
+		this.pnlButtons.MinWidth = 68;
 		this.pnlButtons.Name = "pnlButtons";
 		this.pnlButtons.Resizable = false;
-		this.pnlButtons.Size = new System.Drawing.Size(434, 59);
+		this.pnlButtons.Size = new System.Drawing.Size(564, 77);
 		this.pnlButtons.TabIndex = 2;
-		this.pnlButtons.Width = 434;
+		this.pnlButtons.Width = 564;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Location = new System.Drawing.Point(238, 24);
+		this.btnCancel.Location = new System.Drawing.Point(309, 31);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(70, 26);
+		this.btnCancel.Size = new System.Drawing.Size(91, 34);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Location = new System.Drawing.Point(123, 24);
+		this.btnConfirm.Location = new System.Drawing.Point(160, 31);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(70, 26);
+		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(434, 118);
+		base.ClientSize = new System.Drawing.Size(564, 153);
 		base.Controls.Add(this.c1SplitContainer1);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

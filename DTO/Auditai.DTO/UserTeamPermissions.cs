@@ -1,4 +1,4 @@
-using Auditai.Model;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using Auditai.Model;
 using Newtonsoft.Json;
 
 namespace Auditai.DTO;
@@ -21,6 +21,10 @@ public class UserTeamPermissions
 
 	public static UserTeamPermissions Deserialize(string s)
 	{
+		// 防御性处理：服务端未返回 Permissions 字段或数据库为 NULL 时，
+		// JsonConvert.DeserializeObject<T>(null) 会抛 ArgumentNullException: value。
+		// 返回默认实例以保持原有“无权限”语义。
+		if (string.IsNullOrWhiteSpace(s)) return new UserTeamPermissions();
 		return JsonConvert.DeserializeObject<UserTeamPermissions>(s);
 	}
 

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -58,6 +58,8 @@ public class wechatLoginForm : C1RibbonForm
 	public wechatLoginForm()
 	{
 		InitializeComponent();
+
+
 		base.Shown += WechatLoginForm_Shown;
 		base.StartPosition = FormStartPosition.CenterScreen;
 		// Cef.Initialize 未执行，不创建 ChromiumWebBrowser 实例
@@ -94,7 +96,7 @@ public class wechatLoginForm : C1RibbonForm
 				}
 				catch (HttpRequestException ex)
 				{
-					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 				}
 				catch (TimeoutException ex2)
 				{
@@ -143,16 +145,16 @@ public class wechatLoginForm : C1RibbonForm
 		this.btnClose.FlatAppearance.BorderSize = 0;
 		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Red;
 		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnClose.Location = new System.Drawing.Point(424, 0);
+		this.btnClose.Location = new System.Drawing.Point(551, 0);
 		this.btnClose.Name = "btnClose";
-		this.btnClose.Size = new System.Drawing.Size(25, 25);
+		this.btnClose.Size = new System.Drawing.Size(33, 33);
 		this.btnClose.TabIndex = 2;
 		this.btnClose.UseVisualStyleBackColor = true;
 		this.btnClose.Visible = false;
 		this.btnClose.Click += new System.EventHandler(btnClose_Click);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(449, 627);
+		base.ClientSize = new System.Drawing.Size(584, 815);
 		base.Controls.Add(this.btnClose);
 		base.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
 		base.Name = "wechatLoginForm";

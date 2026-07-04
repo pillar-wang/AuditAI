@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using Auditai.DTO;
 using Newtonsoft.Json;
@@ -49,6 +49,7 @@ public class ConsolidateSettings
 
 	public static ConsolidateSettings Deserialize(string s)
 	{
-		return JsonConvert.DeserializeObject<ConsolidateSettings>(s);
+		if (string.IsNullOrWhiteSpace(s)) return new ConsolidateSettings();
+		return JsonConvert.DeserializeObject<ConsolidateSettings>(s) ?? new ConsolidateSettings();
 	}
 }

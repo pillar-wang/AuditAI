@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -156,7 +156,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		set
 		{
-			UserSet.Config.TeamUsersViewMode = (dynamic)value;
+			UserSet.Config.TeamUsersViewMode = value;
 		}
 	}
 
@@ -215,7 +215,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		column.AllowEditing = _isAdmin;
 		column.Editor = _listDropDown.DropDown;
 		_grid.Tree.Column = 1;
-		_grid.Rows.DefaultSize = 40;
+		_grid.Rows.DefaultSize = 44;
 		_grid.DrawMode = DrawModeEnum.OwnerDraw;
 		_grid.SelectionMode = SelectionModeEnum.Row;
 		_grid.AllowAddNew = false;
@@ -277,6 +277,8 @@ public class dlgTeamUserManagement : C1RibbonForm
 		Auditai.UI.Controls.Theme.SetCurrentObject(_listDropDown.DropDown);
 		SetTheme();
 		_mm = MemberManager.GetInstance();
+		_mm.OnlineStatusChanged += _mm_OnlineStatusChanged;
+		_mm.RePopulate += _mm_RePopulate;
 	}
 
 	private async void DlgTeamUserManagement_Load(object sender, EventArgs e)
@@ -444,7 +446,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 			}
 			catch (HttpRequestException ex)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 			catch (Exception ex2)
 			{
@@ -546,7 +548,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 		catch (Exception ex2)
 		{
@@ -574,7 +576,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 			C1.Win.C1FlexGrid.Row row = ((parentNode == null) ? _grid.Rows.AddNode(0).Row : parentNode.AddNode(NodeTypeEnum.LastChild, string.Empty).Row);
 			row.UserData = user;
 			bool flag = members.FirstOrDefault((Member m) => m.Id == user.Id.ToString())?.IsOnline ?? false;
-			System.Drawing.Image image = Auditai.UI.Controls.Util.GetHeadPic(user, 32, withManagerMark: true);
+			System.Drawing.Image image = Auditai.UI.Controls.Util.GetHeadPic(user, 42, withManagerMark: true);
 			if (!flag)
 			{
 				image = ((Bitmap)image).ToGray();
@@ -611,13 +613,13 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 		return success;
 		Tile createUserTile(Auditai.DTO.User user)
 		{
 			bool flag = members.FirstOrDefault((Member m) => m.Id == user.Id.ToString())?.IsOnline ?? false;
-			System.Drawing.Image image = Auditai.UI.Controls.Util.GetHeadPic(user, 32, withManagerMark: true);
+			System.Drawing.Image image = Auditai.UI.Controls.Util.GetHeadPic(user, 42, withManagerMark: true);
 			if (!flag)
 			{
 				image = ((Bitmap)image).ToGray();
@@ -743,7 +745,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 				}
 				catch (HttpRequestException ex)
 				{
-					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 					return;
 				}
 			}
@@ -985,7 +987,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1042,7 +1044,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1082,7 +1084,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1119,7 +1121,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 		finally
 		{
@@ -1153,7 +1155,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1204,7 +1206,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 			}
 			catch (HttpRequestException ex)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 		}
 	}
@@ -1232,8 +1234,8 @@ public class dlgTeamUserManagement : C1RibbonForm
 	{
 		_tileControl = new C1TileControlEx
 		{
-			CellWidth = 120,
-			CellHeight = 90,
+			CellWidth = 160,
+			CellHeight = 140,
 			AllowChecking = false,
 			Dock = DockStyle.Fill,
 			CellSpacing = 20,
@@ -1264,15 +1266,15 @@ public class dlgTeamUserManagement : C1RibbonForm
 			panelElement.Children.Add(item);
 			PanelElement panelElement2 = new PanelElement
 			{
-				FixedHeight = 20,
-				FixedWidth = 130,
+				FixedHeight = 22,
+				FixedWidth = 160,
 				AlignmentOfContents = ContentAlignment.MiddleCenter,
 				Dock = DockStyle.Bottom
 			};
 			C1.Win.C1Tile.TextElement item2 = new C1.Win.C1Tile.TextElement
 			{
 				TextTrimming = TextTrimming.EndEllipsis,
-				SingleLine = false,
+				SingleLine = true,
 				Alignment = ContentAlignment.MiddleCenter,
 				AlignmentOfContents = ContentAlignment.MiddleCenter,
 				TextSelector = TextSelector.Text1,
@@ -1281,15 +1283,15 @@ public class dlgTeamUserManagement : C1RibbonForm
 			panelElement2.Children.Add(item2);
 			PanelElement panelElement3 = new PanelElement
 			{
-				FixedHeight = 20,
-				FixedWidth = 130,
+				FixedHeight = 22,
+				FixedWidth = 160,
 				AlignmentOfContents = ContentAlignment.MiddleCenter,
 				Dock = DockStyle.Bottom
 			};
 			C1.Win.C1Tile.TextElement item3 = new C1.Win.C1Tile.TextElement
 			{
 				TextTrimming = TextTrimming.EndEllipsis,
-				SingleLine = false,
+				SingleLine = true,
 				Alignment = ContentAlignment.MiddleCenter,
 				AlignmentOfContents = ContentAlignment.MiddleCenter,
 				TextSelector = TextSelector.Text2,
@@ -1413,7 +1415,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		catch (HttpRequestException ex)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 		}
 	}
 
@@ -1422,11 +1424,32 @@ public class dlgTeamUserManagement : C1RibbonForm
 		e.Visible = _isAdmin;
 	}
 
+	private void _mm_OnlineStatusChanged(object sender, long userId)
+	{
+		if (base.IsHandleCreated)
+		{
+			base.BeginInvoke(new Action(async () => await Populate()));
+		}
+	}
+
+	private void _mm_RePopulate(object sender, EventArgs e)
+	{
+		if (base.IsHandleCreated)
+		{
+			base.BeginInvoke(new Action(async () => await Populate()));
+		}
+	}
+
 	protected override void Dispose(bool disposing)
 	{
-		if (disposing && components != null)
+		if (disposing)
 		{
-			components.Dispose();
+			_mm.OnlineStatusChanged -= _mm_OnlineStatusChanged;
+			_mm.RePopulate -= _mm_RePopulate;
+			if (components != null)
+			{
+				components.Dispose();
+			}
 		}
 		base.Dispose(disposing);
 	}
@@ -1477,24 +1500,24 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
-		this.c1SplitContainer1.HeaderHeight = 27;
+		this.c1SplitContainer1.HeaderHeight = 35;
 		this.c1SplitContainer1.Location = new System.Drawing.Point(0, 0);
 		this.c1SplitContainer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.c1SplitContainer1.Name = "c1SplitContainer1";
 		this.c1SplitContainer1.Panels.Add(this.pnlToolbar);
 		this.c1SplitContainer1.Panels.Add(this.c1SplitterPanel2);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(892, 619);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(1160, 805);
 		this.c1SplitContainer1.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.c1SplitContainer1.SplitterWidth = 0;
 		this.c1SplitContainer1.TabIndex = 0;
 		this.c1SplitContainer1.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
 		this.pnlToolbar.Controls.Add(this.commandDock);
-		this.pnlToolbar.Height = 66;
+		this.pnlToolbar.Height = 86;
 		this.pnlToolbar.KeepRelativeSize = false;
 		this.pnlToolbar.Location = new System.Drawing.Point(0, 0);
 		this.pnlToolbar.Name = "pnlToolbar";
 		this.pnlToolbar.Resizable = false;
-		this.pnlToolbar.Size = new System.Drawing.Size(892, 66);
+		this.pnlToolbar.Size = new System.Drawing.Size(1160, 86);
 		this.pnlToolbar.SizeRatio = 15.752;
 		this.pnlToolbar.TabIndex = 2;
 		this.commandDock.Controls.Add(this.toolbar);
@@ -1502,7 +1525,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.commandDock.Id = 2;
 		this.commandDock.Location = new System.Drawing.Point(0, 0);
 		this.commandDock.Name = "commandDock";
-		this.commandDock.Size = new System.Drawing.Size(892, 66);
+		this.commandDock.Size = new System.Drawing.Size(1160, 86);
 		this.toolbar.AccessibleName = "Tool Bar";
 		this.toolbar.AutoSize = false;
 		this.toolbar.ButtonLayoutHorz = C1.Win.C1Command.ButtonLayoutEnum.TextBelow;
@@ -1518,7 +1541,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolbar.MinButtonSize = 42;
 		this.toolbar.Movable = false;
 		this.toolbar.Name = "toolbar";
-		this.toolbar.Size = new System.Drawing.Size(805, 66);
+		this.toolbar.Size = new System.Drawing.Size(1047, 86);
 		this.toolbar.Text = "c1ToolBar1";
 		this.toolbar.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.toolbar.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
@@ -1612,14 +1635,14 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdLeaveTeam.Click += new C1.Win.C1Command.ClickEventHandler(cmdToolLeaveTeam_Click);
 		this.toolCmdLeaveTeam.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolLeaveTeam_CommandStateQuery);
 		this.c1SplitterPanel2.Controls.Add(this._grid);
-		this.c1SplitterPanel2.Height = 552;
-		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 67);
+		this.c1SplitterPanel2.Height = 718;
+		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 87);
 		this.c1SplitterPanel2.MinHeight = 52;
 		this.c1SplitterPanel2.MinWidth = 52;
 		this.c1SplitterPanel2.Name = "c1SplitterPanel2";
-		this.c1SplitterPanel2.Size = new System.Drawing.Size(892, 552);
+		this.c1SplitterPanel2.Size = new System.Drawing.Size(1160, 718);
 		this.c1SplitterPanel2.TabIndex = 1;
-		this.c1SplitterPanel2.Width = 892;
+		this.c1SplitterPanel2.Width = 1160;
 		this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this._grid.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this._grid.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1628,7 +1651,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this._grid.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this._grid.Name = "_grid";
 		this._grid.Rows.DefaultSize = 20;
-		this._grid.Size = new System.Drawing.Size(892, 552);
+		this._grid.Size = new System.Drawing.Size(1160, 718);
 		this._grid.TabIndex = 0;
 		this.c1CommandHolder1.Commands.Add(this.toolCmdAddTeamUser);
 		this.c1CommandHolder1.Commands.Add(this.toolCmdRemoveTeamUser);
@@ -1644,7 +1667,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.c1CommandHolder1.Owner = this;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(892, 619);
+		base.ClientSize = new System.Drawing.Size(1160, 805);
 		base.Controls.Add(this.c1SplitContainer1);
 		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

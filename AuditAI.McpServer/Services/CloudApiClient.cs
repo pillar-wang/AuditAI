@@ -1,10 +1,11 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using AuditAI.McpServer.State;
 using Newtonsoft.Json;
 
@@ -205,6 +206,148 @@ namespace AuditAI.McpServer.Services
             }
         }
 
+        // ===== 管理后台 HTTP 方法（端口 8958） =====
+        //
+        // 说明：连接管理后台（AdminBaseUrl，默认 http://82.156.108.218:8958），
+        // 自动携带 SessionState.AdminAuthToken / AdminUserId 头。
+        // 复用 CaptureResponse / CaptureException 逻辑，但使用独立的 Admin 上下文字段。
+
+        /// <summary>
+        /// 异步 GET 管理后台接口。自动使用 SessionState.AdminBaseUrl 作为 BaseUrl，
+        /// 自动携带 SessionState.AdminAuthToken Header。
+        /// </summary>
+        /// <param name="relativeUrl">相对路径（如 /api/admin/login）</param>
+        /// <param name="query">可选查询参数字典</param>
+        public static async Task<TestResponse> GetAdminAsync(string relativeUrl, Dictionary<string, string> query = null)
+        {
+            string baseUrl = ResolveAdminBaseUrl();
+            string url = BuildAdminUrl(baseUrl, relativeUrl, query);
+            HttpClient client = SessionState.CurrentHttpClient;
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+                using (var req = new HttpRequestMessage(HttpMethod.Get, url))
+                {
+                    ApplyAdminAuthHeaders(req);
+                    HttpResponseMessage resp = await client.SendAsync(req).ConfigureAwait(false);
+                    _ctxMethod = "GET";
+                    _ctxUrl = url;
+                    _ctxSessionName = null;
+                    return CaptureResponse(resp, sw);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ctxMethod = "GET";
+                _ctxUrl = url;
+                _ctxSessionName = null;
+                return CaptureException(ex, sw, "GET", url, null);
+            }
+        }
+
+        /// <summary>
+        /// 异步 POST 管理后台接口（原始 HttpContent）。
+        /// </summary>
+        public static async Task<TestResponse> PostAdminAsync(string relativeUrl, HttpContent content, Dictionary<string, string> query = null)
+        {
+            string baseUrl = ResolveAdminBaseUrl();
+            string url = BuildAdminUrl(baseUrl, relativeUrl, query);
+            HttpClient client = SessionState.CurrentHttpClient;
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+                using (var req = new HttpRequestMessage(HttpMethod.Post, url))
+                {
+                    if (content != null)
+                        req.Content = content;
+                    ApplyAdminAuthHeaders(req);
+                    HttpResponseMessage resp = await client.SendAsync(req).ConfigureAwait(false);
+                    _ctxMethod = "POST";
+                    _ctxUrl = url;
+                    _ctxSessionName = null;
+                    return CaptureResponse(resp, sw);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ctxMethod = "POST";
+                _ctxUrl = url;
+                _ctxSessionName = null;
+                return CaptureException(ex, sw, "POST", url, null);
+            }
+        }
+
+        /// <summary>
+        /// 异步 POST JSON 管理后台接口。body 通过 JsonConvert.SerializeObject 序列化。
+        /// </summary>
+        public static async Task<TestResponse> PostAdminJsonAsync(string relativeUrl, object body, Dictionary<string, string> query = null)
+        {
+            string baseUrl = ResolveAdminBaseUrl();
+            string url = BuildAdminUrl(baseUrl, relativeUrl, query);
+            HttpClient client = SessionState.CurrentHttpClient;
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+                string json = body == null ? "" : JsonConvert.SerializeObject(body);
+                using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
+                {
+                    using (var req = new HttpRequestMessage(HttpMethod.Post, url))
+                    {
+                        req.Content = content;
+                        ApplyAdminAuthHeaders(req);
+                        HttpResponseMessage resp = await client.SendAsync(req).ConfigureAwait(false);
+                        _ctxMethod = "POST";
+                        _ctxUrl = url;
+                        _ctxSessionName = null;
+                        return CaptureResponse(resp, sw);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ctxMethod = "POST";
+                _ctxUrl = url;
+                _ctxSessionName = null;
+                return CaptureException(ex, sw, "POST", url, null);
+            }
+        }
+
+        /// <summary>
+        /// 异步 POST 字节流管理后台接口。Content-Type: application/octet-stream。
+        /// </summary>
+        public static async Task<TestResponse> PostAdminBytesAsync(string relativeUrl, byte[] bytes, Dictionary<string, string> query = null)
+        {
+            string baseUrl = ResolveAdminBaseUrl();
+            string url = BuildAdminUrl(baseUrl, relativeUrl, query);
+            HttpClient client = SessionState.CurrentHttpClient;
+            Stopwatch sw = Stopwatch.StartNew();
+            try
+            {
+                byte[] data = bytes ?? new byte[0];
+                using (var content = new ByteArrayContent(data))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                    using (var req = new HttpRequestMessage(HttpMethod.Post, url))
+                    {
+                        req.Content = content;
+                        ApplyAdminAuthHeaders(req);
+                        HttpResponseMessage resp = await client.SendAsync(req).ConfigureAwait(false);
+                        _ctxMethod = "POST";
+                        _ctxUrl = url;
+                        _ctxSessionName = null;
+                        return CaptureResponse(resp, sw);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ctxMethod = "POST";
+                _ctxUrl = url;
+                _ctxSessionName = null;
+                return CaptureException(ex, sw, "POST", url, null);
+            }
+        }
+
         // ===== 内部辅助 =====
 
         /// <summary>
@@ -250,6 +393,76 @@ namespace AuditAI.McpServer.Services
                 token = SessionState.CurrentAuthToken;
                 userId = SessionState.CurrentUserId;
             }
+            if (userId > 0)
+            {
+                req.Headers.TryAddWithoutValidation("UserId", userId.ToString());
+            }
+            if (!string.IsNullOrEmpty(token))
+            {
+                req.Headers.TryAddWithoutValidation("Token", token);
+            }
+        }
+
+        /// <summary>
+        /// 解析管理后台基地址：优先 SessionState.AdminBaseUrl，其次 App.config 的 AdminBaseUrl，
+        /// 最后回退到默认值 http://82.156.108.218:8958。末尾斜杠会被去掉。
+        /// </summary>
+        private static string ResolveAdminBaseUrl()
+        {
+            string baseUrl = SessionState.AdminBaseUrl;
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                try
+                {
+                    baseUrl = ConfigurationManager.AppSettings["AdminBaseUrl"];
+                }
+                catch
+                {
+                    baseUrl = null;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                baseUrl = "http://82.156.108.218:8958";
+            return baseUrl.TrimEnd('/');
+        }
+
+        /// <summary>
+        /// 拼接管理后台完整 URL：baseUrl + path + 可选 query。
+        /// query 字典使用 Uri.EscapeDataString 编码。
+        /// </summary>
+        private static string BuildAdminUrl(string baseUrl, string path, Dictionary<string, string> query)
+        {
+            if (string.IsNullOrEmpty(path))
+                path = "/";
+            if (!path.StartsWith("/"))
+                path = "/" + path;
+            string url = baseUrl + path;
+            if (query != null && query.Count > 0)
+            {
+                var sb = new StringBuilder();
+                bool first = true;
+                foreach (KeyValuePair<string, string> kv in query)
+                {
+                    if (string.IsNullOrEmpty(kv.Key)) continue;
+                    sb.Append(first ? "?" : "&");
+                    sb.Append(Uri.EscapeDataString(kv.Key));
+                    sb.Append("=");
+                    sb.Append(Uri.EscapeDataString(kv.Value ?? ""));
+                    first = false;
+                }
+                url += sb.ToString();
+            }
+            return url;
+        }
+
+        /// <summary>
+        /// 为管理后台请求追加 UserId 与 Token 头（来自 SessionState.AdminUserId/AdminAuthToken）。
+        /// 若 Token 为空则不携带（用于测试 401）。
+        /// </summary>
+        private static void ApplyAdminAuthHeaders(HttpRequestMessage req)
+        {
+            long userId = SessionState.AdminUserId;
+            string token = SessionState.AdminAuthToken;
             if (userId > 0)
             {
                 req.Headers.TryAddWithoutValidation("UserId", userId.ToString());

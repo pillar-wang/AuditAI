@@ -113,7 +113,8 @@ namespace AuditAI.McpServer.Services
     /// </summary>
     public static class TestReportService
     {
-        private static readonly string ReportsDir = @"e:\lq\.trae\specs\cloud-e2e-automation\reports";
+        private static readonly string ReportsDir = Environment.GetEnvironmentVariable("AUDITAI_E2E_REPORTS_DIR")
+            ?? @"e:\lq\.trae\specs\cloud-e2e-automation\reports";
 
         /// <summary>
         /// 生成 Markdown 测试报告，写入 reports 目录，返回文件路径与内容。
