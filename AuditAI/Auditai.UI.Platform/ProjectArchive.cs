@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Data;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using System.Data.SQLite;
 using Newtonsoft.Json;
 using Auditai.DTO;
@@ -148,7 +149,7 @@ public static class ProjectArchive
     }
 
     /// <summary>从 .auditai 归档导入项目，返回新项目 DTO</summary>
-    public static Auditai.DTO.Project Import(string archivePath)
+    public static async Task<Auditai.DTO.Project> ImportAsync(string archivePath)
     {
         if (!File.Exists(archivePath))
             throw new FileNotFoundException("归档文件不存在", archivePath);
@@ -161,10 +162,8 @@ public static class ProjectArchive
                 $"项目文件版本过高（v{metadata.SchemaVersion}），当前软件支持的最高版本为 v{CurrentSchemaVersion}，请升级软件后导入。");
         }
 
-        // 2. 生成新项目 ID
+        // 2. 解压 .db 到临时目录
         Guid newProjectId = Guid.NewGuid();
-
-        // 3. 解压到临时目录
         string tempDir = Path.Combine(Path.GetTempPath(), "auditai_import_" + newProjectId.ToString("N"));
         Directory.CreateDirectory(tempDir);
 
@@ -181,7 +180,7 @@ public static class ProjectArchive
                 dbEntry.ExtractToFile(tempDbPath, overwrite: true);
             }
 
-            // 4. 检查 .db 的实际 Schema 版本
+            // 3. 检查 .db 的实际 Schema 版本
             int dbSchemaVersion = ReadDbSchemaVersion(tempDbPath);
             if (dbSchemaVersion > CurrentSchemaVersion)
             {
@@ -189,12 +188,11 @@ public static class ProjectArchive
                     $"项目数据库版本过高（v{dbSchemaVersion}），请升级软件后导入。");
             }
 
-            // 5. 用 ProjectDAL 打开（构造函数自动执行 UpdateSchema 升级）
+            // 4. 用 ProjectDAL 打开（构造函数自动执行 UpdateSchema 升级），并清除模板关联
             Project projectDto;
             var dal = new ProjectDAL(tempDbPath);
             projectDto = dal.GetProject();
 
-            // 6. 更新项目信息：新 ID、清除模板关联
             if (projectDto != null)
             {
                 projectDto.Id = newProjectId;
@@ -217,39 +215,67 @@ public static class ProjectArchive
                 dal.SaveProject(projectDto);
             }
 
-            // 7. 复制 .db 到目标位置
-            long userId = Auditai.Model.User.Current?.Id ?? 1;
-            string userDir = Path.Combine("data", userId.ToString());
-            Directory.CreateDirectory(userDir);
-            string targetDbPath = Path.Combine(userDir, $"{newProjectId}.db");
-
-            File.Copy(tempDbPath, targetDbPath, overwrite: true);
-
-            // 8. 在主数据库注册新项目
-            var newProject = new Auditai.DTO.Project
+            // 5. 分支：本地模式直接复制 .db 到本地 + 注册主库；服务端模式上传到服务器
+            if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
             {
-                Id = newProjectId,
-                Name = projectDto.Name,
-                Number = projectDto.Number,
-                Category = projectDto.Category,
-                Auditee = projectDto.Auditee,
-                Note = projectDto.Note,
-                Type = ProjectType.Project,
-                Version = 1,
-                CreateTime = DateTime.Now,
-                ParentId = null,
-                TemplateId = null
-            };
+                // 本地模式：复制 .db 到 data/{userId}/{projectId}.db + 本地主库注册
+                long userId = Auditai.Model.User.Current?.Id ?? 1;
+                string userDir = Path.Combine("data", userId.ToString());
+                Directory.CreateDirectory(userDir);
+                string targetDbPath = Path.Combine(userDir, $"{newProjectId}.db");
 
-            Auditai.LocalDataStore.LocalDataStore.RegisterImportedProject(newProject);
+                File.Copy(tempDbPath, targetDbPath, overwrite: true);
 
-            return newProject;
+                var newProject = new Auditai.DTO.Project
+                {
+                    Id = newProjectId,
+                    Name = projectDto.Name,
+                    Number = projectDto.Number,
+                    Category = projectDto.Category,
+                    Auditee = projectDto.Auditee,
+                    Note = projectDto.Note,
+                    Type = ProjectType.Project,
+                    Version = 1,
+                    CreateTime = DateTime.Now,
+                    ParentId = null,
+                    TemplateId = null
+                };
+
+                Auditai.LocalDataStore.LocalDataStore.RegisterImportedProject(newProject);
+                return newProject;
+            }
+            else
+            {
+                // 服务端模式：上传 .db 流到服务端，服务端创建主库记录 + 落盘 .db 文件
+                // metadata.SchemaVersion 为归档元信息版本；服务端会再次校验 .db 实际版本
+                using var dbStream = File.OpenRead(tempDbPath);
+                var created = await Auditai.Util.WebApiClient.ImportProject(
+                    dbStream,
+                    name: projectDto.Name ?? metadata.ProjectName,
+                    number: projectDto.Number ?? metadata.ProjectNumber,
+                    category: projectDto.Category ?? metadata.Category,
+                    note: projectDto.Note ?? metadata.Note,
+                    auditee: projectDto.Auditee ?? metadata.Auditee,
+                    createTime: projectDto.CreateTime != default ? projectDto.CreateTime : metadata.CreateTime,
+                    schemaVersion: Math.Max(metadata.SchemaVersion, dbSchemaVersion));
+
+                return created;
+            }
         }
         finally
         {
             // 清理临时目录
             try { Directory.Delete(tempDir, recursive: true); } catch { }
         }
+    }
+
+    /// <summary>
+    /// 兼容旧调用方的同步包装：本地模式可直接调用，服务端模式会阻塞等待 WebApiClient 完成。
+    /// 新代码请使用 <see cref="ImportAsync"/>。
+    /// </summary>
+    public static Auditai.DTO.Project Import(string archivePath)
+    {
+        return ImportAsync(archivePath).GetAwaiter().GetResult();
     }
 
     /// <summary>读取 SQLite 数据库的 PRAGMA user_version（不依赖 ProjectDAL）</summary>

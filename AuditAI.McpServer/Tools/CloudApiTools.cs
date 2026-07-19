@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -42,7 +42,7 @@ namespace AuditAI.McpServer.Tools
         // SubTask 4.2: 认证模块工具（10 个）
         // 服务端端点定义在 Program.cs（MapGet/MapPost），非 Controller 文件。
         // withAuth=false 的端点：AccountLogin / AccountLoginBySMS / SMSReLogin /
-        //   GetValidateCode / Register / FindPassword / WechatLogin / QQLogin。
+        //   GetValidateCode / Register / FindPassword。
         // 需要额外 Header（ValidateCode）的端点使用 SendWithExtraHeaders 辅助方法。
         // =====================================================================
 
@@ -381,60 +381,6 @@ namespace AuditAI.McpServer.Tools
                     if (smsTemplate != null) query["smsTemplate"] = smsTemplate;
 
                     var resp = CloudApiClient.GetAsync("/api/User/GetValidateCode", query, sessionName, withAuth: false);
-                    return resp.ToJson();
-                });
-
-            // cloud_wechat_login: GET /api/User/WechatLogin?code=&state=&version=
-            ToolRegistry.Register("cloud_wechat_login",
-                "微信登录。MVP 阶段服务端未配置第三方登录，返回 {error: '未配置第三方登录'}。",
-                new JObject
-                {
-                    ["type"] = "object",
-                    ["properties"] = new JObject
-                    {
-                        ["code"] = new JObject { ["type"] = "string", ["description"] = "微信授权 code" },
-                        ["state"] = new JObject { ["type"] = "string", ["description"] = "state 参数" },
-                        ["version"] = new JObject { ["type"] = "string", ["description"] = "客户端版本号（可选）" },
-                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
-                    },
-                    ["required"] = new JArray { "code" }
-                },
-                (args) =>
-                {
-                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
-                    var query = new Dictionary<string, string>();
-                    if (args["code"] != null) query["code"] = args["code"].ToString();
-                    if (args["state"] != null) query["state"] = args["state"].ToString();
-                    if (args["version"] != null) query["version"] = args["version"].ToString();
-
-                    var resp = CloudApiClient.GetAsync("/api/User/WechatLogin", query, sessionName, withAuth: false);
-                    return resp.ToJson();
-                });
-
-            // cloud_qq_login: GET /api/User/QQLogin?code=&state=&version=
-            ToolRegistry.Register("cloud_qq_login",
-                "QQ 登录。MVP 阶段服务端未配置第三方登录，返回 {error: '未配置第三方登录'}。",
-                new JObject
-                {
-                    ["type"] = "object",
-                    ["properties"] = new JObject
-                    {
-                        ["code"] = new JObject { ["type"] = "string", ["description"] = "QQ 授权 code" },
-                        ["state"] = new JObject { ["type"] = "string", ["description"] = "state 参数" },
-                        ["version"] = new JObject { ["type"] = "string", ["description"] = "客户端版本号（可选）" },
-                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
-                    },
-                    ["required"] = new JArray { "code" }
-                },
-                (args) =>
-                {
-                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
-                    var query = new Dictionary<string, string>();
-                    if (args["code"] != null) query["code"] = args["code"].ToString();
-                    if (args["state"] != null) query["state"] = args["state"].ToString();
-                    if (args["version"] != null) query["version"] = args["version"].ToString();
-
-                    var resp = CloudApiClient.GetAsync("/api/User/QQLogin", query, sessionName, withAuth: false);
                     return resp.ToJson();
                 });
         }
@@ -2082,46 +2028,6 @@ namespace AuditAI.McpServer.Tools
                     if (args["userName"] != null) query["userName"] = args["userName"].ToString();
                     if (args["newPassword"] != null) query["newPassword"] = args["newPassword"].ToString();
                     var resp = CloudApiClient.GetAsync("/api/User/ResetPasswordWithoutSMS", query, sessionName, withAuth: true);
-                    return resp.ToJson();
-                });
-
-            // cloud_wechat_relogin: GET /api/User/WechatRelogin
-            ToolRegistry.Register("cloud_wechat_relogin",
-                "微信重新登录。GET /api/User/WechatRelogin。",
-                new JObject
-                {
-                    ["type"] = "object",
-                    ["properties"] = new JObject
-                    {
-                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
-                    },
-                    ["required"] = new JArray()
-                },
-                (args) =>
-                {
-                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
-                    var query = new Dictionary<string, string>();
-                    var resp = CloudApiClient.GetAsync("/api/User/WechatRelogin", query, sessionName, withAuth: true);
-                    return resp.ToJson();
-                });
-
-            // cloud_qq_relogin: GET /api/User/QQRelogin
-            ToolRegistry.Register("cloud_qq_relogin",
-                "QQ 重新登录。GET /api/User/QQRelogin。",
-                new JObject
-                {
-                    ["type"] = "object",
-                    ["properties"] = new JObject
-                    {
-                        ["sessionName"] = new JObject { ["type"] = "string", ["description"] = "会话名称（可选）" }
-                    },
-                    ["required"] = new JArray()
-                },
-                (args) =>
-                {
-                    string sessionName = args["sessionName"] != null ? args["sessionName"].ToString() : null;
-                    var query = new Dictionary<string, string>();
-                    var resp = CloudApiClient.GetAsync("/api/User/QQRelogin", query, sessionName, withAuth: true);
                     return resp.ToJson();
                 });
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -365,7 +365,8 @@ public class ConsolidateSettingsEditor
 			JObject jObject = new JObject();
 			jObject.Add("ProjectId", table.Project.Id);
 			jObject.Add("TableId", table.Id.Value);
-			return (await WebApiClient.GetTableColumns(jObject)).Select((JToken j) => new Auditai.DTO.Column
+			JArray columns = await WebApiClient.GetTableColumns(jObject);
+			return (columns ?? new JArray()).Select((JToken j) => new Auditai.DTO.Column
 			{
 				Id = new Id64(j.Value<long>("Id")),
 				Caption = j.Value<string>("Caption")

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -128,7 +128,44 @@ public class VoucherListEditor : ISetTheme
 		_grid.BodyAfterScroll += _grid_BodyAfterScroll;
 		_grid.BeforeMouseDown += _grid_BeforeMouseDown;
 		_grid.KeyDown += _grid_KeyDown;
+		_grid.Resize += _grid_Resize;
 		_grid.FilterManager.Context = new VoucherFilterContext(this);
+	}
+
+	private void _grid_Resize(object sender, EventArgs e)
+	{
+		AutoSizeColumns();
+	}
+
+	private void AutoSizeColumns()
+	{
+		if (_grid == null || _grid.Cols.Count <= _grid.Cols.Fixed)
+		{
+			return;
+		}
+		int clientWidth = _grid.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < _grid.Cols.Fixed; i++)
+			fixedWidth += _grid.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "MyMark", "Date", "Type", "Number", "Digest", "Code", "Name", "Debit", "Credit", "Maker", "Checker", "Booker" };
+		double[] ratios = { 0.04, 0.05, 0.08, 0.03, 0.04, 0.18, 0.08, 0.12, 0.09, 0.09, 0.06, 0.06, 0.08 };
+		_grid.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (_grid.Cols.Contains(colNames[i]) && _grid.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 30) width = 30;
+					_grid.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { _grid.EndUpdate(); }
 	}
 
 	private void _grid_BeforeMouseDown(object sender, BeforeMouseDownEventArgs e)
@@ -486,11 +523,12 @@ public class VoucherListEditor : ISetTheme
 		lblVoucherListTitle.Font = font;
 		lblVoucherListTitle.Text = "记账凭证列表";
 		lblVoucherListTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlVoucherListTitle.Height = 30;
+		pnlVoucherListTitle.Height = 39;
 		pnlVoucherListTitle.KeepRelativeSize = false;
 		pnlVoucherListTitle.Location = new Point(0, 0);
+		pnlVoucherListTitle.MinHeight = 39;
 		pnlVoucherListTitle.Resizable = false;
-		pnlVoucherListTitle.Size = new Size(927, 30);
+		pnlVoucherListTitle.Size = new Size(927, 39);
 		pnlVoucherListTitle.SizeRatio = 3.0;
 		pnlVoucherListTitle.Controls.Add(lblVoucherListTitle);
 		pnlVoucherListTitle.Paint += PnlVoucherListTitle_Paint;
@@ -549,8 +587,7 @@ public class VoucherListEditor : ISetTheme
 		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(_grid, toolBar, out pnlSidebar);
 		pnlVoucherListGrid.Height = 599;
-		pnlVoucherListGrid.Location = new Point(0, 31);
-		pnlVoucherListGrid.Size = new Size(927, 599);
+		pnlVoucherListGrid.KeepRelativeSize = true;
 		pnlVoucherListGrid.SizeRatio = 100.0;
 		pnlVoucherListGrid.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -724,6 +761,7 @@ public class VoucherListEditor : ISetTheme
 			_grid.Rows.Count = Vouchers.Count + _grid.Rows.Fixed;
 			SetSameNumberEnds();
 			_owner.StyleRecord.ResumeStyle(_grid);
+			AutoSizeColumns();
 		}
 		catch
 		{
@@ -872,7 +910,7 @@ public class VoucherListEditor : ISetTheme
 			}
 			Tree.Rows.Count = 0;
 			Tree.Tree.Column = 0;
-			Tree.Rows.DefaultSize = 30;
+			Tree.Rows.DefaultSize = 33;
 			Tree.Cols[0].TextAlign = TextAlignEnum.LeftCenter;
 			int num = 0;
 			IOrderedEnumerable<IGrouping<int, Voucher>> orderedEnumerable = from v in Ledger.Vouchers
@@ -1007,6 +1045,7 @@ public class VoucherListEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		_grid.Styles.Fixed.Border.Color = Color.DarkGray;
 		_grid.Styles.Fixed.Font = _grid.Font;
 		Tree.Styles.Alternate.BackColor = Color.Transparent;

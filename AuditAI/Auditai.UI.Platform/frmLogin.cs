@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -717,15 +717,18 @@ public class frmLogin : Form
 							throw new ServerException { ExceptionMessage = "登录失败：服务器返回无效数据", ExceptionType = "NullResponse" };
 						}
 						Auditai.DTO.User item2 = result.Item2;
-						_loginedUser = new Auditai.Model.User
-						{
-							Id = item2.Id,
-							Name = item2.Name,
-							UserName = item2.UserName,
-							TelPhone = item2.Phone,
-							IsSystemAdmin = item2.IsSystemAdmin
-						};
-						Auditai.Model.User.Current = _loginedUser;
+					_loginedUser = new Auditai.Model.User
+					{
+						Id = item2.Id,
+						Name = item2.Name,
+						UserName = item2.UserName,
+						TelPhone = item2.Phone,
+						IsSystemAdmin = item2.IsSystemAdmin,
+						// 登录后立即从 DTO 同步 IsTeamAdmin，避免多团队场景未 OpenTeam 时
+						// dlgTeamUserManagement 的"新增同事"按钮不可见（_isAdmin=false）
+						IsTeamAdmin = item2.IsTeamAdmin
+					};
+					Auditai.Model.User.Current = _loginedUser;
 						return (object)null;
 					}));
 				}
@@ -740,15 +743,18 @@ public class frmLogin : Form
 						throw new ServerException { ExceptionMessage = "登录失败：服务器返回无效数据", ExceptionType = "NullResponse" };
 					}
 					Auditai.DTO.User item = result.Item2;
-					_loginedUser = new Auditai.Model.User
-					{
-						Id = item.Id,
-						Name = item.Name,
-						UserName = item.UserName,
-						TelPhone = item.Phone,
-						IsSystemAdmin = item.IsSystemAdmin
-					};
-					Auditai.Model.User.Current = _loginedUser;
+				_loginedUser = new Auditai.Model.User
+				{
+					Id = item.Id,
+					Name = item.Name,
+					UserName = item.UserName,
+					TelPhone = item.Phone,
+					IsSystemAdmin = item.IsSystemAdmin,
+					// 登录后立即从 DTO 同步 IsTeamAdmin，避免多团队场景未 OpenTeam 时
+					// dlgTeamUserManagement 的"新增同事"按钮不可见（_isAdmin=false）
+					IsTeamAdmin = item.IsTeamAdmin
+				};
+				Auditai.Model.User.Current = _loginedUser;
 					isLoginByPhoneNumber = userName == item.Phone;
 					loginPhoneNumber = item.Phone;
 					return (object)null;
@@ -797,7 +803,7 @@ public class frmLogin : Form
 		}
 		catch (HttpRequestException ex3)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.InnerException?.Message ?? ex3.Message);
 			SwitchStatusTo(Status.Normal);
 		}
 		catch (TimeoutException ex4)
@@ -813,31 +819,40 @@ public class frmLogin : Form
 	}
 
 	private async Task<bool> GetAndOpenTeam()
-	{
-		Guid supporterTeamId = new Guid("00000000-0000-0000-0000-000000000001");
-		bool isSystemSupporter = false;
-		List<UserTeam> list = null;
-		try
 		{
-			if (!Program.IsOnPremise)
+			Program.DebugLog("GetAndOpenTeam called");
+			Guid supporterTeamId = new Guid("00000000-0000-0000-0000-000000000001");
+			bool isSystemSupporter = false;
+			List<UserTeam> list = null;
+			try
 			{
-				Program.UserGetTeamCallback = UpdateIsSystemSupporter;
+				if (!Program.IsOnPremise)
+				{
+					Program.UserGetTeamCallback = UpdateIsSystemSupporter;
+				}
+				Program.DebugLog("GetAndOpenTeam: calling Program.GetUserTeams()");
+				list = await Program.GetUserTeams();
+				Program.DebugLog("GetAndOpenTeam: Program.GetUserTeams() returned, list=" + (list == null ? "null" : ("count=" + list.Count)));
+				if (list == null)
+				{
+					Program.DebugLog("GetAndOpenTeam: list is null, returning false");
+					return false;
+				}
 			}
-			list = await Program.GetUserTeams();
-			if (list == null)
-			{
-				return false;
-			}
-		}
 		finally
 		{
 			Program.UserGetTeamCallback = null;
 		}
 		Auditai.Model.User.Current.IsSystemSupporter = isSystemSupporter;
+		Program.DebugLog("GetAndOpenTeam: list.Count=" + list.Count + ", isSystemSupporter=" + isSystemSupporter);
 		if (list.Count == 1)
 		{
-			return await Program.OpenTeam(list[0].Id);
+			Program.DebugLog("GetAndOpenTeam: calling Program.OpenTeam(" + list[0].Id + ")");
+			bool openResult = await Program.OpenTeam(list[0].Id);
+			Program.DebugLog("GetAndOpenTeam: Program.OpenTeam returned " + openResult);
+			return openResult;
 		}
+		Program.DebugLog("GetAndOpenTeam: list.Count != 1, returning true");
 		return true;
 		void UpdateIsSystemSupporter(Guid teamId)
 		{

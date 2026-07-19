@@ -1,10 +1,11 @@
-﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Auditai.DTO;
 using Auditai.Model.Properties;
@@ -141,42 +142,45 @@ public class Document
 		if (!_isLoaded)
 		{
 			_isLoaded = true;
-			if (!LocalExists)
+			try
 			{
-				System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id} LocalExists=false");
-				return this;
+				if (!LocalExists)
+				{
+					return this;
+				}
+				Auditai.DTO.Document document = Project.Dal.GetDocument(Id);
+				if (document == null)
+				{
+					IsCorrupted = true;
+					return this;
+				}
+				Locker = document.Locker;
+				SectPr = document.SectPr;
+				MergeTable = document.MergeTable;
+				Dirty = new DocumentDirtyMask(document.Dirty);
+				if (SectPr == null)
+				{
+					SectPr = Resource.DefaultSectPr;
+				}
+				var paragraphs = Project.Dal.GetParagraphs(Id).Select(Paragraph.FromDto).ToList();
+				foreach (Paragraph item in paragraphs)
+				{
+					item.Document = this;
+					Paragraphs.Add(item);
+				}
+				if (Paragraphs.Count == 0)
+				{
+					return this;
+				}
+				foreach (Id64 localRemovedParagraph in Project.Dal.GetLocalRemovedParagraphs(Id))
+				{
+					RemovedParagraphs.Add(localRemovedParagraph);
+				}
 			}
-			Auditai.DTO.Document document = Project.Dal.GetDocument(Id);
-		if (document == null)
-		{
-			IsCorrupted = true;
-			System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id} GetDocument=null -> IsCorrupted=true");
-			return this;
-		}
-		System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id} GetDocument.Id={document.Id} Version={document.Version}");
-		Locker = document.Locker;
-			SectPr = document.SectPr;
-			MergeTable = document.MergeTable;
-			Dirty = new DocumentDirtyMask(document.Dirty);
-			if (SectPr == null)
+			catch (Exception ex)
 			{
-				SectPr = Resource.DefaultSectPr;
-			}
-			var paragraphs = Project.Dal.GetParagraphs(Id).Select(Paragraph.FromDto).ToList();
-			System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id} GetParagraphs count={paragraphs.Count}");
-			foreach (Paragraph item in paragraphs)
-			{
-				item.Document = this;
-				Paragraphs.Add(item);
-			}
-			if (Paragraphs.Count == 0)
-			{
-				System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id} Paragraphs.Count=0");
-				return this;
-			}
-			foreach (Id64 localRemovedParagraph in Project.Dal.GetLocalRemovedParagraphs(Id))
-			{
-				RemovedParagraphs.Add(localRemovedParagraph);
+				IsCorrupted = true;
+				System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id}, Name={TreeNode?.Name}, Error: {ex}");
 			}
 		}
 		return this;
@@ -188,6 +192,39 @@ public class Document
 		Paragraphs.Clear();
 		RemovedParagraphs.Clear();
 		LoadAndReturn();
+	}
+
+	public async Task<bool> RepairFromCloudAsync(TaskProgressValueReportCallback reportCallback = null)
+	{
+		if (Syncer.Disabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return false;
+		}
+		try
+		{
+			_isLoaded = false;
+			IsCorrupted = false;
+			Paragraphs.Clear();
+			RemovedParagraphs.Clear();
+			ParagraphsToDelete.Clear();
+			TreeNode.Version = 0;
+			_isLoaded = true;
+			PullResult result = await Syncer.Pull(this, reportCallback).ConfigureAwait(continueOnCapturedContext: false);
+			if (result == PullResult.Success || result == PullResult.AlreadyLatest)
+			{
+				Save();
+				_isLoaded = false;
+				IsCorrupted = false;
+				LoadAndReturn();
+				return !IsCorrupted;
+			}
+			return false;
+		}
+		catch
+		{
+			IsCorrupted = true;
+			return false;
+		}
 	}
 
 	public Auditai.DTO.Document ToDto()
@@ -208,7 +245,6 @@ public class Document
 		string tempFileName = Path.GetTempFileName();
 		List<DocumentLoadCellMerge> item = new List<DocumentLoadCellMerge>();
 		List<Id64> item2 = new List<Id64>();
-		System.Diagnostics.Debug.WriteLine($"[Document.MakePackage] DocId={Id} Paragraphs.Count={Paragraphs.Count} TempFile={tempFileName}");
 		XElement element = new XElement(xmlns_w + "tc", new XElement(xmlns_w + "tcPr", new XElement(xmlns_w + "hMerge", new XAttribute(xmlns_w + "val", "continue"))), new XElement(xmlns_w + "p"));
 		using (Package package = Package.Open(tempFileName, FileMode.Create, FileAccess.ReadWrite))
 		{
@@ -236,15 +272,13 @@ public class Document
 			for (int i = 0; i < Paragraphs.Count; i++)
 		{
 			Paragraph paragraph = Paragraphs[i];
-			System.Diagnostics.Debug.WriteLine($"[Document.MakePackage] DocId={Id} ParaIndex={i} ParaId={paragraph.Id} StreamLength={paragraph.Stream?.Length ?? 0}");
 			XElement xElement3;
 			try
 			{
 				xElement3 = XElement.Parse(paragraph.Stream);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				System.Diagnostics.Debug.WriteLine($"[Document.MakePackage] DocId={Id} ParaIndex={i} ParaId={paragraph.Id} XElement.Parse FAILED: {ex.Message}");
 				throw;
 			}
 				XElement xElement4 = xElement3.Descendants().FirstOrDefault((XElement e) => e.Name == xmlns_w + "bookmarkStart");
@@ -481,7 +515,6 @@ public class Document
 			xElement.Save(packagePart.GetStream());
 		}
 		long fileSize = new FileInfo(tempFileName).Length;
-		System.Diagnostics.Debug.WriteLine($"[Document.MakePackage] DocId={Id} Package saved, fileSize={fileSize}");
 		return Tuple.Create(tempFileName, item, item2);
 		static bool HasExceptionalAncestor(XElement xele)
 		{

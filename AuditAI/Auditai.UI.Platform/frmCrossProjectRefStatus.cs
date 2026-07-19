@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -52,18 +52,18 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
     private void InitializeComponent()
     {
         this.Text = "跨项目数据引用状态仪表板";
-        this.Size = new Size(850, 650);
+        this.Size = new Size(1105, 845);
         this.StartPosition = FormStartPosition.CenterScreen;
         this.Font = new Font("Noto Sans SC", 9f);
-        this.MinimumSize = new Size(700, 500);
+        this.MinimumSize = new Size(910, 650);
 
         // 顶部关键指标卡片
-        _pnlStats = new Panel { Dock = DockStyle.Top, Height = 120, BackColor = Color.FromArgb(245, 245, 245), Padding = new Padding(10) };
+        _pnlStats = new Panel { Dock = DockStyle.Top, Height = 156, BackColor = Color.FromArgb(245, 245, 245), Padding = new Padding(10) };
 
-        int cardWidth = 130;
-        int cardHeight = 80;
-        int startX = 15;
-        int startY = 20;
+        int cardWidth = 169;
+        int cardHeight = 104;
+        int startX = 20;
+        int startY = 26;
         var labels = new Dictionary<string, Label>
         {
             {"引用总数", _lblTotalRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
@@ -78,12 +78,12 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
             var card = new Panel
             {
                 Size = new Size(cardWidth, cardHeight),
-                Location = new Point(startX + idx * (cardWidth + 15), startY),
+                Location = new Point(startX + idx * (cardWidth + 20), startY),
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
             };
-            var title = new Label { Text = kv.Key, Location = new Point(5, 5), AutoSize = true, ForeColor = Color.Gray, Font = new Font("Noto Sans SC", 9f) };
-            kv.Value.Location = new Point(5, 30);
+            var title = new Label { Text = kv.Key, Location = new Point(7, 7), AutoSize = true, ForeColor = Color.Gray, Font = new Font("Noto Sans SC", 9f) };
+            kv.Value.Location = new Point(7, 39);
             card.Controls.Add(title);
             card.Controls.Add(kv.Value);
             _pnlStats.Controls.Add(card);
@@ -93,7 +93,7 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         this.Controls.Add(_pnlStats);
 
         // 健康检查网格
-        _gridHealth = new C1FlexGrid { Dock = DockStyle.Fill, Location = new Point(0, 130) };
+        _gridHealth = new C1FlexGrid { Dock = DockStyle.Fill, Location = new Point(0, 169) };
         _gridHealth.Cols.Count = 6;
         _gridHealth[0, 0] = "引用名称";
         _gridHealth[0, 1] = "来源项目";
@@ -101,20 +101,20 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         _gridHealth[0, 3] = "健康状态";
         _gridHealth[0, 4] = "详情";
         _gridHealth[0, 5] = "修复建议";
-        _gridHealth.Cols[0].Width = 150;
-        _gridHealth.Cols[1].Width = 150;
-        _gridHealth.Cols[2].Width = 100;
-        _gridHealth.Cols[3].Width = 100;
-        _gridHealth.Cols[4].Width = 150;
-        _gridHealth.Cols[5].Width = 150;
+        _gridHealth.Cols[0].Width = 195;
+        _gridHealth.Cols[1].Width = 195;
+        _gridHealth.Cols[2].Width = 130;
+        _gridHealth.Cols[3].Width = 130;
+        _gridHealth.Cols[4].Width = 195;
+        _gridHealth.Cols[5].Width = 195;
         _gridHealth.AllowEditing = false;
         this.Controls.Add(_gridHealth);
 
         // 底部按钮
-        var pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 50, BackColor = Color.FromArgb(240, 240, 240) };
-        _btnRunHealthCheck = new C1Button { Text = "运行健康检查", Location = new Point(10, 10), Size = new Size(130, 30) };
+        var pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 65, BackColor = Color.FromArgb(240, 240, 240) };
+        _btnRunHealthCheck = new C1Button { Text = "运行健康检查", Location = new Point(13, 13), Size = new Size(169, 39) };
         _btnRunHealthCheck.Click += async (s, e) => await RunHealthCheck();
-        _btnClose = new C1Button { Text = "关闭", Location = new Point(150, 10), Size = new Size(90, 30), DialogResult = DialogResult.Cancel };
+        _btnClose = new C1Button { Text = "关闭", Location = new Point(195, 13), Size = new Size(117, 39), DialogResult = DialogResult.Cancel };
         pnlButtons.Controls.AddRange(new Control[] { _btnRunHealthCheck, _btnClose });
         this.Controls.Add(pnlButtons);
         this.CancelButton = _btnClose;

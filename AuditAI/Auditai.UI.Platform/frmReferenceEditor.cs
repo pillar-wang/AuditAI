@@ -35,7 +35,7 @@ public class frmReferenceEditor : C1RibbonForm
 
 
 		base.Shown += FrmReferenceEditor_Shown;
-		base.Size = new Size(600, 450);
+		base.Size = new Size(770, 545);
 		base.StartPosition = FormStartPosition.CenterScreen;
 		_grid.Paint += delegate(object s1, PaintEventArgs e1)
 		{

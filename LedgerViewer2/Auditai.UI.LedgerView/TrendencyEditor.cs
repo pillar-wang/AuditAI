@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -130,11 +130,12 @@ public class TrendencyEditor : ISetTheme
 		lblTrendTitle.Font = font;
 		lblTrendTitle.Text = "趋势分析图表";
 		lblTrendTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlTrendTitle.Height = 30;
+		pnlTrendTitle.Height = 39;
 		pnlTrendTitle.KeepRelativeSize = false;
 		pnlTrendTitle.Location = new Point(0, 0);
+		pnlTrendTitle.MinHeight = 39;
 		pnlTrendTitle.Resizable = false;
-		pnlTrendTitle.Size = new Size(927, 30);
+		pnlTrendTitle.Size = new Size(927, 39);
 		pnlTrendTitle.SizeRatio = 6.0;
 		pnlTrendTitle.Controls.Add(lblTrendTitle);
 		pnlTrendTitle.Paint += delegate(object s1, PaintEventArgs e1)
@@ -270,9 +271,8 @@ public class TrendencyEditor : ISetTheme
 		ctnTrendContent.Panels.Add(pnlTrendChart);
 		C1SplitContainer value = ComponentFactory.BuildSidebar(ctnTrendContent, c1ToolBar, out pnlSidebar);
 		pnlTrendContent.Height = 558;
-		pnlTrendContent.Location = new Point(0, 31);
+		pnlTrendContent.KeepRelativeSize = true;
 		pnlTrendContent.Resizable = false;
-		pnlTrendContent.Size = new Size(927, 558);
 		pnlTrendContent.SizeRatio = 95.0;
 		pnlTrendContent.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -398,6 +398,7 @@ public class TrendencyEditor : ISetTheme
 	public void SetTheme()
 	{
 		Auditai.UI.Controls.Theme.SetCurrentTree(View);
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		grdTrendTable.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdTrendTable.Styles.Fixed.Font = grdTrendTable.Font;
 		switch (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.Name)

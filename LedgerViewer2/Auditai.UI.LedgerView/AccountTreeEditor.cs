@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -67,13 +67,13 @@ public class AccountTreeEditor : ISetTheme
 
 	private C1.Win.C1FlexGrid.Row _currentOpenedRow;
 
-	private System.Drawing.Image zb1Image = Resources.zb1;
+	private System.Drawing.Image zb1Image;
 
-	private System.Drawing.Image zb2Image = Resources.zb2;
+	private System.Drawing.Image zb2Image;
 
-	private System.Drawing.Image zb3Image = Resources.zb3;
+	private System.Drawing.Image zb3Image;
 
-	private System.Drawing.Image zb4Image = Resources.zb4;
+	private System.Drawing.Image zb4Image;
 
 	public Ledger Ledger => _owner.Ledger;
 
@@ -227,6 +227,28 @@ public class AccountTreeEditor : ISetTheme
 		_owner = owner;
 		InitializeComponent();
 		BindBalanceTreeContexMenu();
+		InitializeImages();
+	}
+
+	private void InitializeImages()
+	{
+		zb1Image = ScaleImage(Resources.zb1, 20, 20);
+		zb2Image = ScaleImage(Resources.zb2, 20, 20);
+		zb3Image = ScaleImage(Resources.zb3, 20, 20);
+		zb4Image = ScaleImage(Resources.zb4, 20, 20);
+	}
+
+	private System.Drawing.Image ScaleImage(System.Drawing.Image image, int width, int height)
+	{
+		if (image == null)
+			return null;
+		System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(width, height);
+		using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap))
+		{
+			graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+			graphics.DrawImage(image, 0, 0, width, height);
+		}
+		return bitmap;
 	}
 
 	public void PopulateAccountTree(Ledger ledger, bool displayEmpty, int showLayer = 0)
@@ -243,7 +265,7 @@ public class AccountTreeEditor : ISetTheme
 			}
 			Tree.Rows.Count = 0;
 			Tree.Tree.Column = 0;
-			Tree.Rows.DefaultSize = 30;
+			Tree.Rows.DefaultSize = 33;
 			Tree.Styles.Normal.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
 			TrialBalanceSheet sheet = _owner.CacheManager.GetTrialBalanceSheetWithCache(ledger);
 			foreach (Account item in ledger.RootAccounts.OrderBy((Account a) => a.Code))

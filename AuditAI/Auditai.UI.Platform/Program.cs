@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -125,6 +125,10 @@ internal static class Program
 		ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 		Application.ApplicationExit += Application_ApplicationExit;
+		// 兜底：进程被强制终止（如任务管理器结束进程、Windows 关机）时，
+		// ApplicationExit 可能不触发，但 ProcessExit 仍有机会执行（约 2-3 秒）。
+		// 在此处再做一次数据库 checkpoint，最大限度避免 -wal 残留导致数据库损坏。
+		AppDomain.CurrentDomain.ProcessExit += (s, e) => CleanupProjectDatabases();
 		UserSet.Load();
 		
 		UserSet.InitializeDefaultTheme(GetPlatformDefaultThemeId());
@@ -455,6 +459,40 @@ internal static class Program
 
 	private static void Application_ApplicationExit(object sender, EventArgs e)
 	{
+		// 程序退出前必须对所有打开的 ProjectDAL 执行 WAL checkpoint，
+		// 把 -wal 数据合并到主 .db 文件，避免下次打开时数据库损坏。
+		// 这是防止"调试异常终止后所有表打不开"的关键防线。
+		CleanupProjectDatabases();
+	}
+
+	/// <summary>
+	/// 清理所有已打开项目的数据库：执行 WAL checkpoint 并释放资源。
+	/// 在程序正常退出、异常退出、窗体关闭等场景调用，确保 -wal 数据落盘。
+	/// </summary>
+	internal static void CleanupProjectDatabases()
+	{
+		try
+		{
+			// 1. 清理 MainForm 中已打开的项目
+			if (MainForm != null)
+			{
+				foreach (var proj in MainForm.RecentProjects.Values)
+				{
+					try
+					{
+						proj?.Dal?.CheckpointAndClose();
+					}
+					catch { /* 单个项目清理失败不影响其他项目 */ }
+				}
+			}
+			// 2. 清理当前项目（兜底）
+			try
+			{
+				Auditai.Model.Project.Current?.Dal?.CheckpointAndClose();
+			}
+			catch { }
+		}
+		catch { /* 退出清理绝不能抛出异常 */ }
 	}
 
 	private static string GetOpeningProjectDebugInfo()
@@ -544,7 +582,10 @@ internal static class Program
 				}
 				rootStatckTrace = "\r\n根异常的堆栈信息:" + innerException.ToString();
 			}
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "程序因发生异常将强行关闭，您可稍候再次重启！\r\n" + exceptStr + rootStatckTrace);
+
+			WriteExceptionLog(ex, exceptStr, rootStatckTrace);
+
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "程序因发生异常将强行关闭，您可稍候再次重启！\r\n" + exceptStr + rootStatckTrace + "\r\n\r\n异常日志已保存到 logs\\exceptions 目录");
 		}
 		catch (Exception exception)
 		{
@@ -575,21 +616,99 @@ internal static class Program
 		finally
 		{
 			_IsInProcessUnhandleException = false;
+			// 异常退出时同样需要清理数据库，防止 -wal 残留导致下次打开数据库损坏
+			try { CleanupProjectDatabases(); } catch { }
 		}
 	}
 
-	public static async Task<List<UserTeam>> GetUserTeams(bool withNotice = true)
+	private static void WriteExceptionLog(Exception ex, string exceptStr, string rootStackTrace)
 	{
-		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
-		{
-			return UserTeam.Teams ?? new List<UserTeam>();
-		}
 		try
 		{
-			int clientSupportTeamType = GetCurrentPlatformSupporterTeamType();
-			List<UserTeam> teams = new List<UserTeam>();
-			foreach (JToken item in await WebApiClient.GetUserTeams())
+			string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "exceptions");
+			if (!Directory.Exists(logDir))
 			{
+				Directory.CreateDirectory(logDir);
+			}
+			string logFile = Path.Combine(logDir, $"exception_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+			StringBuilder sb = new StringBuilder();
+			sb.AppendLine("============================================================");
+			sb.AppendLine($"异常时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}");
+			sb.AppendLine($"异常类型: {ex.GetType().FullName}");
+			sb.AppendLine($"异常消息: {ex.Message}");
+			sb.AppendLine("============================================================");
+			sb.AppendLine();
+			sb.AppendLine("===== 完整异常信息 =====");
+			sb.AppendLine(exceptStr);
+			if (!string.IsNullOrEmpty(rootStackTrace))
+			{
+				sb.AppendLine();
+				sb.AppendLine(rootStackTrace);
+			}
+			sb.AppendLine();
+			sb.AppendLine("===== 完整堆栈跟踪 =====");
+			sb.AppendLine(ex.StackTrace);
+			if (ex.InnerException != null)
+			{
+				Exception inner = ex.InnerException;
+				int depth = 1;
+				while (inner != null)
+				{
+					sb.AppendLine();
+					sb.AppendLine($"---- 内部异常 #{depth}: {inner.GetType().Name} ----");
+					sb.AppendLine($"Message: {inner.Message}");
+					sb.AppendLine($"StackTrace: {inner.StackTrace}");
+					inner = inner.InnerException;
+					depth++;
+				}
+			}
+			sb.AppendLine();
+			sb.AppendLine("===== 环境信息 =====");
+			sb.AppendLine($"OS: {Environment.OSVersion.VersionString}");
+			sb.AppendLine($"Is64Bit: {Environment.Is64BitProcess}");
+			sb.AppendLine($"CurrentDirectory: {Environment.CurrentDirectory}");
+			File.WriteAllText(logFile, sb.ToString());
+		}
+		catch
+		{
+		}
+	}
+
+	public static void DebugLog(string message)
+		{
+			try
+			{
+				string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+				if (!Directory.Exists(logPath)) Directory.CreateDirectory(logPath);
+				string logFile = Path.Combine(logPath, "login_debug.txt");
+				File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}");
+			}
+			catch { }
+		}
+
+		public static async Task<List<UserTeam>> GetUserTeams(bool withNotice = true)
+		{
+			DebugLog("GetUserTeams called, IsLocalMode=" + Auditai.LocalDataStore.StorageRouter.IsLocalMode);
+			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			{
+				DebugLog("GetUserTeams: LocalMode, returning UserTeam.Teams=" + (UserTeam.Teams?.Count ?? 0));
+				return UserTeam.Teams ?? new List<UserTeam>();
+			}
+			try
+			{
+				int clientSupportTeamType = GetCurrentPlatformSupporterTeamType();
+				List<UserTeam> teams = new List<UserTeam>();
+				DebugLog("GetUserTeams: calling WebApiClient.GetUserTeams()");
+				JArray teamsArray = await WebApiClient.GetUserTeams();
+				DebugLog("GetUserTeams: WebApiClient returned, count=" + (teamsArray?.Count ?? 0));
+				if (teamsArray == null)
+				{
+					DebugLog("GetUserTeams: teamsArray is null");
+					return new List<UserTeam>();
+				}
+			foreach (JToken item in teamsArray)
+			{
+				if (item == null) continue;
 				string teamIdStr = item.Value<string>("teamId");
 				if (string.IsNullOrEmpty(teamIdStr))
 				{
@@ -608,70 +727,94 @@ internal static class Program
 				{
 					UserGetTeamCallback(teamIdGuid);
 				}
-				if (item.Value<int>("type") == clientSupportTeamType)
+				int? typeValue = item.Value<int?>("type");
+				if (typeValue != clientSupportTeamType)
 				{
-					int num = item.Value<int>("payStatus");
-					teams.Add(new UserTeam
-					{
-						Id = teamIdGuid,
-						ManagerId = item.Value<long>("managerId"),
-						Name = item.Value<string>("teamName") ?? "",
-						Type = item.Value<int>("type"),
-						PayStatus = num switch
-						{
-							3 => PayStatus.Free,
-							1 => PayStatus.Payed,
-							_ => PayStatus.Trial,
-						},
-						LicenseDate = item.Value<DateTime>("licenseDate"),
-						Level = (TeamLevel)item.Value<int>("Level")
-					});
+					continue;
 				}
+				int? payStatusValue = item.Value<int?>("payStatus");
+				int num = payStatusValue ?? 0;
+				teams.Add(new UserTeam
+				{
+					Id = teamIdGuid,
+					ManagerId = item.Value<long>("managerId"),
+					Name = item.Value<string>("teamName") ?? "",
+					Type = typeValue.Value,
+					PayStatus = num switch
+					{
+						3 => PayStatus.Free,
+						1 => PayStatus.Payed,
+						_ => PayStatus.Trial,
+					},
+					LicenseDate = item.Value<DateTime>("licenseDate"),
+					Level = (TeamLevel)(item.Value<int?>("Level") ?? 0)
+				});
 			}
 			UserTeam.Teams = teams;
+			DebugLog("GetUserTeams: success, teams count=" + teams.Count + ", UserTeam.Teams set");
 			return teams;
 		}
 		catch (TimeoutException ex2)
 		{
+			DebugLog("GetUserTeams: TimeoutException - " + ex2.Message);
 			if (withNotice)
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.Message);
 			}
-			return new List<UserTeam>();
+			UserTeam.Teams = new List<UserTeam>();
+			DebugLog("GetUserTeams: TimeoutException handled, UserTeam.Teams set to empty");
+			return UserTeam.Teams;
 		}
 		catch (ServerException ex3)
 		{
+			DebugLog("GetUserTeams: ServerException - " + ex3.Message);
 			if (withNotice)
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.ToString());
 			}
-			return new List<UserTeam>();
+			UserTeam.Teams = new List<UserTeam>();
+			DebugLog("GetUserTeams: ServerException handled, UserTeam.Teams set to empty");
+			return UserTeam.Teams;
 		}
 		catch (HttpRequestException ex4)
 		{
+			DebugLog("GetUserTeams: HttpRequestException - " + (ex4.InnerException?.Message ?? ex4.Message));
 			if (withNotice)
 			{
 				// InnerException 可能为 null（并非所有 HttpRequestException 都有 InnerException）
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex4.InnerException?.Message ?? ex4.Message);
 			}
-			return new List<UserTeam>();
+			UserTeam.Teams = new List<UserTeam>();
+			DebugLog("GetUserTeams: HttpRequestException handled, UserTeam.Teams set to empty");
+			return UserTeam.Teams;
 		}
 		catch (Exception ex)
 		{
+			DebugLog("GetUserTeams: Exception - " + ex.GetType().Name + " - " + ex.Message + " - " + ex.StackTrace);
 			if (withNotice)
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
 			}
-			return new List<UserTeam>();
+			UserTeam.Teams = new List<UserTeam>();
+			DebugLog("GetUserTeams: Exception handled, UserTeam.Teams set to empty");
+			return UserTeam.Teams;
 		}
 	}
 
 	public static async Task<bool> OpenTeam(Guid teamId, bool withNotice = true)
 	{
+		DebugLog("OpenTeam called, teamId=" + teamId + ", IsLocalMode=" + Auditai.LocalDataStore.StorageRouter.IsLocalMode);
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
 		{
+			DebugLog("OpenTeam: LocalMode, returning true");
 			return true;
 		}
+		if (UserTeam.Teams == null)
+		{
+			DebugLog("OpenTeam: UserTeam.Teams is null, creating empty list");
+			UserTeam.Teams = new List<UserTeam>();
+		}
+		DebugLog("OpenTeam: UserTeam.Teams count=" + UserTeam.Teams.Count);
 		UserTeam userTeam = UserTeam.Teams.FirstOrDefault((UserTeam t) => t.Id == teamId);
 		if (userTeam == null)
 		{
@@ -771,7 +914,7 @@ internal static class Program
 				return;
 			}
 		}
-		string text2 = ((UserTeam.Teams.Count > 1) ? ("当前客户端不支持该组织，请登录 " + text + " 进行操作。") : ("当前客户端不支持用户所在的组织，请登录 " + text + " 进行操作。"));
+		string text2 = (((UserTeam.Teams?.Count ?? 0) > 1) ? ("当前客户端不支持该组织，请登录 " + text + " 进行操作。") : ("当前客户端不支持用户所在的组织，请登录 " + text + " 进行操作。"));
 		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, text2);
 	}
 
@@ -1254,8 +1397,7 @@ internal static class Program
 		}
 
 		// ===== 用户/团队管理 API =====
-		if (url.Contains("User/AccountLogin") || url.Contains("User/WechatLogin") ||
-			url.Contains("User/QQLogin") || url.Contains("User/AccountLoginBySMS"))
+		if (url.Contains("User/AccountLogin") || url.Contains("User/AccountLoginBySMS"))
 		{
 			// 本地登录：返回默认用户
 			var token = new JObject { ["TokenValue"] = "local-token", ["ExpireTime"] = DateTime.MaxValue.ToString() };

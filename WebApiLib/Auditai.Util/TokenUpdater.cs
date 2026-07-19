@@ -1,7 +1,8 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Configuration;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using Auditai.DTO;
 
@@ -12,6 +13,8 @@ public class TokenUpdater
 	private System.Timers.Timer timer;
 
 	private Thread thread;
+
+	private bool _reloginInProgress = false;
 
 	public TimeSpan Interval { get; set; }
 
@@ -58,16 +61,27 @@ public class TokenUpdater
 		{
 			if (ConfigurationManager.AppSettings["StorageMode"]?.Equals("Local", StringComparison.OrdinalIgnoreCase) == true)
 				return;
-			TokenTimer.Token = await WebApiClient.UpdateToken(TokenTimer.LoginInfo.userId);
+			UserToken newToken = await WebApiClient.UpdateToken(TokenTimer.LoginInfo.userId);
+			// UpdateToken 返回 null 时不要覆盖现有 Token，避免丢失有效凭据
+			if (newToken != null && !string.IsNullOrEmpty(newToken.TokenValue))
+			{
+				// 保留旧 Token 的 Cookie（服务端 UpdateToken 不返回 Cookie）
+				var oldCookie = TokenTimer.Token?.Cookie;
+				if (newToken.Cookie == null && oldCookie != null)
+				{
+					newToken.Cookie = oldCookie;
+				}
+				TokenTimer.Token = newToken;
+			}
 		}
 		catch (HttpRequestException ex)
 		{
-			// 401「无效的 Token」表示服务端已不认可当前 Token（DB 重置/过期/被踢），
-			// 继续刷新只会无限 401。停止定时器，下次业务请求会抛 HttpRequestException 提示用户重新登录。
 			var msg = ex.Message ?? "";
 			if (msg.Contains("401") || msg.IndexOf("Unauthorized", StringComparison.OrdinalIgnoreCase) >= 0)
 			{
+				// Token 已失效（过期/DB 重置/被踢），尝试自动重新登录
 				try { timer.Stop(); } catch { }
+				await TryRelogin();
 			}
 		}
 		catch (TimeoutException)
@@ -78,6 +92,27 @@ public class TokenUpdater
 		}
 		catch
 		{
+		}
+	}
+
+	private async Task TryRelogin()
+	{
+		if (_reloginInProgress)
+			return;
+		_reloginInProgress = true;
+		try
+		{
+			await WebApiClient.ReloginForTokenUpdate();
+			// 重新登录成功，重启定时器
+			try { timer.Enabled = true; timer.Start(); } catch { }
+		}
+		catch
+		{
+			// 重新登录也失败，用户需要手动重新登录
+		}
+		finally
+		{
+			_reloginInProgress = false;
 		}
 	}
 }

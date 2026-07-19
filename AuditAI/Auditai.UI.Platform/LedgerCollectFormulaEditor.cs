@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Windows.Forms;
 using Auditai.Model;
 
@@ -39,9 +39,8 @@ public class LedgerCollectFormulaEditor
 				_view.rtbFormulaInput.Focus();
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine(ex.Message);
 		}
 	}
 
@@ -60,9 +59,8 @@ public class LedgerCollectFormulaEditor
 				}
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine(ex.Message);
 		}
 	}
 

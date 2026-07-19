@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -251,7 +251,8 @@ public class frmNodeSelector : C1RibbonForm
 		_grid.Tree.Style = TreeStyleFlags.Simple;
 		_grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		_grid.Styles.Normal.Border.Width = 0;
-		_grid.Rows.DefaultSize = 30;
+		_grid.Rows.DefaultSize = 33;
+		_grid.Font = new Font("微软雅黑", 10.5f);
 		_grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
 		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
 		_grid.Rows.Count = 1;

@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿﻿﻿﻿﻿﻿using System.Drawing;
 using Newtonsoft.Json;
 
 namespace Auditai.DTO;
@@ -41,6 +41,6 @@ public class FontSetting
 	{
 		FontFamily = "微软雅黑";
 		FontColor = Color.Black;
-		FontSize = 9f;
+		FontSize = 12f;
 	}
 }

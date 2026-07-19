@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -63,9 +63,8 @@ public class ProjectMetadataService
                 name = LoadProjectNameFromDb(projectId);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
             name = projectId.ToString();
             // 错误结果缓存时间较短
             _projectNameCache[projectId] = new CacheEntry<string> { Value = name, ExpiresAt = DateTime.Now + ErrorCacheDuration };
@@ -106,9 +105,8 @@ public class ProjectMetadataService
                 var projects = await StorageRouter.GetProjects();
                 projectListMap = projects.ToDictionary(p => p.Id, p => p.Name ?? p.Id.ToString());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"批量获取项目列表失败: {ex.Message}");
                 projectListMap = new Dictionary<Guid, string>();
             }
 
@@ -173,9 +171,8 @@ public class ProjectMetadataService
             };
             return name;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"获取项目名称失败: {ex.Message}");
             return projectId.ToString();
         }
     }
@@ -201,9 +198,8 @@ public class ProjectMetadataService
             };
             return name;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"获取表名称失败: {ex.Message}");
             return tableId.Value.ToString();
         }
     }

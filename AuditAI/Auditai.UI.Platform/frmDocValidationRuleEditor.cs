@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Auditai.Model;
@@ -67,21 +67,21 @@ public class frmDocValidationRuleEditor : Form
 	private void InitializeComponents()
 	{
 		this.Text = "校验规则编辑";
-		this.Size = new Size(420, 360);
+		this.Size = new Size(546, 468);
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.FormBorderStyle = FormBorderStyle.FixedDialog;
 		this.MaximizeBox = false;
 		this.MinimizeBox = false;
 		this.HelpButton = false;
 
-		int labelX = 12;
-		int controlX = 100;
-		int labelWidth = 80;
-		int controlWidth = 290;
-		int y = 12;
-		int labelH = 20;
-		int controlH = 24;
-		int gap = 6;
+		int labelX = 16;
+		int controlX = 130;
+		int labelWidth = 104;
+		int controlWidth = 377;
+		int y = 16;
+		int labelH = 26;
+		int controlH = 31;
+		int gap = 8;
 
 		// 选区原文
 		var lblSelectedText = new Label
@@ -136,7 +136,7 @@ public class frmDocValidationRuleEditor : Form
 		cboOperator = new ComboBox
 		{
 			Location = new Point(controlX, y),
-			Size = new Size(80, controlH),
+			Size = new Size(104, controlH),
 			DropDownStyle = ComboBoxStyle.DropDownList
 		};
 		cboOperator.Items.AddRange(Operators);
@@ -157,15 +157,15 @@ public class frmDocValidationRuleEditor : Form
 		txtRightExpr = new TextBox
 		{
 			Location = new Point(controlX, y),
-			Size = new Size(controlWidth - 90, controlH)
+			Size = new Size(controlWidth - 117, controlH)
 		};
 		this.Controls.Add(txtRightExpr);
 
 		btnSelectCell = new Button
 		{
 			Text = "选择单元格…",
-			Location = new Point(controlX + controlWidth - 80, y - 1),
-			Size = new Size(82, controlH + 2),
+			Location = new Point(controlX + controlWidth - 104, y - 1),
+			Size = new Size(107, controlH + 3),
 			Enabled = false  // 暂留空实现，后续完善
 		};
 		this.Controls.Add(btnSelectCell);
@@ -194,8 +194,8 @@ public class frmDocValidationRuleEditor : Form
 		{
 			Text = "确定",
 			DialogResult = DialogResult.OK,
-			Location = new Point(controlX + controlWidth - 170, y),
-			Size = new Size(80, 26)
+			Location = new Point(controlX + controlWidth - 221, y),
+			Size = new Size(104, 34)
 		};
 		this.Controls.Add(btnOK);
 
@@ -203,8 +203,8 @@ public class frmDocValidationRuleEditor : Form
 		{
 			Text = "取消",
 			DialogResult = DialogResult.Cancel,
-			Location = new Point(controlX + controlWidth - 80, y),
-			Size = new Size(80, 26)
+			Location = new Point(controlX + controlWidth - 104, y),
+			Size = new Size(104, 34)
 		};
 		this.Controls.Add(btnCancel);
 

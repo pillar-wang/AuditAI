@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
@@ -51,9 +51,8 @@ public class CrossProjectRefSyncNotifier
                 NotifyTargetProject(projectId, tableId, targetProjectId);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(ex.Message);
         }
     }
 
@@ -90,9 +89,8 @@ public class CrossProjectRefSyncNotifier
             insertCmd.Parameters.AddWithValue("@NotifiedAt", DateTime.Now.ToString("o"));
             insertCmd.ExecuteNonQuery();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(ex.Message);
         }
     }
 

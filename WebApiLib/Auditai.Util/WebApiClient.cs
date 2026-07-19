@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -154,7 +154,7 @@ public static class WebApiClient
 			Url = "Project/GetProjects",
 			Timeout = TimeSpan.FromMinutes(2.0),
 			WithAuthorization = true
-		});
+		}) ?? Enumerable.Empty<Project>();
 	}
 
 	public static async Task<IEnumerable<Project>> GetTeamPayedProjects(Guid teamId)
@@ -169,7 +169,7 @@ public static class WebApiClient
 			Url = "Project/GetTeamPayedProjects?teamId=" + teamId.ToString("D"),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? Enumerable.Empty<Project>();
 	}
 
 	public static async Task<IEnumerable<Project>> GetRecycleProjects()
@@ -184,7 +184,7 @@ public static class WebApiClient
 			Url = "Project/GetRecycleProjects",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? Enumerable.Empty<Project>();
 	}
 
 	public static async Task RestoreProjects(JObject jobj)
@@ -226,13 +226,14 @@ public static class WebApiClient
 		{
 			return LocalGetTemplatesHandler != null ? await LocalGetTemplatesHandler() : Enumerable.Empty<Project>();
 		}
-		return await SendAsObject<IEnumerable<Project>>(new RequestOptions
+		var result = await SendAsObject<IEnumerable<Project>>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = "Project/GetTemplates",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
+		return result ?? Enumerable.Empty<Project>();
 	}
 
 	public static async Task<Project> GetProjectDto(Guid projectId)
@@ -776,7 +777,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromMinutes(1.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> GetDocumentTimeline(JObject request)
@@ -792,7 +793,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromMinutes(1.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> QueryTableVersions(JObject request)
@@ -808,7 +809,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> QueryDocumentVersions(JObject request)
@@ -824,7 +825,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> QueryImageVersions(JObject request)
@@ -840,7 +841,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> QueryPdfVersions(JObject request)
@@ -856,7 +857,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JArray> GetTableColumns(JObject request)
@@ -872,7 +873,7 @@ public static class WebApiClient
 			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? new JArray();
 	}
 
 	public static async Task<JObject> PushDocument(PushDocument request, TaskProgressValueReportCallback reportCallback = null)
@@ -1095,7 +1096,7 @@ public static class WebApiClient
 			Url = "Project/GetTeamUsers",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		});
+		}) ?? Enumerable.Empty<User>();
 	}
 
 	public static async Task<IEnumerable<User>> GetTeamUsersWithPic()
@@ -1105,48 +1106,53 @@ public static class WebApiClient
 			return LocalGetTeamUsersWithPicHandler != null ? await LocalGetTeamUsersWithPicHandler() : Enumerable.Empty<User>();
 		}
 		List<User> users = new List<User>();
-		foreach (var item in (await SendAsObject<JObject>(new RequestOptions
+		var response = await SendAsObject<JObject>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = "Project/GetTeamUsersWithPic",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		}))["users"].Select((JToken c) => new
+		});
+		JToken usersToken = response?["users"];
+		if (usersToken != null && usersToken.Type == JTokenType.Array)
 		{
-			Id = c.Value<long>("Id"),
-			UserName = c.Value<string>("UserName"),
-			Name = c.Value<string>("Name"),
-			Picture = c["Picture"],
-			TeamId = c.Value<string>("TeamId"),
-			Email = c.Value<string>("Email"),
-			Company = c.Value<string>("Company"),
-			Sex = c.Value<string>("Sex"),
-			Phone = c.Value<string>("Phone"),
-			City = c.Value<string>("City"),
-			GroupId = c.Value<long?>("groupId"),
-			JobTitle = c.Value<string>("jobTitle"),
-			IsTeamAdmin = c.Value<bool>("IsTeamAdmin"),
-			Permissions = c.Value<string>("Permissions")
-		}))
-		{
-			string text = item.Picture?.Value<string>();
-			users.Add(new User
+			foreach (var item in usersToken.Select((JToken c) => new
 			{
-				Id = item.Id,
-				UserName = item.UserName,
-				Name = item.Name,
-				Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-				TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
-				Email = item.Email,
-				Company = item.Company,
-				Sex = item.Sex,
-				Phone = item.Phone,
-				City = item.City,
-				GroupId = item.GroupId,
-				JobTitle = item.JobTitle,
-				IsTeamAdmin = item.IsTeamAdmin,
-				Permissions = UserTeamPermissions.Deserialize(item.Permissions)
-			});
+				Id = c.Value<long>("Id"),
+				UserName = c.Value<string>("UserName"),
+				Name = c.Value<string>("Name"),
+				Picture = c["Picture"],
+				TeamId = c.Value<string>("TeamId"),
+				Email = c.Value<string>("Email"),
+				Company = c.Value<string>("Company"),
+				Sex = c.Value<string>("Sex"),
+				Phone = c.Value<string>("Phone"),
+				City = c.Value<string>("City"),
+				GroupId = c.Value<long?>("groupId"),
+				JobTitle = c.Value<string>("jobTitle"),
+				IsTeamAdmin = c.Value<bool>("IsTeamAdmin"),
+				Permissions = c.Value<string>("Permissions")
+			}))
+			{
+				string text = item.Picture?.Value<string>();
+				users.Add(new User
+				{
+					Id = item.Id,
+					UserName = item.UserName,
+					Name = item.Name,
+					Picture = ((text == null) ? null : Convert.FromBase64String(text)),
+					TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
+					Email = item.Email,
+					Company = item.Company,
+					Sex = item.Sex,
+					Phone = item.Phone,
+					City = item.City,
+					GroupId = item.GroupId,
+					JobTitle = item.JobTitle,
+					IsTeamAdmin = item.IsTeamAdmin,
+					Permissions = UserTeamPermissions.Deserialize(item.Permissions)
+				});
+			}
 		}
 		return users;
 	}
@@ -1157,19 +1163,25 @@ public static class WebApiClient
 		{
 			return Enumerable.Empty<User>();
 		}
-		return (await SendAsObject<JObject>(new RequestOptions
+		var response = await SendAsObject<JObject>(new RequestOptions
 		{
 			Method = HttpMethod.Post,
 			Url = "User/GetTeamUserPermissions",
 			Body = jobj,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		}))["Users"].Select((JToken j) => new User
-		{
-			Id = (long)j["userId"],
-			Name = (string)j["Name"],
-			Permissions = UserTeamPermissions.Deserialize((string)j["Permissions"])
 		});
+		JToken usersToken = response?["Users"];
+		if (usersToken != null && usersToken.Type == JTokenType.Array)
+		{
+			return usersToken.Select((JToken j) => new User
+			{
+				Id = (long)j["userId"],
+				Name = (string)j["Name"],
+				Permissions = UserTeamPermissions.Deserialize((string)j["Permissions"])
+			}).ToList();
+		}
+		return Enumerable.Empty<User>();
 	}
 
 	public static async Task<IEnumerable<User>> GetProjectUsersWithPic(Guid projectId)
@@ -1179,42 +1191,47 @@ public static class WebApiClient
 			return LocalGetTeamUsersWithPicHandler != null ? await LocalGetTeamUsersWithPicHandler() : Enumerable.Empty<User>();
 		}
 		List<User> users = new List<User>();
-		foreach (var item in (await SendAsObject<JObject>(new RequestOptions
+		var response = await SendAsObject<JObject>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = $"Project/GetProjectUsersWithPic?projectId={projectId}",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
-		}))["users"].Select((JToken c) => new
+		});
+		JToken usersToken = response?["users"];
+		if (usersToken != null && usersToken.Type == JTokenType.Array)
 		{
-			Id = c.Value<long>("Id"),
-			UserName = c.Value<string>("UserName"),
-			Name = c.Value<string>("Name"),
-			Picture = c["Picture"],
-			TeamId = c.Value<string>("TeamId"),
-			Email = c.Value<string>("Email"),
-			Company = c.Value<string>("Company"),
-			Sex = c.Value<string>("Sex"),
-			Phone = c.Value<string>("Phone"),
-			City = c.Value<string>("City"),
-			UserRole = (UserRole)c.Value<int>("Role")
-		}))
-		{
-			string text = item.Picture?.Value<string>();
-			users.Add(new User
+			foreach (var item in usersToken.Select((JToken c) => new
 			{
-				Id = item.Id,
-				UserName = item.UserName,
-				Name = item.Name,
-				Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-				TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
-				Email = item.Email,
-				Company = item.Company,
-				Sex = item.Sex,
-				Phone = item.Phone,
-				City = item.City,
-				Role = item.UserRole
-			});
+				Id = c.Value<long>("Id"),
+				UserName = c.Value<string>("UserName"),
+				Name = c.Value<string>("Name"),
+				Picture = c["Picture"],
+				TeamId = c.Value<string>("TeamId"),
+				Email = c.Value<string>("Email"),
+				Company = c.Value<string>("Company"),
+				Sex = c.Value<string>("Sex"),
+				Phone = c.Value<string>("Phone"),
+				City = c.Value<string>("City"),
+				UserRole = (UserRole)c.Value<int>("Role")
+			}))
+			{
+				string text = item.Picture?.Value<string>();
+				users.Add(new User
+				{
+					Id = item.Id,
+					UserName = item.UserName,
+					Name = item.Name,
+					Picture = ((text == null) ? null : Convert.FromBase64String(text)),
+					TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
+					Email = item.Email,
+					Company = item.Company,
+					Sex = item.Sex,
+					Phone = item.Phone,
+					City = item.City,
+					Role = item.UserRole
+				});
+			}
 		}
 		return users;
 	}
@@ -1308,7 +1325,7 @@ public static class WebApiClient
 			},
 			Timeout = TimeSpan.FromMinutes(5.0),
 			WithAuthorization = true
-		});
+		}) ?? Enumerable.Empty<Project>();
 	}
 
 	public static async Task<Tuple<Stream, int>> PullProjectDirect(Guid projectId, TaskProgressValueReportCallback reportCallback = null)
@@ -1317,32 +1334,42 @@ public static class WebApiClient
 		{
 			return Tuple.Create(new MemoryStream() as Stream, 0);
 		}
-		try
+		RequestOptions options = new RequestOptions
 		{
-			RequestOptions options = new RequestOptions
-			{
-				Method = HttpMethod.Get,
-				Url = $"Project/PullProjectDirect?projectId={projectId}",
-				Timeout = TimeSpan.FromMinutes(2.0),
-				WithAuthorization = true
-			};
-			JObject respObj = await SendAsObject<JObject>(options);
-			long taskId = (long?)respObj["taskId"] ?? 0;
-			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
-			JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
-			string requestUri = jObject?.Value<string>("Url");
-			if (string.IsNullOrEmpty(requestUri))
-			{
-				// Url 字段缺失时 HttpRequestMessage 构造会抛 ArgumentNullException，
-				// 此处提前返回空流，避免无意义的异常。
-				return Tuple.Create((Stream)new MemoryStream(), 0);
-			}
-			return Tuple.Create(item2: jObject.Value<int>("Length"), item1: await (await _ossClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, requestUri), HttpCompletionOption.ResponseHeadersRead)).Content.ReadAsStreamAsync());
-		}
-		catch (Exception)
+			Method = HttpMethod.Get,
+			Url = $"Project/PullProjectDirect?projectId={projectId}",
+			Timeout = TimeSpan.FromMinutes(2.0),
+			WithAuthorization = true
+		};
+		JObject respObj = await SendAsObject<JObject>(options);
+		long taskId = (long?)respObj?["taskId"] ?? 0;
+		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
+		JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
+		string requestUri = jObject?.Value<string>("Url");
+		if (string.IsNullOrEmpty(requestUri))
 		{
-			return Tuple.Create((Stream)new MemoryStream(), 0);
+			throw new InvalidOperationException("服务器未返回下载 URL");
 		}
+		// _ossClient 没有认证头，服务端 DownloadPullProjectDirect 会返回 401。
+		// 改用带认证头的 httpClient 发送请求（完整 URL 会覆盖 BaseAddress）。
+		HttpRequestMessage downloadReq = new HttpRequestMessage(HttpMethod.Get, requestUri);
+		if (TokenTimer.LoginInfo != null)
+		{
+			downloadReq.Headers.TryAddWithoutValidation("UserId", TokenTimer.LoginInfo.userId.ToString());
+		}
+		if (TokenTimer.Token != null)
+		{
+			downloadReq.Headers.TryAddWithoutValidation("Token", TokenTimer.Token.TokenValue);
+		}
+		HttpResponseMessage downloadResp = await httpClient.SendAsync(downloadReq, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(continueOnCapturedContext: false);
+		if (!downloadResp.IsSuccessStatusCode)
+		{
+			string errBody = await downloadResp.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+			downloadResp.Dispose();
+			throw new HttpRequestException($"下载项目数据库失败: HTTP {(int)downloadResp.StatusCode} {downloadResp.StatusCode}: {errBody}");
+		}
+		Stream downloadStream = await downloadResp.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
+		return Tuple.Create(downloadStream, jObject.Value<int>("Length"));
 	}
 
 	public static async Task<long> Register(User userInfo, string validateCode)
@@ -1492,7 +1519,7 @@ public static class WebApiClient
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
 		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-		if (tuple == null || tuple.Item2 == null)
+		if (tuple == null || tuple.Item1 == null || tuple.Item2 == null)
 		{
 			throw new ServerException
 			{
@@ -1538,7 +1565,7 @@ public static class WebApiClient
 			WithMachineSign = true,
 			ValidationCode = validateCode
 		});
-		if (tuple == null || tuple.Item2 == null)
+		if (tuple == null || tuple.Item1 == null || tuple.Item2 == null)
 		{
 			throw new ServerException
 			{
@@ -1551,7 +1578,8 @@ public static class WebApiClient
 			userId = tuple.Item2.Id,
 			userName = tuple.Item2.UserName,
 			password = string.Empty,
-			LoginMode = LoginMode.SMS
+			LoginMode = LoginMode.SMS,
+			validateCode = validateCode
 		};
 		TokenTimer.LoginInfo = loginInfo;
 		TokenTimer.Token = tuple.Item1;
@@ -1559,7 +1587,7 @@ public static class WebApiClient
 		return tuple;
 	}
 
-	public static async Task<Tuple<UserToken, User>> SMSReLogin(string userName)
+	public static async Task<Tuple<UserToken, User>> SMSReLogin(string userName, string validateCode = null)
 	{
 		if (IsLocalMode)
 		{
@@ -1575,14 +1603,19 @@ public static class WebApiClient
 			TokenTimer.TokenUpdater.Start();
 			return localTuple;
 		}
-		return await SendAsObject<Tuple<UserToken, User>>(new RequestOptions
+		RequestOptions options = new RequestOptions
 		{
 			Method = HttpMethod.Get,
 			Url = "User/SMSReLogin?userName=" + userName + "&version=" + AppVersion,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true,
 			WithMachineSign = true
-		});
+		};
+		if (!string.IsNullOrEmpty(validateCode))
+		{
+			options.ValidationCode = validateCode;
+		}
+		return await SendAsObject<Tuple<UserToken, User>>(options);
 	}
 
 	public static async Task<string> GetDeleteProjectValidateCode(string phone)
@@ -1598,88 +1631,6 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
-	}
-
-	public static async Task<Tuple<UserToken, User>> WechatLogin(string code, string stateR)
-	{
-		if (IsLocalMode)
-		{
-			var localTuple = Tuple.Create(new UserToken { TokenValue = "local-token" }, new User { Id = 1, Name = "管理员", UserName = "admin", Role = UserRole.Manager });
-			TokenTimer.LoginInfo = new LoginInfo
-			{
-				userId = localTuple.Item2.Id,
-				userName = localTuple.Item2.UserName,
-				password = localTuple.Item2.WechatId,
-				LoginMode = LoginMode.Wechat
-			};
-			TokenTimer.Token = localTuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return localTuple;
-		}
-		RequestOptions requestOptions = new RequestOptions();
-		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/WechatLogin/?code={code}&state={stateR}&version={AppVersion}&hasProcess={IsProcessExist()}";
-		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
-		requestOptions.WithMachineCode = true;
-		requestOptions.WithMachineSign = true;
-		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-		// 与 AccountLogin 保持一致：检查 tuple、Item1、Item2 三者非 null
-		if (tuple != null && tuple.Item1 != null && tuple.Item2 != null)
-		{
-			LoginInfo loginInfo = new LoginInfo
-			{
-				userId = tuple.Item2.Id,
-				userName = tuple.Item2.UserName,
-				password = tuple.Item2.WechatId,
-				LoginMode = LoginMode.Wechat
-			};
-			TokenTimer.LoginInfo = loginInfo;
-			TokenTimer.Token = tuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return tuple;
-		}
-		return tuple;
-	}
-
-	public static async Task<Tuple<UserToken, User>> QQLogin(string code, string stateR)
-	{
-		if (IsLocalMode)
-		{
-			var localTuple = Tuple.Create(new UserToken { TokenValue = "local-token" }, new User { Id = 1, Name = "管理员", UserName = "admin", Role = UserRole.Manager });
-			TokenTimer.LoginInfo = new LoginInfo
-			{
-				userId = localTuple.Item2.Id,
-				userName = localTuple.Item2.UserName,
-				password = localTuple.Item2.QQId,
-				LoginMode = LoginMode.QQ
-			};
-			TokenTimer.Token = localTuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return localTuple;
-		}
-		RequestOptions requestOptions = new RequestOptions();
-		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/QQLogin/?code={code}&state={stateR}&version={AppVersion}&hasProcess={IsProcessExist()}";
-		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
-		requestOptions.WithMachineCode = true;
-		requestOptions.WithMachineSign = true;
-		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-		// 与 AccountLogin 保持一致：检查 tuple、Item1、Item2 三者非 null
-		if (tuple != null && tuple.Item1 != null && tuple.Item2 != null)
-		{
-			LoginInfo loginInfo = new LoginInfo
-			{
-				userId = tuple.Item2.Id,
-				userName = tuple.Item2.UserName,
-				password = tuple.Item2.QQId,
-				LoginMode = LoginMode.QQ
-			};
-			TokenTimer.LoginInfo = loginInfo;
-			TokenTimer.Token = tuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return tuple;
-		}
-		return tuple;
 	}
 
 	public static async Task<User> GetUserById(long userId)
@@ -1722,7 +1673,8 @@ public static class WebApiClient
 		{
 			Method = HttpMethod.Get,
 			Url = "User/GetFuzzyPhone?userName=" + userName,
-			Timeout = TimeSpan.FromSeconds(30.0)
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
 		});
 	}
 
@@ -1750,7 +1702,8 @@ public static class WebApiClient
 		{
 			Method = HttpMethod.Get,
 			Url = "User/PhoneExists?phone=" + phone,
-			Timeout = TimeSpan.FromSeconds(30.0)
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
 		});
 	}
 
@@ -1849,6 +1802,7 @@ public static class WebApiClient
 			Method = HttpMethod.Get,
 			Url = "User/GetUsernameByPhone?phone=" + phone,
 			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true,
 			WithMachineCode = true
 		});
 	}
@@ -1864,6 +1818,7 @@ public static class WebApiClient
 			Method = HttpMethod.Get,
 			Url = "User/GetUsernameByEmail?email=" + email,
 			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true,
 			WithMachineCode = true
 		});
 	}
@@ -1948,56 +1903,6 @@ public static class WebApiClient
 		});
 	}
 
-	public static async Task<Tuple<UserToken, User>> WechatRelogin(long userId, string openId)
-	{
-		if (IsLocalMode)
-		{
-			var localTuple = Tuple.Create(new UserToken { TokenValue = "local-token" }, new User { Id = userId, Name = "管理员", UserName = "admin", Role = UserRole.Manager });
-			TokenTimer.LoginInfo = new LoginInfo
-			{
-				userId = localTuple.Item2.Id,
-				userName = localTuple.Item2.UserName,
-				password = openId,
-				LoginMode = LoginMode.Wechat
-			};
-			TokenTimer.Token = localTuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return localTuple;
-		}
-		RequestOptions requestOptions = new RequestOptions();
-		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/WechatRelogin?userId={userId}&openid={openId}&version={AppVersion}&hasProcess={IsProcessExist()}";
-		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
-		requestOptions.WithMachineCode = true;
-		requestOptions.WithMachineSign = true;
-		return await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-	}
-
-	public static async Task<Tuple<UserToken, User>> QQRelogin(long userId, string openId)
-	{
-		if (IsLocalMode)
-		{
-			var localTuple = Tuple.Create(new UserToken { TokenValue = "local-token" }, new User { Id = userId, Name = "管理员", UserName = "admin", Role = UserRole.Manager });
-			TokenTimer.LoginInfo = new LoginInfo
-			{
-				userId = localTuple.Item2.Id,
-				userName = localTuple.Item2.UserName,
-				password = openId,
-				LoginMode = LoginMode.QQ
-			};
-			TokenTimer.Token = localTuple.Item1;
-			TokenTimer.TokenUpdater.Start();
-			return localTuple;
-		}
-		RequestOptions requestOptions = new RequestOptions();
-		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/QQRelogin?userId={userId}&openid={openId}&version={AppVersion}&hasProcess={IsProcessExist()}";
-		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
-		requestOptions.WithMachineCode = true;
-		requestOptions.WithMachineSign = true;
-		return await SendAsObject<Tuple<UserToken, User>>(requestOptions);
-	}
-
 	public static async Task UploadFile(Guid fileId, Stream stream)
 	{
 		if (IsLocalMode)
@@ -2013,6 +1918,40 @@ public static class WebApiClient
 			WithAuthorization = true,
 			Body = stream,
 			FileId = fileId
+		});
+	}
+
+	/// <summary>
+	/// 服务端模式导入项目：将解压后的 project.db 二进制流 + 元信息（QueryString）上传到服务端，
+	/// 服务端创建 Projects 主库记录并落盘 .db 文件。
+	/// 返回服务端创建的 Project DTO。
+	/// </summary>
+	public static async Task<Project> ImportProject(
+		Stream dbStream,
+		string name,
+		string number,
+		string category,
+		string note,
+		string auditee,
+		DateTime createTime,
+		int schemaVersion)
+	{
+		// QueryString 传递元信息（与 UploadFile 风格一致：Body 为裸二进制流）
+		var query = $"?name={Uri.EscapeDataString(name ?? "")}" +
+			$"&number={Uri.EscapeDataString(number ?? "")}" +
+			$"&category={Uri.EscapeDataString(category ?? "")}" +
+			$"&note={Uri.EscapeDataString(note ?? "")}" +
+			$"&auditee={Uri.EscapeDataString(auditee ?? "")}" +
+			$"&createTime={Uri.EscapeDataString(createTime.ToString("o"))}" +
+			$"&schemaVersion={schemaVersion}";
+
+		return await SendAsObject<Project>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/ImportProject" + query,
+			Timeout = TimeSpan.FromMinutes(10.0),
+			WithAuthorization = true,
+			Body = dbStream
 		});
 	}
 
@@ -2201,6 +2140,12 @@ public static class WebApiClient
 		catch { }
 	}
 
+	/// <summary>Token 更新失败时的自动重新登录入口（供 TokenUpdater 调用）</summary>
+	public static async Task ReloginForTokenUpdate()
+	{
+		await Relogin();
+	}
+
 	private static async Task Relogin()
 	{
 		LoginInfo loginInfo = TokenTimer.LoginInfo;
@@ -2210,18 +2155,12 @@ public static class WebApiClient
 		case LoginMode.Password:
 			tuple = await AccountLogin(loginInfo.userName, loginInfo.password);
 			break;
-		case LoginMode.Wechat:
-			tuple = await WechatRelogin(TokenTimer.LoginInfo.userId, TokenTimer.LoginInfo.password);
-			break;
-		case LoginMode.QQ:
-			tuple = await QQRelogin(TokenTimer.LoginInfo.userId, TokenTimer.LoginInfo.password);
-			break;
 		case LoginMode.SMS:
-			tuple = await SMSReLogin(loginInfo.userName);
+			tuple = await SMSReLogin(loginInfo.userName, loginInfo.validateCode);
 			break;
 		}
-		// tuple 可能为 null（如 LoginMode 不在枚举中），访问 Item1 会抛 NRE
-		if (tuple != null)
+		// tuple/Item1 可能为 null（如 LoginMode 不在枚举中或服务器返回无效数据）
+		if (tuple != null && tuple.Item1 != null)
 		{
 			TokenTimer.Token = tuple.Item1;
 		}
@@ -2233,8 +2172,18 @@ public static class WebApiClient
 		httpRequestMessage.SetTimeout(options.Timeout);
 		if (options.WithAuthorization)
 		{
-			httpRequestMessage.Headers.TryAddWithoutValidation("UserId", TokenTimer.LoginInfo.userId.ToString());
-			httpRequestMessage.Headers.TryAddWithoutValidation("Token", TokenTimer.Token.TokenValue);
+			if (TokenTimer.LoginInfo != null && TokenTimer.LoginInfo.userId > 0)
+			{
+				httpRequestMessage.Headers.TryAddWithoutValidation("UserId", TokenTimer.LoginInfo.userId.ToString());
+			}
+			if (TokenTimer.Token != null && !string.IsNullOrEmpty(TokenTimer.Token.TokenValue))
+			{
+				httpRequestMessage.Headers.TryAddWithoutValidation("Token", TokenTimer.Token.TokenValue);
+			}
+			else
+			{
+				DebugLog($"[GetRequest] WARNING: TokenValue is null/empty, request will likely get 401. url={options.Url}");
+			}
 		}
 		if (options.WithMachineCode)
 		{
@@ -2297,10 +2246,34 @@ public static class WebApiClient
 			JsonSerializer jsonSerializer = new JsonSerializer();
 			using StreamReader reader = new StreamReader(stream);
 			string responseText = await reader.ReadToEndAsync().ConfigureAwait(continueOnCapturedContext: false);
-			using JsonTextReader reader2 = new JsonTextReader(new StringReader(responseText));
-			T result = jsonSerializer.Deserialize<T>(reader2);
+
+			T result;
+			using (JsonTextReader reader2 = new JsonTextReader(new StringReader(responseText)))
+			{
+				result = jsonSerializer.Deserialize<T>(reader2);
+			}
+
 			if (result == null && typeof(T) != typeof(string))
 			{
+				if (typeof(T).IsInterface && typeof(T).IsGenericType)
+				{
+					Type genericTypeDef = typeof(T).GetGenericTypeDefinition();
+					if (genericTypeDef == typeof(IEnumerable<>) || genericTypeDef == typeof(IList<>) || genericTypeDef == typeof(ICollection<>))
+					{
+						Type elementType = typeof(T).GetGenericArguments()[0];
+						Type listType = typeof(List<>).MakeGenericType(elementType);
+						using (JsonTextReader reader3 = new JsonTextReader(new StringReader(responseText)))
+						{
+							object listResult = jsonSerializer.Deserialize(reader3, listType);
+							if (listResult != null)
+							{
+								return (T)listResult;
+							}
+						}
+						return (T)(object)Activator.CreateInstance(listType);
+					}
+				}
+
 				try
 				{
 					var errorObj = JsonConvert.DeserializeObject<JObject>(responseText);
@@ -2321,6 +2294,7 @@ public static class WebApiClient
 				}
 				catch { }
 			}
+
 			return result;
 		}
 		catch (IOException ex)
@@ -2673,18 +2647,19 @@ public static class WebApiClient
 				try
 				{
 					JObject jObject = await SendAsObject<JObject>(new RequestOptions
-					{
-						Method = HttpMethod.Get,
-						Url = "ServerTask/GetTaskRunningStatus?taskId=" + taskId,
-						Timeout = TimeSpan.FromSeconds(30.0)
-					}).ConfigureAwait(continueOnCapturedContext: false);
-					timeOutTryTimes = tryCount;
-					float progressValue = (float)jObject["progressValue"];
-					bool flag = (bool)jObject["isTaskEnd"];
-					bool flag2 = (bool)jObject["isTaskSuccess"];
-					bool flag3 = (bool)jObject["isTimeOut"];
-					string text = (string)jObject["taskDesc"];
-					string result = (string)jObject["taskResult"];
+				{
+					Method = HttpMethod.Get,
+					Url = "ServerTask/GetTaskRunningStatus?taskId=" + taskId,
+					Timeout = TimeSpan.FromSeconds(30.0),
+					WithAuthorization = true
+				}).ConfigureAwait(continueOnCapturedContext: false);
+				timeOutTryTimes = tryCount;
+				float progressValue = (float)jObject["progressValue"];
+				bool flag = (bool)jObject["isTaskEnd"];
+				bool flag2 = (bool)jObject["isTaskSuccess"];
+				bool flag3 = (bool)jObject["isTimeOut"];
+				string text = (string)jObject["taskDesc"];
+				string result = (string)jObject["taskResult"];
 					if (!flag)
 					{
 						serverProgressUpdater.UpdateProgress(progressValue);
@@ -2766,7 +2741,8 @@ public static class WebApiClient
 				{
 					Method = HttpMethod.Get,
 					Url = "ServerTask/GetTaskRunningStatus?taskId=" + taskId,
-					Timeout = TimeSpan.FromSeconds(30.0)
+					Timeout = TimeSpan.FromSeconds(30.0),
+					WithAuthorization = true
 				}).ConfigureAwait(continueOnCapturedContext: false);
 				timeOutTryTimes = tryCount;
 				float progressValue = (float)jObject["progressValue"];
@@ -2836,14 +2812,23 @@ public static class WebApiClient
 		try
 		{
 			Stream stream2;
-			try
-			{
-				stream2 = await (await _ossClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, taskResultFileDownloadUrl), HttpCompletionOption.ResponseHeadersRead)).Content.ReadAsStreamAsync();
-			}
-			catch (Exception)
-			{
-				return null;
-			}
+		HttpRequestMessage downloadReq = new HttpRequestMessage(HttpMethod.Get, taskResultFileDownloadUrl);
+		if (TokenTimer.LoginInfo != null)
+		{
+			downloadReq.Headers.TryAddWithoutValidation("UserId", TokenTimer.LoginInfo.userId.ToString());
+		}
+		if (TokenTimer.Token != null)
+		{
+			downloadReq.Headers.TryAddWithoutValidation("Token", TokenTimer.Token.TokenValue);
+		}
+		HttpResponseMessage downloadResp = await httpClient.SendAsync(downloadReq, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(continueOnCapturedContext: false);
+		if (!downloadResp.IsSuccessStatusCode)
+		{
+			string errBody = await downloadResp.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+			downloadResp.Dispose();
+			throw new HttpRequestException($"下载任务结果文件失败: HTTP {(int)downloadResp.StatusCode} {downloadResp.StatusCode}: {errBody}");
+		}
+		stream2 = await downloadResp.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
 			using (stream2)
 			{
 				using FileStream zipFileStream = new FileStream(tempzipFilePath, FileMode.Create, FileAccess.Write);

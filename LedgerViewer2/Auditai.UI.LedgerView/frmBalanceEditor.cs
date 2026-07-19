@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -739,24 +739,44 @@ public class frmBalanceEditor : C1RibbonForm
 		return true;
 	}
 
-	private void Populate(bool onlyLastLevelDisplay)
-	{
-		grdBalance.BeginUpdate();
-		try
+	private void SetMinColumnWidths(C1.Win.C1FlexGrid.C1FlexGrid grid)
 		{
-			DettachEvent();
-			lockEvent = true;
-			grdBalance.Rows.Count = 1;
-			grdBalance.Rows.Fixed = 1;
-			grdBalance.Cols.Count = 1;
-			grdBalance.Cols.Fixed = 1;
-			grdBalance.Rows.DefaultSize = 30;
-			grdBalance.AllowResizing = AllowResizingEnum.Both;
-			C1.Win.C1FlexGrid.Column column = grdBalance.Cols[0];
-			column.Name = "index";
-			column.Caption = "序号";
-			column.DataType = typeof(string);
-			column.TextAlign = TextAlignEnum.CenterCenter;
+			var minWidths = new Dictionary<string, int>
+			{
+				{ "index", 60 },
+				{ "kmdm", 100 },
+				{ "kmmc", 150 },
+				{ "debit", 120 },
+				{ "credit", 120 }
+			};
+			foreach (var kvp in minWidths)
+			{
+				var col = grid.Cols[kvp.Key];
+				if (col != null && col.Width < kvp.Value)
+				{
+					col.Width = kvp.Value;
+				}
+			}
+		}
+
+		private void Populate(bool onlyLastLevelDisplay)
+		{
+			grdBalance.BeginUpdate();
+			try
+			{
+				DettachEvent();
+				lockEvent = true;
+				grdBalance.Rows.Count = 1;
+				grdBalance.Rows.Fixed = 1;
+				grdBalance.Cols.Count = 1;
+				grdBalance.Cols.Fixed = 1;
+				grdBalance.Rows.DefaultSize = 30;
+				grdBalance.AllowResizing = AllowResizingEnum.Both;
+				C1.Win.C1FlexGrid.Column column = grdBalance.Cols[0];
+				column.Name = "index";
+				column.Caption = "序号";
+				column.DataType = typeof(string);
+				column.TextAlign = TextAlignEnum.CenterCenter;
 			column.AllowEditing = false;
 			column = grdBalance.Cols.Add();
 			column.Name = "kmdm";
@@ -817,6 +837,7 @@ public class frmBalanceEditor : C1RibbonForm
 			{
 				grdBalance.Tree.Style = TreeStyleFlags.Simple;
 			}
+			SetMinColumnWidths(grdBalance);
 			grdBalance.AutoSizeCols();
 			void AddChildren(Account account, Node parentNode)
 			{
@@ -1170,27 +1191,27 @@ public class frmBalanceEditor : C1RibbonForm
 		this.c1SplitContainer1.Name = "c1SplitContainer1";
 		this.c1SplitContainer1.Panels.Add(this.pnlToolBar);
 		this.c1SplitContainer1.Panels.Add(this.pnlGrid);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(933, 637);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(1213, 829);
 		this.c1SplitContainer1.SplitterWidth = 5;
 		this.c1SplitContainer1.TabIndex = 0;
 		this.pnlToolBar.Controls.Add(this.c1CommandDock1);
-		this.pnlToolBar.Height = 63;
+		this.pnlToolBar.Height = 82;
 		this.pnlToolBar.KeepRelativeSize = false;
 		this.pnlToolBar.Location = new System.Drawing.Point(0, 0);
-		this.pnlToolBar.MinHeight = 52;
+		this.pnlToolBar.MinHeight = 68;
 		this.pnlToolBar.MinWidth = 52;
 		this.pnlToolBar.Name = "pnlToolBar";
 		this.pnlToolBar.Resizable = false;
-		this.pnlToolBar.Size = new System.Drawing.Size(933, 63);
+		this.pnlToolBar.Size = new System.Drawing.Size(1213, 82);
 		this.pnlToolBar.SizeRatio = 9.906;
 		this.pnlToolBar.TabIndex = 0;
-		this.pnlToolBar.Width = 933;
+		this.pnlToolBar.Width = 1213;
 		this.c1CommandDock1.Controls.Add(this.c1ToolBar1);
 		this.c1CommandDock1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1CommandDock1.Id = 1;
 		this.c1CommandDock1.Location = new System.Drawing.Point(0, 0);
 		this.c1CommandDock1.Name = "c1CommandDock1";
-		this.c1CommandDock1.Size = new System.Drawing.Size(933, 63);
+		this.c1CommandDock1.Size = new System.Drawing.Size(1213, 82);
 		this.c1ToolBar1.AccessibleName = "Tool Bar";
 		this.c1ToolBar1.AutoSize = false;
 		this.c1ToolBar1.Border.Width = 0;
@@ -1200,10 +1221,10 @@ public class frmBalanceEditor : C1RibbonForm
 		this.c1ToolBar1.CommandLinks.AddRange(new C1.Win.C1Command.C1CommandLink[3] { this.lnkBalanceValidate, this.lnkCancelSave, this.lnkSaveData });
 		this.c1ToolBar1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1ToolBar1.Location = new System.Drawing.Point(0, 0);
-		this.c1ToolBar1.MinButtonSize = 42;
+		this.c1ToolBar1.MinButtonSize = 55;
 		this.c1ToolBar1.Movable = false;
 		this.c1ToolBar1.Name = "c1ToolBar1";
-		this.c1ToolBar1.Size = new System.Drawing.Size(823, 61);
+		this.c1ToolBar1.Size = new System.Drawing.Size(1070, 79);
 		this.c1ToolBar1.Text = "c1ToolBar2";
 		this.c1ToolBar1.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.c1ToolBar1.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
@@ -1229,14 +1250,14 @@ public class frmBalanceEditor : C1RibbonForm
 		this.cmdSaveData.Text = "保存数据";
 		this.cmdSaveData.Click += new C1.Win.C1Command.ClickEventHandler(cmdSaveData_Click);
 		this.pnlGrid.Controls.Add(this.grdBalance);
-		this.pnlGrid.Height = 573;
-		this.pnlGrid.Location = new System.Drawing.Point(0, 64);
+		this.pnlGrid.Height = 746;
+		this.pnlGrid.Location = new System.Drawing.Point(0, 83);
 		this.pnlGrid.MinHeight = 52;
 		this.pnlGrid.MinWidth = 52;
 		this.pnlGrid.Name = "pnlGrid";
-		this.pnlGrid.Size = new System.Drawing.Size(933, 573);
+		this.pnlGrid.Size = new System.Drawing.Size(1213, 746);
 		this.pnlGrid.TabIndex = 1;
-		this.pnlGrid.Width = 933;
+		this.pnlGrid.Width = 1213;
 		this.grdBalance.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdBalance.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this.grdBalance.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1244,8 +1265,8 @@ public class frmBalanceEditor : C1RibbonForm
 		this.grdBalance.Location = new System.Drawing.Point(0, 0);
 		this.grdBalance.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdBalance.Name = "grdBalance";
-		this.grdBalance.Rows.DefaultSize = 20;
-		this.grdBalance.Size = new System.Drawing.Size(933, 573);
+		this.grdBalance.Rows.DefaultSize = 26;
+		this.grdBalance.Size = new System.Drawing.Size(1213, 746);
 		this.grdBalance.TabIndex = 0;
 		this.c1CommandHolder1.Commands.Add(this.cmdBalanceValidate);
 		this.c1CommandHolder1.Commands.Add(this.cmdSaveData);
@@ -1253,7 +1274,7 @@ public class frmBalanceEditor : C1RibbonForm
 		this.c1CommandHolder1.Owner = this;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(933, 637);
+		base.ClientSize = new System.Drawing.Size(1213, 829);
 		base.Controls.Add(this.c1SplitContainer1);
 		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

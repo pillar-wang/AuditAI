@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Ribbon;
@@ -54,13 +54,13 @@ internal class InputTextFormImpl : C1RibbonForm
 		this.txtInput.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtInput.Location = new System.Drawing.Point(0, 0);
 		this.txtInput.Name = "txtInput";
-		this.txtInput.Size = new System.Drawing.Size(284, 261);
+		this.txtInput.Size = new System.Drawing.Size(369, 339);
 		this.txtInput.TabIndex = 0;
 		this.txtInput.Tag = null;
 		this.txtInput.KeyDown += new System.Windows.Forms.KeyEventHandler(txtInput_KeyDown);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(284, 261);
+		base.ClientSize = new System.Drawing.Size(369, 339);
 		base.Controls.Add(this.txtInput);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.Name = "InputTextFormImpl";

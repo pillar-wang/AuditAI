@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -56,14 +56,14 @@ public class frmTileSearch : Form
 		this.txtKeyword.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtKeyword.Location = new System.Drawing.Point(0, 0);
 		this.txtKeyword.Name = "txtKeyword";
-		this.txtKeyword.Size = new System.Drawing.Size(318, 32);
+		this.txtKeyword.Size = new System.Drawing.Size(413, 42);
 		this.txtKeyword.TabIndex = 0;
 		this.txtKeyword.Tag = null;
 		this.txtKeyword.TextDetached = true;
 		this.txtKeyword.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(318, 32);
+		base.ClientSize = new System.Drawing.Size(413, 42);
 		base.Controls.Add(this.txtKeyword);
 		base.Name = "frmTileSearch";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

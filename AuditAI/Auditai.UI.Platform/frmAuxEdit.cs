@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -589,9 +589,9 @@ public class frmAuxEdit : Form
 		rtbDropInput.BorderStyle = BorderStyle.FixedSingle;
 		rtbDropInput.Dock = DockStyle.Fill;
 		rtbDropInput.Location = new Point(0, 0);
-		rtbDropInput.Margin = new Padding(3, 4, 3, 4);
+		rtbDropInput.Margin = new Padding(4, 5, 4, 5);
 		rtbDropInput.Name = "rtbDropInput";
-		rtbDropInput.Size = new Size(792, 354);
+		rtbDropInput.Size = new Size(1030, 460);
 		rtbDropInput.TabIndex = 0;
 		rtbDropInput.Text = "";
 		rtbDropInput.VScrollPos = 0;
@@ -604,11 +604,11 @@ public class frmAuxEdit : Form
 		ctnDock.ForeColor = Color.FromArgb(21, 66, 139);
 		ctnDock.HeaderHeight = 27;
 		ctnDock.Location = new Point(0, 0);
-		ctnDock.Margin = new Padding(3, 4, 3, 4);
+		ctnDock.Margin = new Padding(4, 5, 4, 5);
 		ctnDock.Name = "ctnDock";
 		ctnDock.Panels.Add(pnlButtons);
 		ctnDock.Panels.Add(pnlInputBox);
-		ctnDock.Size = new Size(792, 569);
+		ctnDock.Size = new Size(1030, 740);
 		ctnDock.SplitterColor = Color.FromArgb(119, 147, 185);
 		ctnDock.SplitterWidth = 0;
 		ctnDock.TabIndex = 1;
@@ -617,20 +617,20 @@ public class frmAuxEdit : Form
 		pnlButtons.Controls.Add(btnCancle);
 		pnlButtons.Controls.Add(btnConfirm);
 		pnlButtons.Dock = PanelDockStyle.Top;
-		pnlButtons.Height = 40;
+		pnlButtons.Height = 52;
 		pnlButtons.KeepRelativeSize = false;
-		pnlButtons.Location = new Point(0, 529);
+		pnlButtons.Location = new Point(0, 688);
 		pnlButtons.Name = "pnlButtons";
 		pnlButtons.Resizable = false;
-		pnlButtons.Size = new Size(792, 40);
+		pnlButtons.Size = new Size(1030, 52);
 		pnlButtons.TabIndex = 2;
-		pnlButtons.Width = 792;
+		pnlButtons.Width = 1030;
 
 		btnCancle.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-		btnCancle.Location = new Point(699, 7);
-		btnCancle.Margin = new Padding(3, 4, 3, 4);
+		btnCancle.Location = new Point(909, 9);
+		btnCancle.Margin = new Padding(4, 5, 4, 5);
 		btnCancle.Name = "btnCancle";
-		btnCancle.Size = new Size(70, 26);
+		btnCancle.Size = new Size(91, 34);
 		btnCancle.TabIndex = 1;
 		btnCancle.Text = "取消";
 		btnCancle.UseVisualStyleBackColor = true;
@@ -638,25 +638,25 @@ public class frmAuxEdit : Form
 		btnCancle.Click += btnCancle_Click;
 
 		btnConfirm.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-		btnConfirm.Location = new Point(596, 7);
-		btnConfirm.Margin = new Padding(3, 4, 3, 4);
+		btnConfirm.Location = new Point(775, 9);
+		btnConfirm.Margin = new Padding(4, 5, 4, 5);
 		btnConfirm.Name = "btnConfirm";
-		btnConfirm.Size = new Size(70, 26);
+		btnConfirm.Size = new Size(91, 34);
 		btnConfirm.TabIndex = 0;
 		btnConfirm.Text = "确定";
 		btnConfirm.UseVisualStyleBackColor = true;
 		btnConfirm.Click += btnConfirm_Click;
 
 		pnlInputBox.Controls.Add(DockingTab);
-		pnlInputBox.Height = 528;
+		pnlInputBox.Height = 686;
 		pnlInputBox.Location = new Point(0, 0);
 		pnlInputBox.MinHeight = 0;
 		pnlInputBox.MinWidth = 52;
 		pnlInputBox.Name = "pnlInputBox";
-		pnlInputBox.Size = new Size(792, 528);
+		pnlInputBox.Size = new Size(1030, 686);
 		pnlInputBox.SizeRatio = 100.0;
 		pnlInputBox.TabIndex = 1;
-		pnlInputBox.Width = 792;
+		pnlInputBox.Width = 1030;
 
 		DockingTab.BorderStyle = BorderStyle.None;
 		DockingTab.Controls.Add(tabDropList);
@@ -665,7 +665,7 @@ public class frmAuxEdit : Form
 		DockingTab.Dock = DockStyle.Fill;
 		DockingTab.Location = new Point(0, 0);
 		DockingTab.Name = "DockingTab";
-		DockingTab.Size = new Size(792, 528);
+		DockingTab.Size = new Size(1030, 686);
 		DockingTab.TabIndex = 1;
 		DockingTab.TabsShowFocusCues = false;
 		DockingTab.TabsSpacing = 5;
@@ -674,9 +674,9 @@ public class frmAuxEdit : Form
 		DockingTab.VisualStyleBase = (C1.Win.C1Command.VisualStyle)5;
 
 		tabDropList.Controls.Add(ctnDropInput);
-		tabDropList.Location = new Point(0, 27);
+		tabDropList.Location = new Point(0, 35);
 		tabDropList.Name = "tabDropList";
-		tabDropList.Size = new Size(792, 501);
+		tabDropList.Size = new Size(1030, 651);
 		tabDropList.TabIndex = 0;
 		tabDropList.Text = "下拉列表";
 
@@ -691,28 +691,28 @@ public class frmAuxEdit : Form
 		ctnDropInput.Panels.Add(pnlFunctions);
 		ctnDropInput.Panels.Add(pnlFunctionHint);
 		ctnDropInput.Panels.Add(pnlCombo);
-		ctnDropInput.Size = new Size(792, 501);
+		ctnDropInput.Size = new Size(1030, 651);
 		ctnDropInput.SplitterWidth = 0;
 		ctnDropInput.TabIndex = 0;
 
 		pnlInput.Controls.Add(ckbFreeInput);
 		pnlInput.Controls.Add(ckbMultiSelect);
 		pnlInput.Dock = PanelDockStyle.Top;
-		pnlInput.Height = 40;
+		pnlInput.Height = 52;
 		pnlInput.KeepRelativeSize = false;
-		pnlInput.Location = new Point(0, 461);
+		pnlInput.Location = new Point(0, 599);
 		pnlInput.Name = "pnlInput";
 		pnlInput.Resizable = false;
-		pnlInput.Size = new Size(792, 40);
+		pnlInput.Size = new Size(1030, 52);
 		pnlInput.SizeRatio = 11.396;
 		pnlInput.TabIndex = 1;
 
 		ckbFreeInput.BackColor = SystemColors.Control;
 		ckbFreeInput.BorderStyle = BorderStyle.None;
 		ckbFreeInput.ForeColor = SystemColors.ControlText;
-		ckbFreeInput.Location = new Point(105, 7);
+		ckbFreeInput.Location = new Point(137, 9);
 		ckbFreeInput.Name = "ckbFreeInput";
-		ckbFreeInput.Size = new Size(104, 24);
+		ckbFreeInput.Size = new Size(135, 31);
 		ckbFreeInput.TabIndex = 3;
 		ckbFreeInput.Text = "允许自由输入";
 		ckbFreeInput.UseVisualStyleBackColor = true;
@@ -721,22 +721,22 @@ public class frmAuxEdit : Form
 		ckbMultiSelect.BackColor = SystemColors.Control;
 		ckbMultiSelect.BorderStyle = BorderStyle.None;
 		ckbMultiSelect.ForeColor = SystemColors.ControlText;
-		ckbMultiSelect.Location = new Point(12, 7);
+		ckbMultiSelect.Location = new Point(16, 9);
 		ckbMultiSelect.Name = "ckbMultiSelect";
-		ckbMultiSelect.Size = new Size(104, 24);
+		ckbMultiSelect.Size = new Size(135, 31);
 		ckbMultiSelect.TabIndex = 2;
 		ckbMultiSelect.Text = "允许复选";
 		ckbMultiSelect.UseVisualStyleBackColor = true;
 		ckbMultiSelect.Value = null;
 
 		pnlFunctions.Controls.Add(tbrFunctions);
-		pnlFunctions.Height = 24;
+		pnlFunctions.Height = 31;
 		pnlFunctions.KeepRelativeSize = false;
 		pnlFunctions.Location = new Point(0, 0);
-		pnlFunctions.MinHeight = 24;
+		pnlFunctions.MinHeight = 31;
 		pnlFunctions.Name = "pnlFunctions";
 		pnlFunctions.Resizable = false;
-		pnlFunctions.Size = new Size(792, 24);
+		pnlFunctions.Size = new Size(1030, 31);
 		pnlFunctions.SizeRatio = 7.767;
 		pnlFunctions.TabIndex = 3;
 
@@ -746,7 +746,7 @@ public class frmAuxEdit : Form
 		tbrFunctions.Location = new Point(0, 0);
 		tbrFunctions.Movable = false;
 		tbrFunctions.Name = "tbrFunctions";
-		tbrFunctions.Size = new Size(792, 24);
+		tbrFunctions.Size = new Size(1030, 31);
 		tbrFunctions.Text = "c1ToolBar1";
 		tbrFunctions.VisualStyle = (C1.Win.C1Command.VisualStyle)0;
 		tbrFunctions.VisualStyleBase = (C1.Win.C1Command.VisualStyle)1;
@@ -764,12 +764,12 @@ public class frmAuxEdit : Form
 
 		pnlFunctionHint.Controls.Add(lblFunctionHint);
 		pnlFunctionHint.Dock = PanelDockStyle.Top;
-		pnlFunctionHint.Height = 80;
+		pnlFunctionHint.Height = 104;
 		pnlFunctionHint.KeepRelativeSize = false;
-		pnlFunctionHint.Location = new Point(0, 380);
+		pnlFunctionHint.Location = new Point(0, 494);
 		pnlFunctionHint.Name = "pnlFunctionHint";
 		pnlFunctionHint.Resizable = false;
-		pnlFunctionHint.Size = new Size(792, 80);
+		pnlFunctionHint.Size = new Size(1030, 104);
 		pnlFunctionHint.SizeRatio = 16.194;
 		pnlFunctionHint.TabIndex = 4;
 
@@ -777,22 +777,22 @@ public class frmAuxEdit : Form
 		lblFunctionHint.Dock = DockStyle.Fill;
 		lblFunctionHint.Location = new Point(0, 0);
 		lblFunctionHint.Name = "lblFunctionHint";
-		lblFunctionHint.Size = new Size(792, 80);
+		lblFunctionHint.Size = new Size(1030, 104);
 		lblFunctionHint.TabIndex = 0;
 		lblFunctionHint.Tag = null;
 		lblFunctionHint.TextAlign = ContentAlignment.MiddleLeft;
 
 		pnlCombo.Controls.Add(rtbDropInput);
-		pnlCombo.Height = 354;
-		pnlCombo.Location = new Point(0, 25);
+		pnlCombo.Height = 460;
+		pnlCombo.Location = new Point(0, 33);
 		pnlCombo.Name = "pnlCombo";
-		pnlCombo.Size = new Size(792, 354);
+		pnlCombo.Size = new Size(1030, 460);
 		pnlCombo.TabIndex = 2;
 
 		tabEdit.Controls.Add(ctnCommentInput);
-		tabEdit.Location = new Point(0, 27);
+		tabEdit.Location = new Point(0, 35);
 		tabEdit.Name = "tabEdit";
-		tabEdit.Size = new Size(792, 501);
+		tabEdit.Size = new Size(1030, 651);
 		tabEdit.TabIndex = 2;
 		tabEdit.Text = "编辑注释";
 
@@ -804,32 +804,32 @@ public class frmAuxEdit : Form
 		ctnCommentInput.Location = new Point(0, 0);
 		ctnCommentInput.Name = "ctnCommentInput";
 		ctnCommentInput.Panels.Add(c1SplitterPanel4);
-		ctnCommentInput.Size = new Size(792, 501);
+		ctnCommentInput.Size = new Size(1030, 651);
 		ctnCommentInput.SplitterWidth = 0;
 		ctnCommentInput.TabIndex = 1;
 
 		c1SplitterPanel4.Controls.Add(txbCommentInput);
-		c1SplitterPanel4.Height = 501;
+		c1SplitterPanel4.Height = 651;
 		c1SplitterPanel4.Location = new Point(0, 0);
 		c1SplitterPanel4.Name = "c1SplitterPanel4";
-		c1SplitterPanel4.Size = new Size(792, 501);
+		c1SplitterPanel4.Size = new Size(1030, 651);
 		c1SplitterPanel4.TabIndex = 1;
 
 		txbCommentInput.Dock = DockStyle.Fill;
 		txbCommentInput.Location = new Point(0, 0);
-		txbCommentInput.Margin = new Padding(3, 4, 3, 4);
+		txbCommentInput.Margin = new Padding(4, 5, 4, 5);
 		txbCommentInput.Multiline = true;
 		txbCommentInput.Name = "txbCommentInput";
 		txbCommentInput.ScrollBars = ScrollBars.Vertical;
-		txbCommentInput.Size = new Size(792, 501);
+		txbCommentInput.Size = new Size(1030, 651);
 		txbCommentInput.TabIndex = 0;
 		txbCommentInput.Tag = null;
 		txbCommentInput.TextDetached = true;
 
 		tabDefault.Controls.Add(ctnDefaultInput);
-		tabDefault.Location = new Point(0, 27);
+		tabDefault.Location = new Point(0, 35);
 		tabDefault.Name = "tabDefault";
-		tabDefault.Size = new Size(792, 501);
+		tabDefault.Size = new Size(1030, 651);
 		tabDefault.TabIndex = 1;
 		tabDefault.Text = "默认内容";
 
@@ -841,34 +841,34 @@ public class frmAuxEdit : Form
 		ctnDefaultInput.Location = new Point(0, 0);
 		ctnDefaultInput.Name = "ctnDefaultInput";
 		ctnDefaultInput.Panels.Add(c1SplitterPanel2);
-		ctnDefaultInput.Size = new Size(792, 501);
+		ctnDefaultInput.Size = new Size(1030, 651);
 		ctnDefaultInput.SplitterWidth = 0;
 		ctnDefaultInput.TabIndex = 1;
 
 		c1SplitterPanel2.Controls.Add(txbDefaultInput);
-		c1SplitterPanel2.Height = 501;
+		c1SplitterPanel2.Height = 651;
 		c1SplitterPanel2.Location = new Point(0, 0);
 		c1SplitterPanel2.Name = "c1SplitterPanel2";
-		c1SplitterPanel2.Size = new Size(792, 501);
+		c1SplitterPanel2.Size = new Size(1030, 651);
 		c1SplitterPanel2.TabIndex = 1;
 
 		txbDefaultInput.Dock = DockStyle.Fill;
 		txbDefaultInput.Location = new Point(0, 0);
-		txbDefaultInput.Margin = new Padding(3, 4, 3, 4);
+		txbDefaultInput.Margin = new Padding(4, 5, 4, 5);
 		txbDefaultInput.Multiline = true;
 		txbDefaultInput.Name = "txbDefaultInput";
 		txbDefaultInput.ScrollBars = ScrollBars.Vertical;
-		txbDefaultInput.Size = new Size(792, 501);
+		txbDefaultInput.Size = new Size(1030, 651);
 		txbDefaultInput.TabIndex = 0;
 		txbDefaultInput.Tag = null;
 		txbDefaultInput.TextDetached = true;
 
 		AutoScaleDimensions = new SizeF(7F, 17F);
 		AutoScaleMode = AutoScaleMode.Font;
-		ClientSize = new Size(792, 569);
+		ClientSize = new Size(1030, 740);
 		Controls.Add(ctnDock);
 		Font = new Font("Noto Sans SC", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-		Margin = new Padding(3, 4, 3, 4);
+		Margin = new Padding(4, 5, 4, 5);
 		Name = "frmAuxEdit";
 		ShowInTaskbar = false;
 		StartPosition = FormStartPosition.CenterScreen;

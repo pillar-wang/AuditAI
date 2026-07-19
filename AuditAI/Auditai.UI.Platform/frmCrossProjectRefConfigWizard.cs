@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -113,10 +113,10 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     private void InitializeComponent()
     {
         this.Text = _editingRef != null ? "编辑跨项目数据引用" : "新增跨项目数据引用";
-        this.Size = new Size(1100, 800);
+        this.Size = new Size(1150, 830);
         this.StartPosition = FormStartPosition.CenterScreen;
         this.Font = _fontNormal;
-        this.MinimumSize = new Size(1000, 700);
+        this.MinimumSize = new Size(1050, 730);
 
         // 顶部步骤指示器
         _pnlStepIndicator = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.FromArgb(240, 240, 240) };

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -118,19 +118,19 @@ public class UpdateForm : C1RibbonForm
 	private void AnchorPosition1(C1SplitterPanel panel, Control control)
 	{
 		control.Top = 0;
-		control.Left = panel.Width - 300;
+		control.Left = panel.Width - 390;
 	}
 
 	private void AnchorPosition2(C1SplitterPanel panel, Control control)
 	{
 		control.Top = 0;
-		control.Left = panel.Width - 200;
+		control.Left = panel.Width - 260;
 	}
 
 	private void AnchorPosition3(C1SplitterPanel panel, Control control)
 	{
 		control.Top = 0;
-		control.Left = panel.Width - 100;
+		control.Left = panel.Width - 130;
 	}
 
 	private void StandardView()
@@ -186,71 +186,71 @@ public class UpdateForm : C1RibbonForm
 		this.ctnAll.Panels.Add(this.pnlButtons);
 		this.ctnAll.Panels.Add(this.pnlImage);
 		this.ctnAll.Panels.Add(this.pnlContent);
-		this.ctnAll.Size = new System.Drawing.Size(504, 181);
+		this.ctnAll.Size = new System.Drawing.Size(680, 245);
 		this.ctnAll.SplitterWidth = 0;
 		this.ctnAll.TabIndex = 0;
 		this.pnlButtons.Controls.Add(this.btnCancel);
 		this.pnlButtons.Controls.Add(this.btnConfirm);
 		this.pnlButtons.Controls.Add(this.btnDetail);
 		this.pnlButtons.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlButtons.Height = 40;
+		this.pnlButtons.Height = 55;
 		this.pnlButtons.KeepRelativeSize = false;
-		this.pnlButtons.Location = new System.Drawing.Point(0, 141);
+		this.pnlButtons.Location = new System.Drawing.Point(0, 190);
 		this.pnlButtons.Name = "pnlButtons";
 		this.pnlButtons.Resizable = false;
-		this.pnlButtons.Size = new System.Drawing.Size(504, 40);
+		this.pnlButtons.Size = new System.Drawing.Size(680, 55);
 		this.pnlButtons.TabIndex = 1;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Location = new System.Drawing.Point(410, 3);
+		this.btnCancel.Location = new System.Drawing.Point(547, 9);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(70, 26);
+		this.btnCancel.Size = new System.Drawing.Size(91, 34);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Location = new System.Drawing.Point(306, 3);
+		this.btnConfirm.Location = new System.Drawing.Point(418, 9);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(70, 26);
+		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnDetail.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnDetail.Location = new System.Drawing.Point(201, 3);
+		this.btnDetail.Location = new System.Drawing.Point(290, 9);
 		this.btnDetail.Name = "btnDetail";
-		this.btnDetail.Size = new System.Drawing.Size(70, 26);
+		this.btnDetail.Size = new System.Drawing.Size(91, 34);
 		this.btnDetail.TabIndex = 0;
 		this.btnDetail.Text = "更新详情";
 		this.btnDetail.UseVisualStyleBackColor = true;
 		this.btnDetail.Click += new System.EventHandler(btnDetail_Click);
 		this.pnlImage.Controls.Add(this.imgBox);
 		this.pnlImage.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Left;
-		this.pnlImage.Height = 140;
+		this.pnlImage.Height = 190;
 		this.pnlImage.KeepRelativeSize = false;
 		this.pnlImage.Location = new System.Drawing.Point(0, 0);
 		this.pnlImage.Name = "pnlImage";
-		this.pnlImage.Size = new System.Drawing.Size(92, 140);
+		this.pnlImage.Size = new System.Drawing.Size(120, 190);
 		this.pnlImage.SizeRatio = 18.29;
 		this.pnlImage.TabIndex = 0;
-		this.pnlImage.Width = 92;
+		this.pnlImage.Width = 120;
 		this.imgBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.imgBox.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.imgBox.Location = new System.Drawing.Point(0, 0);
 		this.imgBox.Name = "imgBox";
-		this.imgBox.Size = new System.Drawing.Size(92, 140);
+		this.imgBox.Size = new System.Drawing.Size(120, 190);
 		this.imgBox.TabIndex = 0;
 		this.imgBox.TabStop = false;
 		this.pnlContent.Controls.Add(this.lblNotice);
-		this.pnlContent.Height = 140;
-		this.pnlContent.Location = new System.Drawing.Point(92, 0);
+		this.pnlContent.Height = 190;
+		this.pnlContent.Location = new System.Drawing.Point(120, 0);
 		this.pnlContent.Name = "pnlContent";
-		this.pnlContent.Size = new System.Drawing.Size(412, 140);
+		this.pnlContent.Size = new System.Drawing.Size(560, 190);
 		this.pnlContent.TabIndex = 2;
 		this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblNotice.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.lblNotice.Location = new System.Drawing.Point(0, 0);
 		this.lblNotice.Name = "lblNotice";
-		this.lblNotice.Padding = new System.Windows.Forms.Padding(5, 0, 0, 0);
-		this.lblNotice.Size = new System.Drawing.Size(412, 140);
+		this.lblNotice.Padding = new System.Windows.Forms.Padding(7, 0, 0, 0);
+		this.lblNotice.Size = new System.Drawing.Size(560, 190);
 		this.lblNotice.TabIndex = 0;
 		this.lblNotice.Tag = null;
 		this.lblNotice.Text = "c1Label1";
@@ -258,7 +258,7 @@ public class UpdateForm : C1RibbonForm
 		this.lblNotice.TextDetached = true;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(504, 181);
+		base.ClientSize = new System.Drawing.Size(680, 245);
 		base.Controls.Add(this.ctnAll);
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

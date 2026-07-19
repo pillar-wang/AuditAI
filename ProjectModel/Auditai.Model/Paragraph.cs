@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -52,7 +52,6 @@ public class Paragraph : IIndexable
 		try
 		{
 			var stream = Encoding.UTF8.GetString(ZipCompressor.Decompress(dto.Stream));
-			System.Diagnostics.Debug.WriteLine($"[Paragraph.FromDto] ParaId={dto.Id} DocId={dto.DocumentId} Stream decompressed length={stream.Length}");
 			// 将旧格式书签 lsbm@ 转为 lsbm_（OOXML 安全，防止 @ 被截断导致 TableId 丢失）
 			if (stream.Contains("lsbm@"))
 				stream = UpgradeBookmarkFormat(stream);
@@ -68,9 +67,8 @@ public class Paragraph : IIndexable
 				Comment = dto.Comment
 			};
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine($"[Paragraph.FromDto] ParaId={dto.Id} DocId={dto.DocumentId} Decompress FAILED: {ex.Message}");
 			throw;
 		}
 	}

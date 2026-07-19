@@ -1,6 +1,8 @@
-﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using FileTransferModel;
 using Auditai.DTO;
@@ -431,6 +433,110 @@ public class MessageHandle
 					member10.UserState.TicketNavTreeNodePath = e.TicketNavTreeNodePath;
 					manager.OnOpenTicketNavTreeNodeChanged(e.FromId, e.ProjectId, e.NodeId, e.TicketNavTreeNodePath);
 				}
+				break;
+			}
+			case MessageKind.PeerTableChanged:
+			{
+				// 确保事件来自当前打开的项目
+				string currentProjectId = SignalRClient.UserState.ProjectId;
+				if (e.ProjectId != currentProjectId || !long.TryParse(e.TableId, out var tableIdLong))
+					break;
+
+				// 在后台线程执行 Pull，避免阻塞 SignalR 消息处理
+				_ = Task.Run(async () =>
+				{
+					try
+					{
+						var project = Program.MainForm?.CurrentProject;
+						if (project == null) return;
+
+						// 通过 tableId 查找已加载的 Table
+						var tableId = new Id64(tableIdLong);
+						var table = project.GetTableById(tableId);
+						if (table == null || !table._loaded) return; // 表格未打开，跳过
+
+						// 检查版本是否需要更新
+						if (!int.TryParse(e.Version, out var serverVersion) || table.Version >= serverVersion) return;
+
+						// 执行 Pull
+						await Syncer.Pull(table);
+
+						// 在 UI 线程刷新显示
+						var mainForm = Program.MainForm;
+						if (mainForm != null && mainForm.View.IsHandleCreated)
+						{
+							mainForm.View.BeginInvoke((Action)(() =>
+							{
+								var te = mainForm.GetCreatedTableEditor();
+								if (te != null && te.Table == table)
+								{
+									te.ReloadFromDb();
+								}
+								else
+								{
+									table.ReloadFromDb();
+								}
+							}));
+						}
+						else
+						{
+							table.ReloadFromDb();
+						}
+					}
+					catch (Exception ex)
+					{
+						ex.Log();
+					}
+				});
+				break;
+			}
+			case MessageKind.PeerDocumentChanged:
+			{
+				string currentProjectId = SignalRClient.UserState.ProjectId;
+				if (e.ProjectId != currentProjectId || !long.TryParse(e.DocumentId, out var docIdLong))
+					break;
+
+				_ = Task.Run(async () =>
+				{
+					try
+					{
+						var project = Program.MainForm?.CurrentProject;
+						if (project == null) return;
+
+						// 查找已加载的 Document
+						var docNode = project.GetAllDocumentNodes().FirstOrDefault(n => n.Id.Value == docIdLong);
+						if (docNode == null || docNode.Document == null) return;
+
+						var document = docNode.Document;
+						if (!document._isLoaded) return;
+
+						if (!int.TryParse(e.Version, out var serverVersion) || document.Version >= serverVersion) return;
+
+						await Syncer.Pull(document);
+
+						// 在 UI 线程刷新显示
+						var mainForm = Program.MainForm;
+						if (mainForm != null && mainForm.View.IsHandleCreated)
+						{
+							mainForm.View.BeginInvoke((Action)(() =>
+							{
+								document.ReloadFromDb();
+								if (mainForm.DocumentEditors.TryGetValue(document, out var editor))
+								{
+									editor.PopulateDocument();
+								}
+							}));
+						}
+						else
+						{
+							document.ReloadFromDb();
+						}
+					}
+					catch (Exception ex)
+					{
+						ex.Log();
+					}
+				});
 				break;
 			}
 			}

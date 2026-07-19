@@ -1,6 +1,7 @@
 ﻿﻿﻿﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using C1.Win.C1Command;
 using C1.Win.C1FlexGrid;
 using C1.Win.C1SplitContainer;
 using C1.Win.C1Themes;
@@ -366,6 +367,35 @@ public static class Theme
 	public static void SetCurrentTree(Control form)
 	{
 		C1ThemeController.ApplyThemeToControlTree(form, SelectedAuditaiTheme.GetC1Theme());
+		RestoreToolBarButtonLook(form);
+	}
+
+	private static void RestoreToolBarButtonLook(Control parent)
+	{
+		// C1SplitContainer 的 Panels 集合不通过 Controls 暴露，需要单独遍历
+		if (parent is C1SplitContainer splitContainer)
+		{
+			foreach (C1SplitterPanel panel in splitContainer.Panels)
+			{
+				RestoreToolBarButtonLook(panel);
+			}
+		}
+		foreach (Control control in parent.Controls)
+		{
+			if (control is C1ToolBar toolBar && !toolBar.Horizontal)
+			{
+				toolBar.ButtonLookVert = ButtonLookFlags.TextAndImage;
+				foreach (C1CommandLink link in toolBar.CommandLinks)
+				{
+					link.ButtonLook = ButtonLookFlags.TextAndImage;
+				}
+				toolBar.Invalidate();
+			}
+			if (control.HasChildren)
+			{
+				RestoreToolBarButtonLook(control);
+			}
+		}
 	}
 
 	public static void SetCurrentObject(object control)

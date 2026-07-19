@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -211,6 +211,7 @@ public class TicketNavGrid : UserControl, ISetTheme
         Grid.AllowResizing = AllowResizingEnum.Columns;
         Grid.AllowSorting = AllowSortingEnum.None;
         Grid.FocusRect = FocusRectEnum.None;
+        Grid.Font = new Font("微软雅黑", 10.5f);
 
         Grid.Rows.Count = 0;
         Grid.Rows.Fixed = 0;
@@ -218,7 +219,7 @@ public class TicketNavGrid : UserControl, ISetTheme
         Grid.Cols.Fixed = 0;
 
         Grid.Tree.Column = 0;
-        Grid.Rows.DefaultSize = 30;
+        Grid.Rows.DefaultSize = 33;
 
         Controls.Add(Grid);
         View = Grid;
@@ -266,7 +267,6 @@ public class TicketNavGrid : UserControl, ISetTheme
         Grid.AfterCollapse += _grid_AfterCollapse;
         Grid.AfterScroll += _grid_AfterScroll;
 
-        Debug.WriteLine($"[TicketNavGrid] Constructor done: Cols.Fixed={Grid.Cols.Fixed}, Cols.Count={Grid.Cols.Count}, Rows.Fixed={Grid.Rows.Fixed}, DrawMode={Grid.DrawMode}");
     }
 
     public void Populate(TicketRecord ticket)
@@ -312,7 +312,6 @@ public class TicketNavGrid : UserControl, ISetTheme
         }
 
         gridNode.Key = node;
-        Debug.WriteLine($"[TicketNavGrid] AddNode: i={i}, Text='{node.Text}', IsVirtual={node.IsVirtualNode}, Children={node.Children.Count}, UserData after set_Key={row.UserData?.GetType().Name ?? "null"}");
 
         if (node.IsVirtualNode)
         {
@@ -338,14 +337,12 @@ public class TicketNavGrid : UserControl, ISetTheme
 
         if (Nav == null || !Nav.Any())
         {
-            Debug.WriteLine("[TicketNavGrid] MakeTree: Nav is null or empty");
             return root;
         }
 
         var hasComboList = GetContainsComboListColumn(Nav);
         var lastNavColumn = Nav.Last();
         var records = Ticket?.Records ?? new List<TicketRecord>();
-        Debug.WriteLine($"[TicketNavGrid] MakeTree: Nav.Count={Nav.Count}, hasComboList={(hasComboList != null ? hasComboList.Count.ToString() : "null")}, records.Count={records.Count}");
 
         foreach (var record in records)
         {
@@ -382,9 +379,7 @@ public class TicketNavGrid : UserControl, ISetTheme
 
         if (hasComboList != null)
         {
-            Debug.WriteLine($"[TicketNavGrid] MakeTree: before FillVirtualNode, root.Children.Count={root.Children.Count}");
             FillVirtualNode(root, hasComboList);
-            Debug.WriteLine($"[TicketNavGrid] MakeTree: after FillVirtualNode, root.Children.Count={root.Children.Count}, _hasFilledVirtualNodeCount={_hasFilledVirtualNodeCount}");
         }
 
         if (_needSortNodeList != null && _needSortNodeList.Count > 0)
@@ -400,13 +395,12 @@ public class TicketNavGrid : UserControl, ISetTheme
 
     private void FillVirtualNode(NavNode node, HashSet<Auditai.Model.Column> hasComboList)
     {
-        if (Ticket.Table.IsLocked) { Debug.WriteLine("[TicketNavGrid] FillVirtualNode: Table is locked"); return; }
-        if (IsHasFillingFormula) { Debug.WriteLine("[TicketNavGrid] FillVirtualNode: IsHasFillingFormula"); return; }
+        if (Ticket.Table.IsLocked) { return; }
+        if (IsHasFillingFormula) { return; }
 
         _isNeedFillVirtualNode = true;
-        if (!Ticket.IsAllowShowVirtualNode) { Debug.WriteLine("[TicketNavGrid] FillVirtualNode: IsAllowShowVirtualNode=false"); return; }
+        if (!Ticket.IsAllowShowVirtualNode) { return; }
         _needSortNodeList = new List<NavNode>();
-        Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: enter, Nav.Count={Nav.Count}");
 
         VirtualTable virtualTable = null;
 
@@ -420,19 +414,16 @@ public class TicketNavGrid : UserControl, ISetTheme
 
             if (referredColumns.Count == 0)
             {
-                Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}]='{column.Caption}' Branch1(no referred), calling GetComboListValue");
                 var values = GetComboListValue(column);
-                if (values == null) { Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}] GetComboListValue returned null"); continue; }
-                Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}] calling FillVirtualNavNodeValue(values, count={values.Count})");
+                if (values == null) { continue; }
                 FillVirtualNavNodeValue(node, i, values, column);
             }
             else
             {
                 if (referredColumns.Any(x => Nav.Contains(x)))
                 {
-                    Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}]='{column.Caption}' Branch2b(evaluator)");
                     var evaluator = GenerateColComboListEvaluator(column);
-                    if (evaluator == null) { Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}] evaluator=null"); continue; }
+                    if (evaluator == null) { continue; }
 
                     if (virtualTable == null)
                     {
@@ -443,7 +434,6 @@ public class TicketNavGrid : UserControl, ISetTheme
                 }
                 else
                 {
-                    Debug.WriteLine($"[TicketNavGrid] FillVirtualNode: col[{i}]='{column.Caption}' Branch2a(no Nav match), calling GetComboListValue");
                     var values = GetComboListValue(column);
                     if (values == null) continue;
                     FillVirtualNavNodeValue(node, i, values, column);
@@ -963,10 +953,8 @@ public class TicketNavGrid : UserControl, ISetTheme
             if (navNode == null)
             {
                 var nodeKey = row.Node?.Key as NavNode;
-                Debug.WriteLine($"[TicketNavGrid] BodyOwnerDrawCell: UserData null! e.Row={e.Row}, IsNode={row.IsNode}, Node?.Key.Text='{nodeKey?.Text ?? "null"}', Node={row.Node?.GetType().Name ?? "null"}");
                 return;
             }
-            Debug.WriteLine($"[TicketNavGrid] BodyOwnerDrawCell: e.Row={e.Row}, Text='{navNode.Text}', IsVirtual={navNode.IsVirtualNode}");
 
             e.Text = string.IsNullOrEmpty(navNode.Text) ? "(空)" : navNode.Text;
 
@@ -2388,11 +2376,9 @@ public class TicketNavGrid : UserControl, ISetTheme
         var project = column.Table?.Project;
         if (string.IsNullOrWhiteSpace(comboList) || project == null)
         {
-            Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', ComboList='{comboList}', Project is {(project == null ? "null" : "not null")}");
             return null;
         }
 
-        Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', ComboList='{column.GetFormat().ComboList}'");
         try
         {
             var resolver = new FormulaReferenceModelResolver(Table.Project);
@@ -2413,19 +2399,15 @@ public class TicketNavGrid : UserControl, ISetTheme
                 Env = env
             };
             var op = evaluator.EvaluateToOperand();
-            Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', operand type={op?.GetType().Name ?? "null"}");
             var result = ConvertOperandToNodeDisplayValueList(op, isNavCellCountMoreThanOne: false, out _);
-            Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', result count={result?.Count ?? 0}");
             return result;
         }
-        catch (FormulaException ex)
+        catch (FormulaException)
         {
-            Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', FormulaException: {ex.Message}");
             return null;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.WriteLine($"[TicketNavGrid] GetComboListValue: column='{column.Caption}', Exception: {ex.Message}");
             return null;
         }
     }
@@ -2549,11 +2531,9 @@ public class TicketNavGrid : UserControl, ISetTheme
     private List<Tuple<string, string>> ConvertOperandToNodeDisplayValueList(Operand op, bool isNavCellCountMoreThanOne, out TreeListOperand treeListData)
     {
         treeListData = null;
-        Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: op type={op?.GetType().Name ?? "null"}, isNavCellCountMoreThanOne={isNavCellCountMoreThanOne}");
         
         if (op is MultiListOperand)
         {
-            Debug.WriteLine("[TicketNavGrid] ConvertOperandToNodeDisplayValueList: op is MultiListOperand, return null");
             return null;
         }
         if (op is TreeListOperand treeListOperand)
@@ -2561,13 +2541,11 @@ public class TicketNavGrid : UserControl, ISetTheme
             var list = new List<Tuple<string, string>>();
             var upLevelTextQueue = new Queue<string>();
             int rootCount = treeListOperand.Roots?.Count ?? 0;
-            Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: op is TreeListOperand, roots.Count={rootCount}");
             foreach (TreeListNode root in treeListOperand.Roots)
             {
                 AddLeafNode(root, list, upLevelTextQueue);
             }
             treeListData = treeListOperand;
-            Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: TreeListOperand result count={list.Count}");
             return list;
         }
         if (op is TableListOperand tableListOperand)
@@ -2575,7 +2553,6 @@ public class TicketNavGrid : UserControl, ISetTheme
             int count = tableListOperand.DataTable.Rows.Count;
             if (tableListOperand.DataTable.Columns.Count == 0)
             {
-                Debug.WriteLine("[TicketNavGrid] ConvertOperandToNodeDisplayValueList: TableListOperand has 0 columns, return null");
                 return null;
             }
             int colCount = tableListOperand.DataTable.Columns.Count;
@@ -2607,17 +2584,14 @@ public class TicketNavGrid : UserControl, ISetTheme
                 }
                 list.Add(Tuple.Create(item2, item));
             }
-            Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: TableListOperand result count={list.Count}");
             return list;
         }
         if (op is InputListOperand inputListOperand)
         {
             var result = inputListOperand.Set.Select(tup => Tuple.Create(tup.Item2.ToString(), tup.Item2.ToString())).ToList();
-            Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: InputListOperand result count={result.Count}");
             return result;
         }
         var valueSetResult = op?.ToValueSetOrderByRowIndex()?.Set.Select(tup => Tuple.Create(tup.Item2.ToString(), tup.Item2.ToString())).ToList();
-        Debug.WriteLine($"[TicketNavGrid] ConvertOperandToNodeDisplayValueList: ValueSet result count={valueSetResult?.Count ?? 0}");
         return valueSetResult;
 
         static void AddLeafNode(TreeListNode node, List<Tuple<string, string>> outList, Queue<string> upLevelTextQueue)

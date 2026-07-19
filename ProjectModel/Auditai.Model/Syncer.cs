@@ -965,7 +965,7 @@ public static class Syncer
 			ProjectId = projectId,
 			TableVersions = tableNodes.Select((TreeTableNode n) => new { n.Id })
 		});
-		return (await WebApiClient.QueryTableVersions(request)).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
+		return (await WebApiClient.QueryTableVersions(request) ?? new JArray()).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
 	}
 
 	public static async Task<IEnumerable<Tuple<Id64, int>>> QueryVersion(Guid projectId, IEnumerable<TreeDocumentNode> docNodes)
@@ -977,7 +977,7 @@ public static class Syncer
 			ProjectId = projectId,
 			DocVersions = docNodes.Select((TreeDocumentNode n) => new { n.Id })
 		});
-		return (await WebApiClient.QueryDocumentVersions(request)).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
+		return (await WebApiClient.QueryDocumentVersions(request) ?? new JArray()).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
 	}
 
 	public static async Task<IEnumerable<Tuple<Id64, int>>> QueryVersion(Guid projectId, IEnumerable<TreeImageNode> imageNodes)
@@ -989,7 +989,7 @@ public static class Syncer
 			ProjectId = projectId,
 			ImageVersions = imageNodes.Select((TreeImageNode n) => new { n.Id })
 		});
-		return (await WebApiClient.QueryImageVersions(request)).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
+		return (await WebApiClient.QueryImageVersions(request) ?? new JArray()).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
 	}
 
 	public static async Task<IEnumerable<Tuple<Id64, int>>> QueryVersion(Guid projectId, IEnumerable<TreePdfNode> pdfNodes)
@@ -1001,7 +1001,7 @@ public static class Syncer
 			ProjectId = projectId,
 			PdfVersions = pdfNodes.Select((TreePdfNode n) => new { n.Id })
 		});
-		return (await WebApiClient.QueryPdfVersions(request)).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
+		return (await WebApiClient.QueryPdfVersions(request) ?? new JArray()).Select((JToken ele) => Tuple.Create(new Id64(ele.Value<long>("Id")), ele.Value<int>("Version")));
 	}
 
 	public static async Task<PullResult> Pull(Table table, TaskProgressValueReportCallback reportCallback = null)

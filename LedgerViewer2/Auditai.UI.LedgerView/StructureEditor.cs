@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -115,11 +115,12 @@ public class StructureEditor : ISetTheme
 		lblStructTitle.Text = "结构分析图表";
 		lblStructTitle.TextAlign = ContentAlignment.MiddleCenter;
 		pnlStructureTitle.BackColor = Color.WhiteSmoke;
-		pnlStructureTitle.Height = 30;
+		pnlStructureTitle.Height = 39;
 		pnlStructureTitle.KeepRelativeSize = false;
 		pnlStructureTitle.Location = new Point(0, 0);
+		pnlStructureTitle.MinHeight = 39;
 		pnlStructureTitle.Resizable = false;
-		pnlStructureTitle.Size = new Size(927, 30);
+		pnlStructureTitle.Size = new Size(927, 39);
 		pnlStructureTitle.SizeRatio = 3.0;
 		pnlStructureTitle.Controls.Add(lblStructTitle);
 		pnlStructureTitle.Paint += delegate(object s1, PaintEventArgs e1)
@@ -220,8 +221,7 @@ public class StructureEditor : ISetTheme
 		c1SplitterPanel.Controls.Add(value);
 		ctnStructureContent.Panels.Add(c1SplitterPanel);
 		pnlStructureContent.Height = 590;
-		pnlStructureContent.Location = new Point(0, 0);
-		pnlStructureContent.Size = new Size(927, 590);
+		pnlStructureContent.KeepRelativeSize = true;
 		pnlStructureContent.SizeRatio = 95.0;
 		pnlStructureContent.Controls.Add(ctnStructureContent);
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -314,6 +314,7 @@ public class StructureEditor : ISetTheme
 	public void SetTheme()
 	{
 		Auditai.UI.Controls.Theme.SetCurrentTree(View);
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		grdStructureTable.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdStructureTable.Styles.Fixed.Font = grdStructureTable.Font;
 		switch (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.Name)
@@ -397,6 +398,43 @@ public class StructureEditor : ISetTheme
 	private void Initialize()
 	{
 		ChartStructure.ToolTip.Content = "{y:#,0.00;-#,0.00;#}";
+		grdStructureTable.Resize += GrdStructureTable_Resize;
+	}
+
+	private void GrdStructureTable_Resize(object sender, EventArgs e)
+	{
+		AutoSizeStructureColumns();
+	}
+
+	private void AutoSizeStructureColumns()
+	{
+		if (grdStructureTable == null || grdStructureTable.Cols.Count <= grdStructureTable.Cols.Fixed)
+		{
+			return;
+		}
+		int clientWidth = grdStructureTable.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < grdStructureTable.Cols.Fixed; i++)
+			fixedWidth += grdStructureTable.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "Name", "Amount", "Ratio" };
+		double[] ratios = { 0.08, 0.42, 0.30, 0.20 };
+		grdStructureTable.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdStructureTable.Cols.Contains(colNames[i]) && grdStructureTable.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 40) width = 40;
+					grdStructureTable.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { grdStructureTable.EndUpdate(); }
 	}
 
 	private void BindContexMenu()
@@ -562,6 +600,7 @@ public class StructureEditor : ISetTheme
 		{
 			PendingAllEvent = false;
 			grdStructureTable.EndUpdate();
+			AutoSizeStructureColumns();
 		}
 	}
 

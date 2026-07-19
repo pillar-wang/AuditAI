@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -507,7 +507,6 @@ namespace Auditai.LocalDataStore
                 if (File.Exists(expectedPath))
                 {
                     File.Delete(expectedPath);
-                    System.Diagnostics.Debug.WriteLine($"[DeleteTemplate] 已按文件名删除: {expectedPath}");
                     return;
                 }
 
@@ -533,15 +532,12 @@ namespace Auditai.LocalDataStore
                         if (idFromDb == templateId)
                         {
                             found = true;
-                            System.Diagnostics.Debug.WriteLine($"[DeleteTemplate] 找到模板文件: {dbFile}, Id={idFromDb}");
                             File.Delete(dbFile);
-                            System.Diagnostics.Debug.WriteLine($"[DeleteTemplate] 模板文件已删除: {dbFile}");
                             return;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[DeleteTemplate] 处理文件 {dbFile} 时出错: {ex.Message}");
                     }
                 }
 

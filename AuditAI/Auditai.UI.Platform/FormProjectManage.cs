@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -690,6 +690,7 @@ public class FormProjectManage : ISetTheme
 		_grid.MouseDown += _grid_MouseDown;
 		_grid.CellChecked += _grid_CellChecked;
 		_grid.Paint += _grid_Paint;
+		_grid.Resize += _grid_Resize;
 		c1SplitterPanel.Controls.Add(_grid);
 		_tile = new C1TileControlEx
 		{
@@ -1011,7 +1012,7 @@ public class FormProjectManage : ISetTheme
 					progressRuntimeData.UpdateMessage("正在获取回收" + StringConstBase.Current.Project + "信息，请稍候...");
 					progressRuntimeData.UpdateProgress(0.8f);
 					var recycleProjects = await Auditai.LocalDataStore.StorageRouter.GetRecycleProjects();
-					projectList = recycleProjects.Where((Auditai.DTO.Project p) => p.Type == ProjectType.Project);
+					projectList = (recycleProjects ?? Enumerable.Empty<Auditai.DTO.Project>()).Where((Auditai.DTO.Project p) => p.Type == ProjectType.Project);
 				}
 				else
 				{
@@ -1019,7 +1020,7 @@ public class FormProjectManage : ISetTheme
 					progressRuntimeData.UpdateMessage("正在获取回收" + StringConstBase.Current.Template + "信息，请稍候...");
 					progressRuntimeData.UpdateProgress(0.8f);
 					var recycleProjects = await Auditai.LocalDataStore.StorageRouter.GetRecycleProjects();
-					projectList = recycleProjects.Where((Auditai.DTO.Project p) => p.Type == ProjectType.Template);
+					projectList = (recycleProjects ?? Enumerable.Empty<Auditai.DTO.Project>()).Where((Auditai.DTO.Project p) => p.Type == ProjectType.Template);
 				}
 			});
 			_projects.Clear();
@@ -1053,6 +1054,77 @@ public class FormProjectManage : ISetTheme
 		{
 			_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.RemoveProject16, Resources.RemoveProject24);
 			_form.Text = StringConstBase.Current.Template + "回收站";
+		}
+	}
+
+	private void _grid_Resize(object sender, EventArgs e)
+	{
+		AutoSizeGridColumns();
+	}
+
+	private void AutoSizeGridColumns()
+	{
+		if (_grid == null || _grid.Cols.Count <= _grid.Cols.Fixed || _grid.Visible == false)
+		{
+			return;
+		}
+		int clientWidth = _grid.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < _grid.Cols.Fixed; i++)
+			fixedWidth += _grid.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "CN_CHECK", "CN_PROJNUM", "CN_PROJNAME", "CN_PROJCAT", "CN_PROJAUDITEE", "CN_CREATOR", "CN_PROJLEADER", "CN_PROJASSIST", "CN_PROJCHECK", "CN_TMPLEDITOR", "CN_TMPLUSER", "CN_PROJNOTE" };
+		double[] ratios = { 0.05, 0.09, 0.18, 0.08, 0.12, 0.08, 0.08, 0.08, 0.08, 0.10, 0.10, 0.10 };
+		double totalRatio = 0;
+		for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+		{
+			if (_grid.Cols.Contains(colNames[i]) && _grid.Cols[colNames[i]].Visible && _grid.Cols[colNames[i]].Width > 1)
+			{
+				totalRatio += ratios[i];
+			}
+		}
+		if (totalRatio <= 0) return;
+		_grid.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (_grid.Cols.Contains(colNames[i]) && _grid.Cols[colNames[i]].Visible && _grid.Cols[colNames[i]].Width > 1)
+				{
+					int width = (int)(availableWidth * ratios[i] / totalRatio);
+					if (width < 40) width = 40;
+					_grid.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { _grid.EndUpdate(); }
+	}
+
+	private void SetMinColumnWidths()
+	{
+		var minWidths = new Dictionary<string, int>
+		{
+			{ "CN_PROJNUM", 100 },
+			{ "CN_PROJNAME", 150 },
+			{ "CN_PROJCAT", 80 },
+			{ "CN_PROJAUDITEE", 120 },
+			{ "CN_CREATOR", 80 },
+			{ "CN_PROJLEADER", 80 },
+			{ "CN_PROJASSIST", 80 },
+			{ "CN_PROJCHECK", 80 },
+			{ "CN_TMPLEDITOR", 120 },
+			{ "CN_TMPLUSER", 120 },
+			{ "CN_PROJNOTE", 80 }
+		};
+		foreach (var kvp in minWidths)
+		{
+			var col = _grid.Cols[kvp.Key];
+			if (col != null && col.Width < kvp.Value)
+			{
+				col.Width = kvp.Value;
+			}
 		}
 	}
 
@@ -1166,8 +1238,10 @@ public class FormProjectManage : ISetTheme
 		_grid.Cols["CN_PROJNOTE"].Width = 1;
 		_grid.EndUpdate();
 		_grid.BeginUpdate();
+		SetMinColumnWidths();
 		_grid.AutoSizeCols();
 		_grid.EndUpdate();
+		AutoSizeGridColumns();
 		void AddProject(Auditai.DTO.Project p)
 		{
 			if (!marked[p])
@@ -1570,9 +1644,8 @@ public class FormProjectManage : ISetTheme
 				var msg = new NotifyMessage { Kind = "newproject", Value = project.Id.ToString() };
 				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
 			}
 		}
 		catch (HttpRequestException ex)
@@ -1905,9 +1978,8 @@ public class FormProjectManage : ISetTheme
 				var msg = new NotifyMessage { Kind = "newproject", Value = newProject.Id.ToString() };
 				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
 			}
 		}
 		catch (HttpRequestException ex)
@@ -2055,6 +2127,18 @@ public class FormProjectManage : ISetTheme
 			if (sfd.ShowDialog() != DialogResult.OK) return;
 			try
 			{
+				// 服务端模式下，本地可能无 .db 缓存或缓存已过期（OpenProjectDb 会强制删除重下），
+				// 必须先调用 OpenProjectDb_DownloadIfNotExist 拉取最新 .db 到本地，再执行归档导出。
+				if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+				{
+					var downloaded = await Program.MainForm.OpenProjectDb_DownloadIfNotExist(selected);
+					if (downloaded == null)
+					{
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+							"无法从服务器下载项目数据，导出已取消。", MessageBoxButtons.OK, "导出失败");
+						return;
+					}
+				}
 				await Task.Run(() => ProjectArchive.Export(selected, sfd.FileName));
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
 					$"项目导出成功！\n文件路径：{sfd.FileName}\n\n可将此文件发送给其他人员，通过\"导入项目\"功能打开。",
@@ -2096,8 +2180,8 @@ public class FormProjectManage : ISetTheme
 					$"确认导入以下项目？\n\n{preview}", MessageBoxButtons.OKCancel, "导入项目确认") != DialogResult.OK)
 					return;
 
-				// 执行导入
-				var newProject = await Task.Run(() => ProjectArchive.Import(ofd.FileName));
+				// 执行导入（本地模式：File.Copy + SQLite 写入；服务端模式：HTTP 上传 .db 流）
+				var newProject = await Task.Run(async () => await ProjectArchive.ImportAsync(ofd.FileName));
 				await Populate();
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
 					$"项目导入成功！\n新项目名称：{newProject.Name}", MessageBoxButtons.OK, "导入完成");
@@ -2168,9 +2252,8 @@ public class FormProjectManage : ISetTheme
 				var msg = new NotifyMessage { Kind = "newproject", Value = newTemplate.Id.ToString() };
 				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
 			}
 		}
 		catch (HttpRequestException ex)
@@ -2341,9 +2424,8 @@ public class FormProjectManage : ISetTheme
 				var msg = new NotifyMessage { Kind = "newproject", Value = newTemplate.Id.ToString() };
 				_ = SignalRClient.BroadcastToTeamUsers(msg.ToString());
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				System.Diagnostics.Debug.WriteLine($"Broadcast failed: {ex.Message}");
 			}
 		}
 		catch (HttpRequestException ex)

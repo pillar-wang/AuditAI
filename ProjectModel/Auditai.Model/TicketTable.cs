@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Auditai.DTO;
@@ -9,7 +9,7 @@ namespace Auditai.Model;
 [JsonObject]
 public class TicketTable
 {
-	private int _dataRowHeight = 30;
+	private int _dataRowHeight = 36;
 
 	private List<TicketRecord> _records = new List<TicketRecord>();
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -89,8 +89,8 @@ public class frmCustomFillConfig : C1RibbonForm
 	private void InitializeComponent()
 	{
 		Text = "自定义填充配置";
-		Size = new Size(1200, 600);
-		MinimumSize = new Size(900, 400);
+		Size = new Size(1250, 625);
+		MinimumSize = new Size(935, 415);
 		StartPosition = FormStartPosition.CenterParent;
 		FormBorderStyle = FormBorderStyle.Sizable;
 		MaximizeBox = true;
@@ -396,14 +396,14 @@ public class frmCustomFillConfig : C1RibbonForm
 
 		var lblTitle = new Label
 		{
-			Left = 8, Top = 8, Width = 300, Height = 20,
+			Left = 10, Top = 10, Width = 390, Height = 26,
 			Font = new Font(Font, FontStyle.Bold),
 			Text = col == ColTarget ? "请选择目标位置..." : "请选择条件源位置..."
 		};
 
 		_selModeLabel = new Label
 		{
-			Left = 8, Top = 32, Width = 300, Height = 24,
+			Left = 10, Top = 42, Width = 390, Height = 31,
 			Font = new Font(Font, FontStyle.Bold),
 			ForeColor = Color.Blue,
 			Text = "当前选区: （请在表格中选择）"
@@ -411,14 +411,14 @@ public class frmCustomFillConfig : C1RibbonForm
 
 		var lblHint = new Label
 		{
-			Left = 8, Top = 60, Width = 300, Height = 20,
+			Left = 10, Top = 78, Width = 390, Height = 26,
 			ForeColor = Color.Gray,
 			Text = "在表格中拖选单元格区域，然后点击确认"
 		};
 
 		_selModeOk = new Button
 		{
-			Left = 160, Top = 84, Width = 70, Height = 26,
+			Left = 208, Top = 109, Width = 91, Height = 34,
 			Text = "确认",
 			Enabled = false
 		};
@@ -426,7 +426,7 @@ public class frmCustomFillConfig : C1RibbonForm
 
 		_selModeCancel = new Button
 		{
-			Left = 238, Top = 84, Width = 70, Height = 26,
+			Left = 309, Top = 109, Width = 91, Height = 34,
 			Text = "取消"
 		};
 		_selModeCancel.Click += (s, e) => CancelSelectionMode();
@@ -436,7 +436,7 @@ public class frmCustomFillConfig : C1RibbonForm
 		Controls.Add(selPanel);
 
 		// 缩小窗口
-		Size = new Size(320, 150);
+		Size = new Size(416, 195);
 		TopMost = true;
 		// 保持窗口在屏幕上方
 		if (Location.Y > 100)

@@ -1,4 +1,4 @@
-using FileTransferModel;
+﻿﻿﻿﻿using FileTransferModel;
 
 namespace Auditai.SignalR;
 
@@ -23,4 +23,10 @@ public class MessageReceivedEventArgs
 	public FileSection FileSection { get; set; }
 
 	public string TicketNavTreeNodePath { get; set; }
+
+	public string TableId { get; set; }
+
+	public string DocumentId { get; set; }
+
+	public string Version { get; set; }
 }

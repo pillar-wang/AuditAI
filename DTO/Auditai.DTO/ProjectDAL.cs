@@ -1,4 +1,5 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.Collections.Generic;
+﻿﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Threading.Tasks;
 using Dapper;
@@ -6,13 +7,15 @@ using Newtonsoft.Json;
 
 namespace Auditai.DTO;
 
-public class ProjectDAL
+public class ProjectDAL : IDisposable
 {
 	private readonly SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
 
 	private int _transactionDepth;
 
 	private SQLiteTransaction _transaction;
+
+	private bool _disposed;
 
 	public static readonly string DefaultPermissions;
 
@@ -35,16 +38,94 @@ public class ProjectDAL
 		});
 		SqlMapper.AddTypeHandler(new BinaryValueDapperHandler());
 		SqlMapper.AddTypeHandler(new Id64DapperHandler());
+		SqlMapper.AddTypeHandler(new GuidDapperHandler());
 	}
 
 	public ProjectDAL(string fileName)
 	{
 		connectionStringBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
-		connectionStringBuilder.SyncMode = SynchronizationModes.Off;
+		// 关键修复：必须使用 Normal 而非 Off。
+		// Off 模式下 SQLite 不调用 fsync，程序异常终止（调试器停止、断电、kill 进程）时
+		// 未刷写的数据会丢失，-wal 文件可能损坏，下次打开会导致整个 .db 不可读
+		// （表现为"一个表损坏，其他表也打不开"，因为它们共享同一个 .db 文件）。
+		// Normal 模式在关键检查点刷盘，兼顾性能与安全。
+		connectionStringBuilder.SyncMode = SynchronizationModes.Normal;
 		connectionStringBuilder.DataSource = fileName;
 		SetPragma();
 		CreateConfig();
 		UpdateSchema();
+		// 启动时执行 WAL checkpoint，合并上次异常退出可能遗留的 -wal 文件，
+		// 避免下次打开时因 -wal 损坏导致整个数据库不可读。
+		RecoverWalIfNeeded();
+	}
+
+	/// <summary>
+	/// 启动时恢复 WAL：将可能遗留的 -wal 合并到主数据库，并清理 -shm/-wal 文件。
+	/// 若 checkpoint 失败（说明 -wal 已损坏），尝试重置 WAL 以挽救主数据库。
+	/// </summary>
+	private void RecoverWalIfNeeded()
+	{
+		try
+		{
+			using SQLiteConnection cnn = GetConnection();
+			// TRUNCATE 模式：合并后将 -wal 截断为 0 字节
+			int result = cnn.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
+			// result: 0=ok, 1=busy(有读者), 2=lock-error
+			// 在启动场景下一般返回 0；若非 0 再尝试一次 PASSIVE
+			if (result != 0)
+			{
+				try { cnn.Execute("PRAGMA wal_checkpoint(PASSIVE);"); } catch { }
+			}
+		}
+		catch
+		{
+			// checkpoint 失败通常意味着 -wal 文件已损坏。
+			// 尝试禁用再启用 WAL，强制 SQLite 重建 -wal 文件。
+			try
+			{
+				using SQLiteConnection cnn2 = GetConnection();
+				cnn2.Execute("PRAGMA journal_mode=DELETE;");
+				cnn2.Execute("PRAGMA journal_mode=WAL;");
+			}
+			catch
+			{
+				// 若仍失败，记录但不抛出 —— 后续查询若失败会在业务层被捕获
+			}
+		}
+	}
+
+	/// <summary>
+	/// 执行 WAL checkpoint，将 -wal 数据合并到主 .db 文件。
+	/// 应在程序正常退出前调用，避免异常终止后 -wal 残留导致数据库损坏。
+	/// </summary>
+	public void CheckpointAndClose()
+	{
+		if (_disposed) return;
+		try
+		{
+			// 先回滚任何未提交的事务，避免悬挂
+			if (_transaction != null)
+			{
+				try { _transaction.Rollback(); } catch { }
+				try { _transaction.Connection?.Close(); } catch { }
+				_transaction = null;
+				_transactionDepth = 0;
+			}
+			using SQLiteConnection cnn = GetConnection();
+			try
+			{
+				cnn.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
+			}
+			catch { /* checkpoint 失败不阻断退出 */ }
+		}
+		catch { /* 退出清理失败不应抛出 */ }
+	}
+
+	public void Dispose()
+	{
+		if (_disposed) return;
+		_disposed = true;
+		CheckpointAndClose();
 	}
 
 	public void BeginTransaction()
@@ -272,6 +353,7 @@ public class ProjectDAL
 			num = 29;
 			sQLiteConnection.Execute("CREATE INDEX `idx_Cell_RowId` ON `Cell` (`RowId`)");
 			sQLiteConnection.Execute("CREATE INDEX `idx_Row_TableId` ON `Row` (`TableId`)");
+			sQLiteConnection.Execute("CREATE INDEX `idx_Column_TableId` ON `Column` (`TableId`)");
 		}
 		if (num == 29)
 		{
@@ -355,6 +437,11 @@ public class ProjectDAL
 		{
 			num = 43;
 			sQLiteConnection.Execute("ALTER TABLE `table` ADD COLUMN `ControlFormula` TEXT NOT NULL DEFAULT ''");
+		}
+		if (num == 43)
+		{
+			num = 44;
+			sQLiteConnection.Execute("CREATE INDEX IF NOT EXISTS `idx_Column_TableId` ON `Column` (`TableId`)");
 		}
 		// 自定义表格边框样式迁移
 		try

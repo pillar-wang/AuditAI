@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -342,13 +342,14 @@ public class FormulaEditor : ISetTheme
 			ReadOnly = true,
 			VerticalAlign = VerticalAlignEnum.Middle,
 			WordWrap = false,
-			ScrollBars = ScrollBars.None
+			ScrollBars = ScrollBars.None,
+			Font = new Font("微软雅黑", 10.5f)
 		};
 		_pnlSourceCell = new C1SplitterPanel
 		{
 			Dock = PanelDockStyle.Left,
 			KeepRelativeSize = false,
-			Width = 200,
+			Width = 250,
 			Resizable = false,
 			BackColor = Color.Transparent,
 			BorderWidth = 0,
@@ -359,7 +360,8 @@ public class FormulaEditor : ISetTheme
 		btnSelector = new C1ButtonEx_SupportSelfBorder
 		{
 			Text = "函数",
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			Font = new Font("微软雅黑", 10.5f)
 		};
 		btnSelector.Click += Button_Click;
 		_functionSelectDropDownForm = new FunctionSelector();
@@ -375,7 +377,7 @@ public class FormulaEditor : ISetTheme
 		{
 			Dock = PanelDockStyle.Left,
 			KeepRelativeSize = false,
-			Width = 50,
+			Width = 60,
 			Resizable = false,
 			BackColor = Color.Transparent,
 			BorderWidth = 0
@@ -493,11 +495,11 @@ public class FormulaEditor : ISetTheme
 			{
 				x = 0;
 			}
-			_containerSourceCell.Width = 200;
+			_containerSourceCell.Width = 250;
 			_containerSourceCell.Height = View.Height;
 			_containerSourceCell.Location = new Point(x, 0);
 			x = _containerSourceCell.Location.X + _containerSourceCell.Width + 2;
-			_containerSelectorButton.Width = 50;
+			_containerSelectorButton.Width = 60;
 			_containerSelectorButton.Height = View.Height;
 			_containerSelectorButton.Location = new Point(x, 0);
 			x = _containerSelectorButton.Location.X + _containerSelectorButton.Width + 2;

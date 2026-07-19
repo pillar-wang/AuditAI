@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -500,7 +500,7 @@ public class MainForm
 			Dock = PanelDockStyle.Top,
 			KeepRelativeSize = false,
 			Resizable = false,
-			Height = 2,
+			Height = 3,
 			BackColor = Color.White
 		};
 		pnlCtnAllParent = new C1SplitterPanel
@@ -557,10 +557,10 @@ public class MainForm
 		{
 			Dock = PanelDockStyle.Top,
 			Resizable = false,
-			Height = 31,
+			Height = 41,
 			KeepRelativeSize = false,
 			Collapsible = false,
-			MinHeight = 31
+			MinHeight = 41
 		};
 		pnlFormula.Controls.Add(FormulaEditor.View);
 		pnlFormula.Paint += PnlFormula_Paint;
@@ -856,11 +856,10 @@ public class MainForm
 			try
 			{
 				await Syncer.Push(table).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("Auto Push (table) failed: " + ex.Message);
-			}
+		}
+		catch (Exception)
+		{
+		}
 		};
 	}
 
@@ -876,11 +875,10 @@ public class MainForm
 			try
 			{
 				await Syncer.Push(document).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("Auto Push (document) failed: " + ex.Message);
-			}
+		}
+		catch (Exception)
+		{
+		}
 		};
 	}
 
@@ -916,10 +914,9 @@ public class MainForm
 			// 在 UI 线程异步等待，避免阻塞；Pull 内部 Merge 也在 UI 线程执行，避免与视图竞态
 			await Syncer.Pull(proj).ConfigureAwait(true);
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			// 记录日志，不显示给用户
-			Debug.WriteLine($"Auto Pull failed: {ex.Message}");
 		}
 	}
 
@@ -1143,7 +1140,8 @@ public class MainForm
 						fileName = templatePath;
 					}
 				}
-				if (File.Exists(fileName))
+				// 服务端模式下始终从服务器重新下载最新数据，避免本地缓存过期导致数据不一致
+				if (Auditai.LocalDataStore.StorageRouter.IsLocalMode && File.Exists(fileName))
 				{
 					try
 					{
@@ -1160,6 +1158,11 @@ public class MainForm
 				{
 					try
 					{
+						// 服务端模式：删除可能存在的旧缓存，强制重新下载
+						if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && File.Exists(fileName))
+						{
+							try { File.Delete(fileName); } catch { }
+						}
 						TaskProgressValueUpdater taskProgressValueUpdater = new TaskProgressValueUpdater(0f, 0.8f, progressUpdater.UpdateProgress);
 						TaskProgressValueUpdater downloadProgressUpdater = new TaskProgressValueUpdater(0.8f, 0.1f, progressUpdater.UpdateProgress);
 						TaskProgressValueUpdater openProgressUpdater = new TaskProgressValueUpdater(0.9f, 0.1f, progressUpdater.UpdateProgress);
@@ -1201,6 +1204,10 @@ public class MainForm
 						else
 						{
 							Tuple<Stream, int> tup = await WebApiClient.PullProjectDirect(dto.Id, taskProgressValueUpdater.UpdateProgress).ConfigureAwait(continueOnCapturedContext: false);
+							if (tup.Item2 <= 0)
+							{
+								throw new InvalidOperationException("服务器返回的项目数据库大小为 0，可能项目尚未同步");
+							}
 							string tempFile = Path.GetTempFileName();
 							using (Stream stream = tup.Item1)
 							{
@@ -1214,7 +1221,7 @@ public class MainForm
 									lenRead = await stream.ReadAsync(buf, 0, 4096);
 									await fs.WriteAsync(buf, 0, lenRead);
 									total += lenRead;
-									int num = (int)((double)total / (double)tup.Item2 * 100.0);
+									int num = tup.Item2 > 0 ? (int)((double)total / (double)tup.Item2 * 100.0) : 100;
 									if (num > displayPercent)
 									{
 										displayPercent = num;
@@ -1984,6 +1991,9 @@ public class MainForm
 		}
 		RecentProjects.Remove(p.Id);
 		PopulateRecents();
+		// 关闭单个项目时也执行 WAL checkpoint，确保该项目 .db 的 -wal 数据落盘。
+		// 避免后续异常退出时该项目的 -wal 残留导致数据库损坏。
+		try { p?.Dal?.CheckpointAndClose(); } catch { }
 		if (p == CurrentProject)
 		{
 			await OpenOrSwitchToProject(RecentProjects.Last().Key);
@@ -5403,6 +5413,10 @@ public class MainForm
 
 	private void View_FormClosed(object sender, FormClosedEventArgs e)
 	{
+		// 窗体关闭时先清理数据库（WAL checkpoint），再触发 ApplicationExit。
+		// 这保证了即使在 ApplicationExit 事件中未能清理，这里也已经完成。
+		// 对应场景：用户通过 ALT+F4 或关闭按钮退出，或调试器停止触发窗体关闭。
+		try { Program.CleanupProjectDatabases(); } catch { }
 		Program.ApplicationExit();
 	}
 
@@ -5869,7 +5883,7 @@ public class MainForm
 		}
 		else
 		{
-			pnlFormula.Height = 31;
+			pnlFormula.Height = 41;
 		}
 	}
 

@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1FlexGrid;
@@ -348,7 +348,7 @@ namespace Auditai.UI.Controls
                     {
                         int absCol = c + _grid.Cols.Fixed;
                         _grid[0, absCol] = data[0, c] ?? $"列{c + 1}";
-                        _grid.Cols[absCol].Width = 100;
+                        _grid.Cols[absCol].Width = 120;
                     }
                 }
 

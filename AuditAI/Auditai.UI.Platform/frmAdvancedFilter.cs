@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -67,23 +67,23 @@ public class frmAdvancedFilter : C1RibbonForm
         _gridConditions.BackColor = Color.White;
         _gridConditions.Cols.Count = 5;
         _gridConditions.Cols[0].Caption = "列名";
-        _gridConditions.Cols[0].Width = 120;
+        _gridConditions.Cols[0].Width = 156;
         _gridConditions.Cols[1].Caption = "运算符";
-        _gridConditions.Cols[1].Width = 90;
+        _gridConditions.Cols[1].Width = 117;
         _gridConditions.Cols[2].Caption = "值1";
-        _gridConditions.Cols[2].Width = 100;
+        _gridConditions.Cols[2].Width = 130;
         _gridConditions.Cols[3].Caption = "值2";
-        _gridConditions.Cols[3].Width = 100;
+        _gridConditions.Cols[3].Width = 130;
         _gridConditions.Cols[4].Caption = "逻辑关系";
-        _gridConditions.Cols[4].Width = 70;
+        _gridConditions.Cols[4].Width = 91;
         // 设置运算符和逻辑关系列为下拉选择（管道符分隔）
         _gridConditions.Cols[1].ComboList = string.Join("|", _operators);
         _gridConditions.Cols[4].ComboList = "And|Or";
-        _gridConditions.Location = new Point(12, 12);
+        _gridConditions.Location = new Point(16, 16);
         _gridConditions.Name = "_gridConditions";
         _gridConditions.Rows.Count = 1;
         _gridConditions.Rows.Fixed = 1;
-        _gridConditions.Size = new Size(580, 380);
+        _gridConditions.Size = new Size(754, 494);
         _gridConditions.TabIndex = 0;
         _gridConditions.AfterEdit += _gridConditions_AfterEdit;
         _gridConditions.SetupEditor += _gridConditions_SetupEditor;
@@ -95,9 +95,9 @@ public class frmAdvancedFilter : C1RibbonForm
         _lblPreviewStats.BorderStyle = BorderStyle.None;
         _lblPreviewStats.Font = new Font("Noto Sans SC", 9f, FontStyle.Bold);
         _lblPreviewStats.ForeColor = Color.Black;
-        _lblPreviewStats.Location = new Point(600, 12);
+        _lblPreviewStats.Location = new Point(780, 16);
         _lblPreviewStats.Name = "_lblPreviewStats";
-        _lblPreviewStats.Size = new Size(270, 20);
+        _lblPreviewStats.Size = new Size(351, 26);
         _lblPreviewStats.TabIndex = 1;
         _lblPreviewStats.Text = "满足条件的行数: 0 行";
         _lblPreviewStats.TextDetached = true;
@@ -109,17 +109,17 @@ public class frmAdvancedFilter : C1RibbonForm
         _gridPreview.AllowSorting = AllowSortingEnum.None;
         _gridPreview.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         _gridPreview.BackColor = Color.White;
-        _gridPreview.Location = new Point(600, 40);
+        _gridPreview.Location = new Point(780, 52);
         _gridPreview.Name = "_gridPreview";
-        _gridPreview.Size = new Size(270, 270);
+        _gridPreview.Size = new Size(351, 351);
         _gridPreview.TabIndex = 2;
 
         // 添加条件按钮
         _btnAddCondition = new C1Button();
         _btnAddCondition.Font = new Font("Noto Sans SC", 9f);
-        _btnAddCondition.Location = new Point(12, 400);
+        _btnAddCondition.Location = new Point(16, 520);
         _btnAddCondition.Name = "_btnAddCondition";
-        _btnAddCondition.Size = new Size(90, 30);
+        _btnAddCondition.Size = new Size(117, 39);
         _btnAddCondition.TabIndex = 3;
         _btnAddCondition.Text = "添加条件";
         _btnAddCondition.UseVisualStyleBackColor = true;
@@ -128,9 +128,9 @@ public class frmAdvancedFilter : C1RibbonForm
         // 删除条件按钮
         _btnDeleteCondition = new C1Button();
         _btnDeleteCondition.Font = new Font("Noto Sans SC", 9f);
-        _btnDeleteCondition.Location = new Point(108, 400);
+        _btnDeleteCondition.Location = new Point(140, 520);
         _btnDeleteCondition.Name = "_btnDeleteCondition";
-        _btnDeleteCondition.Size = new Size(90, 30);
+        _btnDeleteCondition.Size = new Size(117, 39);
         _btnDeleteCondition.TabIndex = 4;
         _btnDeleteCondition.Text = "删除条件";
         _btnDeleteCondition.UseVisualStyleBackColor = true;
@@ -139,9 +139,9 @@ public class frmAdvancedFilter : C1RibbonForm
         // 清除所有条件按钮
         _btnClearAll = new C1Button();
         _btnClearAll.Font = new Font("Noto Sans SC", 9f);
-        _btnClearAll.Location = new Point(204, 400);
+        _btnClearAll.Location = new Point(265, 520);
         _btnClearAll.Name = "_btnClearAll";
-        _btnClearAll.Size = new Size(110, 30);
+        _btnClearAll.Size = new Size(143, 39);
         _btnClearAll.TabIndex = 5;
         _btnClearAll.Text = "清除所有条件";
         _btnClearAll.UseVisualStyleBackColor = true;
@@ -150,9 +150,9 @@ public class frmAdvancedFilter : C1RibbonForm
         // 预览按钮
         _btnPreview = new C1Button();
         _btnPreview.Font = new Font("Noto Sans SC", 9f);
-        _btnPreview.Location = new Point(600, 320);
+        _btnPreview.Location = new Point(780, 416);
         _btnPreview.Name = "_btnPreview";
-        _btnPreview.Size = new Size(90, 30);
+        _btnPreview.Size = new Size(117, 39);
         _btnPreview.TabIndex = 6;
         _btnPreview.Text = "预览";
         _btnPreview.UseVisualStyleBackColor = true;
@@ -162,9 +162,9 @@ public class frmAdvancedFilter : C1RibbonForm
         _btnOk = new C1Button();
         _btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         _btnOk.Font = new Font("Noto Sans SC", 9f);
-        _btnOk.Location = new Point(696, 530);
+        _btnOk.Location = new Point(905, 689);
         _btnOk.Name = "_btnOk";
-        _btnOk.Size = new Size(87, 33);
+        _btnOk.Size = new Size(113, 43);
         _btnOk.TabIndex = 7;
         _btnOk.Text = "确定";
         _btnOk.UseVisualStyleBackColor = true;
@@ -174,9 +174,9 @@ public class frmAdvancedFilter : C1RibbonForm
         _btnCancel = new C1Button();
         _btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         _btnCancel.Font = new Font("Noto Sans SC", 9f);
-        _btnCancel.Location = new Point(789, 530);
+        _btnCancel.Location = new Point(1026, 689);
         _btnCancel.Name = "_btnCancel";
-        _btnCancel.Size = new Size(87, 33);
+        _btnCancel.Size = new Size(113, 43);
         _btnCancel.TabIndex = 8;
         _btnCancel.Text = "取消";
         _btnCancel.UseVisualStyleBackColor = true;
@@ -185,7 +185,7 @@ public class frmAdvancedFilter : C1RibbonForm
         // frmAdvancedFilter
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(890, 575);
+        this.ClientSize = new Size(1157, 748);
         this.Controls.Add(this._gridConditions);
         this.Controls.Add(this._lblPreviewStats);
         this.Controls.Add(this._gridPreview);

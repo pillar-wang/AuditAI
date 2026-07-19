@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -113,7 +113,7 @@ public class LedgerDefaultPanel : ISetTheme
 		IsBalloon = true
 	};
 
-	private Font titleFont = new Font("微软雅黑", 9f, FontStyle.Regular);
+	private Font titleFont = new Font("微软雅黑", 10.5f, FontStyle.Regular);
 
 	private Tile SelectedTile
 	{
@@ -1141,8 +1141,8 @@ public class LedgerDefaultPanel : ISetTheme
 		{
 			Tag = tileInfo,
 			Text = text,
-			VerticalSize = 4,
-			HorizontalSize = 5,
+			VerticalSize = 8,
+			HorizontalSize = 9,
 			Template = _fileTemplate,
 			Image1 = image,
 			ForeColor1 = Color.Red
@@ -1155,55 +1155,43 @@ public class LedgerDefaultPanel : ISetTheme
 		template.Description = "Win32";
 		PanelElement panelElement = new PanelElement();
 		panelElement.Alignment = ContentAlignment.TopRight;
-		panelElement.FixedHeight = 30;
-		panelElement.FixedWidth = 40;
-		panelElement.Margin = new Padding(0, 3, 3, 0);
+		panelElement.FixedHeight = 20;
+		panelElement.FixedWidth = 32;
+		panelElement.Margin = new Padding(0, 2, 2, 0);
 		ImageElement imageElement = new ImageElement();
 		imageElement.AlignmentOfContents = ContentAlignment.TopRight;
 		imageElement.ColumnIndex = 30;
-		imageElement.FixedWidth = 40;
+		imageElement.FixedWidth = 20;
 		imageElement.ImageSelector = ImageSelector.Image2;
 		panelElement.Children.Add(imageElement);
 		PanelElement panelElement2 = new PanelElement();
-		panelElement2.FixedHeight = 40;
-		panelElement2.FixedWidth = 130;
+		panelElement2.FixedHeight = 48;
+		panelElement2.FixedWidth = 48;
+		panelElement2.Margin = new Padding(0, 14, 0, 0);
 		panelElement2.Alignment = ContentAlignment.TopCenter;
+		ImageElement imageElement2 = new ImageElement();
+		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
+		imageElement2.FixedHeight = 48;
+		imageElement2.FixedWidth = 48;
+		imageElement2.ImageSelector = ImageSelector.Image1;
+		panelElement2.Children.Add(imageElement2);
+		PanelElement panelElement3 = new PanelElement();
+		panelElement3.FixedHeight = 42;
+		panelElement3.FixedWidth = 170;
+		panelElement3.Alignment = ContentAlignment.BottomCenter;
 		TextElement textElement = new TextElement();
 		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.SingleLine = false;
-		textElement.FixedHeight = 40;
-		textElement.FixedWidth = 130;
-		textElement.Margin = new Padding(0, 5, 0, 0);
+		textElement.FixedHeight = 42;
+		textElement.FixedWidth = 170;
+		textElement.Margin = new Padding(0, 0, 0, 8);
 		textElement.TextSelector = TextSelector.Text1;
 		textElement.ForeColorSelector = ForeColorSelector.ForeColor1;
-		panelElement2.Children.Add(textElement);
-		PanelElement panelElement3 = new PanelElement();
-		panelElement3.FixedHeight = 50;
-		panelElement3.FixedWidth = 50;
-		panelElement3.Margin = new Padding(0, 30, 0, 0);
-		panelElement3.Alignment = ContentAlignment.TopCenter;
-		ImageElement imageElement2 = new ImageElement();
-		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement2.FixedHeight = 50;
-		imageElement2.FixedWidth = 50;
-		imageElement2.ImageSelector = ImageSelector.Image1;
-		panelElement3.Children.Add(imageElement2);
-		PanelElement panelElement4 = new PanelElement();
-		panelElement4.FixedHeight = 50;
-		panelElement4.FixedWidth = 150;
-		panelElement4.Alignment = ContentAlignment.BottomCenter;
-		TextElement textElement2 = new TextElement();
-		textElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		textElement2.TextTrimming = TextTrimming.EndEllipsis;
-		textElement2.SingleLine = false;
-		textElement2.FixedHeight = 50;
-		textElement2.FixedWidth = 150;
-		panelElement4.Children.Add(textElement2);
+		panelElement3.Children.Add(textElement);
 		template.Elements.Add(panelElement);
 		template.Elements.Add(panelElement2);
 		template.Elements.Add(panelElement3);
-		template.Elements.Add(panelElement4);
 		template.Name = "mapImgTemplate";
 		return template;
 	}
@@ -1405,6 +1393,7 @@ public class LedgerDefaultPanel : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		_tileControl.TileBorderColor = Color.Transparent;
 		if (Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{

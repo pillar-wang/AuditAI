@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using Newtonsoft.Json;
 
 namespace Auditai.Model;
@@ -93,6 +93,7 @@ public class Permissions
 
 	public void Deserialize(string s)
 	{
+		if (string.IsNullOrWhiteSpace(s)) return;
 		JsonConvert.PopulateObject(s, this, jsonSerializerSettings);
 	}
 }

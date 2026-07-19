@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Auditai.DTO;
@@ -34,16 +34,44 @@ public class ValidationManager
 	{
 		if (string.IsNullOrEmpty(vf.LeftExpr) || string.IsNullOrEmpty(vf.RightExpr))
 		{
-			return new List<ValidationResult>
-			{
-				new ValidationResult
-				{
-					Source = vf
-				}
-			};
+			return CreateEmptyValidationResult(vf);
 		}
-		FormulaReferenceModelResolver resolver = new FormulaReferenceModelResolver(_project);
-		FormulaEvaluationEnvironment formulaEvaluationEnvironment = new FormulaEvaluationEnvironment
+
+		var environment = CreateValidationEnvironment();
+
+		try
+		{
+			return ExecuteValidation(vf, environment);
+		}
+		catch (FormulaException)
+		{
+			if (rethrow)
+			{
+				throw;
+			}
+			return CreateEmptyValidationResult(vf);
+		}
+	}
+
+	private List<ValidationResult> ExecuteValidation(ValidationFormula vf, FormulaEvaluationEnvironment environment)
+	{
+		var leftEvaluator = new FormulaEvaluator(vf.LeftExpr) { Env = environment };
+		var rightEvaluator = new FormulaEvaluator(vf.RightExpr) { Env = environment };
+		var table = _project.GetTableById(vf.TableId)?.LoadAndReturn();
+		var references = GetMergedReferences(leftEvaluator, rightEvaluator, environment);
+
+		if (HasColumnWildcardWithLookup(leftEvaluator, rightEvaluator, references))
+		{
+			return HandleColumnWildcardValidation(vf, leftEvaluator, rightEvaluator, environment, references);
+		}
+
+		return HandleRegularValidation(vf, leftEvaluator, rightEvaluator, environment, references, table);
+	}
+
+	private FormulaEvaluationEnvironment CreateValidationEnvironment()
+	{
+		var resolver = new FormulaReferenceModelResolver(_project);
+		return new FormulaEvaluationEnvironment
 		{
 			Resolver = resolver,
 			RefManager = _project.DataReferenceManager,
@@ -52,131 +80,144 @@ public class ValidationManager
 				Project = _project
 			}
 		};
-		try
+	}
+
+	private static List<ValidationResult> CreateEmptyValidationResult(ValidationFormula vf)
+	{
+		return new List<ValidationResult>
 		{
-			List<ValidationResult> list = new List<ValidationResult>();
-			FormulaEvaluator formulaEvaluator = new FormulaEvaluator(vf.LeftExpr)
+			new ValidationResult
 			{
-				Env = formulaEvaluationEnvironment
-			};
-			FormulaEvaluator formulaEvaluator2 = new FormulaEvaluator(vf.RightExpr)
-			{
-				Env = formulaEvaluationEnvironment
-			};
-			Table table = _project.GetTableById(vf.TableId)?.LoadAndReturn();
-			FormulaReferences formulaReferences = formulaEvaluator.ValidationGetReferences(formulaEvaluationEnvironment);
-			FormulaReferences other = formulaEvaluator2.ValidationGetReferences(formulaEvaluationEnvironment);
-			formulaReferences.UnionWith(other);
-			if ((formulaEvaluator.HasLqSumIfVLookUp() || formulaEvaluator2.HasLqSumIfVLookUp()) && formulaReferences.ColumnWildcardReferences.Count > 0)
-			{
-				Column column = formulaReferences.ColumnWildcardReferences.First();
-				IEnumerable<Cell> enumerable = column.GetCells().Distinct(CellValueEqualsComparer.Instance);
-				foreach (Cell item3 in enumerable)
-				{
-					formulaEvaluationEnvironment.RowIndex = item3.Row.Index;
-					formulaReferences = formulaEvaluator.ValidationGetReferences(formulaEvaluationEnvironment);
-					other = formulaEvaluator2.ValidationGetReferences(formulaEvaluationEnvironment);
-					formulaReferences.UnionWith(other);
-					formulaReferences.ColumnWildcardReferences.Clear();
-					Operand operand = RoundDoubleValue(formulaEvaluator.EvaluateToOperand());
-					Operand operand2 = RoundDoubleValue(formulaEvaluator2.EvaluateToOperand());
-					ValidationResult item = new ValidationResult
-					{
-						Source = vf,
-						IsValid = true,
-						LeftValue = operand.Evaluate(),
-						RightValue = operand2.Evaluate(),
-						Refs = formulaReferences,
-						Passed = GetPassed(operand, operand2, vf.Operator),
-						RowIndex = item3.Row.Index,
-						HasWildcard = false
-					};
-					list.Add(item);
-				}
+				Source = vf
 			}
-			else
-			{
-				int num;
-				int num2;
-				bool hasWildcard;
-				if (formulaReferences.ColumnWildcardReferences.Count > 0)
-				{
-					num = 0;
-					num2 = table.Rows.Count - 1;
-					hasWildcard = true;
-				}
-				else if (formulaReferences.HeaderCellWildcardReferences.Count > 0)
-				{
-					Cell cell = formulaReferences.HeaderCellWildcardReferences.First();
-					num = cell.Row.Index + 1;
-					num2 = cell.GetHeaderLastRow();
-					hasWildcard = true;
-				}
-				else
-				{
-					num = (num2 = 0);
-					hasWildcard = false;
-				}
-				for (int i = num; i <= num2; i++)
-				{
-					Operand operand3;
-					Operand operand4;
-					try
-					{
-						if (formulaReferences.ColumnWildcardReferences.Count <= 0)
-						{
-							goto IL_02ce;
-						}
-						Column column2 = formulaReferences.ColumnWildcardReferences.First();
-						if (column2.Table[i, column2.Index].ShouldApplyColumnFormula())
-						{
-							goto IL_02ce;
-						}
-						goto end_IL_0290;
-						IL_02ce:
-						formulaEvaluationEnvironment.RowIndex = i;
-						formulaEvaluationEnvironment.HostTable = table;
-						operand3 = RoundDoubleValue(formulaEvaluator.EvaluateToOperand());
-						operand4 = RoundDoubleValue(formulaEvaluator2.EvaluateToOperand());
-						goto IL_0303;
-						end_IL_0290:;
-					}
-					catch (ArgumentOutOfRangeException)
-					{
-						throw new FormulaBadReferenceException();
-					}
-					continue;
-					IL_0303:
-					ValidationResult item2 = new ValidationResult
-					{
-						Source = vf,
-						IsValid = true,
-						LeftValue = operand3.Evaluate(),
-						RightValue = operand4.Evaluate(),
-						Refs = formulaReferences,
-						Passed = GetPassed(operand3, operand4, vf.Operator),
-						RowIndex = i,
-						HasWildcard = hasWildcard
-					};
-					list.Add(item2);
-				}
-			}
-			return list;
-		}
-		catch (FormulaException)
+		};
+	}
+
+	private static bool HasColumnWildcardWithLookup(FormulaEvaluator leftEval, FormulaEvaluator rightEval, FormulaReferences references)
+	{
+		return (leftEval.HasLqSumIfVLookUp() || rightEval.HasLqSumIfVLookUp())
+			   && references.ColumnWildcardReferences.Count > 0;
+	}
+
+	private static FormulaReferences GetMergedReferences(FormulaEvaluator leftEvaluator, FormulaEvaluator rightEvaluator, FormulaEvaluationEnvironment environment)
+	{
+		var leftRefs = leftEvaluator.ValidationGetReferences(environment);
+		var rightRefs = rightEvaluator.ValidationGetReferences(environment);
+		leftRefs.UnionWith(rightRefs);
+		return leftRefs;
+	}
+
+	private List<ValidationResult> HandleColumnWildcardValidation(
+		ValidationFormula vf,
+		FormulaEvaluator leftEvaluator,
+		FormulaEvaluator rightEvaluator,
+		FormulaEvaluationEnvironment environment,
+		FormulaReferences references)
+	{
+		var results = new List<ValidationResult>();
+		var column = references.ColumnWildcardReferences.First();
+		var distinctCells = column.GetCells().Distinct(CellValueEqualsComparer.Instance);
+
+		foreach (var cell in distinctCells)
 		{
-			if (rethrow)
-			{
-				throw;
-			}
-			return new List<ValidationResult>
-			{
-				new ValidationResult
-				{
-					Source = vf
-				}
-			};
+			environment.RowIndex = cell.Row.Index;
+			var cellRefs = GetMergedReferences(leftEvaluator, rightEvaluator, environment);
+			cellRefs.ColumnWildcardReferences.Clear();
+
+			var result = CreateValidationResult(
+				vf, leftEvaluator, rightEvaluator, cellRefs, cell.Row.Index, hasWildcard: false);
+			results.Add(result);
 		}
+
+		return results;
+	}
+
+	private List<ValidationResult> HandleRegularValidation(
+		ValidationFormula vf,
+		FormulaEvaluator leftEvaluator,
+		FormulaEvaluator rightEvaluator,
+		FormulaEvaluationEnvironment environment,
+		FormulaReferences references,
+		Table table)
+	{
+		var (startIndex, endIndex, hasWildcard) = DetermineValidationRange(references, table);
+		var results = new List<ValidationResult>();
+
+		for (int i = startIndex; i <= endIndex; i++)
+		{
+			if (ShouldSkipRowForColumnWildcard(references, i))
+			{
+				continue;
+			}
+
+			try
+			{
+				environment.RowIndex = i;
+				environment.HostTable = table;
+
+				var result = CreateValidationResult(
+					vf, leftEvaluator, rightEvaluator, references, i, hasWildcard);
+				results.Add(result);
+			}
+			catch (ArgumentOutOfRangeException)
+			{
+				throw new FormulaBadReferenceException();
+			}
+		}
+
+		return results;
+	}
+
+	private static (int startIndex, int endIndex, bool hasWildcard) DetermineValidationRange(
+		FormulaReferences references, Table table)
+	{
+		if (references.ColumnWildcardReferences.Count > 0)
+		{
+			return (0, table.Rows.Count - 1, true);
+		}
+
+		if (references.HeaderCellWildcardReferences.Count > 0)
+		{
+			var cell = references.HeaderCellWildcardReferences.First();
+			return (cell.Row.Index + 1, cell.GetHeaderLastRow(), true);
+		}
+
+		return (0, 0, false);
+	}
+
+	private static bool ShouldSkipRowForColumnWildcard(FormulaReferences references, int rowIndex)
+	{
+		if (references.ColumnWildcardReferences.Count <= 0)
+		{
+			return false;
+		}
+
+		var column = references.ColumnWildcardReferences.First();
+		return !column.Table[rowIndex, column.Index].ShouldApplyColumnFormula();
+	}
+
+	private static ValidationResult CreateValidationResult(
+		ValidationFormula vf,
+		FormulaEvaluator leftEvaluator,
+		FormulaEvaluator rightEvaluator,
+		FormulaReferences references,
+		int rowIndex,
+		bool hasWildcard)
+	{
+		var leftValue = RoundDoubleValue(leftEvaluator.EvaluateToOperand());
+		var rightValue = RoundDoubleValue(rightEvaluator.EvaluateToOperand());
+
+		return new ValidationResult
+		{
+			Source = vf,
+			IsValid = true,
+			LeftValue = leftValue.Evaluate(),
+			RightValue = rightValue.Evaluate(),
+			Refs = references,
+			Passed = GetPassed(leftValue, rightValue, vf.Operator),
+			RowIndex = rowIndex,
+			HasWildcard = hasWildcard
+		};
 	}
 
 	public HashSet<Id64> GetReferredTables(ValidationFormula vf)

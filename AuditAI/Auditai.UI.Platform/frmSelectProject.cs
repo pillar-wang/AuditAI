@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -188,12 +188,12 @@ public class frmSelectProject : Form
         this._tileControl.AllowChecking = false;
         this._tileControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         this._tileControl.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
-        this._tileControl.CellWidth = 10;
-        this._tileControl.CellHeight = 10;
-        this._tileControl.CellSpacing = 20;
-        this._tileControl.Location = new System.Drawing.Point(12, 50);
+        this._tileControl.CellWidth = 13;
+        this._tileControl.CellHeight = 13;
+        this._tileControl.CellSpacing = 26;
+        this._tileControl.Location = new System.Drawing.Point(16, 65);
         this._tileControl.Name = "_tileControl";
-        this._tileControl.Size = new System.Drawing.Size(760, 420);
+        this._tileControl.Size = new System.Drawing.Size(988, 546);
         this._tileControl.TabIndex = 0;
         this._tileControl.Templates.Add(this._projectTemplate);
         this._tileControl.DoubleClickTile += _tileControl_DoubleClickTile;
@@ -206,9 +206,9 @@ public class frmSelectProject : Form
         this._lblTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
         this._lblTitle.Font = new System.Drawing.Font("Noto Sans SC", 12f, System.Drawing.FontStyle.Bold);
         this._lblTitle.ForeColor = System.Drawing.Color.Black;
-        this._lblTitle.Location = new System.Drawing.Point(12, 15);
+        this._lblTitle.Location = new System.Drawing.Point(16, 20);
         this._lblTitle.Name = "_lblTitle";
-        this._lblTitle.Size = new System.Drawing.Size(200, 22);
+        this._lblTitle.Size = new System.Drawing.Size(260, 29);
         this._lblTitle.TabIndex = 1;
         this._lblTitle.Text = "请选择来源项目";
 
@@ -217,9 +217,9 @@ public class frmSelectProject : Form
         //
         this._btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         this._btnOk.Font = new System.Drawing.Font("Noto Sans SC", 9f);
-        this._btnOk.Location = new System.Drawing.Point(592, 480);
+        this._btnOk.Location = new System.Drawing.Point(770, 625);
         this._btnOk.Name = "_btnOk";
-        this._btnOk.Size = new System.Drawing.Size(87, 33);
+        this._btnOk.Size = new System.Drawing.Size(113, 43);
         this._btnOk.TabIndex = 2;
         this._btnOk.Text = "确定";
         this._btnOk.UseVisualStyleBackColor = true;
@@ -230,9 +230,9 @@ public class frmSelectProject : Form
         //
         this._btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         this._btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f);
-        this._btnCancel.Location = new System.Drawing.Point(685, 480);
+        this._btnCancel.Location = new System.Drawing.Point(891, 625);
         this._btnCancel.Name = "_btnCancel";
-        this._btnCancel.Size = new System.Drawing.Size(87, 33);
+        this._btnCancel.Size = new System.Drawing.Size(113, 43);
         this._btnCancel.TabIndex = 3;
         this._btnCancel.Text = "取消";
         this._btnCancel.UseVisualStyleBackColor = true;
@@ -243,7 +243,7 @@ public class frmSelectProject : Form
         //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(784, 525);
+        this.ClientSize = new System.Drawing.Size(1019, 683);
         this.Controls.Add(this._lblTitle);
         this.Controls.Add(this._tileControl);
         this.Controls.Add(this._btnOk);

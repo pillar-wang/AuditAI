@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -78,11 +78,11 @@ public class ValidateEditor : ISetTheme
 
 	internal C1Label lblValidateTitle;
 
-	private System.Drawing.Image zb1Image = Resources.zb1;
+	private System.Drawing.Image zb1Image;
 
-	private System.Drawing.Image dirImage = Resources.TreeDir;
+	private System.Drawing.Image dirImage;
 
-	private System.Drawing.Image vouImage = Resources.vouchers16;
+	private System.Drawing.Image vouImage;
 
 	private C1ContextMenu ctxTreeCell = new C1ContextMenu();
 
@@ -109,12 +109,33 @@ public class ValidateEditor : ISetTheme
 		_owner = owner;
 		InitComponent();
 		Initialize();
+		InitializeImages();
 		grdValidate.Paint += delegate(object s1, PaintEventArgs e1)
 		{
 			Auditai.UI.Controls.Theme.DrawFormBorder(grdValidate, e1.Graphics);
 		};
 		Tree.DoubleClick += ValidateTree_DoubleClick;
 		ValidateChanged += ValidateEditor_ValidateChanged;
+	}
+
+	private void InitializeImages()
+	{
+		zb1Image = ScaleImage(Resources.zb1, 20, 20);
+		dirImage = ScaleImage(Resources.TreeDir, 20, 20);
+		vouImage = ScaleImage(Resources.vouchers16, 20, 20);
+	}
+
+	private System.Drawing.Image ScaleImage(System.Drawing.Image image, int width, int height)
+	{
+		if (image == null)
+			return null;
+		System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(width, height);
+		using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap))
+		{
+			graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+			graphics.DrawImage(image, 0, 0, width, height);
+		}
+		return bitmap;
 	}
 
 	private void InitComponent()
@@ -129,12 +150,12 @@ public class ValidateEditor : ISetTheme
 		lblValidateTitle.Dock = DockStyle.Fill;
 		lblValidateTitle.Text = "科目设置检查结果";
 		lblValidateTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlValidateTitle.Height = 30;
+		pnlValidateTitle.Height = 39;
 		pnlValidateTitle.KeepRelativeSize = false;
 		pnlValidateTitle.Location = new Point(0, 0);
-		pnlValidateTitle.MinHeight = 30;
+		pnlValidateTitle.MinHeight = 39;
 		pnlValidateTitle.Resizable = false;
-		pnlValidateTitle.Size = new Size(927, 30);
+		pnlValidateTitle.Size = new Size(927, 39);
 		pnlValidateTitle.SizeRatio = 4.769;
 		pnlValidateTitle.Controls.Add(lblValidateTitle);
 		grdValidate.AllowMerging = AllowMergingEnum.Custom;
@@ -145,8 +166,7 @@ public class ValidateEditor : ISetTheme
 		grdValidate.Size = new Size(927, 599);
 		grdValidate.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		pnlValidateGrid.Height = 599;
-		pnlValidateGrid.Location = new Point(0, 31);
-		pnlValidateGrid.Size = new Size(927, 599);
+		pnlValidateGrid.KeepRelativeSize = true;
 		pnlValidateGrid.Controls.Add(grdValidate);
 		View.AutoSizeElement = AutoSizeElement.Both;
 		View.BackColor = Color.FromArgb(240, 240, 240);
@@ -181,7 +201,7 @@ public class ValidateEditor : ISetTheme
 			Tree.Rows.Count = 0;
 			Tree.Cols.Count = 0;
 			Tree.Cols.Add();
-			Tree.Rows.DefaultSize = 30;
+			Tree.Rows.DefaultSize = 33;
 			Tree.Tree.Column = 0;
 			C1.Win.C1FlexGrid.Row row = Tree.Rows.Add();
 			row.IsNode = true;
@@ -386,31 +406,53 @@ public class ValidateEditor : ISetTheme
 		}
 	}
 
-	private void ValidateAccount(IEnumerable<ValidateResult> results)
-	{
-		try
+	private void SetMinColumnWidths(C1.Win.C1FlexGrid.C1FlexGrid grid)
 		{
-			grdValidate.BeginUpdate();
-			grdValidate.Rows.Count = 0;
-			grdValidate.Cols.Count = 0;
-			grdValidate.Rows.DefaultSize = 30;
-			C1.Win.C1FlexGrid.Column column = grdValidate.Cols.Add();
-			column.Caption = "序号";
-			column.Name = "index";
-			column.DataType = typeof(string);
-			column = grdValidate.Cols.Add();
-			column.Caption = "科目代码";
-			column.Name = "code";
-			column.DataType = typeof(string);
-			column = grdValidate.Cols.Add();
-			column.Caption = "科目名称";
-			column.Name = "name";
-			column.DataType = typeof(string);
-			column = grdValidate.Cols.Add();
-			column.Caption = "风险提示";
-			column.Name = "tip";
-			column.AllowMerging = true;
-			column.DataType = typeof(string);
+			var minWidths = new Dictionary<string, int>
+			{
+				{ "index", 60 },
+				{ "code", 100 },
+				{ "name", 150 },
+				{ "tip", 200 },
+				{ "voucher", 150 },
+				{ "amount", 120 },
+				{ "detail", 200 }
+			};
+			foreach (var kvp in minWidths)
+			{
+				var col = grid.Cols[kvp.Key];
+				if (col != null && col.Width < kvp.Value)
+				{
+					col.Width = kvp.Value;
+				}
+			}
+		}
+
+		private void ValidateAccount(IEnumerable<ValidateResult> results)
+		{
+			try
+			{
+				grdValidate.BeginUpdate();
+				grdValidate.Rows.Count = 0;
+				grdValidate.Cols.Count = 0;
+				grdValidate.Rows.DefaultSize = 33;
+				C1.Win.C1FlexGrid.Column column = grdValidate.Cols.Add();
+				column.Caption = "序号";
+				column.Name = "index";
+				column.DataType = typeof(string);
+				column = grdValidate.Cols.Add();
+				column.Caption = "科目代码";
+				column.Name = "code";
+				column.DataType = typeof(string);
+				column = grdValidate.Cols.Add();
+				column.Caption = "科目名称";
+				column.Name = "name";
+				column.DataType = typeof(string);
+				column = grdValidate.Cols.Add();
+				column.Caption = "风险提示";
+				column.Name = "tip";
+				column.AllowMerging = true;
+				column.DataType = typeof(string);
 			C1.Win.C1FlexGrid.Row row = grdValidate.Rows.Add();
 			C1.Win.C1FlexGrid.CellStyle newStyle = FixStyle();
 			for (int i = 0; i < grdValidate.Cols.Count; i++)
@@ -438,6 +480,7 @@ public class ValidateEditor : ISetTheme
 			}
 			grdValidate.Rows.Fixed = 1;
 			grdValidate.Cols.Fixed = 1;
+			SetMinColumnWidths(grdValidate);
 			grdValidate.AutoSizeCols();
 			grdValidate.AllowEditing = false;
 			grdValidate.ExtendLastCol = true;
@@ -461,7 +504,7 @@ public class ValidateEditor : ISetTheme
 			grdValidate.BeginUpdate();
 			grdValidate.Rows.Count = 0;
 			grdValidate.Cols.Count = 0;
-			grdValidate.Rows.DefaultSize = 30;
+			grdValidate.Rows.DefaultSize = 33;
 			C1.Win.C1FlexGrid.Column column = grdValidate.Cols.Add();
 			column.Caption = "序号";
 			column.Name = "index";
@@ -514,6 +557,7 @@ public class ValidateEditor : ISetTheme
 			}
 			grdValidate.Rows.Fixed = 1;
 			grdValidate.Cols.Fixed = 1;
+			SetMinColumnWidths(grdValidate);
 			grdValidate.AutoSizeCols();
 			grdValidate.AllowEditing = false;
 			grdValidate.ExtendLastCol = true;
@@ -537,7 +581,7 @@ public class ValidateEditor : ISetTheme
 			grdValidate.BeginUpdate();
 			grdValidate.Rows.Count = 0;
 			grdValidate.Cols.Count = 0;
-			grdValidate.Rows.DefaultSize = 30;
+			grdValidate.Rows.DefaultSize = 33;
 			C1.Win.C1FlexGrid.Column column = grdValidate.Cols.Add();
 			column.Caption = "序号";
 			column.Name = "index";
@@ -624,6 +668,7 @@ public class ValidateEditor : ISetTheme
 			MergeTip(grdValidate, "tip");
 			grdValidate.Rows.Fixed = 1;
 			grdValidate.Cols.Fixed = 1;
+			SetMinColumnWidths(grdValidate);
 			grdValidate.AutoSizeCols();
 			grdValidate.AllowEditing = false;
 			grdValidate.ExtendLastCol = true;

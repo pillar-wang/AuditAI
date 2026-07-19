@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -46,7 +46,7 @@ public class frmDocValidationMgmt : Form
 	private void InitializeComponents()
 	{
 		this.Text = "文档校验域管理";
-		this.Size = new Size(700, 450);
+		this.Size = new Size(910, 585);
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.MinimizeBox = false;
 		this.MaximizeBox = false;
@@ -72,19 +72,19 @@ public class frmDocValidationMgmt : Form
 		_grid.Columns.Add("Type", "类型");
 		_grid.Columns.Add("Content", "内容");
 		_grid.Columns.Add("Rule", "规则");
-		_grid.Columns["Type"].Width = 80;
-		_grid.Columns["Content"].Width = 200;
+		_grid.Columns["Type"].Width = 104;
+		_grid.Columns["Content"].Width = 260;
 		_grid.Columns["Rule"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
 		_grid.CellDoubleClick += (s, e) => NavigateToSelected();
 		this.Controls.Add(_grid);
 
-		int btnY = 365;
+		int btnY = 474;
 		_btnNavigate = new System.Windows.Forms.Button
 		{
 			Text = "导航到",
-			Location = new Point(12, btnY),
-			Size = new Size(90, 28),
+			Location = new Point(16, btnY),
+			Size = new Size(117, 36),
 		};
 		_btnNavigate.Click += (s, e) => NavigateToSelected();
 		this.Controls.Add(_btnNavigate);
@@ -92,8 +92,8 @@ public class frmDocValidationMgmt : Form
 		_btnDelete = new System.Windows.Forms.Button
 		{
 			Text = "删除校验点",
-			Location = new Point(110, btnY),
-			Size = new Size(100, 28),
+			Location = new Point(143, btnY),
+			Size = new Size(130, 36),
 		};
 		_btnDelete.Click += (s, e) => DeleteSelected();
 		this.Controls.Add(_btnDelete);
@@ -102,8 +102,8 @@ public class frmDocValidationMgmt : Form
 		{
 			Text = "关闭",
 			DialogResult = DialogResult.Cancel,
-			Location = new Point(600, btnY),
-			Size = new Size(70, 28),
+			Location = new Point(780, btnY),
+			Size = new Size(91, 36),
 		};
 		this.Controls.Add(_btnClose);
 

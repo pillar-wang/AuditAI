@@ -1,4 +1,4 @@
-namespace Auditai.SignalR;
+﻿﻿﻿﻿namespace Auditai.SignalR;
 
 public enum MessageKind
 {
@@ -20,5 +20,7 @@ public enum MessageKind
 	PeerProjectMembersChanged,
 	PeerStateUpload,
 	PeerFileSectionArrived,
-	PeerOpenTicketNavTreeNode
+	PeerOpenTicketNavTreeNode,
+	PeerTableChanged,
+	PeerDocumentChanged
 }

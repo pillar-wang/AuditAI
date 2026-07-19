@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -213,7 +213,8 @@ public class TableNavGrid : ISetTheme
 			AllowMergingFixed = AllowMergingEnum.None,
 			AllowResizing = AllowResizingEnum.Both,
 			AllowSorting = AllowSortingEnum.None,
-			FocusRect = FocusRectEnum.None
+			FocusRect = FocusRectEnum.None,
+			Font = new Font("微软雅黑", 10.5f)
 		};
 		_grid.Rows.Count = 0;
 		_grid.Rows.Fixed = 0;
@@ -221,7 +222,7 @@ public class TableNavGrid : ISetTheme
 		_grid.Cols[0].TextAlign = TextAlignEnum.LeftCenter;
 		_grid.Cols.Fixed = 0;
 		_grid.Tree.Column = 0;
-		_grid.Rows.DefaultSize = 30;
+		_grid.Rows.DefaultSize = 33;
 		_grid.BodyOwnerDrawCell += _grid_BodyOwnerDrawCell;
 		_grid.MouseMove += _grid_MouseMove;
 		_grid.MouseLeave += _grid_MouseLeave;
@@ -594,7 +595,6 @@ public class TableNavGrid : ISetTheme
 
 	public void Populate()
 	{
-		Debug.WriteLine($"[TableNavGrid] Populate: Nav={(Nav != null ? Nav.Count : 0)}, Table={(Table != null ? "not null" : "null")}");
 		_relatedTitleCellSet.Clear();
 		_cellRelatedOtherCellDic.Clear();
 		_finalNav = null;
@@ -948,7 +948,6 @@ public class TableNavGrid : ISetTheme
 		if (Nav != null && Nav.Any())
 		{
 			List<TableTitleCell> navListContainsComboListCell = GetNavListContainsComboListCell();
-			Debug.WriteLine($"[TableNavGrid] MakeTree: Nav.Count={Nav.Count}, comboListCellCount={(navListContainsComboListCell != null ? navListContainsComboListCell.Count : 0)}");
 			if (navListContainsComboListCell != null && navListContainsComboListCell.Count > 0)
 			{
 				FillNavTreeNode(navNode, navListContainsComboListCell);
@@ -957,9 +956,7 @@ public class TableNavGrid : ISetTheme
 		}
 		else
 		{
-			Debug.WriteLine($"[TableNavGrid] MakeTree: Nav is null or empty");
 		}
-		Debug.WriteLine($"[TableNavGrid] MakeTree: root.Children.Count={navNode.Children.Count}");
 		return navNode;
 	}
 
@@ -968,12 +965,10 @@ public class TableNavGrid : ISetTheme
 		_isNavTreeShowInComblistTreeMode = false;
 		if (Table.IsLocked)
 		{
-			Debug.WriteLine("[TableNavGrid] FillNavTreeNode: Table is locked, return");
 			return;
 		}
 		if (comboxListCell.Count == 1)
 		{
-			Debug.WriteLine($"[TableNavGrid] FillNavTreeNode: single cell, ComboList='{comboxListCell[0].ComboList}'");
 			List<TableTitleCell> referredSameTableOtherTitleCell = GetReferredSameTableOtherTitleCell(comboxListCell[0]);
 			foreach (TableTitleCell item in referredSameTableOtherTitleCell)
 			{
@@ -983,7 +978,6 @@ public class TableNavGrid : ISetTheme
 			_cellRelatedOtherCellDic[comboxListCell[0]] = new List<TableTitleCell>(referredSameTableOtherTitleCell);
 			TreeListOperand treeListData;
 			List<Tuple<string, string>> comboListValue = GetComboListValue(comboxListCell[0], comboxListCell.Count, out treeListData);
-			Debug.WriteLine($"[TableNavGrid] FillNavTreeNode: comboListValue={(comboListValue != null ? comboListValue.Count : "null")}, treeListData={(treeListData != null ? "not null" : "null")}");
 			if (treeListData != null)
 			{
 				TreeListOperand treeListOperand = treeListData;
@@ -993,13 +987,11 @@ public class TableNavGrid : ISetTheme
 					{
 						AddNavNode(rootNode, root, comboxListCell[0]);
 					}
-					Debug.WriteLine($"[TableNavGrid] FillNavTreeNode: tree mode, root.Children.Count={rootNode.Children.Count}");
-					return;
+				return;
 				}
 			}
 			if (comboListValue == null)
 			{
-				Debug.WriteLine("[TableNavGrid] FillNavTreeNode: comboListValue is null, return");
 				return;
 			}
 			for (int i = 0; i < comboListValue.Count; i++)
@@ -1338,7 +1330,6 @@ public class TableNavGrid : ISetTheme
 		treeListData = null;
 		if (string.IsNullOrWhiteSpace(cell.ComboList))
 		{
-			Debug.WriteLine("[TableNavGrid] GetComboListValue: ComboList is empty, return null");
 			return null;
 		}
 		FormulaReferenceModelResolver resolver = new FormulaReferenceModelResolver(Table.Project);
@@ -1362,17 +1353,14 @@ public class TableNavGrid : ISetTheme
 			};
 			Operand op = formulaEvaluator.EvaluateToOperand();
 			var result = ConvertOperandToNodeDisplayValueList(op, navCellCount > 1, out treeListData);
-			Debug.WriteLine($"[TableNavGrid] GetComboListValue: result.Count={(result != null ? result.Count : "null")}, treeListData={(treeListData != null ? "not null" : "null")}, opType={op?.GetType().Name}");
 			return result;
 		}
-		catch (FormulaException ex)
+		catch (FormulaException)
 		{
-			Debug.WriteLine($"[TableNavGrid] GetComboListValue: FormulaException: {ex.Message}");
 			return null;
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			Debug.WriteLine($"[TableNavGrid] GetComboListValue: Exception: {ex.GetType().Name}: {ex.Message}");
 			return null;
 		}
 	}

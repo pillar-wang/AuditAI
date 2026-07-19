@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -65,6 +65,8 @@ public class DocumentEditor : UserControl
 	private readonly C1CommandLink lnkLock = new C1CommandLink();
 	private readonly C1Command cmdRefTable = new C1Command();
 	private readonly C1CommandLink lnkRefTable = new C1CommandLink();
+	private readonly C1Command cmdInsertVar = new C1Command();
+	private readonly C1CommandLink lnkInsertVar = new C1CommandLink();
 	private readonly C1Command cmdSmartLayout = new C1Command();
 	private readonly C1CommandLink lnkSmartLayout = new C1CommandLink();
 	private readonly C1Command cmdExportDoc = new C1Command();
@@ -135,7 +137,7 @@ public class DocumentEditor : UserControl
 		{
 			Collapsible = false,
 			KeepRelativeSize = false,
-			Width = 80,
+			Width = 104,
 			Resizable = false,
 			Dock = PanelDockStyle.Right,
 		};
@@ -249,6 +251,13 @@ public class DocumentEditor : UserControl
 		cmdRefTable.Click += (s, e) => InsertRefTable();
 		lnkRefTable.Command = cmdRefTable;
 		_toolbar.CommandLinks.Add(lnkRefTable);
+
+		// 插入变量
+		cmdInsertVar.Image = Resources.DocWholeRefresh;
+		cmdInsertVar.CommandStateQuery += (s, e) => cmdInsertVar.Text = "插入变量";
+		cmdInsertVar.Click += (s, e) => InsertVariable();
+		lnkInsertVar.Command = cmdInsertVar;
+		_toolbar.CommandLinks.Add(lnkInsertVar);
 
 		// 智能排版
 		cmdSmartLayout.Image = Resources.DocWholeRefresh;
@@ -524,7 +533,6 @@ public class DocumentEditor : UserControl
 								if (healthResult.Messages.Count > 5)
 									msg += $"\n...及其他 {healthResult.Messages.Count - 5} 条";
 							}
-							System.Diagnostics.Trace.WriteLine(msg);
 						}
 					}
 				}
@@ -1099,25 +1107,32 @@ public class DocumentEditor : UserControl
 		}
 		DetachEvents();
 		OnChanged();
-		if (_textControl.Tables.Add())
+		_textControl.BeginUndoAction("插入表格");
+		try
 		{
-			_textControl.Select(_textControl.Selection.Start - 1, 0);
-			TXTextControl.Table currentTable = GetCurrentTable();
-			SetTableBorder(currentTable, Auditai.Model.TableBorderStyles.Grid);
-			foreach (TXTextControl.TableRow row in currentTable.Rows)
+			if (_textControl.Tables.Add())
 			{
-				row.MinimumHeight = 567;
+				_textControl.Select(_textControl.Selection.Start - 1, 0);
+				TXTextControl.Table currentTable = GetCurrentTable();
+				SetTableBorder(currentTable, Auditai.Model.TableBorderStyles.Grid);
+				foreach (TXTextControl.TableRow row in currentTable.Rows)
+				{
+					row.MinimumHeight = 567;
+				}
+				foreach (TXTextControl.TableColumn column in currentTable.Columns)
+				{
+					column.CellFormat.VerticalAlignment = TXTextControl.VerticalAlignment.Center;
+				}
+				currentTable.Select();
+				_textControl.Selection.ParagraphFormat.LeftIndent = 0;
+				_textControl.Selection.ParagraphFormat.HangingIndent = 0;
+				_textControl.Select(currentTable.Cells.GetItem(1, 1).Start - 1, 0);
 			}
-			foreach (TXTextControl.TableColumn column in currentTable.Columns)
-			{
-				column.CellFormat.VerticalAlignment = TXTextControl.VerticalAlignment.Center;
-			}
-			currentTable.Select();
-			_textControl.Selection.ParagraphFormat.LeftIndent = 0;
-			_textControl.Selection.ParagraphFormat.HangingIndent = 0;
-			_textControl.Select(currentTable.Cells.GetItem(1, 1).Start - 1, 0);
 		}
-		_textControl.ClearUndo();
+		finally
+		{
+			_textControl.EndUndoAction();
+		}
 		AttachEvents();
 	}
 	public void InsertImage(params object[] args)
@@ -1205,29 +1220,36 @@ public class DocumentEditor : UserControl
 		var table = _textControl.Tables.GetItem();
 		var cell = table?.Cells.GetItem();
 
-		// 若光标在表格第一行第一列起始位置，清空选区后插入域
-		if (table != null && cell != null && cell.Row == 1 && cell.Column == 1
-			&& _textControl.Selection.Start == cell.Start - 1)
+		_textControl.BeginUndoAction("插入合并域");
+		try
 		{
-			int selStart = _textControl.Selection.Start;
-			_textControl.Selection.Text = "";
+			// 若光标在表格第一行第一列起始位置，清空选区后插入域
+			if (table != null && cell != null && cell.Row == 1 && cell.Column == 1
+				&& _textControl.Selection.Start == cell.Start - 1)
+			{
+				int selStart = _textControl.Selection.Start;
+				_textControl.Selection.Text = "";
 
+				if (headerFooter != null)
+					headerFooter.ApplicationFields.Add(field);
+				else
+					_textControl.ApplicationFields.Add(field);
+
+				_textControl.Select(selStart, 1);
+				_textControl.Selection.Text = "";
+				return;
+			}
+
+			// 否则直接在当前位置插入域
 			if (headerFooter != null)
 				headerFooter.ApplicationFields.Add(field);
 			else
 				_textControl.ApplicationFields.Add(field);
-
-			_textControl.Select(selStart, 1);
-			_textControl.Selection.Text = "";
-			_textControl.ClearUndo();
-			return;
 		}
-
-		// 否则直接在当前位置插入域
-		if (headerFooter != null)
-			headerFooter.ApplicationFields.Add(field);
-		else
-			_textControl.ApplicationFields.Add(field);
+		finally
+		{
+			_textControl.EndUndoAction();
+		}
 	}
 
 	/// <summary>
@@ -1560,6 +1582,7 @@ public class DocumentEditor : UserControl
 
 		try
 		{
+			_textControl.BeginUndoAction("插入模型表格");
 			_textControl.Selection.Text = "\n";
 			_textControl.Tables.Add(table.Rows.Count + getCaptionRows(table), table.Columns.VisibleCount);
 			_textControl.Select(_textControl.Selection.Start - 1, 0);
@@ -1632,7 +1655,7 @@ public class DocumentEditor : UserControl
 		}
 		finally
 		{
-			_textControl.ClearUndo();
+			try { _textControl.EndUndoAction(); } catch { }
 			canRibbonStatusSetting = true;
 			Program.MainForm.CurrentEdition.Ribbon.Enabled = true;
 			AttachEvents();
@@ -2015,25 +2038,36 @@ public class DocumentEditor : UserControl
 					int bestDistance = int.MaxValue;
 
 					foreach (DocumentTarget dt in allTargets)
+				{
+					try
 					{
-						try
-						{
-							if (string.IsNullOrEmpty(dt.TargetName)) continue;
-							if (!AuditaiBookmark.TryParse(dt.TargetName, out var bm)) continue;
-							if (bm.TableId == null && bm.ParaIdBase64 == null) continue;
+						if (string.IsNullOrEmpty(dt.TargetName)) continue;
+						if (!AuditaiBookmark.TryParse(dt.TargetName, out var bm)) continue;
+						if (bm.TableId == null && bm.ParaIdBase64 == null) continue;
 
-							int dtStart = dt.Start;
-							int distance = tableStart - dtStart;
-							// 严格阈值 50：书签正常就在 firstCell.Start-1，distance≈1；
-							// 50 已足够容纳刷新过程中的微小位置漂移，且不会误取邻近表格的书签。
-							if (distance > 0 && distance < 50 && distance < bestDistance)
-							{
-								bestDistance = distance;
-								bestBookmark = bm;
-							}
+						// 去重校验：若候选书签有 ParaIdBase64，且 _dicPara 缓存中已存在该 ParaId
+						// 但对应的 DocumentTarget 与当前候选 dt 不是同一对象，说明该 ParaId 已被
+						// 其他表格的书签占用（异常重复场景）。跳过此候选，避免批量刷新时
+						// 多个表格竞争同一 ParaId 导致书签错乱、数据引错。
+						if (!string.IsNullOrEmpty(bm.ParaIdBase64)
+							&& _dicPara.TryGetValue(bm.ParaIdBase64, out var occupiedDt)
+							&& !ReferenceEquals(occupiedDt, dt))
+						{
+							continue;
 						}
-						catch { }
+
+						int dtStart = dt.Start;
+						int distance = tableStart - dtStart;
+						// 严格阈值 50：书签正常就在 firstCell.Start-1，distance≈1；
+						// 50 已足够容纳刷新过程中的微小位置漂移，且不会误取邻近表格的书签。
+						if (distance > 0 && distance < 50 && distance < bestDistance)
+						{
+							bestDistance = distance;
+							bestBookmark = bm;
+						}
 					}
+					catch { }
+				}
 
 					if (bestBookmark != null)
 					{
@@ -2423,6 +2457,7 @@ public class DocumentEditor : UserControl
 
 			try
 			{
+				_textControl.BeginUndoAction("插入引用表格");
 				_textControl.Selection.Text = "\n";
 				_textControl.Tables.Add(sourceTable.Rows.Count + getCaptionRows(sourceTable), sourceTable.Columns.VisibleCount);
 				_textControl.Select(_textControl.Selection.Start - 1, 0);
@@ -2477,7 +2512,7 @@ public class DocumentEditor : UserControl
 			}
 			finally
 			{
-				_textControl.ClearUndo();
+				try { _textControl.EndUndoAction(); } catch { }
 				canRibbonStatusSetting = true;
 				Program.MainForm.CurrentEdition.Ribbon.Enabled = true;
 				AttachEvents();
@@ -2657,7 +2692,7 @@ public class DocumentEditor : UserControl
 		private void InitializeComponent()
 		{
 			Text = "智能排版";
-			Size = new Size(320, 220);
+			Size = new Size(416, 286);
 			StartPosition = FormStartPosition.CenterScreen;
 			FormBorderStyle = FormBorderStyle.FixedDialog;
 			MaximizeBox = false;
@@ -2666,8 +2701,8 @@ public class DocumentEditor : UserControl
 			chkIndentFirstLine = new CheckBox
 			{
 				Text = "段落首行缩进两个字符",
-				Location = new Point(20, 20),
-				Size = new Size(260, 20),
+				Location = new Point(26, 26),
+				Size = new Size(338, 26),
 				Checked = true
 			};
 			Controls.Add(chkIndentFirstLine);
@@ -2675,8 +2710,8 @@ public class DocumentEditor : UserControl
 			chkRemoveIndentForCentered = new CheckBox
 			{
 				Text = "水平居中段落取消缩进",
-				Location = new Point(20, 45),
-				Size = new Size(260, 20),
+				Location = new Point(26, 59),
+				Size = new Size(338, 26),
 				Checked = true
 			};
 			Controls.Add(chkRemoveIndentForCentered);
@@ -2684,8 +2719,8 @@ public class DocumentEditor : UserControl
 			chkUnifyStyles = new CheckBox
 			{
 				Text = "相同类型段落统一样式",
-				Location = new Point(20, 70),
-				Size = new Size(260, 20),
+				Location = new Point(26, 91),
+				Size = new Size(338, 26),
 				Checked = true
 			};
 			Controls.Add(chkUnifyStyles);
@@ -2693,8 +2728,8 @@ public class DocumentEditor : UserControl
 			chkRenumber = new CheckBox
 			{
 				Text = "自动重排段落编号",
-				Location = new Point(20, 95),
-				Size = new Size(260, 20),
+				Location = new Point(26, 124),
+				Size = new Size(338, 26),
 				Checked = true
 			};
 			Controls.Add(chkRenumber);
@@ -2702,8 +2737,8 @@ public class DocumentEditor : UserControl
 			chkRemoveLeadingSpaces = new CheckBox
 			{
 				Text = "删除段落首行空格",
-				Location = new Point(20, 120),
-				Size = new Size(260, 20),
+				Location = new Point(26, 156),
+				Size = new Size(338, 26),
 				Checked = false
 			};
 			Controls.Add(chkRemoveLeadingSpaces);
@@ -2711,8 +2746,8 @@ public class DocumentEditor : UserControl
 			btnOK = new System.Windows.Forms.Button
 			{
 				Text = "确定",
-				Location = new Point(100, 160),
-				Size = new Size(80, 25),
+				Location = new Point(130, 208),
+				Size = new Size(104, 33),
 				DialogResult = DialogResult.OK
 			};
 			btnOK.Click += BtnOK_Click;
@@ -2721,8 +2756,8 @@ public class DocumentEditor : UserControl
 			btnCancel = new System.Windows.Forms.Button
 			{
 				Text = "取消",
-				Location = new Point(190, 160),
-				Size = new Size(80, 25),
+				Location = new Point(247, 208),
+				Size = new Size(104, 33),
 				DialogResult = DialogResult.Cancel
 			};
 			Controls.Add(btnCancel);
@@ -4026,7 +4061,10 @@ public class DocumentEditor : UserControl
 
 							int dtStart = dt.Start;
 							int distance = tableStart - dtStart;
-							if (distance > 0 && distance < bestDistance)
+							// 与 GetRefTable 方法2 一致使用 < 50 阈值，避免批量刷新时
+							// 跨表格匹配到距离较远的同 TableId 书签导致数据引错。
+							// 书签正常就在 firstCell.Start-1，distance≈1；50 已足够容纳漂移。
+							if (distance > 0 && distance < 50 && distance < bestDistance)
 							{
 								bestDistance = distance;
 								bestDt = dt;
@@ -4051,7 +4089,11 @@ public class DocumentEditor : UserControl
 			}
 		}
 
-		// 最终回退：确实没找到任何匹配书签时，在表格前位置创建新的
+		// 最终回退：确实没找到任何匹配书签时，在表格前位置创建新的。
+		// 先调用 RemoveBookmarkForTable 清理该位置可能残留的孤儿书签，
+		// 避免与新增的 DocumentTarget 同位置并存导致后续 GetRefTable 取到错误书签。
+		RemoveBookmarkForTable(table);
+
 		var firstCell = table.Cells.GetItem(1, 1);
 		if (firstCell == null) return;
 
@@ -6280,12 +6322,11 @@ public class DocumentEditor : UserControl
 
 						successCount++;
 					}
-					catch (Exception ex)
-					{
-						System.Diagnostics.Debug.WriteLine($"批量应用样式失败 (位置 {item.Position}): {ex.Message}");
-					}
+					catch (Exception)
+				{
+				}
 
-					// 报告进度
+				// 报告进度
 					progressCallback?.Invoke(i + 1, total);
 				}
 			}

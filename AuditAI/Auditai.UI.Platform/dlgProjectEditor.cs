@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -241,7 +241,8 @@ public class dlgProjectEditor : C1RibbonForm
 		cboParent.Items.AddText("(上级" + StringConstBase.Current.Project + "为空)");
 		try
 		{
-			IEnumerable<Auditai.DTO.Project> enumerable = (await StorageRouter.GetProjects()).Where((Auditai.DTO.Project p) => p.Id != Project.Id);
+			var projects = await StorageRouter.GetProjects();
+			IEnumerable<Auditai.DTO.Project> enumerable = (projects ?? Enumerable.Empty<Auditai.DTO.Project>()).Where((Auditai.DTO.Project p) => p.Id != Project.Id);
 			foreach (Auditai.DTO.Project item in enumerable)
 			{
 				int index = cboParent.Items.AddText(item.Number + " " + item.Name);
@@ -442,7 +443,7 @@ public class dlgProjectEditor : C1RibbonForm
 	private async Task PopulateCategoryCombo()
 	{
 		var projects = await StorageRouter.GetProjects();
-		HashSet<string> hashSet = new HashSet<string>(projects.Select((Auditai.DTO.Project p) => p.Category?.Split('|')).SelectMany((string[] cats) => cats ?? new string[0]));
+		HashSet<string> hashSet = new HashSet<string>((projects ?? Enumerable.Empty<Auditai.DTO.Project>()).Select((Auditai.DTO.Project p) => p.Category?.Split('|')).SelectMany((string[] cats) => cats ?? new string[0]));
 		hashSet.Remove("");
 		cboCategory.Items.AddText(hashSet.ToArray());
 	}
@@ -655,54 +656,54 @@ public class dlgProjectEditor : C1RibbonForm
 		this.inputPanel.Size = new System.Drawing.Size(637, 547);
 		this.inputPanel.TabIndex = 0;
 		this.lblNumber.Name = "lblNumber";
-		this.lblNumber.Padding = new System.Windows.Forms.Padding(0, 10, 0, 10);
-		this.lblNumber.Width = 98;
+		this.lblNumber.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
+		this.lblNumber.Width = 120;
 		this.txtNumber.Name = "txtNumber";
-		this.txtNumber.Padding = new System.Windows.Forms.Padding(0, 10, 0, 10);
-		this.txtNumber.Width = 377;
+		this.txtNumber.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
+		this.txtNumber.Width = 355;
 		this.lblName.Name = "lblName";
 		this.lblName.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.lblName.Width = 98;
+		this.lblName.Width = 120;
 		this.txtName.Name = "txtName";
 		this.txtName.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.txtName.Width = 377;
+		this.txtName.Width = 355;
 		this.lblCategory.Name = "lblCategory";
 		this.lblCategory.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.lblCategory.Width = 98;
+		this.lblCategory.Width = 120;
 		this.cboCategory.Name = "txtCategory";
 		this.cboCategory.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.cboCategory.Width = 377;
+		this.cboCategory.Width = 355;
 		this.lblAuditee.Name = "lblAuditee";
 		this.lblAuditee.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.lblAuditee.Width = 98;
+		this.lblAuditee.Width = 120;
 		this.txtAuditee.Name = "txtAuditee";
 		this.txtAuditee.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.txtAuditee.Width = 377;
+		this.txtAuditee.Width = 355;
 		this.lblParent.Name = "lblParent";
 		this.lblParent.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.lblParent.Width = 98;
+		this.lblParent.Width = 120;
 		this.cboParent.DropDownStyle = C1.Win.C1InputPanel.InputComboBoxStyle.DropDownList;
 		this.cboParent.Name = "cboParent";
 		this.cboParent.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.cboParent.Width = 377;
+		this.cboParent.Width = 355;
 		this.lblTemplate.Name = "lblTemplate";
 		this.lblTemplate.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
 		this.lblTemplate.Text = "使用模板";
-		this.lblTemplate.Width = 98;
+		this.lblTemplate.Width = 120;
 		this.cboTemplate.DropDownStyle = C1.Win.C1InputPanel.InputComboBoxStyle.DropDownList;
 		this.cboTemplate.Name = "cboTemplate";
 		this.cboTemplate.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.cboTemplate.Width = 377;
+		this.cboTemplate.Width = 355;
 		this.lblNote.Name = "lblNote";
 		this.lblNote.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
-		this.lblNote.Width = 98;
+		this.lblNote.Width = 120;
 		this.txtNote.AcceptsReturn = true;
 		this.txtNote.Height = 130;
 		this.txtNote.Multiline = true;
 		this.txtNote.Name = "txtNote";
 		this.txtNote.Padding = new System.Windows.Forms.Padding(0, 0, 0, 10);
 		this.txtNote.VerticalAlign = C1.Win.C1InputPanel.InputContentAlignment.Spread;
-		this.txtNote.Width = 377;
+		this.txtNote.Width = 355;
 		this.ctnMain.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.ctnMain.BackColor = System.Drawing.Color.FromArgb(164, 195, 235);
 		this.ctnMain.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);

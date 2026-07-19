@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -42,7 +42,7 @@ public class frmTableStyleConfig : Form
 	{
 		// 窗体属性
 		this.Text = "自定义表格样式配置";
-		this.Size = new Size(720, 570);
+		this.Size = new Size(936, 741);
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.FormBorderStyle = FormBorderStyle.FixedDialog;
 		this.MaximizeBox = false;
@@ -53,8 +53,8 @@ public class frmTableStyleConfig : Form
 		var grpHeader = new GroupBox
 		{
 			Text = "表头边框",
-			Location = new Point(10, 10),
-			Size = new Size(350, 140)
+			Location = new Point(13, 13),
+			Size = new Size(455, 182)
 		};
 		_cboHeaderTop = CreateBorderRow(grpHeader, 0, "表头上部:", out _numHeaderTop);
 		_cboHeaderBottom = CreateBorderRow(grpHeader, 1, "表头下部:", out _numHeaderBottom);
@@ -66,8 +66,8 @@ public class frmTableStyleConfig : Form
 		var grpTable = new GroupBox
 		{
 			Text = "表格边框",
-			Location = new Point(10, 155),
-			Size = new Size(350, 140)
+			Location = new Point(13, 202),
+			Size = new Size(455, 182)
 		};
 		_cboTableTop = CreateBorderRow(grpTable, 0, "表格顶部:", out _numTableTop);
 		_cboTableBottom = CreateBorderRow(grpTable, 1, "表格底部:", out _numTableBottom);
@@ -79,8 +79,8 @@ public class frmTableStyleConfig : Form
 		var grpInner = new GroupBox
 		{
 			Text = "内部边框",
-			Location = new Point(10, 300),
-			Size = new Size(350, 90)
+			Location = new Point(13, 390),
+			Size = new Size(455, 117)
 		};
 		_cboInnerH = CreateBorderRow(grpInner, 0, "内部横线:", out _numInnerH);
 		_cboInnerV = CreateBorderRow(grpInner, 1, "内部竖线:", out _numInnerV);
@@ -90,8 +90,8 @@ public class frmTableStyleConfig : Form
 		_chkKeywordBoldUnderline = new CheckBox
 		{
 			Text = "关键词行加粗下划线",
-			Location = new Point(15, 398),
-			Size = new Size(160, 24)
+			Location = new Point(20, 517),
+			Size = new Size(208, 31)
 		};
 		_chkKeywordBoldUnderline.CheckedChanged += (s, e) => RefreshPreview();
 		this.Controls.Add(_chkKeywordBoldUnderline);
@@ -99,16 +99,16 @@ public class frmTableStyleConfig : Form
 		_lblKeywordList = new Label
 		{
 			Text = "关键词:",
-			Location = new Point(15, 428),
-			Size = new Size(55, 20),
+			Location = new Point(20, 556),
+			Size = new Size(72, 26),
 			TextAlign = ContentAlignment.MiddleRight
 		};
 		this.Controls.Add(_lblKeywordList);
 
 		_txtKeywordList = new TextBox
 		{
-			Location = new Point(75, 426),
-			Size = new Size(275, 24),
+			Location = new Point(98, 554),
+			Size = new Size(358, 31),
 			Text = "合计,小计,总计,关键词"
 		};
 		_txtKeywordList.TextChanged += (s, e) => RefreshPreview();
@@ -117,8 +117,8 @@ public class frmTableStyleConfig : Form
 		// ===== 预览面板 =====
 		_previewPanel = new Panel
 		{
-			Location = new Point(370, 10),
-			Size = new Size(330, 400),
+			Location = new Point(481, 13),
+			Size = new Size(429, 520),
 			BackColor = Color.White,
 			BorderStyle = BorderStyle.FixedSingle
 		};
@@ -126,19 +126,19 @@ public class frmTableStyleConfig : Form
 		this.Controls.Add(_previewPanel);
 
 		// ===== 预设按钮 =====
-		var btnGrid = new Button { Text = "普通", Location = new Point(10, 460), Size = new Size(60, 28) };
+		var btnGrid = new Button { Text = "普通", Location = new Point(13, 598), Size = new Size(78, 36) };
 		btnGrid.Click += (s, e) => LoadFromStyle(PresetToCustom(TableBorderStyles.Grid));
 
-		var btnStyle1 = new Button { Text = "样式1", Location = new Point(75, 460), Size = new Size(60, 28) };
+		var btnStyle1 = new Button { Text = "样式1", Location = new Point(98, 598), Size = new Size(78, 36) };
 		btnStyle1.Click += (s, e) => LoadFromStyle(PresetToCustom(TableBorderStyles.ThickUpDownDashBody));
 
-		var btnStyle2 = new Button { Text = "样式2", Location = new Point(140, 460), Size = new Size(60, 28) };
+		var btnStyle2 = new Button { Text = "样式2", Location = new Point(182, 598), Size = new Size(78, 36) };
 		btnStyle2.Click += (s, e) => LoadFromStyle(PresetToCustom(TableBorderStyles.ThickUpDownThinBody));
 
-		var btnStyle3 = new Button { Text = "样式3", Location = new Point(205, 460), Size = new Size(60, 28) };
+		var btnStyle3 = new Button { Text = "样式3", Location = new Point(267, 598), Size = new Size(78, 36) };
 		btnStyle3.Click += (s, e) => LoadFromStyle(PresetToCustom(TableBorderStyles.ThickBorderThinBody));
 
-		var btnNoLine = new Button { Text = "无线", Location = new Point(270, 460), Size = new Size(60, 28) };
+		var btnNoLine = new Button { Text = "无线", Location = new Point(351, 598), Size = new Size(78, 36) };
 		btnNoLine.Click += (s, e) => LoadFromStyle(PresetToCustom(TableBorderStyles.NoLine));
 
 		this.Controls.Add(btnGrid);
@@ -148,10 +148,10 @@ public class frmTableStyleConfig : Form
 		this.Controls.Add(btnNoLine);
 
 		// ===== 模板按钮 =====
-		var btnSaveTemplate = new Button { Text = "保存模板", Location = new Point(10, 495), Size = new Size(80, 28) };
+		var btnSaveTemplate = new Button { Text = "保存模板", Location = new Point(13, 644), Size = new Size(104, 36) };
 		btnSaveTemplate.Click += (s, e) => SaveTemplate();
 
-		var btnLoadTemplate = new Button { Text = "加载模板", Location = new Point(95, 495), Size = new Size(80, 28) };
+		var btnLoadTemplate = new Button { Text = "加载模板", Location = new Point(124, 644), Size = new Size(104, 36) };
 		btnLoadTemplate.Click += (s, e) => LoadTemplate();
 
 		this.Controls.Add(btnSaveTemplate);
@@ -161,15 +161,15 @@ public class frmTableStyleConfig : Form
 		var btnOK = new Button
 		{
 			Text = "确定",
-			Location = new Point(525, 495),
-			Size = new Size(80, 28),
+			Location = new Point(683, 644),
+			Size = new Size(104, 36),
 			DialogResult = DialogResult.OK
 		};
 		var btnCancel = new Button
 		{
 			Text = "取消",
-			Location = new Point(615, 495),
-			Size = new Size(80, 28),
+			Location = new Point(800, 644),
+			Size = new Size(104, 36),
 			DialogResult = DialogResult.Cancel
 		};
 		this.Controls.Add(btnOK);
@@ -188,21 +188,21 @@ public class frmTableStyleConfig : Form
 	/// <returns>创建的 ComboBox 控件</returns>
 	private ComboBox CreateBorderRow(GroupBox parent, int rowIndex, string labelText, out NumericUpDown numeric)
 	{
-		int y = 22 + rowIndex * 26;
+		int y = 29 + rowIndex * 34;
 
 		var lbl = new Label
 		{
 			Text = labelText,
-			Location = new Point(10, y + 3),
-			Size = new Size(75, 20),
+			Location = new Point(13, y + 4),
+			Size = new Size(98, 26),
 			TextAlign = ContentAlignment.MiddleLeft
 		};
 		parent.Controls.Add(lbl);
 
 		var cbo = new ComboBox
 		{
-			Location = new Point(90, y),
-			Size = new Size(95, 23),
+			Location = new Point(117, y),
+			Size = new Size(124, 30),
 			DropDownStyle = ComboBoxStyle.DropDownList
 		};
 		cbo.Items.AddRange(LineStyleNames);
@@ -212,8 +212,8 @@ public class frmTableStyleConfig : Form
 
 		numeric = new NumericUpDown
 		{
-			Location = new Point(190, y),
-			Size = new Size(55, 23),
+			Location = new Point(247, y),
+			Size = new Size(72, 30),
 			Minimum = 0.25m,
 			Maximum = 6m,
 			Increment = 0.25m,
@@ -226,8 +226,8 @@ public class frmTableStyleConfig : Form
 		var lblUnit = new Label
 		{
 			Text = "磅",
-			Location = new Point(250, y + 3),
-			Size = new Size(25, 20),
+			Location = new Point(325, y + 4),
+			Size = new Size(33, 26),
 			TextAlign = ContentAlignment.MiddleLeft
 		};
 		parent.Controls.Add(lblUnit);

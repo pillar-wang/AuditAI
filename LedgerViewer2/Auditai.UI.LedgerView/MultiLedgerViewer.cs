@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -80,7 +80,7 @@ public class MultiLedgerViewer
 			Dock = PanelDockStyle.Left,
 			Collapsible = false,
 			Resizable = true,
-			Width = 160,
+			Width = 200,
 			KeepRelativeSize = false,
 			MinWidth = 0
 		};
@@ -330,8 +330,8 @@ public class MultiLedgerViewer
 					Template = _template,
 					Text1 = text,
 					Text = key,
-					VerticalSize = 4,
-					HorizontalSize = 5
+					VerticalSize = 9,
+					HorizontalSize = 18
 				};
 				_tileGroup.Tiles.Add(tile);
 				tile.Image1 = ((key == CurrentLedgerViewer?.CurrentFilePath) ? currentLedger : ledger);
@@ -383,56 +383,43 @@ public class MultiLedgerViewer
 		template.Description = "Win32";
 		PanelElement panelElement = new PanelElement();
 		panelElement.Alignment = ContentAlignment.TopRight;
-		panelElement.FixedHeight = 30;
+		panelElement.FixedHeight = 20;
 		panelElement.FixedWidth = 40;
-		panelElement.Margin = new Padding(0, 3, 3, 0);
+		panelElement.Margin = new Padding(0, 2, 2, 0);
 		ImageElement imageElement = new ImageElement();
 		imageElement.AlignmentOfContents = ContentAlignment.TopRight;
 		imageElement.ColumnIndex = 30;
-		imageElement.FixedWidth = 40;
+		imageElement.FixedWidth = 20;
 		imageElement.ImageSelector = ImageSelector.Image2;
 		panelElement.Children.Add(imageElement);
 		PanelElement panelElement2 = new PanelElement();
 		panelElement2.FixedHeight = 40;
-		panelElement2.FixedWidth = 130;
+		panelElement2.FixedWidth = 40;
+		panelElement2.Margin = new Padding(0, 8, 0, 0);
 		panelElement2.Alignment = ContentAlignment.TopCenter;
+		ImageElement imageElement2 = new ImageElement();
+		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
+		imageElement2.FixedHeight = 40;
+		imageElement2.FixedWidth = 40;
+		imageElement2.ImageSelector = ImageSelector.Image1;
+		panelElement2.Children.Add(imageElement2);
+		PanelElement panelElement3 = new PanelElement();
+		panelElement3.FixedHeight = 36;
+		panelElement3.FixedWidth = 180;
+		panelElement3.Alignment = ContentAlignment.BottomCenter;
 		TextElement textElement = new TextElement();
 		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.SingleLine = false;
-		textElement.FixedHeight = 40;
-		textElement.FixedWidth = 130;
-		textElement.Margin = new Padding(0, 5, 0, 0);
+		textElement.FixedHeight = 36;
+		textElement.FixedWidth = 180;
+		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.TextSelector = TextSelector.Text1;
 		textElement.ForeColorSelector = ForeColorSelector.ForeColor1;
-		panelElement2.Children.Add(textElement);
-		PanelElement panelElement3 = new PanelElement();
-		panelElement3.FixedHeight = 50;
-		panelElement3.FixedWidth = 50;
-		panelElement3.Margin = new Padding(0, 28, 0, 0);
-		panelElement3.Alignment = ContentAlignment.TopCenter;
-		ImageElement imageElement2 = new ImageElement();
-		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement2.FixedHeight = 50;
-		imageElement2.FixedWidth = 50;
-		imageElement2.ImageSelector = ImageSelector.Image1;
-		panelElement3.Children.Add(imageElement2);
-		PanelElement panelElement4 = new PanelElement();
-		panelElement4.FixedHeight = 40;
-		panelElement4.FixedWidth = 130;
-		panelElement4.Alignment = ContentAlignment.BottomCenter;
-		TextElement textElement2 = new TextElement();
-		textElement2.TextSelector = TextSelector.Text1;
-		textElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		textElement2.TextTrimming = TextTrimming.EndEllipsis;
-		textElement2.SingleLine = false;
-		textElement2.FixedHeight = 40;
-		textElement2.FixedWidth = 130;
-		panelElement4.Children.Add(textElement2);
+		panelElement3.Children.Add(textElement);
 		template.Elements.Add(panelElement);
 		template.Elements.Add(panelElement2);
 		template.Elements.Add(panelElement3);
-		template.Elements.Add(panelElement4);
 		template.Name = "mapImgTemplate";
 		return template;
 	}

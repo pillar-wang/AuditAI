@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -65,6 +65,7 @@ public static class ChatManager
 	{
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
 			return;
+		SignalRClient.Create();
 		await SignalRClient.Start();
 		SignalRClient.Logined += LoginedCallback;
 		SignalRClient.UserState.UserId = Auditai.Model.User.Current.Id.ToString();
@@ -87,6 +88,11 @@ public static class ChatManager
 				enumerable = await Auditai.LocalDataStore.StorageRouter.GetTeamUsersWithPic();
 			else
 				enumerable = await WebApiClient.GetTeamUsersWithPic();
+			if (enumerable == null || !enumerable.Any())
+			{
+				enumerable = Enumerable.Empty<Auditai.DTO.User>();
+				return;
+			}
 			Guid teamId = enumerable.First().TeamId;
 			lock (lock1)
 			{
@@ -135,12 +141,20 @@ public static class ChatManager
 			MemberManager memberManager2 = memberManager;
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
 		{
-			// 本地模式下没有 SignalR，当前用户标记为在线
 			var selfState = new UserState { UserId = Auditai.Model.User.Current.Id.ToString() };
 			memberManager2.UpdateUserState(new[] { selfState });
 		}
 		else
-			memberManager2.UpdateUserState(await SignalRClient.QueryOnlineTeam(teamId.ToString()));
+		{
+			IEnumerable<UserState> onlineUsers = await SignalRClient.QueryOnlineTeam(teamId.ToString());
+			var selfState = new UserState { UserId = Auditai.Model.User.Current.Id.ToString() };
+			List<UserState> userStates = (onlineUsers ?? Enumerable.Empty<UserState>()).ToList();
+			if (!userStates.Any(s => s.UserId == selfState.UserId))
+			{
+				userStates.Add(selfState);
+			}
+			memberManager2.UpdateUserState(userStates);
+		}
 		}
 		catch (HttpRequestException exception)
 		{
@@ -184,6 +198,10 @@ public static class ChatManager
 				enumerable = await Auditai.LocalDataStore.StorageRouter.GetTeamUsersWithPic();
 			else
 				enumerable = await WebApiClient.GetProjectUsersWithPic(projectId);
+			if (enumerable == null)
+			{
+				enumerable = Enumerable.Empty<Auditai.DTO.User>();
+			}
 			SignalRClient.UserState.ProjectId = projectId.ToString();
 			lock (lock1)
 			{

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -344,9 +344,9 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 12f, FontStyle.Bold),
             ForeColor = Color.Black,
-            Location = new Point(12, 12),
+            Location = new Point(16, 16),
             Name = "_lblTitle",
-            Size = new Size(300, 22),
+            Size = new Size(390, 29),
             Text = "跨项目数据引用",
             TextDetached = true
         };
@@ -358,9 +358,9 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 10f),
             ForeColor = Color.Gray,
-            Location = new Point(12, 38),
+            Location = new Point(16, 49),
             Name = "_lblStepInfo",
-            Size = new Size(200, 19),
+            Size = new Size(260, 25),
             Text = "步骤 1/3：选择项目",
             TextDetached = true
         };
@@ -368,8 +368,8 @@ public class frmSelectProjectData : C1RibbonForm
         // ======== 步骤1：项目选择 ========
         _pnlStep1 = new Panel
         {
-            Location = new Point(12, 65),
-            Size = new Size(760, 430),
+            Location = new Point(16, 85),
+            Size = new Size(988, 559),
             Name = "_pnlStep1"
         };
 
@@ -378,8 +378,8 @@ public class frmSelectProjectData : C1RibbonForm
             AllowChecking = false,
             Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
             BackColor = Color.FromArgb(240, 240, 240),
-            CellWidth = 10,
-            CellHeight = 10,
+            CellWidth = 13,
+            CellHeight = 13,
             Dock = DockStyle.Fill,
             Name = "_tileControl"
         };
@@ -390,8 +390,8 @@ public class frmSelectProjectData : C1RibbonForm
         // ======== 步骤2：表格选择 ========
         _pnlStep2 = new Panel
         {
-            Location = new Point(12, 65),
-            Size = new Size(760, 430),
+            Location = new Point(16, 85),
+            Size = new Size(988, 559),
             Name = "_pnlStep2",
             Visible = false
         };
@@ -403,17 +403,17 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 10f),
             ForeColor = Color.Black,
-            Location = new Point(0, 5),
+            Location = new Point(0, 7),
             Name = "_lblTableTitle",
-            Size = new Size(100, 19),
+            Size = new Size(130, 25),
             Text = "请选择来源表格：",
             TextDetached = true
         };
 
         _lstTables = new ListBox
         {
-            Location = new Point(0, 30),
-            Size = new Size(760, 390),
+            Location = new Point(0, 39),
+            Size = new Size(988, 507),
             Name = "_lstTables",
             Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
         };
@@ -426,8 +426,8 @@ public class frmSelectProjectData : C1RibbonForm
         // ======== 步骤3：数据选择 ========
         _pnlStep3 = new Panel
         {
-            Location = new Point(12, 65),
-            Size = new Size(760, 430),
+            Location = new Point(16, 85),
+            Size = new Size(988, 559),
             Name = "_pnlStep3",
             Visible = false
         };
@@ -436,7 +436,7 @@ public class frmSelectProjectData : C1RibbonForm
         _pnlCellRef = new Panel
         {
             Location = new Point(0, 0),
-            Size = new Size(760, 430),
+            Size = new Size(988, 559),
             Name = "_pnlCellRef"
         };
 
@@ -447,16 +447,16 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 10f),
             ForeColor = Color.Black,
-            Location = new Point(0, 5),
-            Size = new Size(150, 19),
+            Location = new Point(0, 7),
+            Size = new Size(195, 25),
             Text = "请选择要引用的列：",
             TextDetached = true
         };
 
         _lstColumns = new ListBox
         {
-            Location = new Point(0, 30),
-            Size = new Size(760, 390),
+            Location = new Point(0, 39),
+            Size = new Size(988, 507),
             Name = "_lstColumns",
             Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
         };
@@ -468,7 +468,7 @@ public class frmSelectProjectData : C1RibbonForm
         _pnlColumnRef = new Panel
         {
             Location = new Point(0, 0),
-            Size = new Size(760, 430),
+            Size = new Size(988, 559),
             Name = "_pnlColumnRef",
             Visible = false
         };
@@ -480,16 +480,16 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 10f),
             ForeColor = Color.Black,
-            Location = new Point(0, 5),
-            Size = new Size(200, 19),
+            Location = new Point(0, 7),
+            Size = new Size(260, 25),
             Text = "请选择要引用的列（可多选）：",
             TextDetached = true
         };
 
         _clbColumns = new CheckedListBox
         {
-            Location = new Point(0, 30),
-            Size = new Size(760, 390),
+            Location = new Point(0, 39),
+            Size = new Size(988, 507),
             Name = "_clbColumns",
             CheckOnClick = true,
             Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
@@ -502,7 +502,7 @@ public class frmSelectProjectData : C1RibbonForm
         _pnlAreaRef = new Panel
         {
             Location = new Point(0, 0),
-            Size = new Size(760, 430),
+            Size = new Size(988, 559),
             Name = "_pnlAreaRef",
             Visible = false
         };
@@ -514,8 +514,8 @@ public class frmSelectProjectData : C1RibbonForm
             BorderStyle = BorderStyle.None,
             Font = new Font("Noto Sans SC", 10f, FontStyle.Bold),
             ForeColor = Color.Black,
-            Location = new Point(0, 5),
-            Size = new Size(200, 19),
+            Location = new Point(0, 7),
+            Size = new Size(260, 25),
             Text = "请输入引用的区域范围：",
             TextDetached = true
         };
@@ -526,16 +526,16 @@ public class frmSelectProjectData : C1RibbonForm
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
             ForeColor = Color.Black,
-            Location = new Point(0, 45),
-            Size = new Size(80, 17),
+            Location = new Point(0, 59),
+            Size = new Size(104, 22),
             Text = "起始行号：",
             TextDetached = true
         };
 
         _txtAreaStartRow = new C1TextBox
         {
-            Location = new Point(85, 42),
-            Size = new Size(100, 23),
+            Location = new Point(111, 55),
+            Size = new Size(130, 30),
             Name = "_txtAreaStartRow"
         };
 
@@ -545,16 +545,16 @@ public class frmSelectProjectData : C1RibbonForm
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
             ForeColor = Color.Black,
-            Location = new Point(200, 45),
-            Size = new Size(80, 17),
+            Location = new Point(260, 59),
+            Size = new Size(104, 22),
             Text = "结束行号：",
             TextDetached = true
         };
 
         _txtAreaEndRow = new C1TextBox
         {
-            Location = new Point(285, 42),
-            Size = new Size(100, 23),
+            Location = new Point(371, 55),
+            Size = new Size(130, 30),
             Name = "_txtAreaEndRow"
         };
 
@@ -564,16 +564,16 @@ public class frmSelectProjectData : C1RibbonForm
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
             ForeColor = Color.Black,
-            Location = new Point(0, 85),
-            Size = new Size(80, 17),
+            Location = new Point(0, 111),
+            Size = new Size(104, 22),
             Text = "起始列号：",
             TextDetached = true
         };
 
         _txtAreaStartCol = new C1TextBox
         {
-            Location = new Point(85, 82),
-            Size = new Size(100, 23),
+            Location = new Point(111, 107),
+            Size = new Size(130, 30),
             Name = "_txtAreaStartCol"
         };
 
@@ -583,16 +583,16 @@ public class frmSelectProjectData : C1RibbonForm
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
             ForeColor = Color.Black,
-            Location = new Point(200, 85),
-            Size = new Size(80, 17),
+            Location = new Point(260, 111),
+            Size = new Size(104, 22),
             Text = "结束列号：",
             TextDetached = true
         };
 
         _txtAreaEndCol = new C1TextBox
         {
-            Location = new Point(285, 82),
-            Size = new Size(100, 23),
+            Location = new Point(371, 107),
+            Size = new Size(130, 30),
             Name = "_txtAreaEndCol"
         };
 
@@ -641,9 +641,9 @@ public class frmSelectProjectData : C1RibbonForm
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
             Font = new Font("Noto Sans SC", 9f),
-            Location = new Point(508, 520),
+            Location = new Point(660, 676),
             Name = "_btnPrev",
-            Size = new Size(87, 33),
+            Size = new Size(113, 43),
             TabIndex = 10,
             Text = "上一步",
             UseVisualStyleBackColor = true
@@ -654,9 +654,9 @@ public class frmSelectProjectData : C1RibbonForm
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
             Font = new Font("Noto Sans SC", 9f),
-            Location = new Point(601, 520),
+            Location = new Point(781, 676),
             Name = "_btnNext",
-            Size = new Size(87, 33),
+            Size = new Size(113, 43),
             TabIndex = 11,
             Text = "下一步",
             UseVisualStyleBackColor = true
@@ -667,9 +667,9 @@ public class frmSelectProjectData : C1RibbonForm
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
             Font = new Font("Noto Sans SC", 9f),
-            Location = new Point(601, 520),
+            Location = new Point(781, 676),
             Name = "_btnOk",
-            Size = new Size(87, 33),
+            Size = new Size(113, 43),
             TabIndex = 12,
             Text = "确定",
             UseVisualStyleBackColor = true,
@@ -681,9 +681,9 @@ public class frmSelectProjectData : C1RibbonForm
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
             Font = new Font("Noto Sans SC", 9f),
-            Location = new Point(694, 520),
+            Location = new Point(902, 676),
             Name = "_btnCancel",
-            Size = new Size(87, 33),
+            Size = new Size(113, 43),
             TabIndex = 13,
             Text = "取消",
             UseVisualStyleBackColor = true
@@ -693,7 +693,7 @@ public class frmSelectProjectData : C1RibbonForm
         // ======== frmSelectProjectData ========
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(784, 565);
+        this.ClientSize = new Size(1019, 735);
         this.Controls.Add(_lblTitle);
         this.Controls.Add(_lblStepInfo);
         this.Controls.Add(_pnlStep1);

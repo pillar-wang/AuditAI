@@ -1,7 +1,8 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Auditai.DTO;
 using Auditai.Model;
@@ -61,6 +62,11 @@ namespace Auditai.LocalDataStore
                 WebApiClient.LocalUploadFileHandler = LocalDataStore.UploadFile;
                 WebApiClient.LocalDownloadFileHandler = LocalDataStore.DownloadFile;
             }
+            else
+            {
+                // 非本地模式（Server 模式）启用 Syncer，允许 Push/Pull 与服务器同步
+                Syncer.Disabled = false;
+            }
         }
 
         // =============================================
@@ -70,15 +76,15 @@ namespace Auditai.LocalDataStore
         public static async Task<IEnumerable<Auditai.DTO.Project>> GetProjects()
         {
             if (_isLocalMode)
-                return await LocalDataStore.GetProjects();
-            return await WebApiClient.GetProjects();
+                return await LocalDataStore.GetProjects() ?? Enumerable.Empty<Auditai.DTO.Project>();
+            return await WebApiClient.GetProjects() ?? Enumerable.Empty<Auditai.DTO.Project>();
         }
 
         public static async Task<IEnumerable<Auditai.DTO.Project>> GetTemplates()
         {
             if (_isLocalMode)
-                return await LocalDataStore.GetTemplates();
-            return await WebApiClient.GetTemplates();
+                return await LocalDataStore.GetTemplates() ?? Enumerable.Empty<Auditai.DTO.Project>();
+            return await WebApiClient.GetTemplates() ?? Enumerable.Empty<Auditai.DTO.Project>();
         }
 
         public static async Task CreateProject(Auditai.DTO.Project project)
@@ -258,8 +264,8 @@ namespace Auditai.LocalDataStore
         public static async Task<IEnumerable<Auditai.DTO.Project>> GetRecycleProjects()
         {
             if (_isLocalMode)
-                return await LocalDataStore.GetRecycleProjects();
-            return await WebApiClient.GetRecycleProjects();
+                return await LocalDataStore.GetRecycleProjects() ?? Enumerable.Empty<Auditai.DTO.Project>();
+            return await WebApiClient.GetRecycleProjects() ?? Enumerable.Empty<Auditai.DTO.Project>();
         }
 
         public static async Task RestoreProjects(JObject jobj)

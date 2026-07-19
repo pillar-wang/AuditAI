@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -231,29 +231,29 @@ internal class BalanceEditor : ISetTheme
 		lblAccountName.TextAlign = ContentAlignment.MiddleCenter;
 		pnlBalanceTitle.BackColor = Color.WhiteSmoke;
 		pnlBalanceTitle.HeaderLineColor = Color.Transparent;
-		pnlBalanceTitle.Height = 30;
+		pnlBalanceTitle.Height = 39;
 		pnlBalanceTitle.KeepRelativeSize = false;
 		pnlBalanceTitle.Location = new Point(0, 0);
-		pnlBalanceTitle.MinHeight = 30;
+		pnlBalanceTitle.MinHeight = 39;
 		pnlBalanceTitle.Resizable = false;
-		pnlBalanceTitle.Size = new Size(927, 30);
+		pnlBalanceTitle.Size = new Size(927, 39);
 		pnlBalanceTitle.SizeRatio = 4.815;
 		pnlBalanceTitle.Controls.Add(btnBalanceBack);
 		pnlBalanceTitle.Controls.Add(lblAccountName);
-		Font font2 = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblCurrency.TextDetached = true;
 		lblCurrency.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
 		lblCurrency.BorderStyle = BorderStyle.None;
 		lblCurrency.Font = font2;
-		lblCurrency.Location = new Point(727, 6);
-		lblCurrency.Size = new Size(180, 17);
+		lblCurrency.Location = new Point(727, 8);
+		lblCurrency.Size = new Size(180, 20);
 		lblCurrency.Text = "金额单位：";
 		lblCurrency.TextAlign = ContentAlignment.MiddleRight;
 		lblCompanyName.TextDetached = true;
 		lblCompanyName.BorderStyle = BorderStyle.None;
 		lblCompanyName.Font = font2;
-		lblCompanyName.Location = new Point(3, 3);
-		lblCompanyName.Size = new Size(343, 19);
+		lblCompanyName.Location = new Point(3, 6);
+		lblCompanyName.Size = new Size(343, 22);
 		lblCompanyName.Text = "核算单位：";
 		lblCompanyName.TextAlign = ContentAlignment.MiddleLeft;
 		dteStart.AllowSpinLoop = false;
@@ -262,8 +262,8 @@ internal class BalanceEditor : ISetTheme
 		dteStart.CustomFormat = "yyyy-MM-dd";
 		dteStart.FormatType = FormatTypeEnum.CustomFormat;
 		dteStart.ImagePadding = new Padding(0);
-		dteStart.Location = new Point(377, 2);
-		dteStart.Size = new Size(75, 21);
+		dteStart.Location = new Point(377, 4);
+		dteStart.Size = new Size(100, 26);
 		dteStart.VisibleButtons = DropDownControlButtonFlags.None;
 		dteStart.DisplayFormat.FormatType = FormatTypeEnum.CustomFormat;
 		dteStart.ValueChanged += DatStart_ValueChanged;
@@ -275,8 +275,8 @@ internal class BalanceEditor : ISetTheme
 		dteEnd.CustomFormat = "yyyy-MM-dd";
 		dteEnd.FormatType = FormatTypeEnum.CustomFormat;
 		dteEnd.ImagePadding = new Padding(0);
-		dteEnd.Location = new Point(474, 2);
-		dteEnd.Size = new Size(74, 21);
+		dteEnd.Location = new Point(504, 4);
+		dteEnd.Size = new Size(100, 26);
 		dteEnd.VisibleButtons = DropDownControlButtonFlags.None;
 		dteEnd.DisplayFormat.FormatType = FormatTypeEnum.CustomFormat;
 		dteEnd.ValueChanged += DatEnd_ValueChanged;
@@ -287,17 +287,17 @@ internal class BalanceEditor : ISetTheme
 		lblPeriod.AutoSize = true;
 		lblPeriod.Font = font2;
 		lblPeriod.BorderStyle = BorderStyle.None;
-		lblPeriod.Location = new Point(453, 6);
-		lblPeriod.Size = new Size(20, 17);
+		lblPeriod.Location = new Point(480, 8);
+		lblPeriod.Size = new Size(20, 20);
 		lblPeriod.Text = "至";
 		pnlBalanceHead.BackColor = Color.WhiteSmoke;
 		pnlBalanceHead.HeaderLineColor = Color.Transparent;
-		pnlBalanceHead.Height = 25;
+		pnlBalanceHead.Height = 40;
 		pnlBalanceHead.KeepRelativeSize = false;
-		pnlBalanceHead.Location = new Point(0, 31);
-		pnlBalanceHead.MinHeight = 25;
+		pnlBalanceHead.Location = new Point(0, 40);
+		pnlBalanceHead.MinHeight = 40;
 		pnlBalanceHead.Resizable = false;
-		pnlBalanceHead.Size = new Size(927, 25);
+		pnlBalanceHead.Size = new Size(927, 33);
 		pnlBalanceHead.SizeRatio = 4.181;
 		pnlBalanceHead.Controls.Add(lblCurrency);
 		pnlBalanceHead.Controls.Add(lblCompanyName);
@@ -314,8 +314,9 @@ internal class BalanceEditor : ISetTheme
 		grdBalance.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdBalance.Dock = DockStyle.Fill;
 		grdBalance.DrawMode = DrawModeEnum.OwnerDraw;
+		grdBalance.ExtendLastCol = true;
 		grdBalance.Font = font2;
-		grdBalance.Rows.DefaultSize = 30;
+		grdBalance.Rows.DefaultSize = 33;
 		grdBalance.Tree.LineColor = Color.DimGray;
 		grdBalance.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		Auditai.UI.Controls.Theme.SetCurrentObject(grdBalance);
@@ -425,9 +426,8 @@ internal class BalanceEditor : ISetTheme
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdBalance, toolBar, out pnlSidebar);
 		pnlBalanceGrid.HeaderLineColor = Color.Transparent;
 		pnlBalanceGrid.Height = 573;
-		pnlBalanceGrid.Location = new Point(0, 57);
+		pnlBalanceGrid.KeepRelativeSize = true;
 		pnlBalanceGrid.Resizable = false;
-		pnlBalanceGrid.Size = new Size(927, 573);
 		pnlBalanceGrid.SizeRatio = 100.0;
 		pnlBalanceGrid.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -517,6 +517,7 @@ internal class BalanceEditor : ISetTheme
 				PendingAllEvent = false;
 			}
 			grdBalance.EndUpdate();
+			AutoSizeColumns();
 		}
 		UpdateTitle(ledger);
 		Node addNode(TrialBalanceSheet _sheet, Account _account, Node _parentNode)
@@ -589,6 +590,7 @@ internal class BalanceEditor : ISetTheme
 			}
 		}
 		UpdateTitle(ledger);
+		AutoSizeColumns();
 		C1.Win.C1FlexGrid.Row addRow(TrialBalanceSheet _sheet, Account _account, int _layer)
 		{
 			C1.Win.C1FlexGrid.Row row = grdBalance.Rows.Add();
@@ -797,6 +799,7 @@ internal class BalanceEditor : ISetTheme
 				PendingAllEvent = false;
 			}
 			grdBalance.EndUpdate();
+			AutoSizeColumns();
 		}
 		void addRow2(Account account, AuxiliaryItem item, string name)
 		{
@@ -829,58 +832,58 @@ internal class BalanceEditor : ISetTheme
 			column.Caption = "序号";
 			column.DataType = typeof(int);
 			column.TextAlign = TextAlignEnum.CenterCenter;
-			column.Width = 50;
+			column.Width = 60;
 			column = grdBalance.Cols.Add();
 			column.Name = "Code";
 			column.Caption = "科目代码";
 			column.DataType = typeof(string);
 			column.AllowMerging = true;
-			column.Width = 100;
+			column.Width = 120;
 			column = grdBalance.Cols.Add();
 			column.Name = "Name";
 			column.Caption = "科目名称";
 			column.DataType = typeof(string);
 			column.AllowMerging = true;
-			column.Width = 200;
+			column.Width = 240;
 			column = grdBalance.Cols.Add();
 			column.Name = "BeginDC";
 			column.Caption = "期初余额方向";
 			column.DataType = typeof(string);
 			column.TextAlign = TextAlignEnum.CenterCenter;
-			column.Width = 100;
+			column.Width = 110;
 			column = grdBalance.Cols.Add();
 			column.Name = "BeginBalance";
 			column.Caption = "期初余额";
 			column.DataType = typeof(decimal);
 			column.Format = "#,0.00;-#,0.00;#";
-			column.Width = 100;
+			column.Width = 120;
 			column.Sort = SortFlags.None;
 			column = grdBalance.Cols.Add();
 			column.Name = "Debit";
 			column.Caption = "借方发生额";
 			column.DataType = typeof(decimal);
 			column.Format = "#,0.00;-#,0.00;#";
-			column.Width = 100;
+			column.Width = 120;
 			column.Sort = SortFlags.None;
 			column = grdBalance.Cols.Add();
 			column.Name = "Credit";
 			column.Caption = "贷方发生额";
 			column.DataType = typeof(decimal);
 			column.Format = "#,0.00;-#,0.00;#";
-			column.Width = 100;
+			column.Width = 120;
 			column.Sort = SortFlags.None;
 			column = grdBalance.Cols.Add();
 			column.Name = "EndDC";
 			column.Caption = "期末余额方向";
 			column.DataType = typeof(string);
 			column.TextAlign = TextAlignEnum.CenterCenter;
-			column.Width = 100;
+			column.Width = 110;
 			column = grdBalance.Cols.Add();
 			column.Name = "EndBalance";
 			column.Caption = "期末余额";
 			column.DataType = typeof(decimal);
 			column.Format = "#,0.00;-#,0.00;#";
-			column.Width = 100;
+			column.Width = 120;
 			column.Sort = SortFlags.None;
 			initializedCaption = true;
 		}
@@ -1197,6 +1200,7 @@ internal class BalanceEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		btnBalanceBack.BackColor = Color.Transparent;
 		btnBalanceBack.FlatStyle = FlatStyle.Flat;
 		btnBalanceBack.FlatAppearance.BorderSize = 0;
@@ -1465,6 +1469,79 @@ internal class BalanceEditor : ISetTheme
 		grdBalance.AfterDragColumn += _grid_AfterDragColumn;
 		grdBalance.AfterResizeColumn += _grid_AfterResizeColumn;
 		grdBalance.MouseDoubleClick += GrdBalance_MouseDoubleClick;
+		grdBalance.Resize += GrdBalance_Resize;
+	}
+
+	private void GrdBalance_Resize(object sender, EventArgs e)
+	{
+		AutoSizeColumns();
+	}
+
+	private void AutoSizeColumns()
+	{
+		if (grdBalance == null || grdBalance.Cols.Count <= grdBalance.Cols.Fixed || !initializedCaption)
+		{
+			return;
+		}
+		int clientWidth = grdBalance.ClientSize.Width;
+		if (clientWidth <= 0)
+		{
+			return;
+		}
+		int fixedWidth = 0;
+		for (int i = 0; i < grdBalance.Cols.Fixed; i++)
+		{
+			fixedWidth += grdBalance.Cols[i].WidthDisplay;
+		}
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0)
+		{
+			return;
+		}
+		double[] ratios = new double[]
+		{
+			0.06,
+			0.10,
+			0.20,
+			0.09,
+			0.11,
+			0.11,
+			0.11,
+			0.09,
+			0.13
+		};
+		string[] colNames = new string[]
+		{
+			"Index",
+			"Code",
+			"Name",
+			"BeginDC",
+			"BeginBalance",
+			"Debit",
+			"Credit",
+			"EndDC",
+			"EndBalance"
+		};
+		grdBalance.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdBalance.Cols.Contains(colNames[i]))
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 40)
+					{
+						width = 40;
+					}
+					grdBalance.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally
+		{
+			grdBalance.EndUpdate();
+		}
 	}
 
 	private void GrdBalance_MouseDoubleClick(object sender, MouseEventArgs e)

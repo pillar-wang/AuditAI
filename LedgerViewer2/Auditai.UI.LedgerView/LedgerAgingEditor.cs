@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -143,20 +143,20 @@ public class LedgerAgingEditor : ISetTheme
 		lblAgeTitle.Text = "账龄分析表";
 		lblAgeTitle.TextAlign = ContentAlignment.MiddleCenter;
 		pnlAnalyzeTitle.Controls.Add(lblAgeTitle);
-		pnlAnalyzeTitle.Height = 30;
+		pnlAnalyzeTitle.Height = 39;
 		pnlAnalyzeTitle.KeepRelativeSize = false;
 		pnlAnalyzeTitle.Location = new Point(0, 0);
-		pnlAnalyzeTitle.MinHeight = 30;
+		pnlAnalyzeTitle.MinHeight = 39;
 		pnlAnalyzeTitle.Resizable = false;
-		pnlAnalyzeTitle.Size = new Size(927, 30);
+		pnlAnalyzeTitle.Size = new Size(927, 39);
 		pnlAnalyzeTitle.SizeRatio = 4.769;
-		Font font2 = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAnalyzeAccount.TextDetached = true;
 		lblAnalyzeAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblAnalyzeAccount.BorderStyle = BorderStyle.None;
 		lblAnalyzeAccount.Font = font2;
-		lblAnalyzeAccount.Location = new Point(5, 4);
-		lblAnalyzeAccount.Size = new Size(420, 17);
+		lblAnalyzeAccount.Location = new Point(5, 8);
+		lblAnalyzeAccount.Size = new Size(420, 22);
 		lblAnalyzeAccount.Text = "科目名称：";
 		lblAnalyzeAccount.TextAlign = ContentAlignment.MiddleLeft;
 		dteAnalyzeDate.AllowSpinLoop = false;
@@ -165,15 +165,15 @@ public class LedgerAgingEditor : ISetTheme
 		dteAnalyzeDate.CustomFormat = "yyyy-MM-dd";
 		dteAnalyzeDate.FormatType = FormatTypeEnum.CustomFormat;
 		dteAnalyzeDate.ImagePadding = new Padding(0);
-		dteAnalyzeDate.Location = new Point(426, 2);
-		dteAnalyzeDate.Size = new Size(75, 21);
+		dteAnalyzeDate.Location = new Point(426, 5);
+		dteAnalyzeDate.Size = new Size(100, 26);
 		dteAnalyzeDate.VisibleButtons = DropDownControlButtonFlags.None;
-		pnlAnalyzeHead.Height = 25;
+		pnlAnalyzeHead.Height = 40;
 		pnlAnalyzeHead.KeepRelativeSize = false;
-		pnlAnalyzeHead.Location = new Point(0, 31);
-		pnlAnalyzeHead.MinHeight = 25;
+		pnlAnalyzeHead.Location = new Point(0, 40);
+		pnlAnalyzeHead.MinHeight = 40;
 		pnlAnalyzeHead.Resizable = false;
-		pnlAnalyzeHead.Size = new Size(927, 25);
+		pnlAnalyzeHead.Size = new Size(927, 33);
 		pnlAnalyzeHead.Controls.Add(dteAnalyzeDate);
 		pnlAnalyzeHead.Controls.Add(lblAnalyzeAccount);
 		pnlAnalyzeHead.Paint += delegate(object s1, PaintEventArgs e1)
@@ -185,6 +185,7 @@ public class LedgerAgingEditor : ISetTheme
 		grid.AllowSorting = AllowSortingEnum.None;
 		grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grid.DrawMode = DrawModeEnum.OwnerDraw;
+		grid.ExtendLastCol = true;
 		grid.Font = font2;
 		grid.Location = new Point(0, 0);
 		grid.Rows.DefaultSize = 20;
@@ -235,8 +236,7 @@ public class LedgerAgingEditor : ISetTheme
 			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
 		}
 		pnlAnalyzeGrid.Height = 573;
-		pnlAnalyzeGrid.Location = new Point(0, 57);
-		pnlAnalyzeGrid.Size = new Size(927, 573);
+		pnlAnalyzeGrid.KeepRelativeSize = true;
 		pnlAnalyzeGrid.Controls.Add(grid);
 		grid.Dock = DockStyle.Fill;
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -401,7 +401,7 @@ public class LedgerAgingEditor : ISetTheme
 		grid.Cols.Fixed = 1;
 		grid.Rows.Count = 1;
 		grid.Rows.Fixed = 1;
-		grid.Rows.DefaultSize = 30;
+		grid.Rows.DefaultSize = 33;
 		C1.Win.C1FlexGrid.Column column = grid.Cols[0];
 		column.Name = "CN_INDEX";
 		column.Caption = "序号";
@@ -494,6 +494,7 @@ public class LedgerAgingEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
 			imageProcess.SetImageStrategy(new WhiteImageStrategy());
@@ -781,7 +782,7 @@ public class LedgerAgingEditor : ISetTheme
 			grid.Cols.Fixed = 1;
 			grid.Rows.Count = 1;
 			grid.Rows.Fixed = 1;
-			grid.Rows.DefaultSize = 30;
+			grid.Rows.DefaultSize = 33;
 			C1.Win.C1FlexGrid.Column column = grid.Cols.Add();
 			column.Name = "CN_INDEX";
 			column.Caption = "序号";

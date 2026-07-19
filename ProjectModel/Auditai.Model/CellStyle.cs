@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Auditai.DTO;
@@ -106,6 +106,7 @@ public class CellStyle
 
 	internal void Deserialize(string s)
 	{
+		if (string.IsNullOrWhiteSpace(s)) return;
 		JsonConvert.PopulateObject(s, this);
 	}
 

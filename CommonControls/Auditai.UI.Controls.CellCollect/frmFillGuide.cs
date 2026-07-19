@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -203,12 +203,36 @@ public class frmFillGuide : C1RibbonForm
 		PopulateAccountTree(comboAccountTree);
 	}
 
-	private void PopulateBalance()
-	{
-		grdBalance.BeginUpdate();
-		try
+	private void SetMinColumnWidths(C1.Win.C1FlexGrid.C1FlexGrid grid)
 		{
-			grdBalance.Cols.Count = 0;
+			var minWidths = new Dictionary<string, int>
+			{
+				{ "Index", 60 },
+				{ "Code", 100 },
+				{ "Name", 150 },
+				{ "BeginDC", 100 },
+				{ "BeginBalance", 120 },
+				{ "Debit", 120 },
+				{ "Credit", 120 },
+				{ "EndDC", 100 },
+				{ "EndBalance", 120 }
+			};
+			foreach (var kvp in minWidths)
+			{
+				var col = grid.Cols[kvp.Key];
+				if (col != null && col.Width < kvp.Value)
+				{
+					col.Width = kvp.Value;
+				}
+			}
+		}
+
+		private void PopulateBalance()
+		{
+			try
+			{
+				grdBalance.BeginUpdate();
+				grdBalance.Cols.Count = 0;
 			grdBalance.Rows.Count = 1;
 			grdBalance.Rows.Fixed = 1;
 			C1.Win.C1FlexGrid.Column column = grdBalance.Cols.Add();
@@ -312,6 +336,7 @@ public class frmFillGuide : C1RibbonForm
 				addChildren(rootAccount, node2);
 			}
 			grdBalance.AllowEditing = false;
+			SetMinColumnWidths(grdBalance);
 			grdBalance.AutoSizeCols();
 			grdBalance.Tree.Show(0);
 			void addChildren(Account account, Node node)
@@ -825,16 +850,16 @@ public class frmFillGuide : C1RibbonForm
 		this.DockingTab.Location = new System.Drawing.Point(0, 0);
 		this.DockingTab.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		this.DockingTab.Name = "DockingTab";
-		this.DockingTab.Size = new System.Drawing.Size(951, 523);
+		this.DockingTab.Size = new System.Drawing.Size(1237, 680);
 		this.DockingTab.TabIndex = 0;
 		this.DockingTab.TabsSpacing = 0;
 		this.DockingTab.TabStyle = C1.Win.C1Command.TabStyleEnum.WindowsXP;
 		this.DockingTab.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.DockingTab.VisualStyleBase = C1.Win.C1Command.VisualStyle.WindowsXP;
 		this.tabBalance.Controls.Add(this.c1SplitContainer1);
-		this.tabBalance.Location = new System.Drawing.Point(2, 28);
+		this.tabBalance.Location = new System.Drawing.Point(3, 36);
 		this.tabBalance.Name = "tabBalance";
-		this.tabBalance.Size = new System.Drawing.Size(945, 491);
+		this.tabBalance.Size = new System.Drawing.Size(1233, 638);
 		this.tabBalance.TabIndex = 0;
 		this.tabBalance.Text = "第1页";
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
@@ -846,22 +871,22 @@ public class frmFillGuide : C1RibbonForm
 		this.c1SplitContainer1.Name = "c1SplitContainer1";
 		this.c1SplitContainer1.Panels.Add(this.c1SplitterPanel2);
 		this.c1SplitContainer1.Panels.Add(this.c1SplitterPanel1);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(945, 491);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(1233, 638);
 		this.c1SplitContainer1.TabIndex = 1;
 		this.c1SplitterPanel2.Controls.Add(this.c1Label3);
-		this.c1SplitterPanel2.Height = 25;
+		this.c1SplitterPanel2.Height = 33;
 		this.c1SplitterPanel2.KeepRelativeSize = false;
 		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1SplitterPanel2.MinHeight = 20;
 		this.c1SplitterPanel2.Name = "c1SplitterPanel2";
 		this.c1SplitterPanel2.Resizable = false;
-		this.c1SplitterPanel2.Size = new System.Drawing.Size(945, 25);
+		this.c1SplitterPanel2.Size = new System.Drawing.Size(1233, 33);
 		this.c1SplitterPanel2.TabIndex = 1;
 		this.c1Label3.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label3.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1Label3.Location = new System.Drawing.Point(0, 0);
 		this.c1Label3.Name = "c1Label3";
-		this.c1Label3.Size = new System.Drawing.Size(945, 25);
+		this.c1Label3.Size = new System.Drawing.Size(1233, 33);
 		this.c1Label3.TabIndex = 0;
 		this.c1Label3.Tag = null;
 		this.c1Label3.Text = "科目余额表";
@@ -869,10 +894,10 @@ public class frmFillGuide : C1RibbonForm
 		this.c1Label3.TextDetached = true;
 		this.c1SplitterPanel1.Controls.Add(this.grdBalance);
 		this.c1SplitterPanel1.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.c1SplitterPanel1.Height = 465;
-		this.c1SplitterPanel1.Location = new System.Drawing.Point(0, 26);
+		this.c1SplitterPanel1.Height = 605;
+		this.c1SplitterPanel1.Location = new System.Drawing.Point(0, 34);
 		this.c1SplitterPanel1.Name = "c1SplitterPanel1";
-		this.c1SplitterPanel1.Size = new System.Drawing.Size(945, 465);
+		this.c1SplitterPanel1.Size = new System.Drawing.Size(1233, 605);
 		this.c1SplitterPanel1.TabIndex = 0;
 		this.grdBalance.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdBalance.ColumnInfo = "10,1,0,0,0,100,Columns:";
@@ -884,12 +909,12 @@ public class frmFillGuide : C1RibbonForm
 		this.grdBalance.Rows.Count = 0;
 		this.grdBalance.Rows.DefaultSize = 20;
 		this.grdBalance.Rows.Fixed = 0;
-		this.grdBalance.Size = new System.Drawing.Size(945, 465);
+		this.grdBalance.Size = new System.Drawing.Size(1233, 605);
 		this.grdBalance.TabIndex = 0;
 		this.tabSubsidiary.Controls.Add(this.ctnSubTab);
-		this.tabSubsidiary.Location = new System.Drawing.Point(2, 28);
+		this.tabSubsidiary.Location = new System.Drawing.Point(3, 36);
 		this.tabSubsidiary.Name = "tabSubsidiary";
-		this.tabSubsidiary.Size = new System.Drawing.Size(945, 491);
+		this.tabSubsidiary.Size = new System.Drawing.Size(1233, 638);
 		this.tabSubsidiary.TabIndex = 1;
 		this.tabSubsidiary.Text = "第2页";
 		this.ctnSubTab.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
@@ -904,23 +929,23 @@ public class frmFillGuide : C1RibbonForm
 		this.ctnSubTab.Panels.Add(this.c1SplitterPanel3);
 		this.ctnSubTab.Panels.Add(this.pnlSubHeader);
 		this.ctnSubTab.Panels.Add(this.pnlSubTable);
-		this.ctnSubTab.Size = new System.Drawing.Size(945, 491);
+		this.ctnSubTab.Size = new System.Drawing.Size(1233, 638);
 		this.ctnSubTab.SplitterWidth = 5;
 		this.ctnSubTab.TabIndex = 5;
 		this.c1SplitterPanel3.Controls.Add(this.c1Label4);
-		this.c1SplitterPanel3.Height = 25;
+		this.c1SplitterPanel3.Height = 33;
 		this.c1SplitterPanel3.KeepRelativeSize = false;
 		this.c1SplitterPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1SplitterPanel3.MinHeight = 20;
 		this.c1SplitterPanel3.Name = "c1SplitterPanel3";
 		this.c1SplitterPanel3.Resizable = false;
-		this.c1SplitterPanel3.Size = new System.Drawing.Size(945, 25);
+		this.c1SplitterPanel3.Size = new System.Drawing.Size(1233, 33);
 		this.c1SplitterPanel3.TabIndex = 2;
 		this.c1Label4.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label4.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1Label4.Location = new System.Drawing.Point(0, 0);
 		this.c1Label4.Name = "c1Label4";
-		this.c1Label4.Size = new System.Drawing.Size(945, 25);
+		this.c1Label4.Size = new System.Drawing.Size(1233, 33);
 		this.c1Label4.TabIndex = 0;
 		this.c1Label4.Tag = null;
 		this.c1Label4.Text = "明细账";
@@ -930,21 +955,21 @@ public class frmFillGuide : C1RibbonForm
 		this.pnlSubHeader.Controls.Add(this.c1Label1);
 		this.pnlSubHeader.Controls.Add(this.comboAuxiliaryTree);
 		this.pnlSubHeader.Controls.Add(this.comboAccountTree);
-		this.pnlSubHeader.Height = 52;
+		this.pnlSubHeader.Height = 68;
 		this.pnlSubHeader.KeepRelativeSize = false;
-		this.pnlSubHeader.Location = new System.Drawing.Point(0, 26);
+		this.pnlSubHeader.Location = new System.Drawing.Point(0, 34);
 		this.pnlSubHeader.MinHeight = 52;
 		this.pnlSubHeader.MinWidth = 52;
 		this.pnlSubHeader.Name = "pnlSubHeader";
 		this.pnlSubHeader.Resizable = false;
-		this.pnlSubHeader.Size = new System.Drawing.Size(945, 52);
+		this.pnlSubHeader.Size = new System.Drawing.Size(1233, 68);
 		this.pnlSubHeader.SizeRatio = 10.421;
 		this.pnlSubHeader.TabIndex = 0;
-		this.pnlSubHeader.Width = 945;
+		this.pnlSubHeader.Width = 1233;
 		this.c1Label2.AutoSize = true;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label2.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.c1Label2.Location = new System.Drawing.Point(267, 14);
+		this.c1Label2.Location = new System.Drawing.Point(347, 18);
 		this.c1Label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 		this.c1Label2.Name = "c1Label2";
 		this.c1Label2.Size = new System.Drawing.Size(68, 17);
@@ -955,7 +980,7 @@ public class frmFillGuide : C1RibbonForm
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label1.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.c1Label1.Location = new System.Drawing.Point(17, 13);
+		this.c1Label1.Location = new System.Drawing.Point(22, 17);
 		this.c1Label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 		this.c1Label1.Name = "c1Label1";
 		this.c1Label1.Size = new System.Drawing.Size(68, 17);
@@ -972,11 +997,11 @@ public class frmFillGuide : C1RibbonForm
 		this.comboAuxiliaryTree.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.comboAuxiliaryTree.ItemsDisplayMember = "";
 		this.comboAuxiliaryTree.ItemsValueMember = "";
-		this.comboAuxiliaryTree.Location = new System.Drawing.Point(343, 12);
+		this.comboAuxiliaryTree.Location = new System.Drawing.Point(446, 16);
 		this.comboAuxiliaryTree.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
 		this.comboAuxiliaryTree.Name = "comboAuxiliaryTree";
 		this.comboAuxiliaryTree.SelectedNode = null;
-		this.comboAuxiliaryTree.Size = new System.Drawing.Size(120, 21);
+		this.comboAuxiliaryTree.Size = new System.Drawing.Size(156, 27);
 		this.comboAuxiliaryTree.TabIndex = 2;
 		this.comboAuxiliaryTree.Tag = null;
 		this.comboAuxiliaryTree.TextDetached = true;
@@ -988,23 +1013,23 @@ public class frmFillGuide : C1RibbonForm
 		this.comboAccountTree.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.comboAccountTree.ItemsDisplayMember = "";
 		this.comboAccountTree.ItemsValueMember = "";
-		this.comboAccountTree.Location = new System.Drawing.Point(93, 12);
+		this.comboAccountTree.Location = new System.Drawing.Point(121, 16);
 		this.comboAccountTree.Margin = new System.Windows.Forms.Padding(6, 7, 6, 7);
 		this.comboAccountTree.Name = "comboAccountTree";
 		this.comboAccountTree.SelectedNode = null;
-		this.comboAccountTree.Size = new System.Drawing.Size(120, 21);
+		this.comboAccountTree.Size = new System.Drawing.Size(156, 27);
 		this.comboAccountTree.TabIndex = 1;
 		this.comboAccountTree.Tag = null;
 		this.comboAccountTree.TextDetached = true;
 		this.pnlSubTable.Controls.Add(this.grdSubsidiary);
-		this.pnlSubTable.Height = 412;
-		this.pnlSubTable.Location = new System.Drawing.Point(0, 79);
+		this.pnlSubTable.Height = 535;
+		this.pnlSubTable.Location = new System.Drawing.Point(0, 103);
 		this.pnlSubTable.MinHeight = 52;
 		this.pnlSubTable.MinWidth = 52;
 		this.pnlSubTable.Name = "pnlSubTable";
-		this.pnlSubTable.Size = new System.Drawing.Size(945, 412);
+		this.pnlSubTable.Size = new System.Drawing.Size(1233, 535);
 		this.pnlSubTable.TabIndex = 1;
-		this.pnlSubTable.Width = 945;
+		this.pnlSubTable.Width = 1233;
 		this.grdSubsidiary.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdSubsidiary.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this.grdSubsidiary.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1015,24 +1040,24 @@ public class frmFillGuide : C1RibbonForm
 		this.grdSubsidiary.Rows.Count = 0;
 		this.grdSubsidiary.Rows.DefaultSize = 20;
 		this.grdSubsidiary.Rows.Fixed = 0;
-		this.grdSubsidiary.Size = new System.Drawing.Size(945, 412);
+		this.grdSubsidiary.Size = new System.Drawing.Size(1233, 535);
 		this.grdSubsidiary.TabIndex = 1;
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnConfirm.Location = new System.Drawing.Point(715, 21);
+		this.btnConfirm.Location = new System.Drawing.Point(930, 27);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(70, 26);
+		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(840, 21);
+		this.btnCancel.Location = new System.Drawing.Point(1092, 27);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(70, 26);
+		this.btnCancel.Size = new System.Drawing.Size(91, 34);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
@@ -1048,35 +1073,35 @@ public class frmFillGuide : C1RibbonForm
 		this.ctnAll.Name = "ctnAll";
 		this.ctnAll.Panels.Add(this.pnlBottomBtn);
 		this.ctnAll.Panels.Add(this.pnlDockingTab);
-		this.ctnAll.Size = new System.Drawing.Size(951, 584);
+		this.ctnAll.Size = new System.Drawing.Size(1237, 759);
 		this.ctnAll.SplitterWidth = 0;
 		this.ctnAll.TabIndex = 3;
 		this.pnlBottomBtn.Controls.Add(this.btnConfirm);
 		this.pnlBottomBtn.Controls.Add(this.btnCancel);
 		this.pnlBottomBtn.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlBottomBtn.Height = 60;
+		this.pnlBottomBtn.Height = 78;
 		this.pnlBottomBtn.KeepRelativeSize = false;
-		this.pnlBottomBtn.Location = new System.Drawing.Point(0, 524);
-		this.pnlBottomBtn.MinHeight = 60;
+		this.pnlBottomBtn.Location = new System.Drawing.Point(0, 681);
+		this.pnlBottomBtn.MinHeight = 78;
 		this.pnlBottomBtn.MinWidth = 52;
 		this.pnlBottomBtn.Name = "pnlBottomBtn";
 		this.pnlBottomBtn.Resizable = false;
-		this.pnlBottomBtn.Size = new System.Drawing.Size(951, 60);
+		this.pnlBottomBtn.Size = new System.Drawing.Size(1237, 78);
 		this.pnlBottomBtn.TabIndex = 1;
-		this.pnlBottomBtn.Width = 951;
+		this.pnlBottomBtn.Width = 1237;
 		this.pnlDockingTab.Controls.Add(this.DockingTab);
-		this.pnlDockingTab.Height = 523;
+		this.pnlDockingTab.Height = 680;
 		this.pnlDockingTab.Location = new System.Drawing.Point(0, 0);
 		this.pnlDockingTab.MinHeight = 52;
 		this.pnlDockingTab.MinWidth = 52;
 		this.pnlDockingTab.Name = "pnlDockingTab";
-		this.pnlDockingTab.Size = new System.Drawing.Size(951, 523);
+		this.pnlDockingTab.Size = new System.Drawing.Size(1237, 680);
 		this.pnlDockingTab.SizeRatio = 100.0;
 		this.pnlDockingTab.TabIndex = 0;
-		this.pnlDockingTab.Width = 951;
+		this.pnlDockingTab.Width = 1237;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(951, 584);
+		base.ClientSize = new System.Drawing.Size(1237, 759);
 		base.Controls.Add(this.ctnAll);
 		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -4370,7 +4370,8 @@ public class TableEditor : ISetTheme
 			{
 				int bodyRow = _grid.BodyRow;
 				int count = (int)num.Value;
-				Table.Rows.Insert(bodyRow, count);
+				var command = new InsertRowsCommand(Table, bodyRow, count);
+				Table.CommandsManager.ExecuteCommand(command);
 				_grid.QuickInsertRows(bodyRow, count);
 				int num2 = bodyRow;
 				while (true)
@@ -4472,6 +4473,12 @@ public class TableEditor : ISetTheme
 				return;
 			}
 		}
+		// 保存原始合并状态用于撤销
+		var originalMerges = Table.MergedCells.Where(m =>
+			(m.TopLeft.Row.Index >= start && m.TopLeft.Row.Index <= end) ||
+			(m.BottomRight.Row.Index >= start && m.BottomRight.Row.Index <= end) ||
+			(m.TopLeft.Row.Index < start && m.BottomRight.Row.Index > end)).ToList();
+
 		List<CellMerge> list2 = Table.MergedCells.ToList();
 		for (int num = list2.Count - 1; num >= 0; num--)
 		{
@@ -4526,7 +4533,8 @@ public class TableEditor : ISetTheme
 		}
 		else
 		{
-			Table.Rows.Remove(start, end - start + 1);
+			var command = new DeleteRowsCommand(Table, start, end - start + 1, originalMerges);
+			Table.CommandsManager.ExecuteCommand(command);
 		}
 		FormulaEvaluator.ClearCache();
 		PopulateRows();
@@ -4729,6 +4737,30 @@ public class TableEditor : ISetTheme
 		if (_table.IsCorrupted)
 		{
 			SetCorruptedView();
+			if (!StorageRouter.IsLocalMode)
+			{
+				if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"表格 " + _table.TreeNode.Name + " 本地数据已损坏。\r\n是否尝试从云端重新同步修复？",
+					MessageBoxButtons.YesNo) == DialogResult.Yes)
+				{
+					ProgressForm2 progressForm = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.05f));
+					ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+					progressRuntimeData.UpdateMessage("正在从云端修复表格数据...");
+					bool success = false;
+					progressForm.ShowDialog(progressRuntimeData, async delegate
+					{
+						await Task.Delay(1).ConfigureAwait(continueOnCapturedContext: false);
+						success = await _table.RepairFromCloudAsync(progressRuntimeData.UpdateProgress);
+					});
+					if (success)
+					{
+						PopulateTable();
+						return;
+					}
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "从云端修复失败，请尝试删除此表格重新编辑。");
+					return;
+				}
+			}
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "表格 " + _table.TreeNode.Name + " 数据已损坏，请尝试删除此表格重新编辑。");
 			return;
 		}
@@ -5040,7 +5072,8 @@ public class TableEditor : ISetTheme
 			pnlGrid.SuspendDrawing();
 			try
 			{
-				Table.Columns.Insert(_grid.BodyCol, (int)num.Value);
+				var command = new InsertColumnsCommand(Table, _grid.BodyCol, (int)num.Value);
+				Table.CommandsManager.ExecuteCommand(command);
 				PopulateColumns();
 				PopulateMerges();
 				SetFormulaContext();
@@ -5130,6 +5163,12 @@ public class TableEditor : ISetTheme
 				return;
 			}
 		}
+		// 保存原始合并状态用于撤销
+		var originalMerges = Table.MergedCells.Where(m =>
+			(m.TopLeft.Column.Index >= start && m.TopLeft.Column.Index <= end) ||
+			(m.BottomRight.Column.Index >= start && m.BottomRight.Column.Index <= end) ||
+			(m.TopLeft.Column.Index < start && m.BottomRight.Column.Index > end)).ToList();
+
 		List<CellMerge> list2 = Table.MergedCells.ToList();
 		for (int num = list2.Count - 1; num >= 0; num--)
 		{
@@ -5179,7 +5218,8 @@ public class TableEditor : ISetTheme
 			_grid.Cols.Frozen = 0;
 		}
 		pnlGrid.SuspendDrawing();
-		Table.Columns.Remove(start, end - start + 1);
+		var command = new DeleteColumnsCommand(Table, start, end - start + 1, originalMerges);
+		Table.CommandsManager.ExecuteCommand(command);
 		PopulateColumns();
 		PopulateMerges();
 		pnlGrid.ResumeDrawing();
@@ -5555,10 +5595,13 @@ public class TableEditor : ISetTheme
 		}
 		try
 		{
+			var rows = new List<Auditai.Model.Row>();
 			for (int i = _grid.BodyRow; i <= _grid.BodyRowSel; i++)
 			{
-				Table.Rows[i].UpdateHeight(height);
+				rows.Add(Table.Rows[i]);
 			}
+			var command = new RowHeightCommand(Table, rows, height);
+			Table.CommandsManager.ExecuteCommand(command);
 			PopulateRowsHeight();
 		}
 		catch (ArgumentOutOfRangeException ex)
@@ -5575,10 +5618,13 @@ public class TableEditor : ISetTheme
 		}
 		try
 		{
+			var columns = new List<Auditai.Model.Column>();
 			for (int i = _grid.BodyCol; i <= _grid.BodyColSel; i++)
 			{
-				Table.Columns[i].UpdateWidth(width);
+				columns.Add(Table.Columns[i]);
 			}
+			var command = new ColumnWidthCommand(Table, columns, width);
+			Table.CommandsManager.ExecuteCommand(command);
 			pnlGrid.SuspendDrawing();
 			PopulateColumns();
 			pnlGrid.ResumeDrawing();
@@ -6477,13 +6523,18 @@ public class TableEditor : ISetTheme
 		C1.Win.C1FlexGrid.CellRange bodySelection = _grid.BodySelection;
 		if (_table.EnumerateCellRange(bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol).All((Auditai.Model.Cell c) => CanEditRow(c.Row) && CanEditColumn(c.Column)))
 		{
-			if (_table.WillMergeEraseValue(bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol))
+			bool changeRowRole = _grid.IsEntireRowSelected && bodySelection.TopRow == bodySelection.BottomRow;
+			_grid.BeginUpdate();
+			try
 			{
-				MergeCellsImpl();
+				var command = new MergeCellsCommand(Table, bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol, changeRowRole);
+				Table.CommandsManager.ExecuteCommand(command);
+				PopulateMerges();
+				DoLayout();
 			}
-			else
+			finally
 			{
-				MergeCellsImpl();
+				_grid.EndUpdate();
 			}
 		}
 	}
@@ -6495,37 +6546,72 @@ public class TableEditor : ISetTheme
 			return;
 		}
 		C1.Win.C1FlexGrid.CellRange bodySelection = _grid.BodySelection;
-		foreach (Auditai.Model.Cell item in _table.EnumerateCellRange(bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol))
+		_grid.BeginUpdate();
+		try
 		{
-			try
+			foreach (Auditai.Model.Cell item in _table.EnumerateCellRange(bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol))
 			{
-				if (CanEditRow(item.Row) && CanEditColumn(item.Column))
+				try
 				{
-					_table.UnmergeCells(item.Row.Index, item.Column.Index);
+					if (CanEditRow(item.Row) && CanEditColumn(item.Column))
+					{
+						var command = new UnmergeCellsCommand(Table, item.Row.Index, item.Column.Index);
+						Table.CommandsManager.ExecuteCommand(command);
+					}
+				}
+				catch (Exception exception)
+				{
+					exception.Log();
 				}
 			}
-			catch (Exception exception)
-			{
-				exception.Log();
-			}
+			PopulateMerges();
 		}
-		_grid.BeginUpdate();
-		PopulateMerges();
-		_grid.EndUpdate();
+		finally
+		{
+			_grid.EndUpdate();
+		}
 	}
 
 	public void Undo()
 	{
 		_grid.BeginUpdate();
-		Table.CommandsManager.Undo();
-		_grid.EndUpdate();
+		pnlGrid.SuspendDrawing();
+		try
+		{
+			Table.CommandsManager.Undo();
+			FullRefresh();
+		}
+		finally
+		{
+			pnlGrid.ResumeDrawing();
+			_grid.EndUpdate();
+		}
 	}
 
 	public void Redo()
 	{
 		_grid.BeginUpdate();
-		Table.CommandsManager.Redo();
-		_grid.EndUpdate();
+		pnlGrid.SuspendDrawing();
+		try
+		{
+			Table.CommandsManager.Redo();
+			FullRefresh();
+		}
+		finally
+		{
+			pnlGrid.ResumeDrawing();
+			_grid.EndUpdate();
+		}
+	}
+
+	private void FullRefresh()
+	{
+		PopulateRows();
+		PopulateColumns();
+		PopulateMerges();
+		PopulateRowsHeight();
+		DoLayout();
+		FormulaEvaluator.ClearCache();
 	}
 
 	public void SetBorderStyle(TableBorderStyle bs)
@@ -8910,8 +8996,8 @@ public class TableEditor : ISetTheme
 		{
 			Alignment = PenAlignment.Center
 		};
-		_penThick = new Pen(Color.Black, 2f);
-		_penThin = new Pen(Color.Black, 1f);
+		_penThick = new Pen(Color.Black, 3f);
+		_penThin = new Pen(Color.Black, 1.5f);
 		PenResizeDragging = new Pen(Color.Gray, 1f)
 		{
 			DashStyle = DashStyle.Dash
@@ -11758,7 +11844,7 @@ public class TableEditor : ISetTheme
 			styleNew.Margins = margins;
 			styleNew.WordWrap = cell.Value is string;
 			styleNew.Border.Color = _grid.Styles.Normal.Border.Color;
-			styleNew.Border.Width = (((Table.BorderStyle ?? TableBorderStyles.Grid).BodyLine != Auditai.Model.LineStyle.None) ? 1 : 0);
+			styleNew.Border.Width = (((Table.BorderStyle ?? TableBorderStyles.Grid).BodyLine != Auditai.Model.LineStyle.None) ? 2 : 0);
 			if (e.Col == Table.Columns.Count - 1)
 			{
 				styleNew.Border.Direction = BorderDirEnum.Horizontal;
@@ -13027,7 +13113,7 @@ public class TableEditor : ISetTheme
 		{
 			Collapsible = false,
 			KeepRelativeSize = false,
-			Width = 80,
+			Width = 104,
 			Resizable = false,
 			Dock = PanelDockStyle.Right
 		};
@@ -13039,7 +13125,7 @@ public class TableEditor : ISetTheme
 			Resizable = true,
 			KeepRelativeSize = false,
 			Collapsible = false,
-			MinHeight = 50,
+			MinHeight = 65,
 			TabIndex = 3
 		};
 		pnlValidation.Controls.Add(ValidationEditor.View);
@@ -13057,8 +13143,8 @@ public class TableEditor : ISetTheme
 		{
 			Dock = PanelDockStyle.Top,
 			KeepRelativeSize = false,
-			Height = 31,
-			MinHeight = 31,
+			Height = 41,
+			MinHeight = 41,
 			Collapsible = false,
 			Resizable = false,
 			BorderWidth = 1,
@@ -13484,7 +13570,7 @@ public class TableEditor : ISetTheme
 		}
 		if (_grid.Cols[0].Width < 56)
 		{
-			_grid.Cols[0].Width = 56;
+			_grid.Cols[0].Width = 73;
 		}
 		_grid.EndUpdate();
 	}
@@ -13629,16 +13715,19 @@ public class TableEditor : ISetTheme
 			flag2 = false;
 		}
 		C1.Win.C1FlexGrid.CellRange bodySelection = _grid.BodySelection;
+		var command = new BatchStyleUpdateCommand(Table);
 		if (Table.Rows.Skip(bodySelection.TopRow).Take(bodySelection.BottomRow - bodySelection.TopRow + 1).All((Auditai.Model.Row r) => !Table[r.Index, 0].ShouldApplyColumnFormula()))
 		{
 			foreach (Auditai.Model.Cell item in Table.EnumerateCellRange(bodySelection.TopRow, bodySelection.LeftCol, bodySelection.BottomRow, bodySelection.RightCol))
 			{
 				if ((!flag || IsGridRowVisible(item)) && CanEditRow(item.Row) && CanEditColumn(item.Column))
 				{
-					item.UpdateStyle(Table.CellStyles.MutateAndGet(item.Style, delegate(Auditai.Model.CellStyle s)
+					var oldStyle = item.Style;
+					var newStyle = Table.CellStyles.MutateAndGet(item.Style, delegate(Auditai.Model.CellStyle s)
 					{
 						pi.SetValue(s, value);
-					}));
+					});
+					command.AddCellUpdate(item, oldStyle, newStyle);
 				}
 			}
 		}
@@ -13646,27 +13735,33 @@ public class TableEditor : ISetTheme
 		{
 			if (updateTableDefaultIfSelectAll && _grid.IsEntireRowSelected)
 			{
-				Table.UpdateDefaultStyle(Table.CellStyles.MutateAndGet(Table.DefaultStyle, delegate(Auditai.Model.CellStyle s)
+				var oldDefault = Table.DefaultStyle;
+				var newDefault = Table.CellStyles.MutateAndGet(Table.DefaultStyle, delegate(Auditai.Model.CellStyle s)
 				{
 					pi.SetValue(s, value);
-				}));
+				});
+				command.SetDefaultStyleUpdate(oldDefault, newDefault);
 				foreach (Auditai.Model.Column column2 in Table.Columns)
 				{
 					bool? oldIsAllowManualInput2 = column2.Style?.Format?.IsAllowEditOnExistFormula;
-					column2.UpdateStyle(Table.CellStyles.MutateAndGet(column2.Style, delegate(Auditai.Model.CellStyle s)
+					var oldColStyle = column2.Style;
+					var newColStyle = Table.CellStyles.MutateAndGet(column2.Style, delegate(Auditai.Model.CellStyle s)
 					{
 						pi.SetValue(s, null);
 						SetStyleFormatIsAllowManualInput(s, oldIsAllowManualInput2);
-					}));
+					});
+					command.AddColumnUpdate(column2, oldColStyle, newColStyle);
 				}
 				foreach (Auditai.Model.Cell cell in Table.Cells)
 				{
 					if (cell.ShouldApplyColumnFormula())
 					{
-						cell.UpdateStyle(Table.CellStyles.MutateAndGet(cell.Style, delegate(Auditai.Model.CellStyle s)
+						var oldCellStyle = cell.Style;
+						var newCellStyle = Table.CellStyles.MutateAndGet(cell.Style, delegate(Auditai.Model.CellStyle s)
 						{
 							pi.SetValue(s, null);
-						}));
+						});
+						command.AddCellUpdate(cell, oldCellStyle, newCellStyle);
 					}
 				}
 			}
@@ -13678,11 +13773,13 @@ public class TableEditor : ISetTheme
 					if (CanEditColumn(column))
 					{
 						bool? oldIsAllowManualInput = column.Style?.Format?.IsAllowEditOnExistFormula;
-						column.UpdateStyle(Table.CellStyles.MutateAndGet(column.Style, delegate(Auditai.Model.CellStyle s)
+						var oldColStyle = column.Style;
+						var newColStyle = Table.CellStyles.MutateAndGet(column.Style, delegate(Auditai.Model.CellStyle s)
 						{
 							pi.SetValue(s, value);
 							SetStyleFormatIsAllowManualInput(s, oldIsAllowManualInput);
-						}));
+						});
+						command.AddColumnUpdate(column, oldColStyle, newColStyle);
 					}
 				}
 				if (clearCellStyleIfEntireColumn)
@@ -13691,10 +13788,12 @@ public class TableEditor : ISetTheme
 					{
 						if (item2.ShouldApplyColumnFormula())
 						{
-							item2.UpdateStyle(Table.CellStyles.MutateAndGet(item2.Style, delegate(Auditai.Model.CellStyle s)
+							var oldCellStyle = item2.Style;
+							var newCellStyle = Table.CellStyles.MutateAndGet(item2.Style, delegate(Auditai.Model.CellStyle s)
 							{
 								pi.SetValue(s, null);
-							}));
+							});
+							command.AddCellUpdate(item2, oldCellStyle, newCellStyle);
 						}
 					}
 				}
@@ -13706,13 +13805,16 @@ public class TableEditor : ISetTheme
 			{
 				if ((!flag || IsGridRowVisible(item3)) && CanEditRow(item3.Row) && CanEditColumn(item3.Column) && item3.ShouldApplyColumnFormula())
 				{
-					item3.UpdateStyle(Table.CellStyles.MutateAndGet(item3.Style, delegate(Auditai.Model.CellStyle s)
+					var oldStyle = item3.Style;
+					var newStyle = Table.CellStyles.MutateAndGet(item3.Style, delegate(Auditai.Model.CellStyle s)
 					{
 						pi.SetValue(s, value);
-					}));
+					});
+					command.AddCellUpdate(item3, oldStyle, newStyle);
 				}
 			}
 		}
+		Table.CommandsManager.ExecuteCommand(command);
 		_grid.Invalidate();
 		static void SetStyleFormatIsAllowManualInput(Auditai.Model.CellStyle cellStyle, bool? isAllowManualInput)
 		{
@@ -13849,7 +13951,8 @@ public class TableEditor : ISetTheme
 		{
 			try
 			{
-				Auditai.DTO.Project project = (await StorageRouter.GetProjects()).FirstOrDefault(p => p.Id == s.ProjectId);
+				var projects = await StorageRouter.GetProjects();
+				Auditai.DTO.Project project = (projects ?? Enumerable.Empty<Auditai.DTO.Project>()).FirstOrDefault(p => p.Id == s.ProjectId);
 				s.Project = new Auditai.Model.Project
 				{
 					Id = s.ProjectId,
@@ -15581,9 +15684,8 @@ public class TableEditor : ISetTheme
 				}
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine($"[CrossProjectRefStyle] 应用引用样式失败: {ex.Message}");
 		}
 		finally
 		{
@@ -15662,9 +15764,8 @@ public class TableEditor : ISetTheme
 					break;
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine($"[CrossProjectRefStyle] 解析引用范围失败: {ex.Message}");
 		}
 	}
 

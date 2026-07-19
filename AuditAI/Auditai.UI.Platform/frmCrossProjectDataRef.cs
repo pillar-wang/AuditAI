@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -599,7 +599,7 @@ public class frmCrossProjectDataRef : Form
         var pnlHeader = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 48,
+            Height = 62,
             BackColor = colorHeaderBg
         };
         this._lblTitle.AutoSize = false;
@@ -608,9 +608,9 @@ public class frmCrossProjectDataRef : Form
         this._lblTitle.Font = fontTitle;
         this._lblTitle.ForeColor = colorHeaderFg;
         this._lblTitle.Dock = DockStyle.Left;
-        this._lblTitle.Size = new Size(300, 48);
+        this._lblTitle.Size = new Size(375, 62);
         this._lblTitle.TextAlign = ContentAlignment.MiddleLeft;
-        this._lblTitle.Padding = new Padding(16, 0, 0, 0);
+        this._lblTitle.Padding = new Padding(20, 0, 0, 0);
         this._lblTitle.Text = "跨项目数据引用管理";
 
         // 状态筛选放标题栏右侧
@@ -619,7 +619,7 @@ public class frmCrossProjectDataRef : Form
         this._lblStatusFilter.Font = fontNormal;
         this._lblStatusFilter.ForeColor = colorHeaderFg;
         this._lblStatusFilter.Dock = DockStyle.Right;
-        this._lblStatusFilter.Size = new Size(70, 48);
+        this._lblStatusFilter.Size = new Size(88, 62);
         this._lblStatusFilter.TextAlign = ContentAlignment.MiddleRight;
         this._lblStatusFilter.Text = "状态筛选";
 
@@ -627,10 +627,10 @@ public class frmCrossProjectDataRef : Form
         this._cmbStatusFilter.Font = fontNormal;
         this._cmbStatusFilter.Items.AddRange(new object[] { "全部", "正常", "异常", "缓存降级" });
         this._cmbStatusFilter.Dock = DockStyle.Right;
-        this._cmbStatusFilter.Size = new Size(110, 48);
+        this._cmbStatusFilter.Size = new Size(138, 62);
         this._cmbStatusFilter.SelectedIndex = 0;
         this._cmbStatusFilter.SelectedIndexChanged += _cmbStatusFilter_SelectedIndexChanged;
-        this._cmbStatusFilter.Margin = new Padding(0, 12, 16, 12);
+        this._cmbStatusFilter.Margin = new Padding(0, 16, 20, 16);
 
         pnlHeader.Controls.Add(this._cmbStatusFilter);
         pnlHeader.Controls.Add(this._lblStatusFilter);
@@ -646,29 +646,29 @@ public class frmCrossProjectDataRef : Form
         this._grid.Cols.Count = 10;
         this._grid.Cols[0].Caption = "序号";
         this._grid.Cols[1].Caption = "引用名称";
-        this._grid.Cols[1].Width = 150;
+        this._grid.Cols[1].Width = 188;
         this._grid.Cols[2].Caption = "目标表";
-        this._grid.Cols[2].Width = 80;
+        this._grid.Cols[2].Width = 100;
         this._grid.Cols[3].Caption = "目标区域";
-        this._grid.Cols[3].Width = 120;
+        this._grid.Cols[3].Width = 150;
         this._grid.Cols[4].Caption = "来源项目";
-        this._grid.Cols[4].Width = 230;
+        this._grid.Cols[4].Width = 288;
         this._grid.Cols[5].Caption = "来源表";
-        this._grid.Cols[5].Width = 80;
+        this._grid.Cols[5].Width = 100;
         this._grid.Cols[6].Caption = "数据来源区域";
-        this._grid.Cols[6].Width = 120;
+        this._grid.Cols[6].Width = 150;
         this._grid.Cols[7].Caption = "引用模式";
-        this._grid.Cols[7].Width = 80;
+        this._grid.Cols[7].Width = 100;
         this._grid.Cols[8].Caption = "启用状态";
-        this._grid.Cols[8].Width = 70;
+        this._grid.Cols[8].Width = 88;
         this._grid.Cols[9].Caption = "更新时间";
-        this._grid.Cols[9].Width = 150;
+        this._grid.Cols[9].Width = 188;
         this._grid.Cols.Fixed = 1;
         this._grid.Cols[1].AllowEditing = true;
         this._grid.ExtendLastCol = true;
         this._grid.Rows.Count = 1;
         this._grid.Rows.Fixed = 1;
-        this._grid.Rows.DefaultSize = 30;
+        this._grid.Rows.DefaultSize = 39;
         this._grid.SelectionMode = SelectionModeEnum.Row;
         this._grid.Styles.Normal.Font = fontNormal;
         this._grid.Styles.Normal.TextAlign = TextAlignEnum.CenterCenter;
@@ -694,7 +694,7 @@ public class frmCrossProjectDataRef : Form
         var pnlGridContainer = new Panel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(12, 8, 12, 4),
+            Padding = new Padding(15, 10, 15, 5),
             BackColor = Color.White
         };
         pnlGridContainer.Controls.Add(this._grid);
@@ -703,7 +703,7 @@ public class frmCrossProjectDataRef : Form
         _pnlButtons = new Panel
         {
             Dock = DockStyle.Bottom,
-            Height = 56,
+            Height = 73,
             BackColor = colorBottomBg
         };
         var pnlBorder = new Panel
@@ -715,7 +715,7 @@ public class frmCrossProjectDataRef : Form
         _pnlButtons.Controls.Add(pnlBorder);
 
         // 按钮样式辅助方法（与其他界面一致的 C1Button 扁平风）
-        var btnH = 34;
+        var btnH = 42;
         Action<C1Button, Color, Color, string> styleBtn = (btn, bg, fg, text) => {
             btn.Font = fontBtn;
             btn.Text = text;
@@ -734,49 +734,49 @@ public class frmCrossProjectDataRef : Form
         this._btnAddNew.Click += _btnAddNew_Click;
         styleBtn(this._btnAddNew, colorBtnPrimary, Color.White, "新增引用");
         this._btnAddNew.Font = fontBtnBold;
-        this._btnAddNew.Width = 96;
+        this._btnAddNew.Width = 120;
         _pnlButtons.Controls.Add(this._btnAddNew);
 
         this._btnEdit.TabIndex = 3;
         this._btnEdit.Click += _btnEdit_Click;
         styleBtn(this._btnEdit, colorBtnNormal, colorBtnNormalFg, "编辑");
-        this._btnEdit.Width = 64;
+        this._btnEdit.Width = 80;
         _pnlButtons.Controls.Add(this._btnEdit);
 
         this._btnDelete.TabIndex = 4;
         this._btnDelete.Click += _btnDelete_Click;
         styleBtn(this._btnDelete, colorBtnDanger, Color.White, "删除");
-        this._btnDelete.Width = 64;
+        this._btnDelete.Width = 80;
         _pnlButtons.Controls.Add(this._btnDelete);
 
         this._btnToggleEnabled.TabIndex = 5;
         this._btnToggleEnabled.Click += _btnToggleEnabled_Click;
         styleBtn(this._btnToggleEnabled, colorBtnNormal, colorBtnNormalFg, "启用/禁用");
-        this._btnToggleEnabled.Width = 80;
+        this._btnToggleEnabled.Width = 100;
         _pnlButtons.Controls.Add(this._btnToggleEnabled);
 
         this._btnRefreshSelected.TabIndex = 6;
         this._btnRefreshSelected.Click += _btnRefreshSelected_Click;
         styleBtn(this._btnRefreshSelected, colorBtnRefresh, Color.White, "刷新选定");
-        this._btnRefreshSelected.Width = 80;
+        this._btnRefreshSelected.Width = 100;
         _pnlButtons.Controls.Add(this._btnRefreshSelected);
 
         this._btnRefreshAll.TabIndex = 7;
         this._btnRefreshAll.Click += _btnRefreshAll_Click;
         styleBtn(this._btnRefreshAll, colorBtnRefresh, Color.White, "刷新所有");
-        this._btnRefreshAll.Width = 80;
+        this._btnRefreshAll.Width = 100;
         _pnlButtons.Controls.Add(this._btnRefreshAll);
 
         this._btnDashboard.TabIndex = 10;
         this._btnDashboard.Click += _btnDashboard_Click;
         styleBtn(this._btnDashboard, colorBtnNormal, colorBtnNormalFg, "状态仪表板");
-        this._btnDashboard.Width = 96;
+        this._btnDashboard.Width = 120;
         _pnlButtons.Controls.Add(this._btnDashboard);
 
         this._btnClose.TabIndex = 13;
         this._btnClose.Click += _btnClose_Click;
         styleBtn(this._btnClose, colorBtnNormal, colorBtnNormalFg, "关闭");
-        this._btnClose.Width = 72;
+        this._btnClose.Width = 90;
         _pnlButtons.Controls.Add(this._btnClose);
 
         // 按钮布局：Resize 时重新排列
@@ -785,12 +785,12 @@ public class frmCrossProjectDataRef : Form
         // ---- 窗体设置 ----
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(1040, 600);
+        this.ClientSize = new Size(1280, 780);
         this.Font = fontNormal;
         this.FormBorderStyle = FormBorderStyle.Sizable;
         this.MaximizeBox = false;
         this.MinimizeBox = false;
-        this.MinimumSize = new Size(900, 500);
+        this.MinimumSize = new Size(1125, 650);
         this.Name = "frmCrossProjectDataRef";
         this.StartPosition = FormStartPosition.CenterParent;
         this.Text = "跨项目数据引用管理";
@@ -812,10 +812,10 @@ public class frmCrossProjectDataRef : Form
     private void LayoutButtons()
     {
         if (_pnlButtons == null) return;
-        var btnH = 34;
+        var btnH = 42;
         var btnY = (_pnlButtons.Height - btnH) / 2;
-        var btnGap = 8;
-        var startX = 12;
+        var btnGap = 10;
+        var startX = 15;
 
         // 左侧按钮组
         var leftBtns = new[] { _btnAddNew, _btnEdit, _btnDelete, _btnToggleEnabled,
@@ -831,7 +831,7 @@ public class frmCrossProjectDataRef : Form
         // 关闭按钮靠右
         if (_btnClose != null)
         {
-            _btnClose.Location = new Point(_pnlButtons.Width - _btnClose.Width - 12, btnY);
+            _btnClose.Location = new Point(_pnlButtons.Width - _btnClose.Width - 15, btnY);
         }
     }
 }
@@ -1131,33 +1131,33 @@ internal class frmCrossProjectDataRefEditDialog : Form
         this._btnOk = new C1Button();
         this._btnCancel = new C1Button();
 
-        var lblName = new Label { Text = "引用名称：", Location = new Point(12, 15), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(12, 48), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(12, 81), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(12, 114), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(12, 147), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(12, 180), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(12, 213), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(12, 246), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
-        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(12, 279), Size = new Size(100, 24), Font = new Font("Noto Sans SC", 9f) };
+        var lblName = new Label { Text = "引用名称：", Location = new Point(15, 19), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(15, 60), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(15, 101), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(15, 143), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(15, 184), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(15, 225), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(15, 266), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(15, 308), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(15, 349), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
 
         //
         // _txtName
         //
         this._txtName.Font = new Font("Noto Sans SC", 9f);
-        this._txtName.Location = new Point(118, 12);
+        this._txtName.Location = new Point(148, 15);
         this._txtName.Name = "_txtName";
-        this._txtName.Size = new Size(350, 24);
+        this._txtName.Size = new Size(438, 30);
         this._txtName.TabIndex = 0;
 
         //
         // _txtSourceProject
         //
         this._txtSourceProject.Font = new Font("Noto Sans SC", 9f);
-        this._txtSourceProject.Location = new Point(118, 45);
+        this._txtSourceProject.Location = new Point(148, 56);
         this._txtSourceProject.Name = "_txtSourceProject";
         this._txtSourceProject.ReadOnly = true;
-        this._txtSourceProject.Size = new Size(260, 24);
+        this._txtSourceProject.Size = new Size(325, 30);
         this._txtSourceProject.TabIndex = 1;
         this._txtSourceProject.Text = "(点击右侧按钮选择)";
 
@@ -1165,9 +1165,9 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnSelectProject
         //
         this._btnSelectProject.Font = new Font("Noto Sans SC", 9f);
-        this._btnSelectProject.Location = new Point(382, 44);
+        this._btnSelectProject.Location = new Point(478, 55);
         this._btnSelectProject.Name = "_btnSelectProject";
-        this._btnSelectProject.Size = new Size(90, 26);
+        this._btnSelectProject.Size = new Size(113, 33);
         this._btnSelectProject.TabIndex = 12;
         this._btnSelectProject.Text = "选择...";
         this._btnSelectProject.Click += _btnSelectProject_Click;
@@ -1176,10 +1176,10 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _txtSourceTable
         //
         this._txtSourceTable.Font = new Font("Noto Sans SC", 9f);
-        this._txtSourceTable.Location = new Point(118, 78);
+        this._txtSourceTable.Location = new Point(148, 98);
         this._txtSourceTable.Name = "_txtSourceTable";
         this._txtSourceTable.ReadOnly = true;
-        this._txtSourceTable.Size = new Size(260, 24);
+        this._txtSourceTable.Size = new Size(325, 30);
         this._txtSourceTable.TabIndex = 2;
         this._txtSourceTable.Text = "(请先选择来源项目)";
 
@@ -1187,9 +1187,9 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnSelectTable
         //
         this._btnSelectTable.Font = new Font("Noto Sans SC", 9f);
-        this._btnSelectTable.Location = new Point(382, 77);
+        this._btnSelectTable.Location = new Point(478, 96);
         this._btnSelectTable.Name = "_btnSelectTable";
-        this._btnSelectTable.Size = new Size(90, 26);
+        this._btnSelectTable.Size = new Size(113, 33);
         this._btnSelectTable.TabIndex = 13;
         this._btnSelectTable.Text = "选择...";
         this._btnSelectTable.Click += _btnSelectTable_Click;
@@ -1198,10 +1198,10 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _txtTargetTableId
         //
         this._txtTargetTableId.Font = new Font("Noto Sans SC", 9f);
-        this._txtTargetTableId.Location = new Point(118, 111);
+        this._txtTargetTableId.Location = new Point(148, 139);
         this._txtTargetTableId.Name = "_txtTargetTableId";
         this._txtTargetTableId.ReadOnly = true;
-        this._txtTargetTableId.Size = new Size(350, 24);
+        this._txtTargetTableId.Size = new Size(438, 30);
         this._txtTargetTableId.TabIndex = 3;
 
         //
@@ -1209,45 +1209,45 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         this._cmbRefMode.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
         this._cmbRefMode.Font = new Font("Noto Sans SC", 9f);
-        this._cmbRefMode.Location = new Point(118, 144);
+        this._cmbRefMode.Location = new Point(148, 180);
         this._cmbRefMode.Name = "_cmbRefMode";
-        this._cmbRefMode.Size = new Size(350, 24);
+        this._cmbRefMode.Size = new Size(438, 30);
         this._cmbRefMode.TabIndex = 4;
 
         //
         // _txtRefConfig
         //
         this._txtRefConfig.Font = new Font("Noto Sans SC", 9f);
-        this._txtRefConfig.Location = new Point(118, 177);
+        this._txtRefConfig.Location = new Point(148, 221);
         this._txtRefConfig.Name = "_txtRefConfig";
-        this._txtRefConfig.Size = new Size(350, 24);
+        this._txtRefConfig.Size = new Size(438, 30);
         this._txtRefConfig.TabIndex = 5;
 
         //
         // _txtFilterConfig
         //
         this._txtFilterConfig.Font = new Font("Noto Sans SC", 9f);
-        this._txtFilterConfig.Location = new Point(118, 210);
+        this._txtFilterConfig.Location = new Point(148, 263);
         this._txtFilterConfig.Name = "_txtFilterConfig";
-        this._txtFilterConfig.Size = new Size(350, 24);
+        this._txtFilterConfig.Size = new Size(438, 30);
         this._txtFilterConfig.TabIndex = 6;
 
         //
         // _txtFormulaExpression
         //
         this._txtFormulaExpression.Font = new Font("Noto Sans SC", 9f);
-        this._txtFormulaExpression.Location = new Point(118, 243);
+        this._txtFormulaExpression.Location = new Point(148, 304);
         this._txtFormulaExpression.Name = "_txtFormulaExpression";
-        this._txtFormulaExpression.Size = new Size(350, 24);
+        this._txtFormulaExpression.Size = new Size(438, 30);
         this._txtFormulaExpression.TabIndex = 7;
 
         //
         // _txtColumnMapping
         //
         this._txtColumnMapping.Font = new Font("Noto Sans SC", 9f);
-        this._txtColumnMapping.Location = new Point(118, 276);
+        this._txtColumnMapping.Location = new Point(148, 345);
         this._txtColumnMapping.Name = "_txtColumnMapping";
-        this._txtColumnMapping.Size = new Size(350, 24);
+        this._txtColumnMapping.Size = new Size(438, 30);
         this._txtColumnMapping.TabIndex = 8;
 
         //
@@ -1255,9 +1255,9 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         this._btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         this._btnOk.Font = new Font("Noto Sans SC", 9f);
-        this._btnOk.Location = new Point(291, 315);
+        this._btnOk.Location = new Point(364, 394);
         this._btnOk.Name = "_btnOk";
-        this._btnOk.Size = new Size(87, 33);
+        this._btnOk.Size = new Size(109, 41);
         this._btnOk.TabIndex = 9;
         this._btnOk.Text = "确定";
         this._btnOk.UseVisualStyleBackColor = true;
@@ -1305,9 +1305,9 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         this._btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         this._btnCancel.Font = new Font("Noto Sans SC", 9f);
-        this._btnCancel.Location = new Point(384, 315);
+        this._btnCancel.Location = new Point(480, 394);
         this._btnCancel.Name = "_btnCancel";
-        this._btnCancel.Size = new Size(87, 33);
+        this._btnCancel.Size = new Size(109, 41);
         this._btnCancel.TabIndex = 10;
         this._btnCancel.Text = "取消";
         this._btnCancel.UseVisualStyleBackColor = true;
@@ -1318,7 +1318,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         this.AutoScaleDimensions = new SizeF(7f, 17f);
         this.AutoScaleMode = AutoScaleMode.Font;
-        this.ClientSize = new Size(484, 360);
+        this.ClientSize = new Size(605, 450);
         this.Controls.AddRange(new Control[]
         {
             lblName, this._txtName,

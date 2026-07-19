@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -837,11 +837,40 @@ internal class SubsidiayEditor
 				}
 			}
 			grid.AllowEditing = false;
+			SetMinColumnWidths(grid);
 			grid.AutoSizeCols();
 		}
 		finally
 		{
 			grid.EndUpdate();
+		}
+	}
+
+	private void SetMinColumnWidths(C1.Win.C1FlexGrid.C1FlexGrid grid)
+	{
+		var minWidths = new Dictionary<string, int>
+		{
+			{ "Index", 60 },
+			{ "Date", 100 },
+			{ "Type", 80 },
+			{ "Number", 100 },
+			{ "TypeNum", 120 },
+			{ "Digest", 200 },
+			{ "ItemClass", 100 },
+			{ "ItemNumber", 100 },
+			{ "ItemName", 150 },
+			{ "Debit", 120 },
+			{ "Credit", 120 },
+			{ "DC", 60 },
+			{ "Balance", 120 }
+		};
+		foreach (var kvp in minWidths)
+		{
+			var col = grid.Cols[kvp.Key];
+			if (col != null && col.Width < kvp.Value)
+			{
+				col.Width = kvp.Value;
+			}
 		}
 	}
 }

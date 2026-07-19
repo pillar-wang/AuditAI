@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -850,8 +850,6 @@ namespace AuditAI.McpServer.Tools
             map["cloud_register"] = "/api/User/Register";
             map["cloud_find_password"] = "/api/User/FindPassword";
             map["cloud_get_validate_code"] = "/api/User/GetValidateCode";
-            map["cloud_wechat_login"] = "/api/User/WechatLogin";
-            map["cloud_qq_login"] = "/api/User/QQLogin";
             map["cloud_get_user_info"] = "/api/User/GetUserById";
             map["cloud_update_user_info"] = "/api/User/UpdateUserInfo";
             map["cloud_user_name_exists"] = "/api/User/UserNameExists";
@@ -866,8 +864,6 @@ namespace AuditAI.McpServer.Tools
             map["cloud_get_delete_project_code"] = "/api/User/GetDeleteProjectValidateCode";
             map["cloud_reset_password"] = "/api/User/ResetPassword";
             map["cloud_reset_password_no_sms"] = "/api/User/ResetPasswordWithoutSMS";
-            map["cloud_wechat_relogin"] = "/api/User/WechatRelogin";
-            map["cloud_qq_relogin"] = "/api/User/QQRelogin";
             map["cloud_single_register"] = "/api/User/SingleRegister";
             map["cloud_batch_import"] = "/api/User/BatchImport";
             map["cloud_update_picture"] = "/api/User/UpdatePicture";

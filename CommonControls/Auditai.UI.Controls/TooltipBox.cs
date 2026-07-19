@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -9,7 +9,7 @@ namespace Auditai.UI.Controls;
 
 public class TooltipBox
 {
-	private const int FORM_WIDTH = 300;
+	private const int FORM_WIDTH = 500;
 
 	private const string TEMPLATE_CLOSEFORM_TITLEBODY = "<body style='font-family:Microsoft YaHei;font-size:12;color:Black;'>\r\n                            <table style='width:{2}px;'>\r\n                                <tr style='font-weight:Bold;'>\r\n                                    <td>{0}</td>\r\n                                    <td style='text-align:right;width:50px;'>\r\n                                        <a href='closehref' style='text-align:right;text-decoration:none;'>×</a>\r\n                                        <a href='decreasewidth' style='text-align:right; text-decoration:none;'>&lt;</a>\r\n                                        <a href='increasewidth' style='text-align:right; text-decoration:none;'>&gt;</a>\r\n                                    </td>\r\n                                </tr>\r\n                                <tr><td colspan='2'><parm><hr noshade size=1 color=Gray></parm></td></tr>\r\n                                <tr><td colspan='2' ><div>{1}</div></td></tr>\r\n                            </table>\r\n                      </body>";
 
@@ -52,7 +52,7 @@ public class TooltipBox
 
 	public int Duration { get; set; }
 
-	public int Width { get; set; } = 300;
+	public int Width { get; set; } = 500;
 
 
 	public bool IsBalloon { get; set; }
@@ -121,9 +121,9 @@ public class TooltipBox
 	public void IncreaseWidth(int step)
 	{
 		Width += step;
-		if (Width < 300)
+		if (Width < 500)
 		{
-			Width = 300;
+			Width = 500;
 		}
 		if (Width > Screen.PrimaryScreen.Bounds.Width - 50)
 		{

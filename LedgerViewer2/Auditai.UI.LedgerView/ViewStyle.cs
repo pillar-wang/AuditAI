@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,6 +36,7 @@ public class ViewStyle
 	{
 		GridStyleCollection = new List<GridStyle>();
 		FamilyName = "微软雅黑";
+		FontSize = 10.5f;
 		AmountWidth = 0;
 		RatioWidth = 0;
 		Height = 20f;

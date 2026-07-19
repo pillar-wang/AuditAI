@@ -8,6 +8,7 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <PlatformTarget>x86</PlatformTarget>
     <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>Auditai.UI.Platform\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>11.0</LangVersion>

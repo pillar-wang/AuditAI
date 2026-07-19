@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -342,59 +342,59 @@ internal class SubsidiaryEditor : ISetTheme
 		lblSubsidiaryTitle.Font = font;
 		lblSubsidiaryTitle.Text = "明细账";
 		lblSubsidiaryTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlSubsidiaryTitle.Height = 30;
+		pnlSubsidiaryTitle.Height = 39;
 		pnlSubsidiaryTitle.KeepRelativeSize = false;
 		pnlSubsidiaryTitle.Location = new Point(0, 0);
-		pnlSubsidiaryTitle.MinHeight = 30;
+		pnlSubsidiaryTitle.MinHeight = 39;
 		pnlSubsidiaryTitle.Resizable = false;
-		pnlSubsidiaryTitle.Size = new Size(927, 30);
+		pnlSubsidiaryTitle.Size = new Size(927, 39);
 		pnlSubsidiaryTitle.SizeRatio = 5.025;
 		pnlSubsidiaryTitle.Controls.Add(btnSubsidiaryBack);
 		pnlSubsidiaryTitle.Controls.Add(lblSubsidiaryTitle);
-		Font font2 = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAccountName.TextDetached = true;
 		lblAccountName.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblAccountName.BorderStyle = BorderStyle.None;
 		lblAccountName.Font = font2;
-		lblAccountName.Location = new Point(3, 4);
-		lblAccountName.Size = new Size(367, 17);
+		lblAccountName.Location = new Point(3, 8);
+		lblAccountName.Size = new Size(367, 22);
 		lblAccountName.Text = "科目名称：";
 		lblAccountName.TextAlign = ContentAlignment.MiddleLeft;
 		lblSubStartDate.TextDetached = true;
 		lblSubStartDate.Anchor = AnchorStyles.Top;
 		lblSubStartDate.BorderStyle = BorderStyle.None;
-		lblSubStartDate.Location = new Point(373, 4);
-		lblSubStartDate.Size = new Size(75, 18);
+		lblSubStartDate.Location = new Point(373, 10);
+		lblSubStartDate.Size = new Size(95, 20);
 		lblSubStartDate.Text = "2000-01-01";
 		lblSubStartDate.TextAlign = ContentAlignment.MiddleRight;
 		lblSubEndDate.TextDetached = true;
 		lblSubEndDate.Anchor = AnchorStyles.Top;
 		lblSubEndDate.BorderStyle = BorderStyle.None;
-		lblSubEndDate.Location = new Point(476, 4);
-		lblSubEndDate.Size = new Size(76, 18);
+		lblSubEndDate.Location = new Point(494, 10);
+		lblSubEndDate.Size = new Size(95, 20);
 		lblSubEndDate.Text = "2000-01-01";
 		lblSubEndDate.TextAlign = ContentAlignment.MiddleLeft;
 		lblPeriod.TextDetached = true;
 		lblPeriod.Anchor = AnchorStyles.Top;
 		lblPeriod.BorderStyle = BorderStyle.None;
-		lblPeriod.Location = new Point(452, 4);
-		lblPeriod.Size = new Size(20, 18);
+		lblPeriod.Location = new Point(470, 10);
+		lblPeriod.Size = new Size(20, 20);
 		lblPeriod.Text = "至";
 		lblPeriod.TextAlign = ContentAlignment.MiddleCenter;
 		lblSubCurrency.TextDetached = true;
 		lblSubCurrency.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 		lblSubCurrency.BorderStyle = BorderStyle.None;
 		lblSubCurrency.Font = font2;
-		lblSubCurrency.Location = new Point(727, 6);
-		lblSubCurrency.Size = new Size(180, 17);
+		lblSubCurrency.Location = new Point(727, 8);
+		lblSubCurrency.Size = new Size(180, 22);
 		lblSubCurrency.Text = "金额单位：";
 		lblSubCurrency.TextAlign = ContentAlignment.MiddleRight;
-		pnlSubsidiaryHead.Height = 25;
+		pnlSubsidiaryHead.Height = 40;
 		pnlSubsidiaryHead.KeepRelativeSize = false;
-		pnlSubsidiaryHead.Location = new Point(0, 31);
-		pnlSubsidiaryHead.MinHeight = 25;
+		pnlSubsidiaryHead.Location = new Point(0, 40);
+		pnlSubsidiaryHead.MinHeight = 40;
 		pnlSubsidiaryHead.Resizable = false;
-		pnlSubsidiaryHead.Size = new Size(927, 25);
+		pnlSubsidiaryHead.Size = new Size(927, 33);
 		pnlSubsidiaryHead.SizeRatio = 2.0;
 		pnlSubsidiaryHead.Controls.Add(lblSubEndDate);
 		pnlSubsidiaryHead.Controls.Add(lblPeriod);
@@ -411,8 +411,9 @@ internal class SubsidiaryEditor : ISetTheme
 		grdSubsidiary.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdSubsidiary.Dock = DockStyle.Fill;
 		grdSubsidiary.DrawMode = DrawModeEnum.OwnerDraw;
+		grdSubsidiary.ExtendLastCol = true;
 		grdSubsidiary.Font = font2;
-		grdSubsidiary.Rows.DefaultSize = 30;
+		grdSubsidiary.Rows.DefaultSize = 33;
 		grdSubsidiary.Tree.LineColor = Color.DimGray;
 		grdSubsidiary.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		grdSubsidiary.MouseDoubleClick += GrdSubsidiary_MouseDoubleClick;
@@ -547,8 +548,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiaryGrid.HeaderLineColor = Color.Transparent;
 		pnlSubsidiaryGrid.HeaderTextAlign = PanelTextAlign.Center;
 		pnlSubsidiaryGrid.Height = 327;
-		pnlSubsidiaryGrid.Location = new Point(0, 57);
-		pnlSubsidiaryGrid.Size = new Size(927, 327);
+		pnlSubsidiaryGrid.KeepRelativeSize = true;
 		pnlSubsidiaryGrid.SizeRatio = 59.74;
 		pnlSubsidiaryGrid.Controls.Add(value);
 		lblVoucherTitle.TextDetached = true;
@@ -643,7 +643,8 @@ internal class SubsidiaryEditor : ISetTheme
 		grdVoucher.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdVoucher.Dock = DockStyle.Fill;
 		grdVoucher.DrawMode = DrawModeEnum.OwnerDraw;
-		grdVoucher.Font = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		grdVoucher.ExtendLastCol = true;
+		grdVoucher.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		grdVoucher.Location = new Point(0, 0);
 		grdVoucher.Rows.DefaultSize = 20;
 		grdVoucher.Size = new Size(927, 126);
@@ -716,7 +717,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiayFoot.Size = new Size(927, 23);
 		pnlSubsidiayFoot.SizeRatio = 3.657;
 		pnlSubsidiayFoot.Controls.Add(SubDockingTab);
-		pnlSubsidiaryVoucher.Font = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		pnlSubsidiaryVoucher.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		pnlSubsidiaryVoucher.HeaderLineColor = Color.Transparent;
 		pnlSubsidiaryVoucher.HeaderTextAlign = PanelTextAlign.Center;
 		pnlSubsidiaryVoucher.Height = 220;
@@ -1098,6 +1099,8 @@ internal class SubsidiaryEditor : ISetTheme
 			{
 				ShowVoucher(visible: false);
 			}
+			AutoSizeSubsidiaryColumns();
+			AutoSizeVoucherColumns();
 		}
 		catch
 		{
@@ -1654,12 +1657,14 @@ internal class SubsidiaryEditor : ISetTheme
 		grdSubsidiary.AfterResizeRow += _grid_AfterResizeRow;
 		grdSubsidiary.AfterResizeColumn += _grid_AfterResizeColumn;
 		grdSubsidiary.AfterDragColumn += _grid_AfterDragColumn;
+		grdSubsidiary.Resize += GrdSubsidiary_Resize;
 		btnSubsidiaryBack.Click += btnBack_Click;
 		grdVoucher.DoubleClick += _grdVoucher_DoubleClick;
 		grdVoucher.AfterResizeRow += _grdVoucher_AfterResizeRow;
 		grdVoucher.AfterResizeColumn += _grdVoucher_AfterResizeColumn;
 		grdVoucher.AfterDragColumn += _grdVoucher_AfterDragColumn;
 		grdVoucher.KeyDown += GrdVoucher_KeyDown;
+		grdVoucher.Resize += GrdVoucher_Resize;
 		SubStatus = BooksStyle.BalanceTo;
 		SubDisplay = BooksStyle.SubDisplay;
 		TotalDisplay = BooksStyle.TotalDisplay;
@@ -1667,6 +1672,78 @@ internal class SubsidiaryEditor : ISetTheme
 		{
 			Auditai.UI.Controls.Theme.DrawFormBorder(grdVoucher, e1.Graphics);
 		};
+	}
+
+	private void GrdSubsidiary_Resize(object sender, EventArgs e)
+	{
+		AutoSizeSubsidiaryColumns();
+	}
+
+	private void GrdVoucher_Resize(object sender, EventArgs e)
+	{
+		AutoSizeVoucherColumns();
+	}
+
+	private void AutoSizeSubsidiaryColumns()
+	{
+		if (grdSubsidiary == null || grdSubsidiary.Cols.Count <= grdSubsidiary.Cols.Fixed || !initializedSubsidiaryCaption)
+		{
+			return;
+		}
+		int clientWidth = grdSubsidiary.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < grdSubsidiary.Cols.Fixed; i++)
+			fixedWidth += grdSubsidiary.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "MyMark", "Date", "Type", "Number", "Digest", "Opposite", "Debit", "Credit", "DC", "Balance" };
+		double[] ratios = { 0.05, 0.06, 0.08, 0.04, 0.05, 0.22, 0.12, 0.10, 0.10, 0.05, 0.13 };
+		grdSubsidiary.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdSubsidiary.Cols.Contains(colNames[i]) && grdSubsidiary.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 30) width = 30;
+					grdSubsidiary.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { grdSubsidiary.EndUpdate(); }
+	}
+
+	private void AutoSizeVoucherColumns()
+	{
+		if (grdVoucher == null || grdVoucher.Cols.Count <= grdVoucher.Cols.Fixed)
+		{
+			return;
+		}
+		int clientWidth = grdVoucher.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < grdVoucher.Cols.Fixed; i++)
+			fixedWidth += grdVoucher.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "Date", "Type", "Number", "Digest", "Code", "Name", "Debit", "Credit" };
+		double[] ratios = { 0.06, 0.10, 0.04, 0.06, 0.22, 0.10, 0.14, 0.14, 0.14 };
+		grdVoucher.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdVoucher.Cols.Contains(colNames[i]) && grdVoucher.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 30) width = 30;
+					grdVoucher.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { grdVoucher.EndUpdate(); }
 	}
 
 	private void GrdVoucher_KeyDown(object sender, KeyEventArgs e)
@@ -2430,6 +2507,7 @@ internal class SubsidiaryEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		btnSubsidiaryBack.BackColor = Color.Transparent;
 		btnSubsidiaryBack.FlatStyle = FlatStyle.Flat;
 		btnSubsidiaryBack.FlatAppearance.BorderSize = 0;

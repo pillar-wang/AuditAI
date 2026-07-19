@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.IO;
 using System.Text;
 using Auditai.DTO;
@@ -20,6 +20,13 @@ public static class TokenTimer
 		}
 		set
 		{
+			// 不允许将 Token 设为 null，避免后续 API 调用 NRE
+			if (value == null) return;
+			// 服务端返回的 UserToken 不包含 Cookie，保留旧 Cookie 避免丢失机器指纹
+			if (value.Cookie == null && _token?.Cookie != null)
+			{
+				value.Cookie = _token.Cookie;
+			}
 			_token = value;
 			SaveCookieToMachine();
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -124,29 +124,29 @@ internal class SummaryEditor : ISetTheme
 		lblSummaryTitle.Font = font;
 		lblSummaryTitle.Text = "月度汇总表";
 		lblSummaryTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlMonthTitle.Height = 30;
+		pnlMonthTitle.Height = 39;
 		pnlMonthTitle.KeepRelativeSize = false;
 		pnlMonthTitle.Location = new Point(0, 0);
-		pnlMonthTitle.MinHeight = 30;
+		pnlMonthTitle.MinHeight = 39;
 		pnlMonthTitle.Resizable = false;
-		pnlMonthTitle.Size = new Size(927, 30);
+		pnlMonthTitle.Size = new Size(927, 39);
 		pnlMonthTitle.SizeRatio = 4.769;
 		pnlMonthTitle.Controls.Add(lblSummaryTitle);
-		Font font2 = new Font("Microsoft YaHei", 9f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblMonthAccount.TextDetached = true;
 		lblMonthAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblMonthAccount.BorderStyle = BorderStyle.None;
 		lblMonthAccount.Font = font2;
-		lblMonthAccount.Location = new Point(3, 4);
-		lblMonthAccount.Size = new Size(390, 17);
+		lblMonthAccount.Location = new Point(3, 8);
+		lblMonthAccount.Size = new Size(390, 22);
 		lblMonthAccount.Text = "科目名称：";
 		lblMonthAccount.TextAlign = ContentAlignment.MiddleLeft;
-		pnlMonthHead.Height = 25;
+		pnlMonthHead.Height = 40;
 		pnlMonthHead.KeepRelativeSize = false;
-		pnlMonthHead.Location = new Point(0, 31);
-		pnlMonthHead.MinHeight = 25;
+		pnlMonthHead.Location = new Point(0, 40);
+		pnlMonthHead.MinHeight = 40;
 		pnlMonthHead.Resizable = false;
-		pnlMonthHead.Size = new Size(927, 25);
+		pnlMonthHead.Size = new Size(927, 33);
 		pnlMonthHead.SizeRatio = 4.181;
 		pnlMonthHead.Controls.Add(lblMonthAccount);
 		pnlMonthHead.Paint += delegate(object s1, PaintEventArgs e1)
@@ -159,6 +159,7 @@ internal class SummaryEditor : ISetTheme
 		grdMonthSummary.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdMonthSummary.Dock = DockStyle.Fill;
 		grdMonthSummary.DrawMode = DrawModeEnum.OwnerDraw;
+		grdMonthSummary.ExtendLastCol = true;
 		grdMonthSummary.Font = font2;
 		grdMonthSummary.Rows.DefaultSize = 20;
 		grdMonthSummary.Tree.LineColor = Color.DimGray;
@@ -210,8 +211,7 @@ internal class SummaryEditor : ISetTheme
 		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdMonthSummary, c1ToolBar, out pnlSidebar);
 		pnlMonthGrid.Height = 573;
-		pnlMonthGrid.Location = new Point(0, 57);
-		pnlMonthGrid.Size = new Size(927, 573);
+		pnlMonthGrid.KeepRelativeSize = true;
 		pnlMonthGrid.SizeRatio = 100.0;
 		pnlMonthGrid.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
@@ -298,6 +298,7 @@ internal class SummaryEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		grdMonthSummary.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdMonthSummary.Styles.Fixed.Font = grdMonthSummary.Font;
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))

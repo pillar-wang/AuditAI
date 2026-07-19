@@ -1,4 +1,4 @@
-namespace Auditai.Util;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Auditai.Util;
 
 public class LoginInfo
 {
@@ -9,4 +9,6 @@ public class LoginInfo
 	public string userName { get; set; }
 
 	public string password { get; set; }
+
+	public string validateCode { get; set; }
 }

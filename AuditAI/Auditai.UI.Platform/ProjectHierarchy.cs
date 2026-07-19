@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -223,7 +223,8 @@ public class ProjectHierarchy
             AllowEditing = false,
             ExtendLastCol = true,
             BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None,
-            SelectionMode = SelectionModeEnum.Cell
+            SelectionMode = SelectionModeEnum.Cell,
+            Font = new Font("微软雅黑", 10.5f)
         };
         _grid.Styles.Normal.Border.Width = 0;
         _grid.Styles.Normal.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
@@ -232,7 +233,7 @@ public class ProjectHierarchy
         _grid.Styles.EmptyArea.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
         _grid.DrawMode = DrawModeEnum.Normal;
         _grid.Tree.Style = TreeStyleFlags.Symbols | TreeStyleFlags.ButtonBar;
-        _grid.Rows.DefaultSize = 30;
+        _grid.Rows.DefaultSize = 33;
         _grid.Rows.Count = 0;
         _grid.Rows.Fixed = 1;
         _grid.Cols.Count = 1;

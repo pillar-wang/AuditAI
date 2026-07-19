@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -113,9 +113,9 @@ public class MessageShowBox : C1RibbonForm
 		return new C1Button
 		{
 			Text = text,
-			Width = 70,
-			Height = 26,
-			Font = new Font("微软雅黑", 9f),
+			Width = 100,
+			Height = 36,
+			Font = new Font("微软雅黑", 10.5f),
 			Anchor = (AnchorStyles.Bottom | AnchorStyles.Right)
 		};
 	}
@@ -123,22 +123,22 @@ public class MessageShowBox : C1RibbonForm
 	private void AnchorPosition1(C1SplitterPanel panel, Control control)
 	{
 		panel.Controls.Add(control);
-		control.Top = (panel.Height - 26) / 2;
-		control.Left = panel.Width - 300;
+		control.Top = (panel.Height - 36) / 2;
+		control.Left = panel.Width - 370;
 	}
 
 	private void AnchorPosition2(C1SplitterPanel panel, Control control)
 	{
 		panel.Controls.Add(control);
-		control.Top = (panel.Height - 26) / 2;
-		control.Left = panel.Width - 200;
+		control.Top = (panel.Height - 36) / 2;
+		control.Left = panel.Width - 250;
 	}
 
 	private void AnchorPosition3(C1SplitterPanel panel, Control control)
 	{
 		panel.Controls.Add(control);
-		control.Top = (panel.Height - 26) / 2;
-		control.Left = panel.Width - 100;
+		control.Top = (panel.Height - 36) / 2;
+		control.Left = panel.Width - 130;
 	}
 
 	private void InitYesNoView()
@@ -243,8 +243,8 @@ public class MessageShowBox : C1RibbonForm
 
 	private void StandardView()
 	{
-		lblNotice.Font = new Font("微软雅黑", 9f);
-		txtNotice.Font = new Font("微软雅黑", 9f);
+		lblNotice.Font = new Font("微软雅黑", 10.5f);
+		txtNotice.Font = new Font("微软雅黑", 10.5f);
 		txtNotice.BorderStyle = BorderStyle.None;
 		ctnAll.SplitterWidth = 0;
 		pnlImage.BorderWidth = 0;
@@ -290,62 +290,62 @@ public class MessageShowBox : C1RibbonForm
 		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnAll.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ctnAll.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
 		this.ctnAll.Location = new System.Drawing.Point(0, 0);
 		this.ctnAll.Name = "ctnAll";
 		this.ctnAll.Panels.Add(this.pnlButton);
 		this.ctnAll.Panels.Add(this.pnlImage);
 		this.ctnAll.Panels.Add(this.pnlContent);
-		this.ctnAll.Size = new System.Drawing.Size(512, 189);
+		this.ctnAll.Size = new System.Drawing.Size(560, 180);
 		this.ctnAll.SplitterWidth = 0;
 		this.ctnAll.TabIndex = 0;
 		this.pnlButton.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlButton.Height = 50;
+		this.pnlButton.Height = 55;
 		this.pnlButton.KeepRelativeSize = false;
-		this.pnlButton.Location = new System.Drawing.Point(0, 139);
-		this.pnlButton.MinHeight = 50;
+		this.pnlButton.Location = new System.Drawing.Point(0, 125);
+		this.pnlButton.MinHeight = 40;
 		this.pnlButton.MinWidth = 41;
 		this.pnlButton.Name = "pnlButton";
 		this.pnlButton.Resizable = false;
-		this.pnlButton.Size = new System.Drawing.Size(512, 50);
-		this.pnlButton.SizeRatio = 26.596;
+		this.pnlButton.Size = new System.Drawing.Size(560, 55);
+		this.pnlButton.SizeRatio = 30.5556;
 		this.pnlButton.TabIndex = 1;
-		this.pnlButton.Width = 512;
+		this.pnlButton.Width = 560;
 		this.pnlImage.Controls.Add(this.MessageIcon);
 		this.pnlImage.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Left;
-		this.pnlImage.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.pnlImage.Height = 138;
+		this.pnlImage.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlImage.Height = 125;
 		this.pnlImage.KeepRelativeSize = false;
 		this.pnlImage.Location = new System.Drawing.Point(0, 0);
 		this.pnlImage.MinHeight = 41;
-		this.pnlImage.MinWidth = 92;
+		this.pnlImage.MinWidth = 80;
 		this.pnlImage.Name = "pnlImage";
-		this.pnlImage.Size = new System.Drawing.Size(92, 138);
-		this.pnlImage.SizeRatio = 18.0;
+		this.pnlImage.Size = new System.Drawing.Size(100, 125);
+		this.pnlImage.SizeRatio = 21.7391;
 		this.pnlImage.TabIndex = 0;
-		this.pnlImage.Width = 92;
+		this.pnlImage.Width = 100;
 		this.MessageIcon.BackColor = System.Drawing.Color.Transparent;
 		this.MessageIcon.BackgroundImage = (System.Drawing.Image)resources.GetObject("MessageIcon.BackgroundImage");
 		this.MessageIcon.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.MessageIcon.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.MessageIcon.Location = new System.Drawing.Point(0, 0);
 		this.MessageIcon.Name = "MessageIcon";
-		this.MessageIcon.Size = new System.Drawing.Size(92, 138);
+		this.MessageIcon.Size = new System.Drawing.Size(110, 135);
 		this.MessageIcon.TabIndex = 0;
 		this.MessageIcon.TabStop = false;
 		this.pnlContent.Controls.Add(this.lblNotice);
 		this.pnlContent.Controls.Add(this.txtNotice);
-		this.pnlContent.Height = 138;
-		this.pnlContent.Location = new System.Drawing.Point(92, 0);
+		this.pnlContent.Height = 125;
+		this.pnlContent.Location = new System.Drawing.Point(100, 0);
 		this.pnlContent.Name = "pnlContent";
-		this.pnlContent.Size = new System.Drawing.Size(420, 138);
+		this.pnlContent.Size = new System.Drawing.Size(460, 125);
 		this.pnlContent.TabIndex = 2;
 		this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblNotice.Dock = System.Windows.Forms.DockStyle.Left;
 		this.lblNotice.Location = new System.Drawing.Point(0, 0);
 		this.lblNotice.Name = "lblNotice";
-		this.lblNotice.Size = new System.Drawing.Size(392, 138);
+		this.lblNotice.Size = new System.Drawing.Size(490, 135);
 		this.lblNotice.TabIndex = 1;
 		this.lblNotice.Tag = null;
 		this.lblNotice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -355,7 +355,7 @@ public class MessageShowBox : C1RibbonForm
 		this.txtNotice.Name = "txtNotice";
 		this.txtNotice.Padding = new System.Windows.Forms.Padding(0, 0, 20, 0);
 		this.txtNotice.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-		this.txtNotice.Size = new System.Drawing.Size(420, 138);
+		this.txtNotice.Size = new System.Drawing.Size(510, 135);
 		this.txtNotice.TabIndex = 0;
 		this.txtNotice.Tag = null;
 		this.txtNotice.TextDetached = true;
@@ -363,7 +363,7 @@ public class MessageShowBox : C1RibbonForm
 		this.txtNotice.BorderStyleChanged += new System.EventHandler(txtNotice_BorderStyleChanged);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(512, 189);
+		base.ClientSize = new System.Drawing.Size(560, 180);
 		base.Controls.Add(this.ctnAll);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 		base.MaximizeBox = false;

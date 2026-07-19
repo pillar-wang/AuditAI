@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -124,7 +124,8 @@ public class frmSelectImport : C1RibbonForm
 
 	private void InitializeGrdTree()
 	{
-		grdTree.Rows.DefaultSize = 30;
+		grdTree.Rows.DefaultSize = 33;
+		grdTree.Font = new Font("微软雅黑", 10.5f);
 		grdTree.Rows.Count = 1;
 		grdTree.Rows.Fixed = 1;
 		grdTree.Cols.Count = 0;

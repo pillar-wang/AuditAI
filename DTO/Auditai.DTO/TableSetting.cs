@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Newtonsoft.Json;
@@ -194,7 +194,7 @@ public class TableSetting
 		}
 		TableRows = 10;
 		TableCols = 5;
-		TableRowHeight = 30;
+		TableRowHeight = 36;
 		LockAreaColor = Color.WhiteSmoke;
 		FormalaColor = Color.LightYellow;
 		CheckPassColor = Color.PaleGreen;

@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -5121,7 +5121,6 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 				Auditai.Model.Cell cell = Table[mr.Index, column.Index];
 				if (cell == null)
 				{
-					Debug.WriteLine($"[TicketInputTableVM] IsTableRowKeyColumnEmpty_MixTicket: cell is null! mr.Index={mr.Index}, column.Index={column.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
 					continue;
 				}
 				if (!cell.IsEmpty)
@@ -5141,7 +5140,6 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 	{
 		if (!_rows[index].IsNew)
 		{
-			Debug.WriteLine($"[IsDataRowEmpty] index={index}: IsNew=false → return false");
 			return false;
 		}
 		for (int i = 0; i < _columns.Count; i++)
@@ -5151,17 +5149,14 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 			{
 				if (cellVM.Attachments != null && cellVM.Attachments.Attachments.Count > 0)
 				{
-					Debug.WriteLine($"[IsDataRowEmpty] index={index}, col[{i}]: has attachments → return false");
 					return false;
 				}
 				if (!cellVM.TableCell.IsEmpty)
 				{
-					Debug.WriteLine($"[IsDataRowEmpty] index={index}, col[{i}]='{cellVM.TableCell.Value}': not empty → return false");
 					return false;
 				}
 			}
 		}
-		Debug.WriteLine($"[IsDataRowEmpty] index={index}: all data columns empty → return true");
 		return true;
 	}
 
@@ -5185,7 +5180,6 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 				Auditai.Model.Cell cell = Table[mr.Index, ticketInputColumnVM.TableColumn.Index];
 				if (cell == null)
 				{
-					Debug.WriteLine($"[TicketInputTableVM] IsTableRowDataColumnEmpty_DynamicRowTicket: cell is null! mr.Index={mr.Index}, column.Index={ticketInputColumnVM.TableColumn.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
 					continue;
 				}
 				if (!cell.IsEmpty)
@@ -5211,7 +5205,6 @@ private Auditai.Model.Cell BindTableNewCreatedCellToTicketCell(TicketInputCellVM
 				Auditai.Model.Cell cell = Table[mr.Index, column.Index];
 				if (cell == null)
 				{
-					Debug.WriteLine($"[TicketInputTableVM] IsTableRowKeyColumnEmpty_DynamicRowTicket: cell is null! mr.Index={mr.Index}, column.Index={column.Index}, Table.Rows.Count={Table.Rows.Count}, Table.Columns.Count={Table.Columns.Count}, Cells.Count={Table.Cells.Count}");
 					continue;
 				}
 				if (!cell.IsEmpty)

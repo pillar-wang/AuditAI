@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -177,13 +177,13 @@ public class VoucherMarkedEditor : ISetTheme
 
 	private SolidBrush _adjustLevelIconOnFocusBackgroundBrush = new SolidBrush(Color.Gray);
 
-	private System.Drawing.Image zb1Image = Resources.zb1;
+	private System.Drawing.Image zb1Image;
 
-	private System.Drawing.Image zb2Image = Resources.zb2;
+	private System.Drawing.Image zb2Image;
 
-	private System.Drawing.Image zb3Image = Resources.zb3;
+	private System.Drawing.Image zb3Image;
 
-	private System.Drawing.Image zb4Image = Resources.zb4;
+	private System.Drawing.Image zb4Image;
 
 	private C1.Win.C1FlexGrid.Row _currentInFilterRow;
 
@@ -254,6 +254,7 @@ public class VoucherMarkedEditor : ISetTheme
 		_owner = owner;
 		InitComponent();
 		Initialize();
+		InitializeImages();
 		mnuVoucher = new C1ContextMenu();
 		cmdCopy = new C1Command
 		{
@@ -327,6 +328,7 @@ public class VoucherMarkedEditor : ISetTheme
 		source = source.OrderBy((Voucher v) => v.Number, StringNumberComparer.Instance).ThenBy((Voucher v) => v.Type.Name);
 		PopulateVouchersImpl(grdVouchers, source);
 		PopulateNavTreeImpl();
+		AutoSizeVoucherColumns();
 	}
 
 	public IEnumerable<Voucher> GetVouchers()
@@ -337,6 +339,7 @@ public class VoucherMarkedEditor : ISetTheme
 
 	public void SetTheme()
 	{
+		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		grdVouchers.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdDetail.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdVouchers.Styles.Fixed.Font = grdVouchers.Font;
@@ -574,6 +577,7 @@ public class VoucherMarkedEditor : ISetTheme
 		grdVouchers.BodySelectionChanged += GrdVouchers_BodySelectionChanged;
 		grdVouchers.MouseMove += GrdVouchers_MouseMove;
 		grdVouchers.BeforeMouseDown += GrdVouchers_BeforeMouseDown;
+		grdVouchers.Resize += GrdVouchers_Resize;
 		pnlDetails.Visible = false;
 		pnlDetails.CloseButtonClick += PnlMarkDetails_CloseButtonClick;
 		grdDetail.Paint += delegate(object s1, PaintEventArgs e1)
@@ -582,6 +586,79 @@ public class VoucherMarkedEditor : ISetTheme
 		};
 		grdDetail.KeyDown += GrdDetail_KeyDown;
 		grdDetail.MouseClick += GrdDetail_MouseClick;
+		grdDetail.Resize += GrdDetail_Resize;
+	}
+
+	private void GrdVouchers_Resize(object sender, EventArgs e)
+	{
+		AutoSizeVoucherColumns();
+	}
+
+	private void GrdDetail_Resize(object sender, EventArgs e)
+	{
+		AutoSizeDetailColumns();
+	}
+
+	private void AutoSizeVoucherColumns()
+	{
+		if (grdVouchers == null || grdVouchers.Cols.Count <= grdVouchers.Cols.Fixed)
+		{
+			return;
+		}
+		int clientWidth = grdVouchers.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < grdVouchers.Cols.Fixed; i++)
+			fixedWidth += grdVouchers.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "MyMark", "Date", "Type", "Number", "Digest", "Code", "Name", "Opposite", "Debit", "Credit", "Maker", "Checker", "Booker" };
+		double[] ratios = { 0.04, 0.05, 0.07, 0.03, 0.04, 0.16, 0.07, 0.10, 0.10, 0.08, 0.08, 0.05, 0.05, 0.08 };
+		grdVouchers.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdVouchers.Cols.Contains(colNames[i]) && grdVouchers.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 30) width = 30;
+					grdVouchers.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { grdVouchers.EndUpdate(); }
+	}
+
+	private void AutoSizeDetailColumns()
+	{
+		if (grdDetail == null || grdDetail.Cols.Count <= grdDetail.Cols.Fixed)
+		{
+			return;
+		}
+		int clientWidth = grdDetail.ClientSize.Width;
+		if (clientWidth <= 0) return;
+		int fixedWidth = 0;
+		for (int i = 0; i < grdDetail.Cols.Fixed; i++)
+			fixedWidth += grdDetail.Cols[i].WidthDisplay;
+		int availableWidth = clientWidth - fixedWidth;
+		if (availableWidth <= 0) return;
+		string[] colNames = { "Index", "Date", "Type", "Number", "Digest", "Code", "Name", "Debit", "Credit" };
+		double[] ratios = { 0.05, 0.10, 0.04, 0.06, 0.20, 0.08, 0.15, 0.16, 0.16 };
+		grdDetail.BeginUpdate();
+		try
+		{
+			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
+			{
+				if (grdDetail.Cols.Contains(colNames[i]) && grdDetail.Cols[colNames[i]].Visible)
+				{
+					int width = (int)(availableWidth * ratios[i]);
+					if (width < 30) width = 30;
+					grdDetail.Cols[colNames[i]].Width = width;
+				}
+			}
+		}
+		finally { grdDetail.EndUpdate(); }
 	}
 
 	public void ShowSideToolbar()
@@ -640,12 +717,12 @@ public class VoucherMarkedEditor : ISetTheme
 		lblVoucherTitle.Font = font;
 		lblVoucherTitle.Text = "我的关注";
 		lblVoucherTitle.TextAlign = ContentAlignment.MiddleCenter;
-		pnlVoucherTitle.Height = 30;
+		pnlVoucherTitle.Height = 39;
 		pnlVoucherTitle.KeepRelativeSize = false;
 		pnlVoucherTitle.Location = new Point(0, 0);
-		pnlVoucherTitle.MinHeight = 30;
+		pnlVoucherTitle.MinHeight = 39;
 		pnlVoucherTitle.Resizable = false;
-		pnlVoucherTitle.Size = new Size(927, 30);
+		pnlVoucherTitle.Size = new Size(927, 39);
 		pnlVoucherTitle.SizeRatio = 9.524;
 		pnlVoucherTitle.TabIndex = 0;
 		pnlVoucherTitle.Controls.Add(lblVoucherTitle);
@@ -694,8 +771,7 @@ public class VoucherMarkedEditor : ISetTheme
 		c1CommandLink3.Command = c1Command3;
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdVouchers, c1ToolBar, out pnlSidebar);
 		pnlVoucherGrid.Height = 284;
-		pnlVoucherGrid.Location = new Point(0, 31);
-		pnlVoucherGrid.Size = new Size(927, 284);
+		pnlVoucherGrid.KeepRelativeSize = true;
 		pnlVoucherGrid.Controls.Add(value);
 		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
 		{
@@ -711,9 +787,7 @@ public class VoucherMarkedEditor : ISetTheme
 		ctnVouchers.Panels.Add(pnlVoucherTitle);
 		ctnVouchers.Panels.Add(pnlVoucherGrid);
 		pnlVouchers.Height = 315;
-		pnlVouchers.Location = new Point(0, 0);
-		pnlVouchers.Size = new Size(927, 315);
-		pnlVouchers.TabIndex = 0;
+		pnlVouchers.KeepRelativeSize = true;
 		pnlVouchers.Controls.Add(ctnVouchers);
 		Font font2 = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblDetailTitle.TextDetached = true;
@@ -818,7 +892,7 @@ public class VoucherMarkedEditor : ISetTheme
 		ctnDetails.Panels.Add(pnlDetailHead);
 		ctnDetails.Panels.Add(pnlDetailGrid);
 		pnlDetails.Height = 315;
-		pnlDetails.Location = new Point(0, 336);
+		pnlDetails.KeepRelativeSize = true;
 		pnlDetails.ShowCloseButton = true;
 		pnlDetails.Size = new Size(927, 294);
 		pnlDetails.Text = " ";
@@ -1195,6 +1269,27 @@ public class VoucherMarkedEditor : ISetTheme
 		lblDetailMaker.Text = "制单人：" + voucher.Maker;
 		lblDetailBooker.Text = "记账人：" + voucher.Booker;
 		lblDetailChecker.Text = "审核人：" + voucher.Checker;
+	}
+
+	private void InitializeImages()
+	{
+		zb1Image = ScaleImage(Resources.zb1, 20, 20);
+		zb2Image = ScaleImage(Resources.zb2, 20, 20);
+		zb3Image = ScaleImage(Resources.zb3, 20, 20);
+		zb4Image = ScaleImage(Resources.zb4, 20, 20);
+	}
+
+	private System.Drawing.Image ScaleImage(System.Drawing.Image image, int width, int height)
+	{
+		if (image == null)
+			return null;
+		System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(width, height);
+		using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(bitmap))
+		{
+			graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+			graphics.DrawImage(image, 0, 0, width, height);
+		}
+		return bitmap;
 	}
 
 	private System.Drawing.Image GetNodeImage(bool isAccountNode, bool isOpenedState)

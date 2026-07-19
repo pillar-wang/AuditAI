@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -56,38 +56,38 @@ public class frmBatchApplyRange : Form
 	private void InitializeComponents()
 	{
 		this.Text = "批量应用表格样式";
-		this.Size = new Size(620, 680);
+		this.Size = new Size(806, 884);
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.FormBorderStyle = FormBorderStyle.FixedDialog;
 		this.MaximizeBox = false;
 		this.MinimizeBox = false;
 
-		int y = 15;
+		int y = 20;
 
 		// 步骤标题
 		_lblStep = new Label
 		{
 			Text = "批量应用表格样式向导",
-			Location = new Point(15, y),
-			Size = new Size(580, 25),
+			Location = new Point(20, y),
+			Size = new Size(754, 33),
 			Font = new Font("Noto Sans SC", 12, FontStyle.Bold)
 		};
-		y += 35;
+		y += 45;
 
 		// 步骤1: 选择范围——树形结构 + 两个控件设置起止
 		var grpRange = new GroupBox
 		{
 			Text = "步骤1: 选择应用范围（在树中点击节点设置起始和结束位置）",
-			Location = new Point(15, y),
-			Size = new Size(580, 420)
+			Location = new Point(20, y),
+			Size = new Size(754, 546)
 		};
 
 		// 两个 RangeButton 控件：设为起始 / 设为结束（互斥）
 		_rbSetStart = new RadioButton
 		{
 			Text = "设为起始",
-			Location = new Point(10, 20),
-			Size = new Size(110, 22),
+			Location = new Point(13, 26),
+			Size = new Size(143, 29),
 			Checked = true,
 			BackColor = Color.FromArgb(230, 240, 255),
 			FlatStyle = FlatStyle.Standard,
@@ -98,8 +98,8 @@ public class frmBatchApplyRange : Form
 		_rbSetEnd = new RadioButton
 		{
 			Text = "设为结束",
-			Location = new Point(130, 20),
-			Size = new Size(110, 22),
+			Location = new Point(169, 26),
+			Size = new Size(143, 29),
 			BackColor = Color.FromArgb(255, 235, 235),
 			FlatStyle = FlatStyle.Standard,
 			Font = new Font("Noto Sans SC", 9, FontStyle.Bold)
@@ -110,8 +110,8 @@ public class frmBatchApplyRange : Form
 		_btnExpandAll = new Button
 		{
 			Text = "全部展开",
-			Location = new Point(260, 18),
-			Size = new Size(80, 25)
+			Location = new Point(338, 23),
+			Size = new Size(104, 33)
 		};
 		_btnExpandAll.Click += (s, e) => _treeGrid.Tree.Show(_treeGrid.Tree.MaximumLevel);
 		grpRange.Controls.Add(_btnExpandAll);
@@ -119,8 +119,8 @@ public class frmBatchApplyRange : Form
 		_btnCollapseAll = new Button
 		{
 			Text = "全部收缩",
-			Location = new Point(345, 18),
-			Size = new Size(80, 25)
+			Location = new Point(449, 23),
+			Size = new Size(104, 33)
 		};
 		_btnCollapseAll.Click += (s, e) => _treeGrid.Tree.Show(0);
 		grpRange.Controls.Add(_btnCollapseAll);
@@ -128,8 +128,8 @@ public class frmBatchApplyRange : Form
 		// 树形结构图
 		_treeGrid = new C1FlexGrid
 		{
-			Location = new Point(10, 50),
-			Size = new Size(555, 310),
+			Location = new Point(13, 65),
+			Size = new Size(722, 403),
 			Rows = { Fixed = 0, DefaultSize = 26 },
 			Cols = { Fixed = 0, Count = 1 },
 			ExtendLastCol = true,
@@ -147,58 +147,58 @@ public class frmBatchApplyRange : Form
 		// 范围信息
 		_txtRangeInfo = new TextBox
 		{
-			Location = new Point(10, 370),
-			Size = new Size(555, 25),
+			Location = new Point(13, 481),
+			Size = new Size(722, 33),
 			ReadOnly = true
 		};
 		_txtRangeInfo.Text = "提示：先点击「设为起始」或「设为结束」，再点击树中节点";
 		_txtRangeInfo.ForeColor = Color.Gray;
 		grpRange.Controls.Add(_txtRangeInfo);
 
-		y += 430;
+		y += 559;
 
 		// 步骤2: 选择样式
 		var grpStyle = new GroupBox
 		{
 			Text = "步骤2: 配置表格样式",
-			Location = new Point(15, y),
-			Size = new Size(580, 70)
+			Location = new Point(20, y),
+			Size = new Size(754, 91)
 		};
 
 		_btnConfigStyle = new Button
 		{
 			Text = "配置样式",
-			Location = new Point(10, 25),
-			Size = new Size(100, 30)
+			Location = new Point(13, 33),
+			Size = new Size(130, 39)
 		};
 		_btnConfigStyle.Click += BtnConfigStyle_Click;
 		grpStyle.Controls.Add(_btnConfigStyle);
 
 		_txtStyleInfo = new TextBox
 		{
-			Location = new Point(120, 28),
-			Size = new Size(440, 25),
+			Location = new Point(156, 36),
+			Size = new Size(572, 33),
 			ReadOnly = true
 		};
 		_txtStyleInfo.Text = "使用默认自定义样式";
 		_txtStyleInfo.ForeColor = Color.Gray;
 		grpStyle.Controls.Add(_txtStyleInfo);
 
-		y += 80;
+		y += 104;
 
 		// 步骤3: 应用
 		var grpApply = new GroupBox
 		{
 			Text = "步骤3: 应用",
-			Location = new Point(15, y),
-			Size = new Size(580, 80)
+			Location = new Point(20, y),
+			Size = new Size(754, 104)
 		};
 
 		_btnApply = new Button
 		{
 			Text = "批量应用",
-			Location = new Point(10, 30),
-			Size = new Size(100, 30),
+			Location = new Point(13, 39),
+			Size = new Size(130, 39),
 			Enabled = false
 		};
 		_btnApply.Click += BtnApply_Click;
@@ -207,28 +207,28 @@ public class frmBatchApplyRange : Form
 		_lblProgress = new Label
 		{
 			Text = "",
-			Location = new Point(120, 20),
-			Size = new Size(440, 20),
+			Location = new Point(156, 26),
+			Size = new Size(572, 26),
 			ForeColor = Color.Gray
 		};
 		grpApply.Controls.Add(_lblProgress);
 
 		_progressBar = new ProgressBar
 		{
-			Location = new Point(120, 45),
-			Size = new Size(440, 20),
+			Location = new Point(156, 59),
+			Size = new Size(572, 26),
 			Visible = false
 		};
 		grpApply.Controls.Add(_progressBar);
 
-		y += 90;
+		y += 117;
 
 		// 取消按钮
 		_btnCancel = new Button
 		{
 			Text = "关闭",
-			Location = new Point(495, y),
-			Size = new Size(100, 30),
+			Location = new Point(644, y),
+			Size = new Size(130, 39),
 			DialogResult = DialogResult.Cancel
 		};
 

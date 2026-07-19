@@ -1,4 +1,5 @@
-using System;
+﻿﻿﻿﻿﻿﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Command;
 using C1.Win.C1FlexGrid;
@@ -15,6 +16,11 @@ public class ProjectTreeGrid
 	private C1ContextMenu _ctxMenu;
 	private C1Command _cmdExpandAll;
 	private C1Command _cmdCollapseAll;
+
+	private System.Drawing.Image _treeGroupImage;
+	private System.Drawing.Image _treeDirImage;
+	private System.Drawing.Image _treeDocImage;
+	private System.Drawing.Image _treeTableImage;
 
 	public Auditai.Model.Project Project { get; set; }
 
@@ -42,17 +48,23 @@ public class ProjectTreeGrid
 
 	public ProjectTreeGrid()
 	{
+		_treeGroupImage = ScaleImage(Resources.TreeGroup, 20, 20);
+		_treeDirImage = ScaleImage(Resources.TreeDir, 20, 20);
+		_treeDocImage = ScaleImage(Resources.TreeDoc, 20, 20);
+		_treeTableImage = ScaleImage(Resources.TreeTable, 20, 20);
+
 		_grid = new C1FlexGridEx
 		{
 			Dock = DockStyle.Fill,
 			AllowEditing = false,
 			ExtendLastCol = true,
 			BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None,
-			SelectionMode = SelectionModeEnum.Cell
+			SelectionMode = SelectionModeEnum.Cell,
+			Font = new Font("微软雅黑", 10.5f)
 		};
 		_grid.Styles.Normal.Border.Width = 0;
 		_grid.Tree.Style = TreeStyleFlags.CompleteLeaf;
-		_grid.Rows.DefaultSize = 30;
+		_grid.Rows.DefaultSize = 33;
 		_grid.Rows.Count = 0;
 		_grid.Rows.Fixed = 0;
 		_grid.Cols.Count = 1;
@@ -85,7 +97,7 @@ public class ProjectTreeGrid
 			Node node = _grid.Rows.AddNode(0);
 			node.Key = treeGroup;
 			node.Data = treeGroup.Name;
-			node.Image = Resources.TreeGroup;
+			node.Image = _treeGroupImage;
 			node.Row.UserData = treeGroup;
 			foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
 			{
@@ -96,7 +108,7 @@ public class ProjectTreeGrid
 					{
 						if (rootNode is TreeDocumentNode treeDocumentNode)
 						{
-							node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Name, treeDocumentNode, Resources.TreeDoc);
+							node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Name, treeDocumentNode, _treeDocImage);
 							if (node2 != null)
 							{
 								node2.Row.UserData = treeDocumentNode;
@@ -105,7 +117,7 @@ public class ProjectTreeGrid
 					}
 					else
 					{
-						node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Name, treeTableNode, Resources.TreeTable);
+						node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Name, treeTableNode, _treeTableImage);
 						if (node2 != null)
 						{
 							node2.Row.UserData = treeTableNode;
@@ -114,7 +126,7 @@ public class ProjectTreeGrid
 				}
 				else
 				{
-					node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+					node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Name, treeDirectoryNode, _treeDirImage);
 					if (node2 != null)
 					{
 						node2.Row.UserData = treeDirectoryNode;
@@ -129,7 +141,7 @@ public class ProjectTreeGrid
 			node.Collapsed = true;
 		}
 		_grid.EndUpdate();
-		static void AddDirectoryNode(TreeDirectoryNode subRoot, Node subRootView)
+		void AddDirectoryNode(TreeDirectoryNode subRoot, Node subRootView)
 		{
 			foreach (TreeNodeBase child in subRoot.Children)
 			{
@@ -140,7 +152,7 @@ public class ProjectTreeGrid
 					{
 						if (child is TreeDocumentNode treeDocumentNode2)
 						{
-							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Name, treeDocumentNode2, Resources.TreeDoc);
+							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Name, treeDocumentNode2, _treeDocImage);
 							if (node3 != null)
 							{
 								node3.Row.UserData = treeDocumentNode2;
@@ -149,7 +161,7 @@ public class ProjectTreeGrid
 					}
 					else
 					{
-						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Name, treeTableNode2, Resources.TreeTable);
+						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Name, treeTableNode2, _treeTableImage);
 						if (node3 != null)
 						{
 							node3.Row.UserData = treeTableNode2;
@@ -158,7 +170,7 @@ public class ProjectTreeGrid
 				}
 				else
 				{
-					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Name, treeDirectoryNode2, Resources.TreeDir);
+					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Name, treeDirectoryNode2, _treeDirImage);
 					if (node3 != null)
 					{
 						node3.Row.UserData = treeDirectoryNode2;
@@ -236,5 +248,18 @@ public class ProjectTreeGrid
 	private void _grid_Paint(object sender, PaintEventArgs e)
 	{
 		_grid.DrawFormBorder(e.Graphics);
+	}
+
+	private System.Drawing.Image ScaleImage(System.Drawing.Image image, int width, int height)
+	{
+		if (image == null)
+			return null;
+		Bitmap bitmap = new Bitmap(width, height);
+		using (Graphics graphics = Graphics.FromImage(bitmap))
+		{
+			graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+			graphics.DrawImage(image, 0, 0, width, height);
+		}
+		return bitmap;
 	}
 }

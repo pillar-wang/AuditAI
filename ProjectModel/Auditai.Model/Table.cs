@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using Auditai.DTO;
 using Auditai.Util;
 
@@ -614,9 +615,10 @@ public class Table
 					EvalControlFormula();
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
 				IsCorrupted = true;
+				System.Diagnostics.Debug.WriteLine($"[Table.LoadAndReturn] TableId={Id}, Name={TreeNode?.Name}, Error: {ex}");
 			}
 			return this;
 		}
@@ -791,6 +793,105 @@ public class Table
 		RemovedRows.Clear();
 		RemovedCells.Clear();
 		LoadAndReturn();
+	}
+
+	public async Task<bool> RepairFromCloudAsync(TaskProgressValueReportCallback reportCallback = null)
+	{
+		if (Syncer.Disabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return false;
+		}
+		try
+		{
+			System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 开始修复表格: Id={Id}, Name={TreeNode?.Name}");
+			
+			_loaded = false;
+			IsCorrupted = false;
+			
+			try
+			{
+				LoadAndReturn();
+			}
+			catch (Exception loadEx)
+			{
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 本地加载异常（忽略，继续从云端修复）: {loadEx.Message}");
+			}
+			
+			IsCorrupted = false;
+			TreeNode.Version = 0;
+			_loaded = true;
+			
+			System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 本地加载后: Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}, IsCorrupted={IsCorrupted}");
+			System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 开始从云端拉取全量数据");
+			
+			PullResult result = await Syncer.Pull(this, reportCallback).ConfigureAwait(continueOnCapturedContext: false);
+			System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 拉取结果: {result}");
+			
+			if (result == PullResult.Success || result == PullResult.AlreadyLatest)
+			{
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] Merge完成: Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}");
+				
+				if (DefaultStyle == null && CellStyles.Any())
+				{
+					DefaultStyle = CellStyles.First();
+					System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] DefaultStyle 为 null，已自动设置为第一个样式");
+				}
+				
+				if (Rows.Count * Columns.Count != Cells.Count)
+				{
+					System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 单元格数量不匹配，期望 {Rows.Count * Columns.Count}，实际 {Cells.Count}，开始补全");
+					EnsureAllCellsExist();
+					System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 补全后单元格数量: {Cells.Count}");
+				}
+				
+				Save();
+				_loaded = false;
+				IsCorrupted = false;
+				LoadAndReturn();
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 修复完成: IsCorrupted={IsCorrupted}, Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}");
+				return !IsCorrupted;
+			}
+			
+			if (result == PullResult.NotExist)
+			{
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 服务端不存在此表格");
+			}
+			return false;
+		}
+		catch (Exception ex)
+		{
+			IsCorrupted = true;
+			System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 修复异常: {ex}");
+			return false;
+		}
+	}
+
+	private void EnsureAllCellsExist()
+	{
+		var cellDic = new Dictionary<Tuple<Id64, Id64>, Cell>();
+		foreach (Cell cell in Cells)
+		{
+			if (cell.Row != null && cell.Column != null)
+			{
+				cellDic[Tuple.Create(cell.Row.Id, cell.Column.Id)] = cell;
+			}
+		}
+		foreach (Row row in Rows)
+		{
+			foreach (Column col in Columns)
+			{
+				var key = Tuple.Create(row.Id, col.Id);
+				if (!cellDic.ContainsKey(key))
+				{
+					Cell cell = MakeNewCell();
+					cell.Row = row;
+					cell.Column = col;
+					cell.Status = SyncStatus.Synced;
+					Cells._list.Add(cell);
+					cellDic[key] = cell;
+				}
+			}
+		}
 	}
 
 	/// <summary>

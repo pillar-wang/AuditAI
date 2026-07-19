@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -116,13 +116,11 @@ public class CrossProjectDataRefManager
             if (!StorageRouter.IsLocalMode)
             {
                 result.ErrorMessage = "非本地模式暂不支持跨项目数据引用";
-                System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] 非本地模式，IsLocalMode={StorageRouter.IsLocalMode}");
                 return result;
             }
 
             // 打开外部项目数据库
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
-            System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] externalDbPath={externalDbPath}, Exists={File.Exists(externalDbPath)}");
             if (!File.Exists(externalDbPath))
             {
                 // 尝试缓存降级
@@ -208,20 +206,16 @@ public class CrossProjectDataRefManager
                     var validationResult = CrossProjectRefValidator.ValidateData(sourceData, srcColumnNames);
                     if (!validationResult.IsValid)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[CrossProjectRefValidator] Ref {dataRef.Id}: 发现 {validationResult.Errors.Count} 个数据验证问题");
                     }
 
                     // 如果有筛选配置，应用筛选
                     var filteredIndices = CrossProjectDataRefFilter.ApplyFilter(dataRef.FilterConfig, sourceData);
                     var filteredData = filteredIndices.Select(i => sourceData[i]).ToList();
 
-                    System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] sourceData.Count={sourceData.Count}, filteredData.Count={filteredData.Count}, RefMode={dataRef.RefMode}");
-
                     if (filteredData.Count == 0)
                     {
                         result.Success = true;
                         result.AffectedRows = 0;
-                        System.Diagnostics.Debug.WriteLine("[CrossProjectRef] filteredData为空，直接返回");
                         return result;
                     }
 
@@ -311,9 +305,8 @@ public class CrossProjectDataRefManager
                 var versionTracker = new CrossProjectRefVersionTracker(externalDbPath);
                 versionTracker.IncrementVersion(dataRef.SourceProjectId.ToString(), dataRef.SourceTableId.Value);
             }
-            catch (Exception verEx)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"[CrossProjectRefVersionTracker] Ref {dataRef.Id}: 版本更新失败 - {verEx.Message}");
             }
 
             // 记录引用数据标记（供 UI 层可视化引用区域）
@@ -339,9 +332,8 @@ public class CrossProjectDataRefManager
                 };
                 CrossProjectRefCellStyle.SetMark(mark);
             }
-            catch (Exception markEx)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"[CrossProjectRefMark] Ref {dataRef.Id}: 记录引用标记失败 - {markEx.Message}");
             }
         }
         catch (SQLiteException sqlex)
@@ -358,12 +350,10 @@ public class CrossProjectDataRefManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] ExecuteRef异常: {ex.GetType().Name}: {ex.Message}");
             result.ErrorMessage = ex.Message;
             result.RefStatus = 3; // Error
         }
 
-        System.Diagnostics.Debug.WriteLine($"[CrossProjectRef] ExecuteRef完成: Success={result.Success}, AffectedRows={result.AffectedRows}, Error={result.ErrorMessage}");
         return result;
     }
 
@@ -759,7 +749,6 @@ public class CrossProjectDataRefManager
     {
         if (filteredData == null || filteredData.Count == 0)
         {
-            System.Diagnostics.Debug.WriteLine("[ExecuteCellRef] filteredData为空");
             return 0;
         }
 
@@ -767,20 +756,16 @@ public class CrossProjectDataRefManager
         if (config == null || config.TargetCellId <= 0)
             throw new InvalidOperationException("CellRef 配置无效：缺少 TargetCellId");
 
-        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] TargetCellId={config.TargetCellId}, SourceCellId={config.SourceCellId}");
-
         object cellValue;
 
         if (config.SourceCellId > 0)
         {
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
-            System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 读取来源: db={externalDbPath}, CellId={config.SourceCellId}");
             using var srcConn = new SQLiteConnection($"Data Source={externalDbPath};Version=3;");
             await srcConn.OpenAsync();
             using var srcCmd = new SQLiteCommand("SELECT `Value` FROM `Cell` WHERE `Id` = @Id", srcConn);
             srcCmd.Parameters.AddWithValue("@Id", config.SourceCellId);
             cellValue = await srcCmd.ExecuteScalarAsync();
-            System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 来源值类型={cellValue?.GetType().Name ?? "null"}, 值长度={(cellValue as byte[])?.Length ?? 0}");
         }
         else if (config.SourceColumnId > 0)
         {
@@ -810,7 +795,6 @@ public class CrossProjectDataRefManager
         }
 
         string currentDbPath = GetCurrentDbPath();
-        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] 写入目标: db={currentDbPath}, CellId={config.TargetCellId}");
         using var conn = new SQLiteConnection($"Data Source={currentDbPath};Version=3;");
         await conn.OpenAsync();
 
@@ -819,7 +803,6 @@ public class CrossProjectDataRefManager
         updateCmd.Parameters.AddWithValue("@Id", config.TargetCellId);
         updateCmd.Parameters.AddWithValue("@Value", ToBinaryValueBytes(cellValue));
         int updated = await updateCmd.ExecuteNonQueryAsync();
-        System.Diagnostics.Debug.WriteLine($"[ExecuteCellRef] UPDATE影响行数={updated}");
 
         return 1;
     }

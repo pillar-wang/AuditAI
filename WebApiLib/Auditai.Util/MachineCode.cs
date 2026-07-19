@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.Management;
 
@@ -46,10 +46,14 @@ public class MachineCode
 			ManagementObjectCollection instances = managementClass.GetInstances();
 			foreach (ManagementObject item in instances)
 			{
-				if ((bool)item["IPEnabled"])
+				if (item["IPEnabled"] is bool enabled && enabled)
+			{
+				var mac = item["MacAddress"];
+				if (mac != null)
 				{
-					text = item["MacAddress"].ToString();
+					text = mac.ToString();
 				}
+			}
 				item.Dispose();
 			}
 		}

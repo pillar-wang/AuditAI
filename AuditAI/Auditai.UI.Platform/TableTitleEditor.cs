@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -1285,6 +1285,10 @@ public class TableTitleEditor
 
 	public void AdjustSize()
 	{
+		if (Title == null)
+		{
+			return;
+		}
 		if (Program.MainForm != null)
 		{
 			TableEditor tableEditor = Program.MainForm.TableEditor;
@@ -2850,6 +2854,10 @@ public class TableTitleEditor
 
 	protected void IncreaseWidth(int value)
 	{
+		if (Title == null)
+		{
+			return;
+		}
 		TableEditor tableEditor = Program.MainForm.TableEditor;
 		int gridWidth = tableEditor.GetGridWidth();
 		int num = Math.Max(gridWidth + value, 1);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -5833,16 +5833,13 @@ public class TicketInputEditor2 : ISetTheme
 
 	public void AddRecord()
 	{
-		Debug.WriteLine($"[TicketInputEditor2] AddRecord: ENTER, Table.NeedSave={Table?.NeedSave}, _isInShowingVirtualNode={_isInShowingVirtualNode}");
 		if (Table == null || !SoftwareLicenseManager.IsAllowAddTableRows())
 		{
-			Debug.WriteLine($"[TicketInputEditor2] AddRecord: RETURN early (Table null or license)");
 			return;
 		}
 		FinishEditorInputStatus();
 		if (SoftwareLicenseManager.IsTableRowsOutOfLicenseLimit(Table.Rows.Count))
 		{
-			Debug.WriteLine($"[TicketInputEditor2] AddRecord: RETURN early (license limit)");
 			return;
 		}
 		_isSuspendTicketSelectRangeAndScrollPositionCacheEvent = true;
@@ -5852,12 +5849,10 @@ public class TicketInputEditor2 : ISetTheme
 		try
 		{
 			SaveRecord(isSaveReccordFilterSetting: true, isRePopulate: false);
-			Debug.WriteLine($"[TicketInputEditor2] AddRecord: after SaveRecord, _isTableSaveActionOccured={_isTableSaveActionOccured}");
 			_isInShowingVirtualNode = false;
 			_isCurrentTicketComeFromVirtualNode = false;
 			if (_isTableSaveActionOccured)
 			{
-				Debug.WriteLine("[TicketInputEditor2] AddRecord: calling PopulateNavs()");
 				PopulateNavs();
 				RestorePreviousSelectedRecord(isRestore: true);
 				if (Ticket.Records.Count > 0)
@@ -5868,7 +5863,6 @@ public class TicketInputEditor2 : ISetTheme
 			}
 			else
 			{
-				Debug.WriteLine("[TicketInputEditor2] AddRecord: SKIP PopulateNavs (no save action occured)");
 			}
 			_isAdd = true;
 			_isDirty = false;
@@ -6053,12 +6047,10 @@ public class TicketInputEditor2 : ISetTheme
 				Table.Rows.Move(row.Index, 1, num);
 			}
 		}
-		Debug.WriteLine($"[TicketInputEditor2] SaveRecord: Table.NeedSave={Table.NeedSave}, isRePopulate={isRePopulate}, _isAdd={_isAdd}, row={(row == null ? "null" : row.Id.ToString())}");
 	if (Table.NeedSave)
 	{
 		SaveTable(isReCalculateTable);
 		_isTableSaveActionOccured = true;
-		Debug.WriteLine($"[TicketInputEditor2] SaveRecord: after SaveTable, _isTableSaveActionOccured=true");
 	}
 	if (!isRePopulate)
 		{
@@ -6142,7 +6134,6 @@ public class TicketInputEditor2 : ISetTheme
 			HashSet<Auditai.Model.Row> hashSet2 = new HashSet<Auditai.Model.Row>();
 			int rowsCount = _vm.GetRowsCount();
 			int columnsCount = _vm.GetColumnsCount();
-			Debug.WriteLine($"[RemoveTableEmptyRow_DynamicRow] ENTER: rowsCount={rowsCount}, columnsCount={columnsCount}, keyCellsRefTableRow={(keyCellsRefTableRow_DynamicRow == null ? "null" : keyCellsRefTableRow_DynamicRow.Id.ToString())}, IsNewAddedRow={_vm.IsKeyCellsRefTableRowBeNewAddedRow_DynamicRow()}, Table.Rows.Count={Table.Rows.Count}");
 			for (int i = 0; i < rowsCount; i++)
 			{
 				TicketInputRowVM row4 = _vm.GetRow(i);
@@ -6150,7 +6141,6 @@ public class TicketInputEditor2 : ISetTheme
 				{
 					bool isKeyCellsRefRow = (keyCellsRefTableRow_DynamicRow != null && keyCellsRefTableRow_DynamicRow == row4.TableRow);
 					bool isDataRowEmpty = _vm.IsDataRowEmpty(i);
-					Debug.WriteLine($"[RemoveTableEmptyRow_DynamicRow] row[{i}]: IsNew={row4.IsNew}, IsKeyCellsRefRow={isKeyCellsRefRow}, IsDataRowEmpty={isDataRowEmpty}, TableRow.Index={row4.TableRow.Index}, TableRow.Id={row4.TableRow.Id}");
 					if (isKeyCellsRefRow)
 					{
 						flag2 = true;
@@ -6166,7 +6156,6 @@ public class TicketInputEditor2 : ISetTheme
 				}
 				else
 				{
-					Debug.WriteLine($"[RemoveTableEmptyRow_DynamicRow] row[{i}]: SKIP (IsDynamicRowTicketDataRow={row4.IsDynamicRowTicketDataRow}, TableRow={(row4.TableRow == null ? "null" : row4.TableRow.Id.ToString())})");
 				}
 			}
 			hashSet2.UnionWith(_vm.RemovedRows);
@@ -6192,12 +6181,10 @@ public class TicketInputEditor2 : ISetTheme
 			{
 				row3 = keyCellsRefTableRow_DynamicRow;
 			}
-			Debug.WriteLine($"[RemoveTableEmptyRow_DynamicRow] EXIT: flag2={flag2}, row3={(row3 == null ? "null" : row3.Id.ToString())}, hashSet2.Count={hashSet2.Count}, deletedRows=[{string.Join(",", hashSet2.Select(r => r.Id.ToString()))}], Table.Rows.Count={Table.Rows.Count}");
 			DeleteTableRows(hashSet2);
 			if (keyCellsRefTableRow_DynamicRow != null && hashSet2.Contains(keyCellsRefTableRow_DynamicRow))
 			{
 				_vm.ClearDynamicRowKeyCellsRefIfRowDeleted(keyCellsRefTableRow_DynamicRow);
-				Debug.WriteLine($"[RemoveTableEmptyRow_DynamicRow] CLEANUP: cleared DynamicRowKeyCells stale references (deletedRow={keyCellsRefTableRow_DynamicRow.Id})");
 			}
 			return row3;
 		}
@@ -11345,9 +11332,7 @@ public class TicketInputEditor2 : ISetTheme
 
 	private void CmdAddTicket_Click(object sender, ClickEventArgs e)
 	{
-		Debug.WriteLine($"[TicketInputEditor2] CmdAddTicket_Click: Table.NeedSave={Table?.NeedSave}, _isInShowingVirtualNode={_isInShowingVirtualNode}, Records.Count={Ticket?.Records.Count}");
 		AddRecord();
-		Debug.WriteLine($"[TicketInputEditor2] CmdAddTicket_Click after: _isTableSaveActionOccured={_isTableSaveActionOccured}, _isAdd={_isAdd}, Records.Count={Ticket?.Records.Count}");
 	}
 
 	private void CmdRemoveTicket_Click(object sender, ClickEventArgs e)
@@ -11554,10 +11539,8 @@ public class TicketInputEditor2 : ISetTheme
 
 	private void _ticketNavGrid_VirtualNodeSelected(object sender, EventArgs e)
 	{
-		Debug.WriteLine($"[TicketInputEditor2] VirtualNodeSelected: _isSuspendVirtualNodeSelectChangeEvent={_isSuspendVirtualNodeSelectChangeEvent}, _isInTrySelectTicketNavTreeFirstNodeMode={_isInTrySelectTicketNavTreeFirstNodeMode}, CurrentView={Program.MainForm.CurrentView}");
 		if (_isSuspendVirtualNodeSelectChangeEvent || (!_isInTrySelectTicketNavTreeFirstNodeMode && Program.MainForm.CurrentView != MainFormView.TicketInput && Program.MainForm.CurrentView != MainFormView.TicketPrint) || !(sender is TicketNavGrid ticketNavGrid))
 		{
-			Debug.WriteLine("[TicketInputEditor2] VirtualNodeSelected: FILTERED");
 			return;
 		}
 		Dictionary<Id64, string> comboListCellInitValue = null;

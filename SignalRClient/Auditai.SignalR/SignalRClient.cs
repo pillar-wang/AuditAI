@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -72,11 +72,42 @@ public static class SignalRClient
 
 	public static void Create()
 	{
-		string hubAddress = "https://Auditai.com:8957/";
+		if (_hc != null)
+		{
+			try
+			{
+				_hc.Closed -= _hc_Closed;
+				if (_hc.State == ConnectionState.Connected)
+				{
+					_callingStop = true;
+					_hc.Stop(TimeSpan.FromSeconds(2.0));
+				}
+				_hc.Dispose();
+			}
+			catch
+			{
+			}
+			foreach (IDisposable hp in _hubProxies)
+			{
+				try { hp.Dispose(); } catch { }
+			}
+			_hubProxies.Clear();
+		_hc = null;
+		_hp = null;
+		_callingStop = false;
+	}
+	string hubAddress = "https://Auditai.com:8957/";
 		string appServer = ConfigurationManager.AppSettings["AppServer"];
 		if (!string.IsNullOrWhiteSpace(appServer))
 		{
-			hubAddress = appServer;
+			// AppServer 是 API 基地址（如 "http://82.156.108.218:8957/api/"），
+			// SignalR Hub 在根路径（/ChatHub），需去掉末尾的 /api/。
+			hubAddress = appServer.TrimEnd('/');
+			if (hubAddress.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+			{
+				hubAddress = hubAddress.Substring(0, hubAddress.Length - 3);
+			}
+			hubAddress += "/";
 		}
 		_hc = new HubConnection(hubAddress);
 		_hp = _hc.CreateHubProxy("ChatHub");
@@ -85,7 +116,31 @@ public static class SignalRClient
 
 	public static void Create(string address)
 	{
-		_hc = new HubConnection(address);
+		if (_hc != null)
+		{
+			try
+			{
+				_hc.Closed -= _hc_Closed;
+				if (_hc.State == ConnectionState.Connected)
+				{
+					_callingStop = true;
+					_hc.Stop(TimeSpan.FromSeconds(2.0));
+				}
+				_hc.Dispose();
+			}
+			catch
+			{
+			}
+			foreach (IDisposable hp in _hubProxies)
+			{
+				try { hp.Dispose(); } catch { }
+			}
+			_hubProxies.Clear();
+		_hc = null;
+		_hp = null;
+		_callingStop = false;
+	}
+	_hc = new HubConnection(address);
 		_hp = _hc.CreateHubProxy("ChatHub");
 		_hc.Closed += _hc_Closed;
 	}
@@ -97,8 +152,15 @@ public static class SignalRClient
 			return;
 		}
 		if (_hc.State == ConnectionState.Disconnected)
+	{
+		// 清理旧订阅，防止重复调用 Start 时累积导致同一事件多次回调
+		foreach (IDisposable oldHp in _hubProxies)
 		{
-			_hubProxies.Add(_hp.On<string, string>("ReceiveFromUser", ReceiveFromUser));
+			try { oldHp.Dispose(); } catch { }
+		}
+		_hubProxies.Clear();
+
+		_hubProxies.Add(_hp.On<string, string>("ReceiveFromUser", ReceiveFromUser));
 			_hubProxies.Add(_hp.On<string>("PeerLogin", PeerLogin));
 			_hubProxies.Add(_hp.On<string>("PeerLogout", PeerLogout));
 			_hubProxies.Add(_hp.On<string, UserState>("PeerStateUpload", PeerStateUpload));
@@ -115,6 +177,8 @@ public static class SignalRClient
 			_hubProxies.Add(_hp.On("PeerProjectMembersChanged", PeerProjectMembersChanged));
 			_hubProxies.Add(_hp.On<string, FileSection>("PeerFileSectionArrived", PeerFileSectionArrived));
 			_hubProxies.Add(_hp.On<string, string, string, string>("PeerOpenTicketNavTreeNode", PeerOpenTicketNavTreeNode));
+			_hubProxies.Add(_hp.On<string, string, string>("PeerTableChanged", PeerTableChanged));
+			_hubProxies.Add(_hp.On<string, string, string>("PeerDocumentChanged", PeerDocumentChanged));
 			try
 		{
 			// 加 15 秒超时保护：HubConnection.Start() 在 URL 错误或服务端不响应时
@@ -516,7 +580,7 @@ public static class SignalRClient
 		// 与 Login (line 156) 保持一致。
 		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
-			return null;
+			return Enumerable.Empty<UserState>();
 		}
 		try
 		{
@@ -527,7 +591,7 @@ public static class SignalRClient
 			// 原代码 catch when (!(ex is TimeoutException) || !(ex is HttpRequestException))
 			// 是永真式（德摩根律：!(A) || !(B) == !(A && B)，而异常不可能同时是两种类型）
 			// 等价于 catch (Exception)，此处简化为明确语义。
-			return null;
+			return Enumerable.Empty<UserState>();
 		}
 	}
 
@@ -536,7 +600,7 @@ public static class SignalRClient
 		// 必须检查 _hc.State == Connected（同 QueryOnlineTeam）。
 		if (_hc == null || _hp == null || _hc.State != ConnectionState.Connected)
 		{
-			return null;
+			return Enumerable.Empty<UserState>();
 		}
 		try
 		{
@@ -545,7 +609,7 @@ public static class SignalRClient
 		catch (Exception)
 		{
 			// 同 QueryOnlineTeam：原 catch when 是永真式，简化为 catch (Exception)。
-			return null;
+			return Enumerable.Empty<UserState>();
 		}
 	}
 
@@ -638,6 +702,28 @@ public static class SignalRClient
 			FromId = peerId,
 			ProjectId = projectId,
 			TableCellId = cellId
+		});
+	}
+
+	private static void PeerTableChanged(string projectId, string tableId, string version)
+	{
+		SignalRClient.MessageReceived?.Invoke(null, new MessageReceivedEventArgs
+		{
+			Kind = MessageKind.PeerTableChanged,
+			ProjectId = projectId,
+			TableId = tableId,
+			Version = version
+		});
+	}
+
+	private static void PeerDocumentChanged(string projectId, string documentId, string version)
+	{
+		SignalRClient.MessageReceived?.Invoke(null, new MessageReceivedEventArgs
+		{
+			Kind = MessageKind.PeerDocumentChanged,
+			ProjectId = projectId,
+			DocumentId = documentId,
+			Version = version
 		});
 	}
 
