@@ -555,10 +555,6 @@ public class TicketInputEditor2 : ISetTheme
 
 	private readonly C1CommandLink _lnkNext;
 
-	private readonly C1Command _cmdHelp;
-
-	private readonly C1CommandLink _lnkHelp;
-
 	private readonly C1Button _btnInsertRow;
 
 	private readonly C1Button _btnRemoveRow;
@@ -711,6 +707,17 @@ public class TicketInputEditor2 : ISetTheme
 
 	private bool _isTicketLocked;
 
+	// 修复 BUG: 此前 async void Click 事件无防重复点击保护，网络往返期间用户可多次点击，
+	// 导致重复采账填充/附件导出/附件添加/链接点击等操作。GuardAsync 使用原子标志防止重入。
+	private int _isProcessing;
+
+	private async Task GuardAsync(Func<Task> action)
+	{
+		if (System.Threading.Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0) return;
+		try { await action(); }
+		finally { System.Threading.Interlocked.Exchange(ref _isProcessing, 0); }
+	}
+
 	protected const int NUMBER_COLUMN_WIDTH = 30;
 
 	private bool _isMouseOverRowNumberColumn;
@@ -794,6 +801,8 @@ public class TicketInputEditor2 : ISetTheme
 	private bool _isGridNeedShowVScrollBar;
 
 	private bool _isSuspendBodySelectionChangeEvent;
+
+	private bool _isUserResizingColumn;
 
 	private C1.Win.C1FlexGrid.CellRange[] _ticketGridColumnMerges;
 
@@ -1070,13 +1079,6 @@ public class TicketInputEditor2 : ISetTheme
 			Image = Resources.NextError
 		};
 		_cmdNext.Click += _cmdNext_Click;
-		_cmdHelp = new C1Command
-		{
-			Text = "帮助中心",
-			Image = Resources.HelpCenter,
-			Visible = SoftwareLicenseManager.IsShowHelpDocumentButton()
-		};
-		_cmdHelp.Click += _cmdHelp_Click;
 		_cmdDesignTicket = new C1Command
 		{
 			Text = "设计表单",
@@ -1148,11 +1150,6 @@ public class TicketInputEditor2 : ISetTheme
 		{
 			Delimiter = true
 		});
-		_lnkHelp = new C1CommandLink(_cmdHelp)
-		{
-			Delimiter = true
-		};
-		_tbr.CommandLinks.Add(_lnkHelp);
 		_pnlToolbar.Controls.Add(_tbr);
 		_splc.Panels.Add(_pnlToolbar);
 		_navTreeContainer = new C1SplitContainer
@@ -2598,6 +2595,11 @@ public class TicketInputEditor2 : ISetTheme
 	}
 
 	private async void Cmd_Click_CollectFill(object sender, ClickEventArgs e)
+	{
+		await GuardAsync(Cmd_Click_CollectFillImpl);
+	}
+
+	private async Task Cmd_Click_CollectFillImpl()
 	{
 		if (Ticket.Kind != TicketKind.DynamicRow)
 		{
@@ -4332,6 +4334,7 @@ public class TicketInputEditor2 : ISetTheme
 		GridBeginUpdate();
 		try
 		{
+			_isUserResizingColumn = true;
 			SaveRecordFilterSetting();
 			CacheSelectRange();
 			int index = ConvertGridColIndexToVMColIndex(e.RowCol);
@@ -4361,6 +4364,7 @@ public class TicketInputEditor2 : ISetTheme
 		}
 		finally
 		{
+			_isUserResizingColumn = false;
 			GridEndUpdate();
 			_editorPanel.ResumeDrawing();
 		}
@@ -7685,6 +7689,84 @@ public class TicketInputEditor2 : ISetTheme
 		ShowRecordButtons();
 	}
 
+	private void ExpandColumnsToFillWidth(int availableWidth)
+	{
+		if (_grid.Cols.Count <= _grid.Cols.Fixed || Ticket?.Columns == null || Ticket.Columns.Count == 0)
+		{
+			return;
+		}
+		int fixedColWidth = 0;
+		for (int i = 0; i < _grid.Cols.Fixed; i++)
+		{
+			fixedColWidth += _grid.Cols[i].WidthDisplay;
+		}
+		int hiddenUnfixedWidth = 0;
+		List<int> visibleCols = new List<int>();
+		List<int> visibleWidths = new List<int>();
+		for (int j = 0; j < Ticket.Columns.Count; j++)
+		{
+			int gridCol = ConvertVMColIndexToGridColIndex(j);
+			if (gridCol < _grid.Cols.Fixed || gridCol >= _grid.Cols.Count)
+			{
+				continue;
+			}
+			_grid.Cols[gridCol].WidthDisplay = Ticket.Columns[j].Width;
+			if (!_grid.Cols[gridCol].IsVisible)
+			{
+				hiddenUnfixedWidth += Ticket.Columns[j].Width;
+			}
+			else
+			{
+				visibleCols.Add(gridCol);
+				visibleWidths.Add(Ticket.Columns[j].Width);
+			}
+		}
+		if (visibleCols.Count == 0)
+		{
+			return;
+		}
+		int originalVisibleWidth = 0;
+		foreach (int w in visibleWidths)
+		{
+			originalVisibleWidth += w;
+		}
+		int targetVisibleWidth = availableWidth - fixedColWidth - hiddenUnfixedWidth;
+		if (targetVisibleWidth <= originalVisibleWidth || originalVisibleWidth <= 0)
+		{
+			return;
+		}
+		int count = visibleCols.Count;
+		float[] cumPct = new float[count];
+		int acc = 0;
+		for (int k = 0; k < count; k++)
+		{
+			if (k == count - 1)
+			{
+				cumPct[k] = 1f;
+			}
+			else
+			{
+				acc += visibleWidths[k];
+				cumPct[k] = (float)acc / (float)originalVisibleWidth;
+			}
+		}
+		int allocated = 0;
+		for (int k = 0; k < count; k++)
+		{
+			int newWidth;
+			if (k == count - 1)
+			{
+				newWidth = targetVisibleWidth - allocated;
+			}
+			else
+			{
+				newWidth = (int)(cumPct[k] * (float)targetVisibleWidth) - allocated;
+				allocated += newWidth;
+			}
+			_grid.Cols[visibleCols[k]].WidthDisplay = Math.Max(1, newWidth);
+		}
+	}
+
 	private void CalculateGridSize(Size bound, out bool isNeedShowVScrollBar)
 	{
 		isNeedShowVScrollBar = false;
@@ -7722,8 +7804,20 @@ public class TicketInputEditor2 : ISetTheme
 		}
 		else
 		{
-			_grid.Left = (bound.Width - num2) / 2;
-			_grid.Width = num2;
+			if (!_isUserResizingColumn)
+			{
+				int effectiveWidth = flag3
+					? bound.Width - SystemInformation.VerticalScrollBarWidth
+					: bound.Width;
+				ExpandColumnsToFillWidth(effectiveWidth);
+				num2 = 0;
+				for (int j = 0; j < _grid.Cols.Count; j++)
+				{
+					num2 += _grid.Cols[j].WidthDisplay;
+				}
+			}
+			_grid.Left = 0;
+			_grid.Width = Math.Min(num2, bound.Width);
 		}
 		if (flag3)
 		{
@@ -8719,6 +8813,11 @@ public class TicketInputEditor2 : ISetTheme
 
 	private async void _ttpComment_LinkClicked(object sender, object e)
 	{
+		// 修复 BUG: 防止用户在 OpenAttachment/DownloadIfNotExist/AddAttachment/ExportAllAttachment
+		// 等异步操作期间重复点击链接，导致重复下载/导出/添加。
+		if (System.Threading.Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0) return;
+		try
+		{
 		if (_grid.BodyRow < 0 || _grid.BodyCol < 0)
 		{
 			return;
@@ -8769,8 +8868,9 @@ public class TicketInputEditor2 : ISetTheme
 							{
 								Table.Project.FileCacheManager.DuplicateTo(fileId, saveFileDialog.FileName);
 							}
-							catch
+							catch (Exception ex)
 							{
+								ex.Log();
 								Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "导出附件失败。");
 							}
 						}
@@ -8851,6 +8951,11 @@ public class TicketInputEditor2 : ISetTheme
 			{
 				Program.MainForm.TableEditor.SelectColumn(column.Index);
 			}
+		}
+		}
+		finally
+		{
+			System.Threading.Interlocked.Exchange(ref _isProcessing, 0);
 		}
 	}
 
@@ -10738,11 +10843,6 @@ public class TicketInputEditor2 : ISetTheme
 		}
 	}
 
-	private void _cmdHelp_Click(object sender, ClickEventArgs e)
-	{
-		Program.MainForm.ShowHelpCenter();
-	}
-
 	private void _cmdNext_Click(object sender, ClickEventArgs e)
 	{
 		NextRecord();
@@ -10996,6 +11096,11 @@ public class TicketInputEditor2 : ISetTheme
 
 	private async void _cmdExportAttachment_Click(object sender, ClickEventArgs e)
 	{
+		await GuardAsync(_cmdExportAttachmentImpl);
+	}
+
+	private async Task _cmdExportAttachmentImpl()
+	{
 		if (Table == null || Table.CellPropManager.DicCellAttachments.Count == 0 || _vm == null)
 		{
 			return;
@@ -11116,7 +11221,7 @@ public class TicketInputEditor2 : ISetTheme
 
 	private async void _cmdAddAttachment_Click(object sender, ClickEventArgs e)
 	{
-		await AddAttachment();
+		await GuardAsync(AddAttachment);
 	}
 
 	private void _cmdColumnWidth_Click(object sender, ClickEventArgs e)

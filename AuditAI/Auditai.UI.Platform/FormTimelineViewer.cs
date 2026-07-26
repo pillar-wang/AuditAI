@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -294,8 +294,11 @@ public class FormTimelineViewer
 
 	public async Task PopulateTableTimeline()
 	{
+		var tableIdBytes = new byte[16];
+		BitConverter.GetBytes(TemporaryTable.Id.Value).CopyTo(tableIdBytes, 0);
+		Guid guidTableId = new Guid(tableIdBytes);
 		JObject request = new JObject();
-		request.Add("TableId", TemporaryTable.Id.Value);
+		request.Add("TableId", guidTableId);
 		request.Add("ProjectId", Auditai.Model.Project.Current.Id);
 		JArray jarray = null;
 		ProgressForm2 progressForm = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.1f));
@@ -358,7 +361,7 @@ public class FormTimelineViewer
 	public async Task PopulateDocumentTimeline()
 	{
 		JObject request = new JObject();
-		request.Add("DocId", TemporaryDocument.Id.Value);
+		request.Add("DocumentId", TemporaryDocument.Id.Value);
 		request.Add("ProjectId", Auditai.Model.Project.Current.Id);
 		JArray jarray = null;
 		ProgressForm2 progressForm = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.1f));

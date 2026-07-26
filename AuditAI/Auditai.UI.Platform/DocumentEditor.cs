@@ -207,12 +207,18 @@ public class DocumentEditor : UserControl
 			bool ok = await Syncer.PullAsync(currentDocument).ConfigureAwait(false);
 			if (ok)
 			{
+				// 修复 BUG: 异步 await ConfigureAwait(false) 后可能回到非 UI 线程，
+				// 且控件可能已被销毁（用户关闭文档窗体）。Invoke 前必须检查 IsHandleCreated 和 IsDisposed，
+				// 否则会抛 InvalidOperationException 并被外层 catch 吞掉，掩盖问题。
+				if (IsDisposed || !IsHandleCreated) return;
 				if (InvokeRequired) Invoke((Action)RefreshDocumentAll);
 				else RefreshDocumentAll();
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			// 修复 BUG: 原空 catch 吞异常，无法排查 Pull 失败原因。记录日志后再提示用户。
+			ex.Log("DocumentEditor.DocumentEditor_DocParagraphChanged");
 			// 自动 Pull 失败时提示用户手动同步
 			ShowSyncHint("文档已被他人修改，请手动同步");
 		}
@@ -235,9 +241,10 @@ public class DocumentEditor : UserControl
 			Control anchor = _textControl != null ? (Control)_textControl : (Control)this;
 			tooltipBox.Show(anchor, new Point(anchor.Width / 2, anchor.Height / 2));
 		}
-		catch
+		catch (Exception ex)
 		{
-			// 提示显示失败不影响主流程
+			// 提示显示失败不影响主流程，但记录日志方便排查
+			ex.Log("DocumentEditor.ShowSyncHint");
 		}
 	}
 
@@ -5274,12 +5281,15 @@ public class DocumentEditor : UserControl
 	{
 		try
 		{
+			// 修复 BUG: SignalR 事件回调可能在后台线程触发，且用户可能已关闭文档窗体。
+			// Invoke 前必须检查 IsHandleCreated 和 IsDisposed，避免抛 InvalidOperationException。
+			if (IsDisposed || !IsHandleCreated) return;
 			if (this.InvokeRequired)
 				this.Invoke((Action)(() => ShowPeerEditingHint(userId)));
 			else
 				ShowPeerEditingHint(userId);
 		}
-		catch { }
+		catch (Exception ex) { ex.Log("DocumentEditor.DocumentEditor_PeerParagraphEdit"); }
 	}
 
 	private void ShowPeerEditingHint(long userId)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -296,67 +296,70 @@ public class ProjectImport
 		}
 		try
 		{
-			ImportExcel importExcel = new ImportExcel();
-			importExcel.Load(file);
-			if (importExcel.SheetCount == 1)
+			// 修复 BUG: 此前 ImportExcel 未 using，C1XLBook 资源依赖 GC 回收。
+			using (ImportExcel importExcel = new ImportExcel())
 			{
-				importExcel.Next();
-				TreeTableNode treeTableNode3 = genTableNode(index);
-				importExcel.Import(treeTableNode3.Table);
-				importExcel.GenerateFormula();
-				treeTableNode3.UpdateName(Path.GetFileNameWithoutExtension(file));
-				treeTableNode3.Table.Title.TitleCell.Value = treeTableNode3.Name;
-				OnAfterImportNode(new ImportNodeArgs
+				importExcel.Load(file);
+				if (importExcel.SheetCount == 1)
 				{
-					Type = ImportTypeEnum.Table,
-					ParentNode = parent,
-					Index = index,
-					AppendNode = treeTableNode3,
-					Message = "正在导入 " + Path.GetFileName(file),
-					OnProgress = true
-				});
-				return treeTableNode3;
-			}
-			if (importExcel.SheetCount > 1)
-			{
-				TreeDirectoryNode treeDirectoryNode2 = genDirNode(index);
-				treeDirectoryNode2.UpdateName(Path.GetFileNameWithoutExtension(file));
-				OnAfterImportNode(new ImportNodeArgs
-				{
-					Type = ImportTypeEnum.Dir,
-					ParentNode = parent,
-					Index = index,
-					AppendNode = treeDirectoryNode2,
-					Message = "正在导入 " + treeDirectoryNode2.Name
-				});
-				int num = 0;
-				while (importExcel.HasNext())
-				{
-					if (!importExcel.CurrentEmpty())
+					importExcel.Next();
+					TreeTableNode treeTableNode3 = genTableNode(index);
+					importExcel.Import(treeTableNode3.Table);
+					importExcel.GenerateFormula();
+					treeTableNode3.UpdateName(Path.GetFileNameWithoutExtension(file));
+					treeTableNode3.Table.Title.TitleCell.Value = treeTableNode3.Name;
+					OnAfterImportNode(new ImportNodeArgs
 					{
-						TreeTableNode treeTableNode4 = treeDirectoryNode2.InsertChildTable(treeDirectoryNode2.Children.Count, InitTableMode.Empty);
-						importExcel.Import(treeTableNode4.Table);
-						treeTableNode4.UpdateName(importExcel.CurrentSheet.Name);
-						treeTableNode4.Table.Title.TitleCell.Value = treeTableNode4.Name;
-						OnAfterImportNode(new ImportNodeArgs
-						{
-							Type = ImportTypeEnum.Sheet,
-							ParentNode = treeDirectoryNode2,
-							Index = num++,
-							AppendNode = treeTableNode4,
-							Message = "正在导入" + Path.GetFileNameWithoutExtension(file) + " Sheet" + importExcel.CurrentSheet.Name
-						});
-					}
+						Type = ImportTypeEnum.Table,
+						ParentNode = parent,
+						Index = index,
+						AppendNode = treeTableNode3,
+						Message = "正在导入 " + Path.GetFileName(file),
+						OnProgress = true
+					});
+					return treeTableNode3;
 				}
-				importExcel.GenerateFormula();
-				OnAfterImportNode(new ImportNodeArgs
+				if (importExcel.SheetCount > 1)
 				{
-					OnProgress = true,
-					Message = treeDirectoryNode2.Name + " 导入成功"
-				});
-				return treeDirectoryNode2;
+					TreeDirectoryNode treeDirectoryNode2 = genDirNode(index);
+					treeDirectoryNode2.UpdateName(Path.GetFileNameWithoutExtension(file));
+					OnAfterImportNode(new ImportNodeArgs
+					{
+						Type = ImportTypeEnum.Dir,
+						ParentNode = parent,
+						Index = index,
+						AppendNode = treeDirectoryNode2,
+						Message = "正在导入 " + treeDirectoryNode2.Name
+					});
+					int num = 0;
+					while (importExcel.HasNext())
+					{
+						if (!importExcel.CurrentEmpty())
+						{
+							TreeTableNode treeTableNode4 = treeDirectoryNode2.InsertChildTable(treeDirectoryNode2.Children.Count, InitTableMode.Empty);
+							importExcel.Import(treeTableNode4.Table);
+							treeTableNode4.UpdateName(importExcel.CurrentSheet.Name);
+							treeTableNode4.Table.Title.TitleCell.Value = treeTableNode4.Name;
+							OnAfterImportNode(new ImportNodeArgs
+							{
+								Type = ImportTypeEnum.Sheet,
+								ParentNode = treeDirectoryNode2,
+								Index = num++,
+								AppendNode = treeTableNode4,
+								Message = "正在导入" + Path.GetFileNameWithoutExtension(file) + " Sheet" + importExcel.CurrentSheet.Name
+							});
+						}
+					}
+					importExcel.GenerateFormula();
+					OnAfterImportNode(new ImportNodeArgs
+					{
+						OnProgress = true,
+						Message = treeDirectoryNode2.Name + " 导入成功"
+					});
+					return treeDirectoryNode2;
+				}
+				return null;
 			}
-			return null;
 		}
 		catch (EndOfStreamException exception)
 		{

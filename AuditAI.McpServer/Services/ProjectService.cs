@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -131,6 +131,10 @@ namespace AuditAI.McpServer.Services
         /// </summary>
         public static string OpenProject(string projectPath)
         {
+            // 提前声明 project 与提交标志，以便在异常路径的 finally 中释放 Dal，
+            // 避免在 SetProject 之前抛异常导致 ProjectDAL 泄漏（-wal 残留）。
+            Auditai.Model.Project project = null;
+            bool committedToSession = false;
             try
             {
                 if (string.IsNullOrWhiteSpace(projectPath))
@@ -157,7 +161,7 @@ namespace AuditAI.McpServer.Services
                 Directory.CreateDirectory(dataDir);
 
                 // 加载项目
-                var project = new Auditai.Model.Project();
+                project = new Auditai.Model.Project();
                 project.Dal = new ProjectDAL(projectPath);
 
                 // 确保项目数据库中存在 Project 行
@@ -234,14 +238,32 @@ namespace AuditAI.McpServer.Services
                         operationId = openResult.Item1;
                     }
 
-                    // 计算现有节点 ID 的最大高 32 位作为安全下限
-                    // 防止项目数据库中存在历史 ID 与新基址冲突
+                    // 计算现有 ID 的最大高 32 位作为安全下限
+                    // 必须同时考虑 TreeNode 和 ValidationFormula，否则新生成的
+                    // 验证点 ID 可能与已存在（含已删除 Status=2）的验证点 ID 冲突，
+                    // 导致 INSERT OR REPLACE 后立即被 RemoveValidationFormulas 标记为 Status=2
                     int maxBase = operationId;
                     foreach (var node in project.GetAllTreeNodes())
                     {
                         int nodeBase = (int)((ulong)node.Id.Value >> 32);
                         if (nodeBase >= maxBase) maxBase = nodeBase + 1;
                     }
+                    foreach (var vf in project.ValidationManager.Formulas)
+                    {
+                        int vfBase = (int)((ulong)vf.Id.Value >> 32);
+                        if (vfBase >= maxBase) maxBase = vfBase + 1;
+                    }
+                    // 还需考虑已删除（Status=2）的验证公式 ID，避免新 ID 与之冲突
+                    // _removed 是 internal 的，无法直接访问，通过 Dal 查询数据库
+                    try
+                    {
+                        foreach (var removedId in project.Dal.GetLocalRemovedValidationFormulas())
+                        {
+                            int removedBase = (int)((ulong)removedId.Value >> 32);
+                            if (removedBase >= maxBase) maxBase = removedBase + 1;
+                        }
+                    }
+                    catch { /* 忽略查询失败 */ }
 
                     project.SetIdBase(maxBase);
                 }
@@ -253,6 +275,7 @@ namespace AuditAI.McpServer.Services
 
                 // 设置到会话状态
                 SessionState.Current.SetProject(project, projectPath);
+                committedToSession = true;
 
                 var result = new JObject
                 {
@@ -279,6 +302,16 @@ namespace AuditAI.McpServer.Services
                     Console.Error.WriteLine($"[Inner] {ex.InnerException}");
                 Console.Error.WriteLine($"[StackTrace] {ex.StackTrace}");
                 return ErrorJson("打开项目失败: " + ex.Message + "\n" + ex.StackTrace);
+            }
+            finally
+            {
+                // 若项目尚未提交到会话（SetProject 之前抛异常），则手动释放 Dal，
+                // 触发 CheckpointAndClose → wal_checkpoint(TRUNCATE)，避免 -wal 残留；
+                // 已提交的 Dal 由会话持有，将在 CloseProject 时释放。
+                if (!committedToSession)
+                {
+                    try { project?.Dal?.Dispose(); } catch { /* 忽略 Dispose 异常 */ }
+                }
             }
         }
 

@@ -51,6 +51,28 @@ namespace AuditAI.McpServer
             AuditAI.McpServer.Tools.NodeSearchTools.Register();
             AuditAI.McpServer.Tools.ImportTools.Register();
 
+            // 细粒度扩展工具集（覆盖 AppCommands 中原本缺失的 UI 操作）
+            AuditAI.McpServer.Tools.AdvancedTableTools.Register();
+            AuditAI.McpServer.Tools.NodeManagementTools.Register();
+            AuditAI.McpServer.Tools.CellFormatTools.Register();
+            AuditAI.McpServer.Tools.DocumentExtensionTools.Register();
+            AuditAI.McpServer.Tools.ProjectExtensionTools.Register();
+            Console.Error.WriteLine("[Program] Fine-grained extension toolsets registered (AdvancedTable/NodeManagement/CellFormat/DocumentExtension/ProjectExtension).");
+
+            // 第三批扩展工具集（覆盖快照/验证点/页面设置/文档格式/批量操作/票据/采集汇总等 UI 操作）
+            AuditAI.McpServer.Tools.SnapshotTools.Register();
+            AuditAI.McpServer.Tools.ValidationPointTools.Register();
+            AuditAI.McpServer.Tools.PageSetupTools.Register();
+            AuditAI.McpServer.Tools.DocumentFormatTools.Register();
+            AuditAI.McpServer.Tools.BatchOperationTools.Register();
+            AuditAI.McpServer.Tools.TicketTools.Register();
+            AuditAI.McpServer.Tools.CollectConsolidateTools.Register();
+            AuditAI.McpServer.Tools.CellBorderTools.Register();
+            AuditAI.McpServer.Tools.DocumentCharFormatTools.Register();
+            AuditAI.McpServer.Tools.TableStylePresetTools.Register();
+            AuditAI.McpServer.Tools.DocumentInsertTools.Register();
+            Console.Error.WriteLine("[Program] Third-batch extension toolsets registered (Snapshot/ValidationPoint/PageSetup/DocumentFormat/BatchOperation/Ticket/CollectConsolidate/CellBorder/DocumentCharFormat/TableStylePreset/DocumentInsert).");
+
             // 加载云端验证测试夹具（Task 3）
             try
             {

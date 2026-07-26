@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -13,11 +13,13 @@ using Auditai.UI.Controls;
 
 namespace Auditai.UI.Platform;
 
-public class ImportExcel
+public class ImportExcel : IDisposable
 {
 	private const int MAX_FORMULA_COUNT = 1000;
 
 	private readonly C1XLBook xLBook = new C1XLBook();
+
+	private bool _disposed;
 
 	private Dictionary<string, TempTable> SheetMap = new Dictionary<string, TempTable>();
 
@@ -303,11 +305,14 @@ public class ImportExcel
 	{
 		if (IsRtf(comment.TextBox.Text))
 		{
-			RichTextBox richTextBox = new RichTextBox
+			// 修复 BUG: RichTextBox 实现 IDisposable，未 using 包裹会导致句柄泄漏（批量导入场景累积）。
+			using (RichTextBox richTextBox = new RichTextBox
 			{
 				Rtf = comment.TextBox.Text
-			};
-			return richTextBox.Text;
+			})
+			{
+				return richTextBox.Text;
+			}
 		}
 		return comment.TextBox.Text;
 	}
@@ -519,7 +524,11 @@ public class ImportExcel
 
 	private bool IsRtf(string value)
 	{
-		return Regex.IsMatch(value, "rtf.*}");
+		// 修复 BUG: 原正则 "rtf.*}" 过于宽松，会误匹配任何包含 "rtf" 后跟 "}" 的普通文本，
+		// 导致普通文本被当作 RTF 加载，RichTextBox 解析失败抛异常。
+		// RTF 标准格式以 {\rtf 开头，严格匹配起始标记避免误判。
+		if (string.IsNullOrEmpty(value)) return false;
+		return Regex.IsMatch(value, @"^\{\\rtf");
 	}
 
 	private int NoteAndMarkRows()
@@ -597,11 +606,14 @@ public class ImportExcel
 
 	private string ToRtf(string text)
 	{
-		RichTextBox richTextBox = new RichTextBox
+		// 修复 BUG: RichTextBox 实现 IDisposable，未 using 包裹会导致句柄泄漏。
+		using (RichTextBox richTextBox = new RichTextBox
 		{
 			Text = text
-		};
-		return richTextBox.Rtf;
+		})
+		{
+			return richTextBox.Rtf;
+		}
 	}
 
 	private XLCellRange GetCellMerge(XLSheet sheet, XLCell xlCell)
@@ -658,5 +670,15 @@ public class ImportExcel
 			return cachedSheetValidCol.Item2;
 		}
 		return cachedSheetValidCol.Item2;
+	}
+
+	// 修复 BUG: 此前 ImportExcel 持有 C1XLBook 但未实现 IDisposable，
+	// 导入完成后 C1XLBook 内部非托管资源依赖 GC 终态器回收，
+	// 批量导入或大文件场景下会导致资源累积。现在显式释放。
+	public void Dispose()
+	{
+		if (_disposed) return;
+		_disposed = true;
+		try { xLBook?.Dispose(); } catch { /* 忽略释放失败 */ }
 	}
 }

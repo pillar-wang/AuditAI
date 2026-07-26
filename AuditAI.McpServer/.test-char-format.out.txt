@@ -1,0 +1,59 @@
+Found group: id=962072674306 name=试算平衡表系统（小企业会计准则）
+Create document: success=True message=文档创建成功 error=
+Found document: id=11269994184705 name=瀛楃鏍煎紡娴嬭瘯鏂囨。
+Add paragraph: success=True message=段落已添加并已保存 error=
+Save project: success=True message=项目已保存 error=
+
+=== get_char_format (initial) ===
+{
+  "success": true,
+  "document_node_id": "11269994184705",
+  "paragraph_index": 0,
+  "font_family": "",
+  "font_size": 0.0,
+  "bold": false,
+  "italic": false,
+  "underline": "none",
+  "fore_color": "",
+  "back_color": "",
+  "vertical_align": "baseline"
+}
+
+=== set_char_format (bold=true, font_size=12, color=FF0000) ===
+{
+  "success": true,
+  "document_node_id": "11269994184705",
+  "message": "段落 0 字符格式已更新",
+  "data": {
+    "font_family": "瀹嬩綋",
+    "font_size": 12.0,
+    "bold": true,
+    "italic": false,
+    "underline": "",
+    "fore_color": "FF0000",
+    "back_color": "",
+    "vertical_align": ""
+  }
+}
+
+=== get_char_format (after set) ===
+{
+  "success": true,
+  "document_node_id": "11269994184705",
+  "paragraph_index": 0,
+  "font_family": "瀹嬩綋",
+  "font_size": 12.0,
+  "bold": true,
+  "italic": false,
+  "underline": "none",
+  "fore_color": "FF0000",
+  "back_color": "",
+  "vertical_align": "baseline"
+}
+
+=== 娴嬭瘯缁撴灉 ===
+PASS: get_char_format (initial)
+PASS: set_char_format
+PASS: get_char_format (after set)
+  -> bold persisted
+  -> font_size persisted

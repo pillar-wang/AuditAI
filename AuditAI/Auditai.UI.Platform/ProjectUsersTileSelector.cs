@@ -69,30 +69,47 @@ public class ProjectUsersTileSelector
 	{
 		Tile tile = e.Tile;
 		contextMenu = new C1ContextMenu();
+
 		C1CommandLink c1CommandLink = new C1CommandLink();
 		C1Command c1Command = new C1Command();
-		c1Command.Text = StringConstBase.Current.Manager;
+		c1Command.Text = "项目经理";
 		c1Command.UserData = Tuple.Create(tile, UserRole.Manager);
 		c1Command.Click += CmdUserRole_Click;
 		c1CommandLink.Command = c1Command;
+		contextMenu.CommandLinks.Add(c1CommandLink);
+
 		C1CommandLink c1CommandLink2 = new C1CommandLink();
 		C1Command c1Command2 = new C1Command();
-		c1Command2.Text = StringConstBase.Current.Assistant;
+		c1Command2.Text = "项目助理";
 		c1Command2.UserData = Tuple.Create(tile, UserRole.Assistant);
 		c1Command2.Click += CmdUserRole_Click;
 		c1CommandLink2.Command = c1Command2;
-		contextMenu.CommandLinks.Add(c1CommandLink);
 		contextMenu.CommandLinks.Add(c1CommandLink2);
-		if (!(Program.MainForm.CurrentEdition is AppEditionGeneral))
-		{
-			C1CommandLink c1CommandLink3 = new C1CommandLink();
-			C1Command c1Command3 = new C1Command();
-			c1Command3.Text = "复核人";
-			c1Command3.UserData = Tuple.Create(tile, UserRole.Checker);
-			c1Command3.Click += CmdUserRole_Click;
-			c1CommandLink3.Command = c1Command3;
-			contextMenu.CommandLinks.Add(c1CommandLink3);
-		}
+
+		C1CommandLink c1CommandLink3 = new C1CommandLink();
+		C1Command c1Command3 = new C1Command();
+		c1Command3.Text = "复核人";
+		c1Command3.UserData = Tuple.Create(tile, UserRole.Checker);
+		c1Command3.Click += CmdUserRole_Click;
+		c1CommandLink3.Command = c1Command3;
+		contextMenu.CommandLinks.Add(c1CommandLink3);
+
+		C1CommandLink c1CommandLink4 = new C1CommandLink();
+		C1Command c1Command4 = new C1Command();
+		c1Command4.Text = "编辑者";
+		c1Command4.UserData = Tuple.Create(tile, UserRole.Editor);
+		c1Command4.Click += CmdUserRole_Click;
+		c1CommandLink4.Command = c1Command4;
+		contextMenu.CommandLinks.Add(c1CommandLink4);
+
+		C1CommandLink c1CommandLink5 = new C1CommandLink();
+		C1Command c1Command5 = new C1Command();
+		c1Command5.Text = "查看者";
+		c1Command5.UserData = Tuple.Create(tile, UserRole.User);
+		c1Command5.Click += CmdUserRole_Click;
+		c1CommandLink5.Command = c1Command5;
+		contextMenu.CommandLinks.Add(c1CommandLink5);
+
 		contextMenu.ShowContextMenu(_tileControl, new Point(tile.Group.X + tile.X, tile.Group.Y + tile.Y + tile.Height + _tileControl.ScrollOffset));
 	}
 
@@ -233,9 +250,11 @@ public class ProjectUsersTileSelector
 	{
 		return role switch
 		{
-			UserRole.Manager => StringConstBase.Current.Manager, 
+			UserRole.Manager => "项目经理", 
 			UserRole.Checker => "复核人", 
-			UserRole.Assistant => StringConstBase.Current.Assistant, 
+			UserRole.Assistant => "项目助理", 
+			UserRole.Editor => "编辑者", 
+			UserRole.User => "查看者", 
 			_ => "", 
 		};
 	}

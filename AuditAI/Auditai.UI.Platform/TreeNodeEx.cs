@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -113,7 +113,9 @@ internal static class TreeNodeEx
 		char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
 		foreach (char c in invalidFileNameChars)
 		{
-			path.Replace(c.ToString(), string.Empty);
+			// 修复 BUG: 此前 path.Replace 返回值未赋回 path，循环无效，
+			// 文件名中的非法字符未被清除，导致文件创建失败。
+			path = path.Replace(c.ToString(), string.Empty);
 		}
 		return path.Replace("\r", "").Replace("\n", "").Replace("/", "_")
 			.Replace("\\", "_")

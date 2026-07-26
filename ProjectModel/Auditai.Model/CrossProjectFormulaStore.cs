@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
@@ -191,7 +191,7 @@ public class CrossProjectFormulaStore
             return Task.FromResult(new CrossProjectFormulaResult { FormulaId = formula.Id, Success = false, Error = "来源项目数据库不存在" });
         }
 
-        var dal = new ProjectDAL(externalDbPath);
+        using var dal = new ProjectDAL(externalDbPath);
         var tableDto = dal.GetTable(formula.SourceTableId);
         if (tableDto == null)
         {

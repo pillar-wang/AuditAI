@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -14,8 +14,6 @@ public static class EmptyView
 	private static C1SuperLabel _sl;
 
 	public static C1SplitContainer View { get; }
-
-	private static C1Button btnBuy { get; }
 
 	static EmptyView()
 	{
@@ -35,32 +33,8 @@ public static class EmptyView
 			Height = 210,
 			BackColor = Color.Transparent
 		};
-		int left = c1SplitterPanel.Width / 2 - 110;
-		btnBuy = new C1Button
-		{
-			Width = 220,
-			Height = 47,
-			Top = _sl.Height,
-			FlatStyle = FlatStyle.Flat,
-			Font = new Font("Noto Sans SC", 9f),
-			Left = left,
-			Anchor = AnchorStyles.Top,
-			Text = "帮助中心",
-			Visible = SoftwareLicenseManager.IsShowHelpDocumentButton()
-		};
-		btnBuy.FlatAppearance.BorderSize = 0;
-		btnBuy.FlatAppearance.BorderColor = Color.White;
-		btnBuy.FlatAppearance.MouseOverBackColor = Color.FromArgb(57, 200, 237);
-		btnBuy.Click += BtnBuy_Click;
-		btnBuy.ForeColor = Color.White;
-		c1SplitterPanel.Controls.Add(btnBuy);
 		c1SplitterPanel.Controls.Add(_sl);
 		View.Panels.Add(c1SplitterPanel);
-	}
-
-	private static void BtnBuy_Click(object sender, EventArgs e)
-	{
-		Program.MainForm.ShowHelpCenter();
 	}
 
 	public static void SetQQ()

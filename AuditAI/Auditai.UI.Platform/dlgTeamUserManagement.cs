@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using C1.Framework;
 using C1.Win.C1Command;
@@ -147,6 +148,17 @@ public class dlgTeamUserManagement : C1RibbonForm
 	private C1CommandLink toolLnkRenameTeam;
 
 	private C1Command toolCmdRenameTeam;
+
+	// 修复 BUG: 此前 async void Click 事件无防重复点击保护，网络往返期间用户可多次点击，
+	// 导致重复入团/退团/改名等不可逆业务操作。GuardAsync 使用原子标志防止重入。
+	private int _isProcessing;
+
+	private async Task GuardAsync(Func<Task> action)
+	{
+		if (Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0) return;
+		try { await action(); }
+		finally { Interlocked.Exchange(ref _isProcessing, 0); }
+	}
 
 	private ListTileViewMode _Mode
 	{
@@ -363,6 +375,8 @@ public class dlgTeamUserManagement : C1RibbonForm
 		}
 		async void commandClick(object s2, ClickEventArgs e2)
 		{
+			// 修复 BUG: 防止用户在 MoveUserToGroup 网络往返期间重复点击造成多次移动。
+			if (Interlocked.CompareExchange(ref _isProcessing, 1, 0) != 0) return;
 			try
 			{
 				if (s2 is C1Command { UserData: var userData })
@@ -451,6 +465,10 @@ public class dlgTeamUserManagement : C1RibbonForm
 			catch (Exception ex2)
 			{
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.Message);
+			}
+			finally
+			{
+				Interlocked.Exchange(ref _isProcessing, 0);
 			}
 		}
 		static string fullName(UserGroup userGroup)
@@ -851,7 +869,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void CmdAddUserGroup1_Click(object sender, ClickEventArgs e)
 	{
-		await AppendGroupImpl();
+		await GuardAsync(AppendGroupImpl);
 	}
 
 	private void CmdMoveUserGroup1_Click(object sender, ClickEventArgs e)
@@ -860,12 +878,12 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void CmdRemoveUser1_Click(object sender, ClickEventArgs e)
 	{
-		await RemoveUserFromTeamImpl();
+		await GuardAsync(RemoveUserFromTeamImpl);
 	}
 
 	private async void CmdAddUserGroup2_Click(object sender, ClickEventArgs e)
 	{
-		await AppendGroupImpl();
+		await GuardAsync(AppendGroupImpl);
 	}
 
 	private async void CmdAddChildGroup2_Click(object sender, ClickEventArgs e)
@@ -873,7 +891,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		C1.Win.C1FlexGrid.Row row = currentRow();
 		if (row?.UserData is UserGroup)
 		{
-			await AddChildGroupImpl(row.Node);
+			await GuardAsync(() => AddChildGroupImpl(row.Node));
 		}
 		else
 		{
@@ -885,7 +903,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 	{
 		if (currentRow()?.UserData is UserGroup)
 		{
-			await DeleteUserGroup();
+			await GuardAsync(DeleteUserGroup);
 		}
 		else
 		{
@@ -897,7 +915,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 	{
 		if (currentRow()?.UserData is UserGroup)
 		{
-			await RenameUserGroupImpl();
+			await GuardAsync(RenameUserGroupImpl);
 		}
 		else
 		{
@@ -907,17 +925,17 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void cmdToolAddTeamUser_Click(object sender, ClickEventArgs e)
 	{
-		await AddUserToTeamImpl();
+		await GuardAsync(AddUserToTeamImpl);
 	}
 
 	private async void cmdToolRemoveTeamUser_Click(object sender, ClickEventArgs e)
 	{
-		await RemoveUserFromTeamImpl();
+		await GuardAsync(RemoveUserFromTeamImpl);
 	}
 
 	private async void cmdToolAddUserGroup_Click(object sender, ClickEventArgs e)
 	{
-		await AppendGroupImpl();
+		await GuardAsync(AppendGroupImpl);
 	}
 
 	private async void cmdToolAddChildGroup_Click(object sender, ClickEventArgs e)
@@ -925,7 +943,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		C1.Win.C1FlexGrid.Row row = currentRow();
 		if (row?.UserData is UserGroup)
 		{
-			await AddChildGroupImpl(row.Node);
+			await GuardAsync(() => AddChildGroupImpl(row.Node));
 		}
 		else
 		{
@@ -937,7 +955,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 	{
 		if (currentRow()?.UserData is UserGroup)
 		{
-			await DeleteUserGroup();
+			await GuardAsync(DeleteUserGroup);
 		}
 		else
 		{
@@ -949,7 +967,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 	{
 		if (currentRow()?.UserData is UserGroup)
 		{
-			await RenameUserGroupImpl();
+			await GuardAsync(RenameUserGroupImpl);
 		}
 		else
 		{
@@ -959,12 +977,12 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void cmdToolLeaveTeam_Click(object sender, ClickEventArgs e)
 	{
-		await LeaveTeamImpl();
+		await GuardAsync(LeaveTeamImpl);
 	}
 
 	private async void cmdToolDismissTeam_Click(object sender, ClickEventArgs e)
 	{
-		await DismissTeamImpl();
+		await GuardAsync(DismissTeamImpl);
 	}
 
 	private async Task AddUserToTeamImpl()
@@ -1213,7 +1231,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void cmdToolMergeTeam_Click(object sender, ClickEventArgs e)
 	{
-		await MergeTeamRequest();
+		await GuardAsync(MergeTeamRequest);
 	}
 
 	private async void cmdToolDisplayMode_Click(object sender, ClickEventArgs e)
@@ -1227,7 +1245,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 			_Mode = ListTileViewMode.List;
 			break;
 		}
-		await Populate();
+		await GuardAsync(Populate);
 	}
 
 	private void InitializeTileControl()
@@ -1393,6 +1411,11 @@ public class dlgTeamUserManagement : C1RibbonForm
 	}
 
 	private async void toolCmdRenameTeam_Click(object sender, ClickEventArgs e)
+	{
+		await GuardAsync(RenameTeamImpl);
+	}
+
+	private async Task RenameTeamImpl()
 	{
 		_ = Auditai.Model.User.Current;
 		UserTeam userTeam = UserTeam.Current;

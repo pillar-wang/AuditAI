@@ -81,6 +81,9 @@ namespace AuditAI.McpServer.Services
                     return ErrorJson($"找不到 ID 为 {parentId} 的父节点（应为 TreeGroup 或 TreeDirectoryNode）");
                 }
 
+                // 保存项目以持久化树节点元数据
+                project.Save();
+
                 return SerializeSuccessNode(newDir, parentId, "目录创建成功");
             }
             catch (Exception ex)
@@ -119,6 +122,10 @@ namespace AuditAI.McpServer.Services
                 {
                     return ErrorJson($"找不到 ID 为 {parentId} 的父节点（应为 TreeGroup 或 TreeDirectoryNode）");
                 }
+
+                // 保存项目（持久化树节点元数据）和 Document DTO，否则重新打开项目后找不到该文档
+                project.Save();
+                newDoc.Document.Save();
 
                 return SerializeSuccessNode(newDoc, parentId, "文档创建成功");
             }
@@ -170,6 +177,8 @@ namespace AuditAI.McpServer.Services
                 // 否则重新打开项目后 LoadAndReturn 找不到 Table 记录，
                 // 会将 IsCorrupted 置为 true，导致 get_table_data 返回空表格
                 newTable.Table.Save();
+                // 保存项目以持久化树节点元数据
+                project.Save();
 
                 var result = BuildSuccessNode(newTable, parentId, "表格创建成功");
                 result["column_count"] = newTable.Table.Columns.Count;

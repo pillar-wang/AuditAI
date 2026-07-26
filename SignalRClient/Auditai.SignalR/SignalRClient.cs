@@ -170,7 +170,9 @@ public static class SignalRClient
 			_hubProxies.Add(_hp.On<string, string, string>("PeerParagraphChange", PeerParagraphChange));
 			_hubProxies.Add(_hp.On<string, string>("ProjectBroadcast", ProjectBroadcast));
 			_hubProxies.Add(_hp.On<string, string>("TeamBroadcast", TeamBroadcast));
-			_hubProxies.Add(_hp.On<string, string>("ProjectSynced", ProjectSynced));
+			// 阶段 3：服务端 PushProject 成功后通过 IHubContext 主动广播 ProjectSynced(fromId, projectId, version)。
+			// 第三参数 version 可能为 null（老客户端兜底调用 SyncProject 不传 version 时）。
+			_hubProxies.Add(_hp.On<string, string, string>("ProjectSynced", ProjectSynced));
 			_hubProxies.Add(_hp.On<string, string>("PeerPushesTreeNode", PeerPushesTreeNode));
 			_hubProxies.Add(_hp.On("PeerMemberInfoChanged", PeerMemberInfoChanged));
 			_hubProxies.Add(_hp.On("PeerTeamMembersChanged", PeerTeamMembersChanged));
@@ -179,6 +181,9 @@ public static class SignalRClient
 			_hubProxies.Add(_hp.On<string, string, string, string>("PeerOpenTicketNavTreeNode", PeerOpenTicketNavTreeNode));
 			_hubProxies.Add(_hp.On<string, string, string>("PeerTableChanged", PeerTableChanged));
 			_hubProxies.Add(_hp.On<string, string, string>("PeerDocumentChanged", PeerDocumentChanged));
+			// 节点级强锁：服务端 AcquireTableLock/ReleaseTableLock 端点广播 (projectId, tableId, lockerUserId)。
+			// lockerUserId="0" 表示释放；其他值为持有锁的用户 Id。
+			_hubProxies.Add(_hp.On<string, string, string>("PeerTableLockChanged", PeerTableLockChanged));
 			try
 		{
 			// 加 15 秒超时保护：HubConnection.Start() 在 URL 错误或服务端不响应时
@@ -447,13 +452,15 @@ public static class SignalRClient
 		}
 	}
 
-	public static async Task SyncProject(string projectId)
+	// 阶段 3：version 可选参数允许客户端在 Push 成功后向其他客户端广播新版本号。
+	// 不传 version（null）时其他客户端按旧逻辑无条件 Pull，向后兼容。
+	public static async Task SyncProject(string projectId, string version = null)
 	{
 		if (_hc != null && _hc.State == ConnectionState.Connected)
 		{
 			try
 			{
-				await _hp.Invoke("SyncProject", projectId);
+				await _hp.Invoke("SyncProject", projectId, version);
 			}
 			catch (TimeoutException)
 			{
@@ -727,6 +734,19 @@ public static class SignalRClient
 		});
 	}
 
+	// 节点级强锁：其他客户端获取/释放表格锁时由服务端 Hub 广播。
+	// lockerUserId="0" 表示释放；其他值为持有锁的用户 Id。
+	private static void PeerTableLockChanged(string projectId, string tableId, string lockerUserId)
+	{
+		SignalRClient.MessageReceived?.Invoke(null, new MessageReceivedEventArgs
+		{
+			Kind = MessageKind.PeerTableLockChanged,
+			ProjectId = projectId,
+			TableId = tableId,
+			LockerUserId = lockerUserId
+		});
+	}
+
 	private static void PeerParagraphChange(string peerId, string projectId, string paragraphId)
 	{
 		SignalRClient.MessageReceived?.Invoke(null, new MessageReceivedEventArgs
@@ -758,13 +778,16 @@ public static class SignalRClient
 		});
 	}
 
-	private static void ProjectSynced(string fromId, string projectId)
+	// 阶段 3：第三参数 version 由服务端 PushProject 主动广播携带，用于客户端决策是否需要 Pull。
+	// 兜底链路（客户端 SyncProject 不传 version）时 version 为 null，客户端按旧逻辑处理。
+	private static void ProjectSynced(string fromId, string projectId, string version)
 	{
 		SignalRClient.MessageReceived?.Invoke(null, new MessageReceivedEventArgs
 		{
 			Kind = MessageKind.ProjectSynced,
 			ProjectId = projectId,
-			FromId = fromId
+			FromId = fromId,
+			Version = version
 		});
 	}
 

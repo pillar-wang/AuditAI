@@ -168,13 +168,16 @@ namespace AuditAI.McpServer.Services
                 node.IsEntityDirty = true;
                 project.NeedSave = true;
 
+                // 立即保存 Document DTO（包含段落 OOXML 流），否则重新打开项目后段落丢失
+                document.Save();
+
                 var result = new JObject
                 {
                     ["success"] = true,
                     ["document_node_id"] = documentNodeId.ToString(),
                     ["paragraph_id"] = paragraph.Id.Value.ToString(),
                     ["index"] = nextIndex,
-                    ["message"] = "段落已添加，请调用 save_project 保存"
+                    ["message"] = "段落已添加并已保存"
                 };
                 return JsonConvert.SerializeObject(result, Formatting.Indented);
             }
@@ -274,10 +277,14 @@ namespace AuditAI.McpServer.Services
                 // TX TextControl 操作必须在 STA 线程上执行
                 StaRunner.Run(() =>
                 {
-                    var tx = new TXTextControl.ServerTextControl();
-                    tx.Create();
-                    tx.Load(docxTempFile, TXTextControl.StreamType.WordprocessingML);
-                    tx.Save(pdfTempFile, TXTextControl.StreamType.AdobePDF);
+                    // 修复 BUG: 此前 ServerTextControl 未 Dispose，每次 PDF 导出都泄漏一个
+                    // COM 实例和许可证缓存，MCP 服务长期运行后会耗尽资源导致导出失败。
+                    using (var tx = new TXTextControl.ServerTextControl())
+                    {
+                        tx.Create();
+                        tx.Load(docxTempFile, TXTextControl.StreamType.WordprocessingML);
+                        tx.Save(pdfTempFile, TXTextControl.StreamType.AdobePDF);
+                    }
                 });
 
                 File.Copy(pdfTempFile, outputPath, true);

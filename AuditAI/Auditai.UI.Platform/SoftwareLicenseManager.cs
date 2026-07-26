@@ -239,19 +239,6 @@ public class SoftwareLicenseManager
 		return false;
 	}
 
-	public static bool IsShowHelpDocumentButton()
-	{
-		if (Program.ClientPlatformType == PlatformType.AuditPlatform || Program.ClientPlatformType == PlatformType.EnterpriseReportPlatform || Program.ClientPlatformType == PlatformType.TableDevelopPlatform)
-		{
-			return true;
-		}
-		if (Program.ClientPlatformType == PlatformType.Custom)
-		{
-			return ClientCustomizeData.Current.GetOptionValueInSettingIniFile_Bool("show_help_center_button", defaultValue: false);
-		}
-		return false;
-	}
-
 	public static bool IsAllowShowShareProjectButton()
 	{
 		if (Auditai.Model.User.Current.IsSystemSupporter)

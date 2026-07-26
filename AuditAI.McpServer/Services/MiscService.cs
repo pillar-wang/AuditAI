@@ -93,6 +93,17 @@ namespace AuditAI.McpServer.Services
                 if (string.IsNullOrWhiteSpace(filePath))
                     return ErrorJson("文件路径不能为空");
 
+                // 修复 BUG: 路径遍历防护 - 拒绝包含 .. 的路径和系统关键目录
+                string fullPath;
+                try { fullPath = Path.GetFullPath(filePath); }
+                catch { return ErrorJson("文件路径格式无效: " + filePath); }
+                if (filePath.Contains(".."))
+                    return ErrorJson("文件路径不能包含父目录引用（..）: " + filePath);
+                string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                if (!string.IsNullOrEmpty(systemRoot) &&
+                    fullPath.StartsWith(systemRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    return ErrorJson("不允许读取系统关键目录: " + systemRoot);
+
                 if (!File.Exists(filePath))
                     return ErrorJson($"文件不存在: {filePath}");
 

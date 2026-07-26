@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -646,6 +646,57 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromMinutes(5.0),
 			WithAuthorization = true
 		}, reportCallback);
+	}
+
+	/// <summary>
+	/// 节点级强锁：获取对指定表格的编辑锁。
+	/// 客户端打开表格节点时调用，服务端返回 Success 表示获取锁成功（可编辑），
+	/// 返回 Locked 表示已被其他用户占用（仅可查看，UI 应进入只读模式）。
+	/// 返回 JObject: { Result: "Success", Locker: <userId> } 或 { Result: "Locked", Locker: <userId>, LockerName: <name> }
+	/// </summary>
+	public static async Task<JObject> AcquireTableLock(Guid projectId, long tableId)
+	{
+		if (IsLocalMode)
+		{
+			return new JObject { ["Result"] = "Success", ["Locker"] = 0L };
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/AcquireTableLock",
+			Body = new { ProjectId = projectId, TableId = tableId },
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>
+	/// 节点级强锁：释放对指定表格的编辑锁。
+	/// 客户端切换到其他节点/关闭项目/退出应用时调用。
+	/// 服务端仅当 Locker == 当前用户才释放（避免误释放他人锁）。
+	/// 失败静默处理（如网络异常），不影响后续业务；服务端 30 分钟超时会自动释放。
+	/// </summary>
+	public static async Task ReleaseTableLock(Guid projectId, long tableId)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		try
+		{
+			await SendAsObject<JObject>(new RequestOptions
+			{
+				Method = HttpMethod.Post,
+				Url = "Project/ReleaseTableLock",
+				Body = new { ProjectId = projectId, TableId = tableId },
+				Timeout = TimeSpan.FromSeconds(15.0),
+				WithAuthorization = true
+			});
+		}
+		catch
+		{
+			// 释放锁失败不阻断业务：服务端 30 分钟超时会自动释放
+		}
 	}
 
 	public static async Task<PullTable> PullTable(JObject request, TaskProgressValueReportCallback reportCallback = null)
@@ -1514,7 +1565,7 @@ public static class WebApiClient
 		}
 		RequestOptions requestOptions = new RequestOptions();
 		requestOptions.Method = HttpMethod.Get;
-		requestOptions.Url = $"User/AccountLogin?userName={userName}&password={hashPassword}&version={AppVersion}&hasProcess={IsProcessExist()}&machineCode={Uri.EscapeDataString(MachineCode.Code)}";
+		requestOptions.Url = $"User/AccountLogin?userName={Uri.EscapeDataString(userName)}&password={hashPassword}&version={AppVersion}&hasProcess={IsProcessExist()}&machineCode={Uri.EscapeDataString(MachineCode.Code)}";
 		requestOptions.Timeout = TimeSpan.FromSeconds(30.0);
 		requestOptions.WithMachineCode = true;
 		requestOptions.WithMachineSign = true;
@@ -1559,7 +1610,7 @@ public static class WebApiClient
 		Tuple<UserToken, User> tuple = await SendAsObject<Tuple<UserToken, User>>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = $"User/AccountLoginBySMS?phone={phoneNumber}&version={AppVersion}&hasProcess={IsProcessExist()}",
+			Url = $"User/AccountLoginBySMS?phone={Uri.EscapeDataString(phoneNumber)}&version={AppVersion}&hasProcess={IsProcessExist()}",
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true,
 			WithMachineSign = true,
@@ -1606,7 +1657,7 @@ public static class WebApiClient
 		RequestOptions options = new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/SMSReLogin?userName=" + userName + "&version=" + AppVersion,
+			Url = "User/SMSReLogin?userName=" + Uri.EscapeDataString(userName) + "&version=" + AppVersion,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true,
 			WithMachineSign = true
@@ -1627,7 +1678,7 @@ public static class WebApiClient
 		return await SendAsObject<string>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetDeleteProjectValidateCode?phone=" + phone,
+			Url = "User/GetDeleteProjectValidateCode?phone=" + Uri.EscapeDataString(phone),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
@@ -1657,7 +1708,7 @@ public static class WebApiClient
 		return await SendAsObject<User>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetUserByName?userName=" + userName,
+			Url = "User/GetUserByName?userName=" + Uri.EscapeDataString(userName),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
@@ -1672,7 +1723,7 @@ public static class WebApiClient
 		return await SendAsObject<string>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetFuzzyPhone?userName=" + userName,
+			Url = "User/GetFuzzyPhone?userName=" + Uri.EscapeDataString(userName),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
@@ -1687,7 +1738,7 @@ public static class WebApiClient
 		return await SendAsObject<bool>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/UserNameExists?userName=" + userName,
+			Url = "User/UserNameExists?userName=" + Uri.EscapeDataString(userName),
 			Timeout = TimeSpan.FromSeconds(30.0)
 		});
 	}
@@ -1701,7 +1752,7 @@ public static class WebApiClient
 		return await SendAsObject<bool>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/PhoneExists?phone=" + phone,
+			Url = "User/PhoneExists?phone=" + Uri.EscapeDataString(phone),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
@@ -1713,11 +1764,13 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(password, isUrl: false);
+		// 修复 BUG: 使用 isUrl: true 使密码哈希经过 URL 编码，
+		// 避免 Base64 中的 +, /, = 字符在 URL 传输时被破坏（+ 会被服务器解码为空格）
+		string text = Encrypts.SHA256Encrypt(password, isUrl: true);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/FindPassword?userName=" + userName + "&password=" + text,
+			Url = "User/FindPassword?userName=" + Uri.EscapeDataString(userName) + "&password=" + text,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true,
 			ValidationCode = validateCode
@@ -1730,8 +1783,9 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: false);
-		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: false);
+		// 修复 BUG: 同 FindPassword，使用 isUrl: true 保证密码哈希 URL 安全
+		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: true);
+		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: true);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
@@ -1749,8 +1803,9 @@ public static class WebApiClient
 		{
 			return;
 		}
-		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: false);
-		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: false);
+		// 修复 BUG: 同 FindPassword，使用 isUrl: true 保证密码哈希 URL 安全
+		string text = Encrypts.SHA256Encrypt(oldPassword, isUrl: true);
+		string text2 = Encrypts.SHA256Encrypt(newPassword, isUrl: true);
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
@@ -1770,7 +1825,7 @@ public static class WebApiClient
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetValidateCode?phone=" + phone + "&smsTemplate=" + smsTemplate,
+			Url = "User/GetValidateCode?phone=" + Uri.EscapeDataString(phone) + "&smsTemplate=" + Uri.EscapeDataString(smsTemplate),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true
 		});
@@ -1785,7 +1840,7 @@ public static class WebApiClient
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetCodeByName?userName=" + userName + "&smsTemplate=" + smsTemplate,
+			Url = "User/GetCodeByName?userName=" + Uri.EscapeDataString(userName) + "&smsTemplate=" + Uri.EscapeDataString(smsTemplate),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true
 		});
@@ -1800,7 +1855,7 @@ public static class WebApiClient
 		return await SendAsObject<string>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetUsernameByPhone?phone=" + phone,
+			Url = "User/GetUsernameByPhone?phone=" + Uri.EscapeDataString(phone),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true,
 			WithMachineCode = true
@@ -1816,7 +1871,7 @@ public static class WebApiClient
 		return await SendAsObject<string>(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetUsernameByEmail?email=" + email,
+			Url = "User/GetUsernameByEmail?email=" + Uri.EscapeDataString(email),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true,
 			WithMachineCode = true
@@ -1832,7 +1887,7 @@ public static class WebApiClient
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Get,
-			Url = "User/GetValidateCodeByEmail?email=" + email,
+			Url = "User/GetValidateCodeByEmail?email=" + Uri.EscapeDataString(email),
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithMachineCode = true
 		});
@@ -2292,7 +2347,9 @@ public static class WebApiClient
 						};
 					}
 				}
-				catch { }
+				catch (ServerException) { throw; }
+				catch (JsonReaderException) { /* 响应非合法 JSON（如 HTML 错误页），交给 result 兜底 */ }
+				catch (JsonSerializationException) { /* 同上 */ }
 			}
 
 			return result;
@@ -2423,9 +2480,12 @@ public static class WebApiClient
 				}
 			}).ConfigureAwait(continueOnCapturedContext: false);
 			string text = new Guid(request.ProjectId.ToByteArray()).ToString("D");
+			var tableIdBytes = new byte[16];
+			BitConverter.GetBytes(request.Id).CopyTo(tableIdBytes, 0);
+			string guidTableId = new Guid(tableIdBytes).ToString("D");
 			options.Method = HttpMethod.Get;
 			options.Body = null;
-			options.Url = $"{options.Url}?taskId={taskId}&projectId={text}&tableId={request.Id}&version={request.Version}";
+			options.Url = $"{options.Url}?taskId={taskId}&projectId={text}&tableId={guidTableId}&version={request.Version}";
 			JObject jObject = await SendAsObject<JObject>(options);
 			string text2 = (string)jObject["Result"];
 			if (!text2.StartsWith("WaitingTaskEnd:"))

@@ -238,6 +238,9 @@ public class frmFindPwd : Form
 
 	private async void btnFindPwd_Click(object sender, EventArgs e)
 	{
+		// 修复 BUG: 此前缺少防重复点击机制，用户在 await FindPassword 期间可重复点击按钮，
+		// 导致多次发送重置密码请求。现在禁用按钮直到异步操作完成。
+		btnFindPwd.Enabled = false;
 		try
 		{
 			if (!Regex.IsMatch(txtEmailValidate.Text.Trim(), "^\\d{6}$"))
@@ -265,6 +268,10 @@ public class frmFindPwd : Form
 		catch (ServerException ex3)
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.ToString());
+		}
+		finally
+		{
+			btnFindPwd.Enabled = true;
 		}
 	}
 

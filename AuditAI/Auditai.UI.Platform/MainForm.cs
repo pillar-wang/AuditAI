@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -590,6 +590,8 @@ public class MainForm
 		MemberManager.GetInstance().MessageArrived += MainForm_MessageArrived;
 		// P2 协同增强 Task 8：订阅新项目/模板广播，刷新项目列表
 		MemberManager.GetInstance().NewProjectArrived += MainForm_NewProjectArrived;
+		// 节点级强锁：订阅表格锁状态变更，实时响应其他客户端获取/释放锁
+		MemberManager.GetInstance().TableLockChanged += MainForm_TableLockChanged;
 		try { _soundPlayer.Stream = Resources.NotifySound1; } catch { }
 		MultiLedgerViewer.IsShowToolBar = _showSideToolbar;
 		MultiLedgerViewer.AfterOpenLedger += MultiLedgerViewer_AfterOpenLedger;
@@ -730,14 +732,6 @@ public class MainForm
 
 	private void Browser_OpenPage(object sender, OpenPageEventArgs e)
 	{
-		if (!FormHelpCenter.IsOpen)
-		{
-			FormHelpCenter formHelpCenter = new FormHelpCenter();
-			formHelpCenter.Text = "帮助中心";
-			formHelpCenter.Url = e.url;
-			formHelpCenter.RootPage = HelpCenterUtil.GetHelpCenterHomePage();
-			formHelpCenter.Show();
-		}
 	}
 
 	private void MainForm_MessageArrived(object sender, Tuple<string, string, NotifyMessage> e)
@@ -882,13 +876,16 @@ public class MainForm
 		};
 	}
 
-	private async void MainForm_ProjectSynced(object sender, string e)
+	// 阶段 3：事件签名从 string 升级为 (projectId, version) 元组。
+	// version 可能为 null（兜底链路或老客户端发起的 SyncProject 调用），按旧逻辑无条件 Pull。
+	private async void MainForm_ProjectSynced(object sender, (string projectId, string version) e)
 	{
-		_serverDataChangedProject[e] = true;
+		string projectIdStr = e.projectId;
+		_serverDataChangedProject[projectIdStr] = true;
 		SyncTwinkle.Start();
-		if (e == CurrentProject?.Id.ToString())
+		if (projectIdStr == CurrentProject?.Id.ToString())
 		{
-			HandleSyncMessage(e);
+			HandleSyncMessage(projectIdStr);
 		}
 		// 自动后台 Pull：项目已打开且无未保存本地修改时，异步拉取最新项目结构
 		if (!AutoPullEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
@@ -896,7 +893,7 @@ public class MainForm
 			return;
 		}
 		Guid projectId;
-		if (!Guid.TryParse(e, out projectId))
+		if (!Guid.TryParse(projectIdStr, out projectId))
 		{
 			return;
 		}
@@ -909,6 +906,18 @@ public class MainForm
 		{
 			return;
 		}
+
+		// 阶段 3：Version 优化——通知携带 version 且本地 Version 已 >= 通知 Version 时跳过 Pull。
+		// 推送者自己也会收到广播，此检查避免重复 Pull（推送后本地 Version 已递增到 newVersion）。
+		// 不传 version（null）或解析失败时保留旧逻辑（无条件 Pull）。
+		if (!string.IsNullOrEmpty(e.version) && int.TryParse(e.version, out var notifyVersion))
+		{
+			if (proj.Version >= notifyVersion)
+			{
+				return;
+			}
+		}
+
 		try
 		{
 			// 在 UI 线程异步等待，避免阻塞；Pull 内部 Merge 也在 UI 线程执行，避免与视图竞态
@@ -924,9 +933,271 @@ public class MainForm
 	/// 判断指定项目是否当前已打开。
 	/// </summary>
 	private bool IsProjectCurrentlyOpen(Guid projectId)
-	{
-		return RecentProjects.ContainsKey(projectId);
-	}
+		{
+			return RecentProjects.ContainsKey(projectId);
+		}
+
+		// 节点级强锁：当前已获取锁的表格（同一时刻仅一个，因为 UI 只显示一个表格）
+		private Auditai.Model.Table _currentLockedTable;
+
+		// 节点级强锁：心跳续约定时器。每 5 分钟调用 AcquireTableLock 刷新 LockerAcquiredAt，
+		// 防止长时间编辑时锁被服务端 30 分钟超时释放。
+		private System.Threading.Timer _tableLockHeartbeatTimer;
+		private const int LockHeartbeatIntervalMs = 5 * 60 * 1000; // 5 分钟
+
+		/// <summary>
+		/// 节点级强锁：获取指定表格的编辑锁。
+		/// 在 TreeNodeSelected_NormalImpl 加载表格后调用。Success → 可编辑；Locked → 只读模式。
+		/// 已持有同一表格的锁时跳过；切换表格时先释放上一个表格的锁。
+		/// </summary>
+		private async Task AcquireTableLockAsync(Auditai.Model.Table table)
+		{
+			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			if (table == null) return;
+			if (_currentLockedTable == table) return;
+
+			// 先释放上一个表格的锁
+			if (_currentLockedTable != null)
+			{
+				await ReleaseTableLockAsync(_currentLockedTable);
+			}
+
+			try
+			{
+				var proj = table.Project;
+				if (proj == null) return;
+				var result = await WebApiClient.AcquireTableLock(proj.Id, table.Id.Value);
+				if (result == null) return;
+
+				string lockResult = (string)result["Result"];
+				if (lockResult == "Success")
+				{
+					_currentLockedTable = table;
+					// 本地标记为已获取（不调用 UpdateLocker 避免触发 PushTable）
+					table.Locker = Auditai.Model.User.Current?.Id ?? 0;
+					StartLockHeartbeat();
+				}
+				else if (lockResult == "Locked")
+				{
+					// 被其他用户占用，进入只读模式
+					long lockerUserId = (long?)result["Locker"] ?? 0;
+					string lockerName = (string)result["LockerName"] ?? "其他用户";
+					table.Locker = lockerUserId;
+					_currentLockedTable = null;  // 本地未持有锁
+					StopLockHeartbeat();
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+						$"表格 \"{table.TreeNode?.Name}\" 正在被 {lockerName} 编辑，您当前只能查看。");
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				// 获取锁失败不阻断业务：按可编辑处理，依赖服务端 PushTable 校验兜底
+			}
+		}
+
+		/// <summary>
+		/// 节点级强锁：释放指定表格的编辑锁。
+		/// 仅当 table == _currentLockedTable 时才释放（避免误释放他人锁）。
+		/// 释放前若表格存在未同步的本地修改且 pushBeforeRelease=true，尝试 Push 一次以保证其他用户拉到最新数据；
+		/// Push 失败不阻断释放（服务端 30 分钟超时会自动释放，本地修改保留待下次同步）。
+		/// 退出场景（View_FormClosing）传 pushBeforeRelease=false 以尊重用户的"不同步"选择。
+		/// </summary>
+		private async Task ReleaseTableLockAsync(Auditai.Model.Table table, bool pushBeforeRelease = true)
+		{
+			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			if (table == null) return;
+			if (_currentLockedTable != table) return;
+
+			StopLockHeartbeat();
+
+			// 释放前尝试 Push 未同步的本地修改：当前用户持有锁，Push 不会被 Locked 拒绝；
+			// 服务端版本应与本地一致（仅当前用户能改），不会 OutOfDate。Push 失败静默，本地修改保留。
+			if (pushBeforeRelease)
+			{
+				try
+				{
+					if (table.TreeNode != null && table.TreeNode.IsEntityDirty)
+					{
+						await Syncer.PullAndRetryPush(table).ConfigureAwait(false);
+					}
+				}
+				catch (Exception ex)
+				{
+					ex.Log();
+				}
+			}
+
+			try
+			{
+				var proj = table.Project;
+				if (proj != null)
+				{
+					await WebApiClient.ReleaseTableLock(proj.Id, table.Id.Value);
+				}
+				table.Locker = 0;
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+			}
+			_currentLockedTable = null;
+		}
+
+		/// <summary>
+		/// 节点级强锁：程序退出时释放所有已获取的锁。
+		/// 在 View_FormClosing 调用 Logout 之前调用。
+		/// pushBeforeRelease=false：退出场景由 SyncProjects（Yes 分支）统一处理推送，
+		/// 避免与用户"不同步直接退出"（No 分支）的选择冲突。
+		/// </summary>
+		private async Task ReleaseAllTableLocksForExitAsync()
+		{
+			if (_currentLockedTable != null)
+			{
+				await ReleaseTableLockAsync(_currentLockedTable, pushBeforeRelease: false);
+			}
+		}
+
+		/// <summary>
+		/// 节点级强锁：启动心跳定时器，周期性续约 LockerAcquiredAt。
+		/// 由 AcquireTableLockAsync 在成功获取锁后调用。
+		/// </summary>
+		private void StartLockHeartbeat()
+		{
+			StopLockHeartbeat();
+			_tableLockHeartbeatTimer = new System.Threading.Timer(
+				callback: async _ => await LockHeartbeatCallbackAsync(),
+				state: null,
+				dueTime: LockHeartbeatIntervalMs,
+				period: LockHeartbeatIntervalMs);
+		}
+
+		/// <summary>
+		/// 节点级强锁：停止心跳定时器。
+		/// 由 ReleaseTableLockAsync / ReleaseAllTableLocksForExitAsync / 锁被抢占时调用。
+		/// </summary>
+		private void StopLockHeartbeat()
+		{
+			if (_tableLockHeartbeatTimer != null)
+			{
+				try { _tableLockHeartbeatTimer.Dispose(); } catch { }
+				_tableLockHeartbeatTimer = null;
+			}
+		}
+
+		/// <summary>
+		/// 节点级强锁：心跳回调，调用 AcquireTableLock 续约 LockerAcquiredAt。
+		/// 若服务端返回 Locked（理论上不应发生，但可能因网络中断超 30 分钟导致锁过期被他人抢占），
+		/// 通知 UI 线程更新表格为只读并提示用户。
+		/// </summary>
+		private async Task LockHeartbeatCallbackAsync()
+		{
+			try
+			{
+				var table = _currentLockedTable;
+				if (table == null) return;
+				var proj = table.Project;
+				if (proj == null) return;
+
+				var result = await WebApiClient.AcquireTableLock(proj.Id, table.Id.Value).ConfigureAwait(false);
+				if (result == null) return;
+
+				string lockResult = (string)result["Result"];
+				if (lockResult == "Success")
+				{
+					// 续约成功：LockerAcquiredAt 已被服务端刷新，无需本地操作
+					return;
+				}
+
+				if (lockResult == "Locked")
+				{
+					// 锁被他人抢占（多为本地网络中断超过 30 分钟导致）
+					long lockerUserId = (long?)result["Locker"] ?? 0;
+					string lockerName = (string)result["LockerName"] ?? "其他用户";
+					table.Locker = lockerUserId;
+					_currentLockedTable = null;
+					StopLockHeartbeat();
+
+					// 通知 UI 线程
+					var mainForm = Program.MainForm;
+					if (mainForm != null && mainForm.View != null && mainForm.View.IsHandleCreated)
+					{
+						try
+						{
+							mainForm.View.Invoke((Action)(() =>
+							{
+								try
+								{
+									Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+										$"表格 \"{table.TreeNode?.Name}\" 的编辑锁已被 {lockerName} 获取（可能因网络中断超过 30 分钟），您当前只能查看。\r\n您的本地修改已保留，可在对方释放锁后重新获取锁并同步。");
+									var te = mainForm.GetCreatedTableEditor();
+									if (te != null && te.Table == table)
+									{
+										try { te.View?.Invalidate(); } catch { }
+									}
+								}
+								catch { }
+							}));
+						}
+						catch { }
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				// 心跳失败不阻断业务：服务端 30 分钟超时会自动释放
+			}
+		}
+
+		/// <summary>
+		/// 节点级强锁：响应其他客户端获取/释放表格锁的广播。
+		/// lockerUserId=0 表示释放；其他值为持有锁的用户 Id。
+		/// 直接设置 Table.Locker 字段（不调用 UpdateLocker 避免触发 PushTable 循环），
+		/// TableEditor.IsTableLocked 已绑定 Table.IsLocked，UI 会自动响应只读/可编辑切换。
+		/// 特别处理：若广播表明当前用户持有的锁被他人抢占（理论上不应发生，因本地心跳会续约；
+		/// 但网络中断超 30 分钟时服务端会判超时释放），主动停止心跳并提示用户。
+		/// </summary>
+		private void MainForm_TableLockChanged(string projectId, long tableId, long lockerUserId)
+		{
+			Guid pid;
+			if (!Guid.TryParse(projectId, out pid)) return;
+			Auditai.Model.Project proj;
+			if (!RecentProjects.TryGetValue(pid, out proj)) return;
+
+			var tid = new Id64(tableId);
+			var table = proj.GetTableById(tid);
+			if (table == null) return;
+
+			// 直接赋值，不触发 Dirty（值来自服务端，无需回推）
+			table.Locker = lockerUserId;
+
+			// 若广播针对的是当前用户持有的锁表格，且 lockerUserId 不是当前用户（即被他人抢占），
+			// 停止本地心跳并清理 _currentLockedTable，避免后续无意义的续约请求。
+			// 此场景多由本地网络中断超 30 分钟触发，与 LockHeartbeatCallbackAsync 的检测互为兜底。
+			var currentUserId = Auditai.Model.User.Current?.Id ?? 0;
+			if (_currentLockedTable == table && lockerUserId != 0 && lockerUserId != currentUserId)
+			{
+				_currentLockedTable = null;
+				StopLockHeartbeat();
+				try
+				{
+					string lockerName = MemberManager.GetInstance().GetMember(lockerUserId.ToString())?.Name ?? "其他用户";
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+						$"表格 \"{table.TreeNode?.Name}\" 的编辑锁已被 {lockerName} 获取（可能因网络中断超过 30 分钟），您当前只能查看。\r\n您的本地修改已保留，可在对方释放锁后重新获取锁并同步。");
+				}
+				catch { }
+			}
+
+			// 若该表格当前正在显示，触发 UI 刷新让 TableEditor 重新读取 IsLocked。
+			// C1Command 框架在下次 UI 刷新（鼠标移动/点击）时会自动查询 CommandStateQuery，
+			// 此处主动 Invalidate 触发 grid 重绘，使单元格只读状态立即生效。
+			var te = GetCreatedTableEditor();
+			if (te != null && te.Table == table)
+			{
+				try { te.View?.Invalidate(); } catch { }
+			}
+		}
 
 	/// <summary>
 	/// 判断指定项目是否存在未保存的本地修改（表格/文档节点脏或表格 NeedSave）。
@@ -971,6 +1242,14 @@ public class MainForm
 		}
 		if (string.IsNullOrEmpty(display))
 		{
+			Auditai.Model.Project p = entity as Auditai.Model.Project;
+			if (p != null)
+			{
+				display = StringConstBase.Current.Project + "\"" + (p.Name ?? string.Empty) + "\"";
+			}
+		}
+		if (string.IsNullOrEmpty(display))
+		{
 			display = entity == null ? string.Empty : entity.ToString();
 		}
 		System.Windows.Forms.MessageBox.Show(
@@ -982,6 +1261,12 @@ public class MainForm
 
 	public async Task<Auditai.Model.Project> OpenOrSwitchToProject(Guid id, string willOpenProjectTypeName = null)
 	{
+		// 节点级强锁：切换到不同项目前，释放当前项目持有的表格锁（含 Push 未同步修改）
+		if (CurrentProject != null && CurrentProject.Id != id && _currentLockedTable != null)
+		{
+			try { await ReleaseTableLockAsync(_currentLockedTable); }
+			catch (Exception ex) { ex.Log(); }
+		}
 		if (CurrentProject != null && RecentProjects.TryGetValue(CurrentProject.Id, out var value))
 		{
 			value.LastNode = ProjectHierarchy.SelectedNode;
@@ -2459,7 +2744,13 @@ public class MainForm
 		await SaveProjectImpl(proj, progressUpdater);
 		List<Tuple<TreeNodeBase, Exception>> le = new List<Tuple<TreeNodeBase, Exception>>();
 		bool anyNodeUpdated = (await Syncer.Pull(proj)).Item2;
-		PushResult pushProjectResult = await Syncer.Push(proj);
+		// 使用 PullAndRetryPush 处理乐观锁冲突：服务器返回 OutOfDate 时自动 Pull+重试
+		PushResult pushProjectResult = await Syncer.PullAndRetryPush(proj);
+		if (pushProjectResult == PushResult.OutOfDate)
+		{
+			// 重试耗尽仍冲突，提示用户手动解决
+			ShowConflictResolutionDialog(proj);
+		}
 		proj.Save();
 		progressRuntimeData.UpdateMessage("准备开始同步数据...");
 		IEnumerable<TreeTableNode> tableNodes = proj.GetAllTableNodes();
@@ -2632,7 +2923,10 @@ public class MainForm
 		proj.Save();
 		if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && (pushProjectResult != PushResult.NoContent || anyEntityPushed))
 		{
-			await SignalRClient.SyncProject(proj.Id.ToString());
+			// 阶段 3：兜底链路，传递 Version 用于其他客户端决策是否需要 Pull。
+			// 服务端 PushProjectQuick/PushProject 端点也会主动广播 ProjectSynced(version)，
+			// 此处保留客户端发起的兜底广播，避免服务端 SignalR 故障时通知链路完全失效。
+			await SignalRClient.SyncProject(proj.Id.ToString(), proj.Version.ToString());
 		}
 		if (le.Any())
 		{
@@ -2689,6 +2983,15 @@ public class MainForm
 						// 重试耗尽仍冲突，提示用户手动解决
 						ShowConflictResolutionDialog(table);
 					}
+					else if (tablePushResult == PushResult.Locked)
+					{
+						// 节点级强锁：表格被其他用户持有锁，本次 Push 被服务端拒绝。
+						// Syncer.Push 已更新 table.Locker，UI 会自动切换为只读。
+						// 本地修改保留（IsEntityDirty 仍为 true），用户可稍后再次同步。
+						// 不阻断后续表格同步流程，仅记录到异常列表供结束时汇总提示。
+						le.Add(Tuple.Create((TreeNodeBase)table.TreeNode,
+							(Exception)new InvalidOperationException($"表格 \"{table.TreeNode?.Name}\" 被其他用户锁定，未能同步")));
+					}
 				}
 				catch (Exception ex7)
 				{
@@ -2719,11 +3022,6 @@ public class MainForm
 			item.Value.LoadSetting(UserSet.Config.BooksStyle);
 		}
 		ApplyConfig();
-	}
-
-	public void ShowHelpCenter()
-	{
-		HelpCenterUtil.OpenHelpCenterHomePage();
 	}
 
 	public void AboutForm()
@@ -3922,11 +4220,6 @@ public class MainForm
 		}, 5000);
 	}
 
-	public void ShowHelpSidebar()
-	{
-		HelpCenterUtil.OpenHelpCenterHomePage();
-	}
-
 	public void ConfirmationSetting()
 	{
 		MergeForm instance = MergeForm.GetInstance();
@@ -4737,10 +5030,13 @@ public class MainForm
 			clone = TableEditor.Table.TemporaryClone();
 			version = clone.Version;
 		}
+		var tableIdBytes = new byte[16];
+		BitConverter.GetBytes(clone.Id.Value).CopyTo(tableIdBytes, 0);
+		Guid guidTableId = new Guid(tableIdBytes);
 		JObject request = JObject.FromObject(new
 		{
 			Action = "PullTable",
-			Id = clone.Id.Value,
+			TableId = guidTableId,
 			ProjectId = clone.Project.Id,
 			Version = version
 		});
@@ -4801,7 +5097,7 @@ public class MainForm
 		JObject request = JObject.FromObject(new
 		{
 			Action = "PullDocument",
-			Id = clone.Id.Value,
+			DocumentId = clone.Id.Value,
 			ProjectId = clone.Project.Id,
 			Version = clone.Version
 		});
@@ -5236,11 +5532,15 @@ public class MainForm
 			case DialogResult.Yes:
 				e.Cancel = true;
 				await SyncProjects();
+				// 节点级强锁：SyncProjects 已统一推送所有 dirty 数据，释放锁时不再重复 Push
+				await ReleaseAllTableLocksForExitAsync();
 				await Program.Logout();
 				_closeByCode = true;
 				View.Close();
 				break;
 			case DialogResult.No:
+				// 节点级强锁：用户选择不同步直接退出，仅释放锁不 Push（本地修改保留待下次打开）
+				await ReleaseAllTableLocksForExitAsync();
 				await Program.Logout();
 				e.Cancel = false;
 				break;
@@ -5677,6 +5977,21 @@ public class MainForm
 		{
 			TicketInputEditor.SaveRecord(isSaveReccordFilterSetting: true, isRePopulate: false);
 		}
+		// 节点级强锁：切换节点前，若即将切换到的不是当前持有锁的表格节点，先释放当前锁。
+		// 若新节点是另一个表格，AcquireTableLockAsync 内部会处理切换；这里只覆盖切换到非表格节点的情况。
+		try
+		{
+			var upcomingNode = ProjectHierarchy.SelectedNode;
+			if (_currentLockedTable != null)
+			{
+				var upcomingTableNode = upcomingNode as TreeTableNode;
+				if (upcomingTableNode == null || upcomingTableNode.Table != _currentLockedTable)
+				{
+					await ReleaseTableLockAsync(_currentLockedTable);
+				}
+			}
+		}
+		catch (Exception ex) { ex.Log(); }
 		ctnMain.SuspendLayout();
 		TableEditor._ttpComment.Hide();
 		TicketInputEditor.HideTooltip();
@@ -5808,6 +6123,9 @@ public class MainForm
 				FormulaEditor.Context.Table = TableEditor.Table;
 				FormulaEditor.Context.Kind = FormulaContextKind.None;
 				OpenTable();
+				// 节点级强锁：加载表格后获取编辑锁（Success → 可编辑；Locked → 只读模式 + 提示）。
+				// 若已持有同一表格的锁则跳过；若之前持有其他表格的锁则先释放再获取。
+				await AcquireTableLockAsync(treeTableNode.Table);
 			}
 		}
 		else

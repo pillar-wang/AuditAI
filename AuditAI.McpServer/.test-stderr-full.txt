@@ -1,0 +1,9 @@
+﻿[Licensing] C1 许可补丁已应用
+[Program] Fine-grained extension toolsets registered (AdvancedTable/NodeManagement/CellFormat/DocumentExtension/ProjectExtension).
+[Program] Third-batch extension toolsets registered (Snapshot/ValidationPoint/PageSetup/DocumentFormat/BatchOperation/Ticket/CollectConsolidate).
+[TestFixtures] 加载完成: Users=3 Teams=2 Projects=2 AdminUsers=1
+[Program] TestFixtures loaded.
+[Program] Cloud verification toolsets registered (incl. Admin + Comprehensive).
+[MCP] AuditAI MCP Server 启动
+[MCP] Server MCP_EXITING_NOW
+

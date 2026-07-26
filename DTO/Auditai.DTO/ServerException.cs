@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Auditai.DTO;
 
@@ -10,7 +10,7 @@ public class ServerException : Exception
 
 	public string ExceptionStackTrace { get; set; }
 
-	public override string Message => ToString();
+	public override string Message => ExceptionMessage ?? base.Message;
 
 	public override string ToString()
 	{

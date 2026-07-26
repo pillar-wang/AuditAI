@@ -312,6 +312,7 @@ public class dlgProjectEditor : C1RibbonForm
 				return false;
 			}
 		}
+
 		int num = cboTemplate.SelectedIndex - 1;
 		if (num < 0)
 		{
@@ -349,10 +350,16 @@ public class dlgProjectEditor : C1RibbonForm
 	private async void DlgProjectEditor_Shown(object sender, EventArgs e)
 	{
 		ctnMain.Enabled = false;
-		await PopulateCategoryCombo();
-		await PopulateTeamUsers();
-		await PopulateProject();
-		ctnMain.Enabled = true;
+		try
+		{
+			await PopulateCategoryCombo();
+			await PopulateTeamUsers();
+			await PopulateProject();
+		}
+		finally
+		{
+			ctnMain.Enabled = true;
+		}
 	}
 
 	private async void btnOk_Click(object sender, EventArgs e)
@@ -442,10 +449,17 @@ public class dlgProjectEditor : C1RibbonForm
 
 	private async Task PopulateCategoryCombo()
 	{
-		var projects = await StorageRouter.GetProjects();
-		HashSet<string> hashSet = new HashSet<string>((projects ?? Enumerable.Empty<Auditai.DTO.Project>()).Select((Auditai.DTO.Project p) => p.Category?.Split('|')).SelectMany((string[] cats) => cats ?? new string[0]));
-		hashSet.Remove("");
-		cboCategory.Items.AddText(hashSet.ToArray());
+		try
+		{
+			var projects = await StorageRouter.GetProjects();
+			HashSet<string> hashSet = new HashSet<string>((projects ?? Enumerable.Empty<Auditai.DTO.Project>()).Select((Auditai.DTO.Project p) => p.Category?.Split('|')).SelectMany((string[] cats) => cats ?? new string[0]));
+			hashSet.Remove("");
+			cboCategory.Items.AddText(hashSet.ToArray());
+		}
+		catch (Exception ex) when (ex is HttpRequestException || ex is System.IO.IOException)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
+		}
 	}
 
 	private async Task PopulateTeamUsers()

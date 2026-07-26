@@ -181,6 +181,9 @@ public class frmAlterPwd : C1RibbonForm
 
 	private async void btnCertain_Click(object sender, EventArgs e)
 	{
+		// 修复 BUG: 此前缺少防重复点击机制，用户在 await ResetPassword 期间可重复点击按钮，
+		// 导致多次发送修改密码请求。现在禁用按钮直到异步操作完成。
+		btnCertain.Enabled = false;
 		try
 		{
 			if (_bindPhone && !Regex.IsMatch(txtVerification.Text.Trim(), "^\\w+$"))
@@ -236,6 +239,10 @@ public class frmAlterPwd : C1RibbonForm
 			{
 				btnGetValidateCode.Reset("获取验证码");
 			}
+		}
+		finally
+		{
+			btnCertain.Enabled = true;
 		}
 	}
 

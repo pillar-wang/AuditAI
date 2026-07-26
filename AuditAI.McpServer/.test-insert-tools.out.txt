@@ -1,0 +1,122 @@
+Found group: id=962072674306 name=试算平衡表系统（小企业会计准则）
+Create document: success=True message=文档创建成功
+Found document: id=11295763988481 name=InsertTestDoc
+addParaArgs: {"document_node_id":11295763988481,"text":"Paragraph0"}
+AddParaText: {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "paragraph_id": "11300058955777",
+  "index": 0,
+  "message": "段落已添加并已保存"
+}
+Add paragraph: success=True
+
+[3 insert_page_break]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "分页符已插入",
+  "data": {
+    "paragraph_index": 0,
+    "paragraph_id": "11300058955777"
+  }
+}
+  PASS: 分页符已插入
+
+[4 insert_section_break]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "分节符已插入",
+  "data": {
+    "paragraph_index": 0,
+    "break_type": "continuous"
+  }
+}
+  PASS: 分节符已插入
+
+[5 insert_symbol]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "特殊符号已插入",
+  "data": {
+    "paragraph_index": 0,
+    "symbol": "c",
+    "font_family": "Arial"
+  }
+}
+  PASS: 特殊符号已插入
+
+[6 insert_text_frame]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "文本框已插入",
+  "data": {
+    "paragraph_index": 0,
+    "text": "TestTextFrame",
+    "width": 3000,
+    "height": 1500
+  }
+}
+  PASS: 文本框已插入
+
+[7 insert_header]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "页眉已设置（写入段落 0 批注）",
+  "data": {
+    "header_type": "default",
+    "text": "AuditReport",
+    "note": "页眉文本已保存到第一段批注中，格式为 [HEADER]文本。客户端打开时可解析显示。"
+  }
+}
+  PASS: 页眉已设置（写入段落 0 批注）
+
+[8 insert_footer]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "页脚已设置（写入段落 0 批注）",
+  "data": {
+    "footer_type": "default",
+    "text": "Page X",
+    "note": "页脚文本已保存到第一段批注中，格式为 [FOOTER]文本。客户端打开时可解析显示。"
+  }
+}
+  PASS: 页脚已设置（写入段落 0 批注）
+
+[9 insert_image]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "图片占位已插入（请用客户端替换为实际图片）",
+  "data": {
+    "paragraph_index": 0,
+    "image_path": "e:\\test\\logo.png",
+    "width": 300,
+    "height": 200,
+    "note": "MCP 环境下只能插入图片占位标记，客户端打开后可识别并替换为实际图片。"
+  }
+}
+  PASS: 图片占位已插入（请用客户端替换为实际图片）
+
+[10 insert_table_into_document]
+  {
+  "success": true,
+  "document_node_id": "11295763988481",
+  "message": "表格已插入文档",
+  "data": {
+    "paragraph_index": 0,
+    "rows": 3,
+    "cols": 4,
+    "border_style": "single"
+  }
+}
+  PASS: 表格已插入文档
+
+=== 娴嬭瘯缁撴灉 ===
+PASS: 8 / 8
+FAIL: 0 / 8

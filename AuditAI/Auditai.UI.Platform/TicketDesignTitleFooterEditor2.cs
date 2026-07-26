@@ -2308,11 +2308,6 @@ public class TicketDesignTitleFooterEditor2
 		catch { }
 	}
 
-	private void _cmdHelp_Click(object sender, ClickEventArgs e)
-	{
-		Program.MainForm.ShowHelpCenter();
-	}
-
 	private void _cmdSetColumnWidth_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		_cmdSetColumnWidth.Visible = _grid.BodyCol >= 0;

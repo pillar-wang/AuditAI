@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,6 +24,8 @@ public class MessageHandle
 	{
 		FileTranferManager instance = FileTranferManager.GetInstance();
 		instance.FileTimeout += MessageHandle_FileTimeout;
+		// 订阅 SignalR 推送消息（实时协同：单元格变更、文档段落变更、成员状态、文件传输信令等）
+		SignalRClient.MessageReceived += SignalRClient_MessageReceived;
 	}
 
 	private void MessageHandle_FileTimeout(object sender, FileTransferModel.FileInfo e)
@@ -91,7 +93,8 @@ public class MessageHandle
 					Member member17 = manager.GetMember(e.FromId);
 					if (member17 != null && !(e.FromId == text))
 					{
-						manager.OnProjectSynced(e.ProjectId);
+						// 阶段 3：透传 version 用于订阅方决策是否需要 Pull
+						manager.OnProjectSynced(e.ProjectId, e.Version);
 					}
 				}
 				break;
@@ -535,15 +538,28 @@ public class MessageHandle
 					catch (Exception ex)
 					{
 						ex.Log();
-					}
-				});
-				break;
+					}});
+					break;
+				}
+				case MessageKind.PeerTableLockChanged:
+				{
+					// 节点级强锁：其他客户端获取/释放表格锁时由服务端 Hub 广播。
+					// e.ProjectId / e.TableId / e.LockerUserId（"0" 表示释放）
+					if (string.IsNullOrEmpty(e.ProjectId) || !long.TryParse(e.TableId, out var tableIdLong) || !long.TryParse(e.LockerUserId, out var lockerUserIdLong))
+						break;
+
+					// 确保事件来自当前打开的项目
+					if (e.ProjectId != SignalRClient.UserState.ProjectId)
+						break;
+
+					manager.OnTableLockChanged(e.ProjectId, tableIdLong, lockerUserIdLong);
+					break;
+				}
+				}
 			}
+			catch (Exception exception2)
+			{
+				exception2.Log();
 			}
-		}
-		catch (Exception exception2)
-		{
-			exception2.Log();
 		}
 	}
-}

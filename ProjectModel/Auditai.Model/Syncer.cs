@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -472,6 +472,14 @@ public static class Syncer
 		{
 			return PushResult.OutOfDate;
 		}
+		// 节点级强锁：服务端返回 Locked 表示表格被其他用户持有锁（且未过期），拒绝本次 Push。
+		// 更新本地 table.Locker 让 UI 立即切换为只读；上层（MainForm 同步流程）据此提示用户。
+		if ((string)jObject["Result"] == "Locked")
+		{
+			long lockerUserId = jObject["Locker"] != null ? (long)jObject["Locker"] : 0L;
+			table.Locker = lockerUserId;
+			return PushResult.Locked;
+		}
 		throw new InvalidOperationException("不应出现的代码路径，检查json返回结果");
 	}
 
@@ -732,9 +740,40 @@ public static class Syncer
 		}
 		if ((string)jObject5["Result"] == "OutOfDate")
 		{
+			// 服务器返回的 Version 是当前服务端最新版本，更新本地 Version 避免下次推送仍带旧版本
+			if (jObject5["Version"] != null)
+			{
+				project.Version = (int)jObject5["Version"];
+			}
 			return PushResult.OutOfDate;
 		}
 		throw new InvalidOperationException("不应出现的代码路径，检查json返回结果");
+	}
+
+	/// <summary>
+	/// 推送项目结构，遇到 OutOfDate 自动 Pull 后重试。
+	/// 重试耗尽仍为 OutOfDate 时返回，交由上层冲突解决。
+	/// 参考 PullAndRetryPush(Table) 的重试模式。
+	/// </summary>
+	public static async Task<PushResult> PullAndRetryPush(Project project, int maxRetry = 3)
+	{
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		for (int i = 0; i < maxRetry; i++)
+		{
+			PushResult result = await Push(project).ConfigureAwait(false);
+			if (result != PushResult.OutOfDate) return result;
+
+			// 服务器版本更新：Pull 内部 Merge 按字段级 Dirty 掩码保留本地未提交修改
+			try
+			{
+				await Pull(project).ConfigureAwait(false);
+			}
+			catch
+			{
+				return PushResult.OutOfDate;
+			}
+		}
+		return PushResult.OutOfDate;
 	}
 
 	public static async Task<PushResult> Push(Document document, TaskProgressValueReportCallback reportCallback = null)
@@ -853,6 +892,8 @@ public static class Syncer
 
 	public static async Task<PushResult> Push(Image image)
 	{
+		// 本地模式直接返回成功，避免无谓上传到远端
+		if (StorageRouter.IsLocalMode) { image.SetSynced(); return PushResult.Success; }
 		JObject request = new JObject
 		{
 			{ "Action", "PushImage" },
@@ -901,7 +942,6 @@ public static class Syncer
 				request.Add("RotateFlip", (int)image.RotateFlip);
 			}
 		}
-		if (StorageRouter.IsLocalMode) { image.SetSynced(); return PushResult.Success; }
 		JObject jObject = await WebApiClient.PushImage(request);
 		if ((string)jObject["Result"] == "Success")
 		{
@@ -918,6 +958,8 @@ public static class Syncer
 
 	public static async Task<PushResult> Push(Pdf pdf)
 	{
+		// 本地模式直接返回成功，避免无谓上传到远端
+		if (StorageRouter.IsLocalMode) { pdf.SetSynced(); return PushResult.Success; }
 		JObject request = new JObject
 		{
 			{ "Action", "PushPdf" },
@@ -941,7 +983,6 @@ public static class Syncer
 			request.Add("FileId", pdf.FileId);
 			await pdf.Project.FileCacheManager.Upload(pdf.FileId);
 		}
-		if (StorageRouter.IsLocalMode) { pdf.SetSynced(); return PushResult.Success; }
 		JObject jObject = await WebApiClient.PushPdf(request);
 		if ((string)jObject["Result"] == "Success")
 		{
@@ -1007,10 +1048,12 @@ public static class Syncer
 	public static async Task<PullResult> Pull(Table table, TaskProgressValueReportCallback reportCallback = null)
 	{
 		if (Disabled) return new PullResult();
+		var tableIdBytes = new byte[16];
+		BitConverter.GetBytes(table.Id.Value).CopyTo(tableIdBytes, 0);
+		Guid guidTableId = new Guid(tableIdBytes);
 		JObject request = JObject.FromObject(new
 		{
-			Action = "PullTable",
-			Id = JToken.FromObject(table.Id),
+			TableId = JToken.FromObject(guidTableId),
 			ProjectId = table.Project.Id,
 			Version = table.Version
 		});
@@ -1037,10 +1080,13 @@ public static class Syncer
 	public static async Task Revert(Table table, int latestVersion, int revertVersion, TaskProgressValueReportCallback reportCallback = null)
 	{
 		if (Disabled || StorageRouter.IsLocalMode) return;
+		var tableIdBytes2 = new byte[16];
+		BitConverter.GetBytes(table.Id.Value).CopyTo(tableIdBytes2, 0);
+		Guid guidTableId2 = new Guid(tableIdBytes2);
 		JObject request = JObject.FromObject(new
 		{
 			Action = "RevertTable",
-			TableId = JToken.FromObject(table.Id),
+			TableId = JToken.FromObject(guidTableId2),
 			Version = latestVersion,
 			RevertVersion = revertVersion,
 			ProjectId = table.Project.Id,
@@ -1057,7 +1103,7 @@ public static class Syncer
 		JObject request = JObject.FromObject(new
 		{
 			Action = "RevertDocument",
-			DocId = JToken.FromObject(document.Id),
+			DocumentId = JToken.FromObject(document.Id),
 			Version = document.Version,
 			RevertVersion = revertVersion,
 			ProjectId = document.Project.Id
@@ -1072,10 +1118,13 @@ public static class Syncer
 	public static async Task RevertTemporary(Table table, int latestVersion, int revertVersion, TaskProgressValueReportCallback reportCallback = null)
 	{
 		if (Disabled || StorageRouter.IsLocalMode) return;
+		var tableIdBytes3 = new byte[16];
+		BitConverter.GetBytes(table.Id.Value).CopyTo(tableIdBytes3, 0);
+		Guid guidTableId3 = new Guid(tableIdBytes3);
 		JObject request = JObject.FromObject(new
 		{
 			Action = "RevertTable",
-			TableId = JToken.FromObject(table.Id),
+			TableId = JToken.FromObject(guidTableId3),
 			Version = latestVersion,
 			RevertVersion = revertVersion,
 			ProjectId = table.Project.Id
@@ -1094,7 +1143,7 @@ public static class Syncer
 		JObject request = JObject.FromObject(new
 		{
 			Action = "RevertDocument",
-			DocId = JToken.FromObject(document.Id),
+			DocumentId = JToken.FromObject(document.Id),
 			Version = latestVersion,
 			RevertVersion = revertVersion,
 			ProjectId = document.Project.Id
@@ -1131,7 +1180,7 @@ public static class Syncer
 		JObject request = JObject.FromObject(new
 		{
 			Action = "PullDocument",
-			Id = JToken.FromObject(document.Id),
+			DocumentId = JToken.FromObject(document.Id),
 			ProjectId = document.Project.Id,
 			Version = document.Version
 		});
@@ -2034,14 +2083,14 @@ public static class Syncer
 			Id = new Id64(node.Value<long>("Id")),
 			GroupId = new Id64(node.Value<long>("GroupId")),
 			ParentId = Id64.FromNullableLong(node.Value<long?>("ParentId")),
-			Name = (string)node["Name"],
-			Index = (int)node["Index"],
-			Type = (int)node["Type"],
-			Number = (string)node["Number"],
-			Permissions = (string)node["Permissions"],
-			Visible = (bool)node["Visible"],
-			RowWrite = (bool)node["RowWrite"],
-			RowRead = (bool)node["RowRead"]
+			Name = node.Value<string>("Name") ?? "",
+			Index = node.Value<int?>("Index") ?? 0,
+			Type = node.Value<int?>("Type") ?? 0,
+			Number = node.Value<string>("Number") ?? "",
+			Permissions = node.Value<string>("Permissions") ?? "",
+			Visible = node.Value<bool?>("Visible") ?? true,
+			RowWrite = node.Value<bool?>("RowWrite") ?? false,
+			RowRead = node.Value<bool?>("RowRead") ?? false
 		}))
 		{
 			result = true;

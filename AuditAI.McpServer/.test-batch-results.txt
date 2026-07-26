@@ -1,0 +1,171 @@
+﻿
+[OK] get_ticket_info: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "kind": "None",
+  "level": "None",
+  "data_row_start": -...
+[OK] get_ticket_records: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "total": 0,
+  "offset": 0,
+  "limit": 5,
+  "returned": ...
+[OK] set_ticket_kind: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "票据类型已设置为 FixedOneRow"
+}
+[OK] set_ticket_level: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "票据级别已设置为 Receipt"
+}
+[OK] set_ticket_data_row_height: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "票据数据行高已设置为 30"
+}
+[OK] set_ticket_frozen: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "票据冻结设置已更新"
+}
+[OK] get_collect_config: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "has_collect_data": false,
+  "collected_cell_count": 0
+}
+[OK] collect_cells: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "已采集 0 个单元格",
+  "data": {
+    "collected": 0,...
+[OK] collect_by_column: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "已采集列 0 的 4 个单元格",
+  "data": {
+    "col_index...
+[FAIL] get_consolidate_config: 获取汇总配置失败: 未找到表格节点: 0
+[FAIL] execute_consolidate: 执行汇总失败: 未找到表格节点: 0
+[FAIL] one_click_collect: 一键采集失败: 未找到表格节点: 0
+[OK] list_snapshots: {
+  "success": true,
+  "tree_node_id": "5699421601793",
+  "node_name": "报表抬头信息表",
+  "total": 0,
+  "snapshots": []
+...
+[OK] create_snapshot: {
+  "success": true,
+  "message": "表格 '报表抬头信息表' 快照已创建",
+  "node_id": "5699421601793"
+}
+[OK] restore_snapshot: {
+  "success": true,
+  "message": "已恢复表格快照 #1",
+  "node_id": "5699421601793",
+  "data": {
+    "snapshot_id": 1
+  }...
+[FAIL] delete_snapshot: 未找到快照 ID=999999
+[OK] list_recycled_nodes: {
+  "success": true,
+  "total": 0,
+  "recycled_nodes": []
+}
+[FAIL] restore_recycled_node: 回收站中未找到快照 ID=999999
+[FAIL] purge_recycled_node: 回收站中未找到快照 ID=999999
+[OK] list_validation_points: {
+  "success": true,
+  "total": 19,
+  "filter_table_id": "all",
+  "validation_points": [
+    {
+      "id": "579820...
+[FAIL] add_validation_point: 不支持的操作符: （可用: Equal/NotEqual/GreaterThan/GreaterThanOrEqual/LessThan/LessThanOrEqual 或 ==/!=/>/>=/</<=）
+[FAIL] update_validation_point: 未找到验证点: 999999
+[FAIL] remove_validation_point: 未找到验证点: 999999
+[FAIL] run_validation: 未找到验证点: 999999
+[FAIL] get_paragraph_format: 获取段落格式失败: 未找到文档节点: 1
+[FAIL] set_paragraph_alignment: 设置段落对齐失败: 未找到文档节点: 1
+[FAIL] set_paragraph_spacing: 设置段落间距失败: 未找到文档节点: 1
+[FAIL] set_paragraph_indent: 设置段落缩进失败: 未找到文档节点: 1
+[OK] batch_duplicate_column: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "已复制 1 列",
+  "data": {
+    "duplicated": 1,
+...
+[OK] batch_remove_column: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "已删除 0 列",
+  "data": {
+    "removed": 0,
+   ...
+[OK] batch_rename_column: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "已重命名 1 列",
+  "data": {
+    "renamed": 1,
+  ...
+[OK] find_in_table: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "keyword": "test",
+  "total": 0,
+  "matches": []
+}
+[OK] find_in_all_tables: {
+  "success": true,
+  "keyword": "test",
+  "total_tables_searched": 12,
+  "total_matches": 0,
+  "tables_with_match...
+[FAIL] find_in_document: 未找到文档节点: 1
+[OK] get_page_setup: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "paper_kind": "A4",
+  "paper_width": 0.0,
+  "paper_heigh...
+[OK] set_paper_size: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "纸张大小已设置: A4"
+}
+[OK] set_page_orientation: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "页面方向已设置: Vertical"
+}
+[OK] set_margins: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "页边距已设置",
+  "data": {
+    "left": 2.0,
+    "...
+[OK] set_header_footer: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "页眉已设置",
+  "data": {
+    "position": "left",...
+[OK] set_print_scale: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "打印缩放已设置"
+}
+[OK] set_print_options: {
+  "success": true,
+  "table_node_id": "5699421601793",
+  "message": "打印选项已设置"
+}

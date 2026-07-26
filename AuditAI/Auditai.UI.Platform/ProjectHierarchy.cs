@@ -24,6 +24,10 @@ public class ProjectHierarchy
 {
     private C1FlexGridEx _grid;
 
+    // 修复 BUG: 此前批量导出/打印按钮无防重复点击保护，耗时操作期间用户可多次点击，
+    // 导致并发批量任务，资源占用激增。使用原子标志防止重入。
+    private int _isBatchProcessing;
+
     // 分组右键菜单命令
     private C1Command cmdMoveUpGroup = new C1Command();
     private C1Command cmdMoveDownGroup = new C1Command();
@@ -2196,6 +2200,8 @@ public class ProjectHierarchy
 
     private async void CmdBatchExportFile_Click(object sender, ClickEventArgs e)
     {
+        // 修复 BUG: 防止用户在 BatchExport 期间重复点击触发并发批量任务。
+        if (System.Threading.Interlocked.CompareExchange(ref _isBatchProcessing, 1, 0) != 0) return;
         try
         {
             await Program.MainForm.BatchExport("批量导出");
@@ -2205,10 +2211,16 @@ public class ProjectHierarchy
             ex.Log(null);
             MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
         }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _isBatchProcessing, 0);
+        }
     }
 
     private async void CmdBatchPrintFile_Click(object sender, ClickEventArgs e)
     {
+        // 修复 BUG: 防止用户在 BatchPrint 期间重复点击触发并发批量任务。
+        if (System.Threading.Interlocked.CompareExchange(ref _isBatchProcessing, 1, 0) != 0) return;
         try
         {
             await Program.MainForm.BatchPrint_Click("批量打印");
@@ -2217,6 +2229,10 @@ public class ProjectHierarchy
         {
             ex.Log(null);
             MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _isBatchProcessing, 0);
         }
     }
 
@@ -2396,51 +2412,55 @@ public class ProjectHierarchy
     private Guid? SelectImage()
     {
         var guid = Guid.NewGuid();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "支持的图片格式|*.bmp;*.gif;*.jpg;*.jpeg;*.png;*.tif;*.tiff|bmp|*.bmp|gif|*.gif|jpg|*.jpg;*.jpeg|png|*.png|tiff|*.tif;*.tiff",
             Multiselect = false,
             Title = "选择图片文件"
-        };
-        if (dialog.ShowDialog() != DialogResult.OK)
-            return null;
-        try
+        })
         {
-            using (var image = System.Drawing.Image.FromFile(dialog.FileName))
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return null;
+            try
             {
+                using (var image = System.Drawing.Image.FromFile(dialog.FileName))
+                {
+                }
+                _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
+                return guid;
             }
-            _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
-            return guid;
-        }
-        catch (Exception ex)
-        {
-            ex.Log(null);
-            MessageBox.Show(MessageBoxIcon.Error, "打开图片文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
-            return null;
+            catch (Exception ex)
+            {
+                ex.Log(null);
+                MessageBox.Show(MessageBoxIcon.Error, "打开图片文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
+                return null;
+            }
         }
     }
 
     private Guid? SelectPdf()
     {
         var guid = Guid.NewGuid();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "PDF|*.pdf",
             Multiselect = false,
             Title = "选择 PDF 文件"
-        };
-        if (dialog.ShowDialog() != DialogResult.OK)
-            return null;
-        try
+        })
         {
-            _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
-            return guid;
-        }
-        catch (Exception ex)
-        {
-            ex.Log(null);
-            MessageBox.Show(MessageBoxIcon.Error, "打开 PDF 文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
-            return null;
+            if (dialog.ShowDialog() != DialogResult.OK)
+                return null;
+            try
+            {
+                _currentGroup.Model.Project.FileCacheManager.CopyFrom(dialog.FileName, guid);
+                return guid;
+            }
+            catch (Exception ex)
+            {
+                ex.Log(null);
+                MessageBox.Show(MessageBoxIcon.Error, "打开 PDF 文件时发生错误。", MessageBoxButtons.OK, "", scroll: false);
+                return null;
+            }
         }
     }
 
@@ -2570,39 +2590,41 @@ public class ProjectHierarchy
             return;
         }
         CreateImportIfNotExist();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "Word|*.docx",
             Title = "选择 Word 文件",
             Multiselect = true
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-        try
+        })
         {
-            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
-            var selectedNode = SelectedNode;
-            if (selectedNode is TreeDirectoryNode dirNode)
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
             {
-                ImportProject.ImportFiles(dirNode, dirNode.Children.Count, dialog.FileNames);
+                ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+                var selectedNode = SelectedNode;
+                if (selectedNode is TreeDirectoryNode dirNode)
+                {
+                    ImportProject.ImportFiles(dirNode, dirNode.Children.Count, dialog.FileNames);
+                }
+                else if (selectedNode is TreeDocumentNode || selectedNode is TreeTableNode
+                         || selectedNode is TreeImageNode || selectedNode is TreePdfNode)
+                {
+                    if (selectedNode.Parent == null)
+                    {
+                        ImportProject.ImportFiles(selectedNode.Group, selectedNode.Index, dialog.FileNames);
+                    }
+                    else
+                    {
+                        ImportProject.ImportFiles(selectedNode.Parent, selectedNode.Index, dialog.FileNames);
+                    }
+                }
             }
-            else if (selectedNode is TreeDocumentNode || selectedNode is TreeTableNode
-                     || selectedNode is TreeImageNode || selectedNode is TreePdfNode)
+            finally
             {
-                if (selectedNode.Parent == null)
-                {
-                    ImportProject.ImportFiles(selectedNode.Group, selectedNode.Index, dialog.FileNames);
-                }
-                else
-                {
-                    ImportProject.ImportFiles(selectedNode.Parent, selectedNode.Index, dialog.FileNames);
-                }
+                ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
             }
+            AddDocumentEditor(ImportProject.DocumentEditors);
         }
-        finally
-        {
-            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
-        }
-        AddDocumentEditor(ImportProject.DocumentEditors);
     }
 
     private void CopyPasteRootTable()
@@ -2756,28 +2778,30 @@ public class ProjectHierarchy
             return;
         }
         CreateImportIfNotExist();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "Excel|*.xls;*.xlsx",
             Title = "选择 Excel 文件",
             Multiselect = true
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-        try
+        })
         {
-            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
-            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+                ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            }
+            catch (Exception ex)
+            {
+                ex.Log(null);
+                MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+            }
+            finally
+            {
+                ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+            }
+            AddDocumentEditor(ImportProject.DocumentEditors);
         }
-        catch (Exception ex)
-        {
-            ex.Log(null);
-            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
-        }
-        finally
-        {
-            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
-        }
-        AddDocumentEditor(ImportProject.DocumentEditors);
     }
 
     private void SelectNodeImportImage()
@@ -2789,28 +2813,30 @@ public class ProjectHierarchy
             return;
         }
         CreateImportIfNotExist();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "支持的图片格式|*.bmp;*.gif;*.jpg;*.jpeg;*.png;*.tif;*.tiff|bmp|*.bmp|gif|*.gif|jpg|*.jpg;*.jpeg|png|*.png|tiff|*.tif;*.tiff",
             Title = "选择图片文件",
             Multiselect = true
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-        try
+        })
         {
-            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
-            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+                ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            }
+            catch (Exception ex)
+            {
+                ex.Log(null);
+                MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+            }
+            finally
+            {
+                ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+            }
+            AddDocumentEditor(ImportProject.DocumentEditors);
         }
-        catch (Exception ex)
-        {
-            ex.Log(null);
-            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
-        }
-        finally
-        {
-            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
-        }
-        AddDocumentEditor(ImportProject.DocumentEditors);
     }
 
     private void SelectNodeImportPdf()
@@ -2822,28 +2848,30 @@ public class ProjectHierarchy
             return;
         }
         CreateImportIfNotExist();
-        var dialog = new OpenFileDialog
+        using (var dialog = new OpenFileDialog
         {
             Filter = "PDF|*.pdf",
             Title = "选择 PDF 文件",
             Multiselect = false
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-        try
+        })
         {
-            ImportProject.AfterImportNode += ImportProject_AfterImportNode;
-            ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            try
+            {
+                ImportProject.AfterImportNode += ImportProject_AfterImportNode;
+                ImportProject.ImportFiles(_currentGroup.Model, _currentGroup.Model.RootNodes.Count, dialog.FileNames);
+            }
+            catch (Exception ex)
+            {
+                ex.Log(null);
+                MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
+            }
+            finally
+            {
+                ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
+            }
+            AddDocumentEditor(ImportProject.DocumentEditors);
         }
-        catch (Exception ex)
-        {
-            ex.Log(null);
-            MessageBox.Show(MessageBoxIcon.Error, "导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "", scroll: false);
-        }
-        finally
-        {
-            ImportProject.AfterImportNode -= ImportProject_AfterImportNode;
-        }
-        AddDocumentEditor(ImportProject.DocumentEditors);
     }
 
     #endregion

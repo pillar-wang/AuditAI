@@ -22,5 +22,8 @@ public enum MessageKind
 	PeerFileSectionArrived,
 	PeerOpenTicketNavTreeNode,
 	PeerTableChanged,
-	PeerDocumentChanged
+	PeerDocumentChanged,
+	// 节点级强锁：其他客户端获取/释放表格锁时广播。
+	// 参数: projectId, tableId, lockerUserId（"0" 表示释放）
+	PeerTableLockChanged
 }

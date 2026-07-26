@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -411,6 +411,14 @@ public class Table
 					if (!LocalExists)
 					{
 						_loaded = true;
+						try
+						{
+							string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
+							System.IO.File.AppendAllText(logPath,
+								$"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] LOCAL NOT EXISTS: TableId={Id}, Name={TreeNode?.Name}, Version={Version}\r\n" +
+								new string('=', 80) + "\r\n");
+						}
+						catch { }
 						return this;
 					}
 					CellStyles.Clear();
@@ -434,6 +442,14 @@ public class Table
 					if (table == null)
 					{
 						IsCorrupted = true;
+						try
+						{
+							string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
+							System.IO.File.AppendAllText(logPath,
+								$"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] TABLE NOT FOUND IN DB: TableId={Id}, Name={TreeNode?.Name}\r\n" +
+								new string('=', 80) + "\r\n");
+						}
+						catch { }
 						return this;
 					}
 					Dirty = new TableDirtyMask(table.Dirty);
@@ -580,6 +596,15 @@ public class Table
 					if (Rows.Count * Columns.Count != Cells.Count)
 					{
 						IsCorrupted = true;
+						try
+						{
+							string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
+							System.IO.File.AppendAllText(logPath,
+								$"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] CORRUPTION CHECK FAILED: TableId={Id}, Name={TreeNode?.Name}\r\n" +
+								$"  Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}, Expected={Rows.Count * Columns.Count}\r\n" +
+								new string('=', 80) + "\r\n");
+						}
+						catch { }
 						return this;
 					}
 					foreach (Merge dtoM in Project.Dal.GetMerges(Id))
@@ -618,6 +643,19 @@ public class Table
 			catch (Exception ex)
 			{
 				IsCorrupted = true;
+				// Debug.WriteLine 在 Release 构建中被编译器完全移除（[Conditional("DEBUG")]），
+				// 导致异常被彻底静默吞掉，无法诊断。改为写文件日志，确保 Release 构建也能捕获。
+				try
+				{
+					string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
+					string logContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] LoadAndReturn EXCEPTION\r\n" +
+						$"  TableId={Id}, Name={TreeNode?.Name}, Version={Version}, LocalExists={LocalExists}\r\n" +
+						$"  Exception: {ex.GetType().FullName}: {ex.Message}\r\n" +
+						$"  StackTrace:\r\n{ex.StackTrace}\r\n" +
+						new string('=', 80) + "\r\n";
+					System.IO.File.AppendAllText(logPath, logContent);
+				}
+				catch { }
 				System.Diagnostics.Debug.WriteLine($"[Table.LoadAndReturn] TableId={Id}, Name={TreeNode?.Name}, Error: {ex}");
 			}
 			return this;

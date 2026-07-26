@@ -1,8 +1,8 @@
-namespace Auditai.UI.Platform;
+﻿namespace Auditai.UI.Platform;
 
 public class AppTabSettings : AppCommandTab
 {
-	public override string Text => "帮助中心";
+	public override string Text => "设置";
 
 	public AppTabSettings()
 	{

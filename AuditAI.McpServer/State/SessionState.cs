@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Auditai.Model;
@@ -58,7 +58,14 @@ namespace AuditAI.McpServer.State
         /// </summary>
         public void CloseProject()
         {
-            // Project 类未实现 IDisposable，无需 Dispose
+            // Project 类未实现 IDisposable，但其 Dal 实现了 IDisposable。
+            // Dispose Dal 以触发 CheckpointAndClose → wal_checkpoint(TRUNCATE)，
+            // 将 -wal 数据合并到主 .db 文件，避免 -wal 残留导致资源泄漏。
+            try
+            {
+                CurrentProject?.Dal?.Dispose();
+            }
+            catch { /* 忽略 Dispose 异常，避免影响会话重置 */ }
             CurrentProject = null;
             CurrentProjectPath = null;
             CurrentDocumentNodeId = null;

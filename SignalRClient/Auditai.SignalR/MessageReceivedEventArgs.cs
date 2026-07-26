@@ -29,4 +29,10 @@ public class MessageReceivedEventArgs
 	public string DocumentId { get; set; }
 
 	public string Version { get; set; }
+
+	/// <summary>
+	/// 节点级强锁：PeerTableLockChanged 广播时携带的 lockerUserId。
+	/// "0" 表示锁已释放；其他值为持有锁的用户 Id。
+	/// </summary>
+	public string LockerUserId { get; set; }
 }

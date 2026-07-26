@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Configuration;
 using System.Net.Http;
 using System.Threading;
@@ -12,7 +12,9 @@ public class TokenUpdater
 {
 	private System.Timers.Timer timer;
 
-	private Thread thread;
+	private CancellationTokenSource _cts;
+
+	private volatile bool _running = false;
 
 	private bool _reloginInProgress = false;
 
@@ -26,6 +28,7 @@ public class TokenUpdater
 			Enabled = false
 		};
 		timer.Elapsed += Timer_Elapsed;
+		_cts = new CancellationTokenSource();
 	}
 
 	public void Start()
@@ -33,35 +36,34 @@ public class TokenUpdater
 		// 本地模式下不启动Token更新定时器
 		if (ConfigurationManager.AppSettings["StorageMode"]?.Equals("Local", StringComparison.OrdinalIgnoreCase) == true)
 			return;
-		if (thread != null)
-		{
-			thread.Abort();
-		}
-		thread = new Thread((ThreadStart)delegate
-		{
-			timer.Interval = Interval.TotalMilliseconds;
-			timer.Enabled = true;
-			timer.Start();
-		});
-		thread.IsBackground = true;
-		thread.Start();
+		// 取消之前未完成的刷新任务（若有）
+		_cts.Cancel();
+		_cts.Dispose();
+		_cts = new CancellationTokenSource();
+		_running = true;
+		timer.Interval = Interval.TotalMilliseconds;
+		timer.Enabled = true;
+		timer.Start();
 	}
 
 	public void Stop()
 	{
-		if (thread != null)
-		{
-			thread.Abort();
-		}
+		_running = false;
+		try { timer.Stop(); } catch { }
+		try { _cts.Cancel(); } catch { }
 	}
 
 	private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
 	{
+		if (!_running) return;
+		var token = _cts.Token;
 		try
 		{
 			if (ConfigurationManager.AppSettings["StorageMode"]?.Equals("Local", StringComparison.OrdinalIgnoreCase) == true)
 				return;
+			if (token.IsCancellationRequested) return;
 			UserToken newToken = await WebApiClient.UpdateToken(TokenTimer.LoginInfo.userId);
+			if (token.IsCancellationRequested) return;
 			// UpdateToken 返回 null 时不要覆盖现有 Token，避免丢失有效凭据
 			if (newToken != null && !string.IsNullOrEmpty(newToken.TokenValue))
 			{
@@ -104,7 +106,10 @@ public class TokenUpdater
 		{
 			await WebApiClient.ReloginForTokenUpdate();
 			// 重新登录成功，重启定时器
-			try { timer.Enabled = true; timer.Start(); } catch { }
+			if (_running)
+			{
+				try { timer.Enabled = true; timer.Start(); } catch { }
+			}
 		}
 		catch
 		{

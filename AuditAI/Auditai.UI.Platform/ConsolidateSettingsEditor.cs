@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -362,9 +362,12 @@ public class ConsolidateSettingsEditor
 			{
 				return await GetTableColumnsLocal(table);
 			}
+			var tableIdBytes = new byte[16];
+			BitConverter.GetBytes(table.Id.Value).CopyTo(tableIdBytes, 0);
+			Guid guidTableId = new Guid(tableIdBytes);
 			JObject jObject = new JObject();
 			jObject.Add("ProjectId", table.Project.Id);
-			jObject.Add("TableId", table.Id.Value);
+			jObject.Add("TableId", guidTableId);
 			JArray columns = await WebApiClient.GetTableColumns(jObject);
 			return (columns ?? new JArray()).Select((JToken j) => new Auditai.DTO.Column
 			{
@@ -381,7 +384,7 @@ public class ConsolidateSettingsEditor
 
 	private static async Task<List<Auditai.DTO.Column>> GetTableColumnsLocal(Auditai.Model.Table table)
 	{
-		var projectDAL = new ProjectDAL(MainForm.GetDbPathByGuid(table.Project.Id));
+		using var projectDAL = new ProjectDAL(MainForm.GetDbPathByGuid(table.Project.Id));
 		var columns = await projectDAL.GetTableColumns(table.Id.Value);
 		return columns.Select(c => new Auditai.DTO.Column
 		{

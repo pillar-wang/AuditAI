@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -109,10 +109,11 @@ public class CrossProjectDataRefManager
         };
 
         var startTime = DateTime.Now;
+        ProjectDAL sourceDal = null;
 
-        try
-        {
-            // 非本地模式暂不支持
+            try
+            {
+                // 非本地模式暂不支持
             if (!StorageRouter.IsLocalMode)
             {
                 result.ErrorMessage = "非本地模式暂不支持跨项目数据引用";
@@ -160,7 +161,6 @@ public class CrossProjectDataRefManager
             // 两级缓存检查（跳过 FormulaCompute 模式，它需要直接访问数据库获取列数据）
             CrossProjectRefCache cache = null;
             List<List<object>> sourceData = null;
-            ProjectDAL sourceDal = null;
             int affectedRows = 0;
 
             // 异常处理 - 自动重试
@@ -201,7 +201,8 @@ public class CrossProjectDataRefManager
                     }
 
                     // 数据验证：获取来源列名并对原始数据进行验证
-                    var srcColumns = (sourceDal ?? new ProjectDAL(externalDbPath)).GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
+                    sourceDal ??= new ProjectDAL(externalDbPath);
+                    var srcColumns = sourceDal.GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
                     var srcColumnNames = srcColumns.Select(c => c.Caption).ToList();
                     var validationResult = CrossProjectRefValidator.ValidateData(sourceData, srcColumnNames);
                     if (!validationResult.IsValid)
@@ -315,7 +316,7 @@ public class CrossProjectDataRefManager
                 string sourceTableName = null;
                 try
                 {
-                    var tmpDal = new ProjectDAL(externalDbPath);
+                    using var tmpDal = new ProjectDAL(externalDbPath);
                     var tmpTable = tmpDal.GetTable(dataRef.SourceTableId);
                     if (tmpTable != null) sourceTableName = tmpTable.Title;
                 }
@@ -352,6 +353,10 @@ public class CrossProjectDataRefManager
         {
             result.ErrorMessage = ex.Message;
             result.RefStatus = 3; // Error
+        }
+        finally
+        {
+            sourceDal?.Dispose();
         }
 
         return result;
@@ -516,7 +521,7 @@ public class CrossProjectDataRefManager
             status.ProjectExists = true;
 
             // 检查来源表是否存在
-            var sourceDal = new ProjectDAL(externalDbPath);
+            using var sourceDal = new ProjectDAL(externalDbPath);
             var sourceTable = sourceDal.GetTable(dataRef.SourceTableId);
             if (sourceTable == null)
             {
@@ -773,7 +778,7 @@ public class CrossProjectDataRefManager
             if (rowIndex < 0 || rowIndex >= filteredData.Count)
                 throw new InvalidOperationException($"CellRef: 来源行索引 {rowIndex} 超出范围（共 {filteredData.Count} 行）");
 
-            var sourceDal = new ProjectDAL(GetExternalDbPath(dataRef.SourceProjectId));
+            using var sourceDal = new ProjectDAL(GetExternalDbPath(dataRef.SourceProjectId));
             var allCols = sourceDal.GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
             int colPos = -1;
             for (int i = 0; i < allCols.Count; i++)
@@ -822,7 +827,7 @@ public class CrossProjectDataRefManager
         int targetStartRow = config?.TargetStartRow ?? 0;
 
         // 获取来源表的列顺序，用于查找 SourceColumnId 在 filteredData 中的列位置
-        var sourceDal = new ProjectDAL(GetExternalDbPath(dataRef.SourceProjectId));
+        using var sourceDal = new ProjectDAL(GetExternalDbPath(dataRef.SourceProjectId));
         var sourceColumns = sourceDal.GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
         // 构建 SourceColumnId → 列位置索引 的映射
         var sourceColIndexMap = new Dictionary<long, int>();
@@ -836,7 +841,7 @@ public class CrossProjectDataRefManager
         await conn.OpenAsync();
 
         // 获取目标表的行（按 Index 排序）
-        var targetDal = new ProjectDAL(currentDbPath);
+        using var targetDal = new ProjectDAL(currentDbPath);
         var targetRows = targetDal.GetRows(dataRef.TargetTableId)
             .Where(r => r.Role == 0)
             .OrderBy(r => r.Index)
@@ -902,7 +907,7 @@ public class CrossProjectDataRefManager
         await conn.OpenAsync();
 
         // 获取目标表的行、列
-        var targetDal = new ProjectDAL(currentDbPath);
+        using var targetDal = new ProjectDAL(currentDbPath);
         var targetRows = targetDal.GetRows(dataRef.TargetTableId)
             .Where(r => r.Role == 0)
             .OrderBy(r => r.Index)
@@ -959,7 +964,7 @@ public class CrossProjectDataRefManager
 
         foreach (var dsConfig in config.DataSources)
         {
-            var dsDal = new ProjectDAL(GetExternalDbPath(dsConfig.ProjectId));
+            using var dsDal = new ProjectDAL(GetExternalDbPath(dsConfig.ProjectId));
             var dsTable = dsDal.GetTable(dsConfig.TableId);
             if (dsTable == null)
                 continue;
@@ -1016,7 +1021,7 @@ public class CrossProjectDataRefManager
 
         // 将计算结果写入目标表
         string currentDbPath = GetCurrentDbPath();
-        var targetDal = new ProjectDAL(currentDbPath);
+        using var targetDal = new ProjectDAL(currentDbPath);
         var targetRows = targetDal.GetRows(dataRef.TargetTableId)
             .Where(r => r.Role == 0)
             .OrderBy(r => r.Index)

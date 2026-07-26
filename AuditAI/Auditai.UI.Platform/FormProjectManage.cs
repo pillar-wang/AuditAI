@@ -375,8 +375,6 @@ public class FormProjectManage : ISetTheme
 
 	private const string RG_USERMANAGE = "RG_USERMANAGE";
 
-	private const string RG_HELP = "RG_HELP";
-
 	private const string RG_TEMPLATE = "RG_TEMPLATE";
 
 	private const string RG_RECYCLE = "RG_RECYCLE";
@@ -412,8 +410,6 @@ public class FormProjectManage : ISetTheme
 	private const string RB_USERINFO = "RB_USERINFO";
 
 	private const string RB_CHANGEPASSWORD = "RB_CHANGEPASSWORD";
-
-	private const string RB_HELPCENTER = "RB_HELPCENTER";
 
 	private const string RB_USETEMPLATE = "RB_USETEMPLATE";
 
@@ -724,7 +720,6 @@ public class FormProjectManage : ISetTheme
 			["RB_USERMANAGE"] = Resources.Users,
 			["RB_USERINFO"] = Resources.SwitchUser,
 			["RB_CHANGEPASSWORD"] = Resources.PwdEdit,
-			["RB_HELPCENTER"] = Resources.HelpCenter,
 			["RB_USETEMPLATE"] = Resources.UseTemplate,
 			["RB_CREATETEMPLATE"] = Resources.CreateTemplate,
 			["RB_OPENTEMPLATE"] = Resources.OpenTemplate,
@@ -769,9 +764,6 @@ public class FormProjectManage : ISetTheme
 		AddRibbonButton(group2, "RB_USERMANAGE", Auditai.Model.User.Current.IsTeamAdmin ? "同事管理" : "我的同事");
 		AddRibbonButton(group2, "RB_USERINFO", "用户资料");
 		AddRibbonButton(group2, "RB_CHANGEPASSWORD", "修改密码");
-		group2 = AddRibbonGroup(tab2, "RG_HELP", "帮助");
-		group2.Visible = SoftwareLicenseManager.IsShowHelpDocumentButton();
-		AddRibbonButton(group2, "RB_HELPCENTER", "帮助中心");
 		tab2 = AddRibbonTab("TAB_TEMPLATE", StringConstBase.Current.Template + "管理");
 		group2 = AddRibbonGroup(tab2, "RG_TEMPLATE", StringConstBase.Current.Template + "管理");
 		AddRibbonButton(group2, "RB_USETEMPLATE", "基于" + StringConstBase.Current.Template + "创建项目");
@@ -786,7 +778,6 @@ public class FormProjectManage : ISetTheme
 		AddRibbonButton(group2, "RB_REFRESHTEMPLATE", "刷新" + StringConstBase.Current.Template);
 		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_VIEWMODE"));
 		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_USERMANAGE"));
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_HELP"));
 		tab2 = AddRibbonTab("TAB_RECYCLEPROJECT", StringConstBase.Current.Project + "回收站");
 		group2 = AddRibbonGroup(tab2, "RG_RECYCLE", Auditai.Model.User.Current.IsTeamAdmin ? "恢复及删除" : "恢复");
 		AddRibbonButton(group2, "RB_RESTORESELECT", "恢复所选" + StringConstBase.Current.Project);
@@ -2287,11 +2278,6 @@ public class FormProjectManage : ISetTheme
 		Program.MainForm.AlterPwd();
 	}
 
-	private void HelpCenter()
-	{
-		HelpCenterUtil.OpenHelpCenterHomePage();
-	}
-
 	private async Task UseTemplate()
 	{
 		if (SelectedProject.Type != ProjectType.Template || !SelectedProject.SystemBuild || SelectedProject.ChargeType != ChargeType.Pay || !SoftwareLicenseManager.IsUsePayProjectOutOfLicenseLimit())
@@ -3131,12 +3117,6 @@ public class FormProjectManage : ISetTheme
 					if (name == "RB_USERMANAGE")
 					{
 						await ManageUsers();
-					}
-					break;
-				case 'H':
-					if (name == "RB_HELPCENTER")
-					{
-						HelpCenter();
 					}
 					break;
 				}

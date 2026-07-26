@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -935,7 +935,7 @@ namespace Auditai.LocalDataStore
             string templateDbPath = Path.Combine(_templatesPath, $"{project.Id}.db");
 
             // 创建空的模板数据库
-            var dal = new ProjectDAL(templateDbPath);
+            using var dal = new ProjectDAL(templateDbPath);
             dal.SaveProject(new Auditai.DTO.Project
             {
                 Id = project.Id,
@@ -985,7 +985,7 @@ namespace Auditai.LocalDataStore
                     File.Copy(templateDbPath, projectDbPath, overwrite: true);
 
                     // 更新复制后的数据库中的项目信息
-                    var dal = new ProjectDAL(projectDbPath);
+                    using var dal = new ProjectDAL(projectDbPath);
                     var projectDto = dal.GetProject();
                     if (projectDto != null)
                     {
@@ -1022,7 +1022,7 @@ namespace Auditai.LocalDataStore
             }
 
             // 没有模板或模板文件不存在，创建空的项目数据库
-            var emptyDal = new ProjectDAL(projectDbPath);
+            using var emptyDal = new ProjectDAL(projectDbPath);
             emptyDal.SaveProject(new Auditai.DTO.Project
             {
                 Id = project.Id,
@@ -1506,7 +1506,7 @@ namespace Auditai.LocalDataStore
         public static async Task<PullDocument> PullDocument(JObject request)
         {
             string projectId = request["ProjectId"]?.ToString();
-            string docId = request["DocId"]?.ToString();
+            string docId = (request["DocId"] ?? request["DocumentId"] ?? request["documentId"])?.ToString();
             int clientVersion = (int)(request["Version"] ?? 0);
 
             using var conn = CreateConnection();

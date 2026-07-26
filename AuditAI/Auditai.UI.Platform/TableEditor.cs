@@ -444,15 +444,6 @@ public class TableEditor : ISetTheme
 
 	private readonly C1CommandLink lnkCheckerSign = new C1CommandLink();
 
-	private readonly C1Command cmdHelpCenter = new C1Command
-	{
-		Image = Auditai.UI.Platform.Properties.Resources.HelpCenter,
-		Text = "帮助中心",
-		Visible = SoftwareLicenseManager.IsShowHelpDocumentButton()
-	};
-
-	private readonly C1CommandLink lnkHelpCenter = new C1CommandLink();
-
 	private readonly C1Command cmdHideToolbar = new C1Command();
 
 	private readonly C1CommandLink lnkHideToolbar = new C1CommandLink();
@@ -2978,11 +2969,6 @@ public class TableEditor : ISetTheme
 		{
 			e.Visible = false;
 		}
-	}
-
-	private void CmdHelpCenter_Click(object sender, ClickEventArgs e)
-	{
-		_owner.ShowHelpSidebar();
 	}
 
 	private void CmdHideToolbar_Click(object sender, ClickEventArgs e)

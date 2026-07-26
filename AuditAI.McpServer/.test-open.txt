@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "project_id": "4bdd8b5b-e5b4-4a59-9928-e24c3c5e3dfe",
+  "name": "试算平衡表模板（小企业会计准则）",
+  "number": "KJ202",
+  "category": "系统附送模板",
+  "auditee": null,
+  "note": "",
+  "version": 5359,
+  "create_time": "2000-01-01T00:00:00",
+  "path": "E:/lq/AuditAI/AuditAI.McpServer/test_template.db",
+  "tree_group_count": 1,
+  "node_count": 15,
+  "message": "项目已打开"
+}

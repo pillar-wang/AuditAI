@@ -422,7 +422,13 @@ public class frmRegister : Form
 				UserName = txtUserName.Text.Trim();
 				TelPhone = txtPhone.Text.Trim();
 				Truename = txtName.Text.Trim();
-				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: false);
+				// 修复 BUG: 此前使用 isUrl: false，返回未 URL 编码的 Base64(SHA256(明文))，
+				// 而 frmLogin.UpdateInputPassword 使用 isUrl: true（已 URL 编码）。
+				// 这导致注册后自动登录时，AccountLogin 收到的 hashPassword 格式不一致：
+				// - 服务器 ASP.NET Core 自动 URL 解码，将 Base64 中的 "+" 解码为空格，破坏哈希值
+				// - 若密码哈希恰好包含 "+" 字符，登录会失败
+				// 统一使用 isUrl: true 与 frmLogin.UpdateInputPassword 保持一致
+				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: true);
 			}
 			else
 			{
@@ -435,7 +441,8 @@ public class frmRegister : Form
 				UserName = txtUserName.Text.Trim();
 				TelPhone = txtPhone.Text.Trim();
 				Truename = txtName.Text.Trim();
-				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: false);
+				// 修复 BUG: 同上，统一使用 isUrl: true 与 frmLogin.UpdateInputPassword 保持一致
+				Password = Encrypts.SHA256Encrypt(txtPassword.Text.Trim(), isUrl: true);
 			}
 			base.DialogResult = DialogResult.OK;
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "注册成功");

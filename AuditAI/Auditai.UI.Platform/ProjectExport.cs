@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,30 +28,32 @@ public class ProjectExport
 		{
 			throw new NullReferenceException(StringConstBase.Current.Project + "为空");
 		}
-		FolderBrowserDialog _fd = new FolderBrowserDialog
+		using (FolderBrowserDialog _fd = new FolderBrowserDialog
 		{
 			Description = "请选择保存路径"
-		};
-		if (_fd.ShowDialog() == DialogResult.OK)
+		})
 		{
-			ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+			if (_fd.ShowDialog() == DialogResult.OK)
 			{
-				ProgressChanged += progressDeal(progress);
-				try
+				ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
 				{
-					await SaveProjectImpl(_fd.SelectedPath);
-				}
-				finally
-				{
-					ProgressChanged -= progressDeal(progress);
-				}
-				return Task.FromResult(new object());
-			});
-			progressForm.ShowDialog();
-			await progressForm.Task;
-			return DialogResult.OK;
+					ProgressChanged += progressDeal(progress);
+					try
+					{
+						await SaveProjectImpl(_fd.SelectedPath);
+					}
+					finally
+					{
+						ProgressChanged -= progressDeal(progress);
+					}
+					return Task.FromResult(new object());
+				});
+				progressForm.ShowDialog();
+				await progressForm.Task;
+				return DialogResult.OK;
+			}
+			return DialogResult.Cancel;
 		}
-		return DialogResult.Cancel;
 		EventHandler<ProgressArgs> progressDeal(IProgress<ProgressInfo> progress)
 		{
 			return delegate(object s1, ProgressArgs e1)
@@ -372,11 +374,9 @@ public class ProjectExport
 						nodeDirMap.Add(treeDirectoryNode.Id.Value, treeDirectoryNode.Name + tail3);
 					}
 				}
-				catch (IOException)
+				catch (Exception ex)
 				{
-				}
-				catch (Exception)
-				{
+					ex.Log();
 				}
 			}
 		}
@@ -460,7 +460,9 @@ public class ProjectExport
 		tail = string.Empty;
 		string extension = Path.GetExtension(path);
 		string text = path.Replace(extension, string.Empty);
-		while (Directory.Exists(path))
+		// 修复 BUG: 此前使用 Directory.Exists 判断文件是否存在，永远返回 false，
+		// 导致同名文件不会被自动加 (1)、(2) 后缀，静默覆盖已存在文件（审计底稿数据丢失风险）。
+		while (File.Exists(path))
 		{
 			num++;
 			tail = $"({num})";
@@ -533,7 +535,9 @@ public class ProjectExport
 		char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
 		foreach (char c in invalidFileNameChars)
 		{
-			path.Replace(c.ToString(), string.Empty);
+			// 修复 BUG: 此前 path.Replace 返回值未赋回 path，循环无效，
+			// 文件名中的非法字符未被清除，导致文件创建失败。
+			path = path.Replace(c.ToString(), string.Empty);
 		}
 		return path.Replace("\r", "").Replace("\n", "").Replace("/", "_")
 			.Replace("\\", "_")

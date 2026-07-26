@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -103,76 +103,83 @@ namespace AuditAI.McpServer.Services
                         continue;
                     }
 
-                    // 收集项目表格数据
-                    var tableNodes = externalProject.GetAllTableNodes().ToList();
-                    int projectRowCount = 0;
-                    var tablesArr = new JArray();
-
-                    foreach (var tableNode in tableNodes)
+                    try
                     {
-                        Table table = null;
-                        try
-                        {
-                            table = tableNode.Table;
-                            if (table == null) continue;
-                            table.LoadAndReturn(true);
-                        }
-                        catch
-                        {
-                            continue;
-                        }
+                        // 收集项目表格数据
+                        var tableNodes = externalProject.GetAllTableNodes().ToList();
+                        int projectRowCount = 0;
+                        var tablesArr = new JArray();
 
-                        string tableName = tableNode.Name ?? table.Title?.TitleCell?.Value?.ToString() ?? $"表格_{table.Id.Value}";
-                        int rowCount = table.Rows?.Count ?? 0;
-                        int colCount = table.Columns?.Count ?? 0;
-                        projectRowCount += rowCount;
-                        totalRowCount += rowCount;
-                        totalTableCount++;
-
-                        // 收集数值列汇总数据（用于 group_summary 模式）
-                        var numericSummary = CollectNumericSummary(table);
-
-                        var tableInfo = new JObject
+                        foreach (var tableNode in tableNodes)
                         {
-                            ["table_node_id"] = tableNode.Id.Value,
-                            ["table_id"] = table.Id.Value.ToString(),
-                            ["name"] = tableName,
-                            ["row_count"] = rowCount,
-                            ["col_count"] = colCount,
-                            ["numeric_columns"] = numericSummary
-                        };
-                        tablesArr.Add(tableInfo);
-
-                        // 分组汇总模式：按表名聚合数值
-                        if (mode == MergeMode.Aggregate)
-                        {
-                            AggregateTableInfo aggInfo;
-                            if (!aggregatedTables.TryGetValue(tableName, out aggInfo))
+                            Table table = null;
+                            try
                             {
-                                aggInfo = new AggregateTableInfo { Name = tableName, SourceProjects = new List<string>() };
-                                aggregatedTables[tableName] = aggInfo;
+                                table = tableNode.Table;
+                                if (table == null) continue;
+                                table.LoadAndReturn(true);
                             }
-                            aggInfo.SourceProjects.Add(externalProject.Name ?? projectId.ToString());
-                            aggInfo.RowCount += rowCount;
-                            MergeNumericSummary(aggInfo.NumericColumns, numericSummary);
-                        }
-                        else
-                        {
-                            // 行追加模式：收集每行数据
-                            AppendRows(appendedRows, externalProject.Name, tableName, table);
-                        }
-                    }
+                            catch
+                            {
+                                continue;
+                            }
 
-                    projectSummaries.Add(new JObject
+                            string tableName = tableNode.Name ?? table.Title?.TitleCell?.Value?.ToString() ?? $"表格_{table.Id.Value}";
+                            int rowCount = table.Rows?.Count ?? 0;
+                            int colCount = table.Columns?.Count ?? 0;
+                            projectRowCount += rowCount;
+                            totalRowCount += rowCount;
+                            totalTableCount++;
+
+                            // 收集数值列汇总数据（用于 group_summary 模式）
+                            var numericSummary = CollectNumericSummary(table);
+
+                            var tableInfo = new JObject
+                            {
+                                ["table_node_id"] = tableNode.Id.Value,
+                                ["table_id"] = table.Id.Value.ToString(),
+                                ["name"] = tableName,
+                                ["row_count"] = rowCount,
+                                ["col_count"] = colCount,
+                                ["numeric_columns"] = numericSummary
+                            };
+                            tablesArr.Add(tableInfo);
+
+                            // 分组汇总模式：按表名聚合数值
+                            if (mode == MergeMode.Aggregate)
+                            {
+                                AggregateTableInfo aggInfo;
+                                if (!aggregatedTables.TryGetValue(tableName, out aggInfo))
+                                {
+                                    aggInfo = new AggregateTableInfo { Name = tableName, SourceProjects = new List<string>() };
+                                    aggregatedTables[tableName] = aggInfo;
+                                }
+                                aggInfo.SourceProjects.Add(externalProject.Name ?? projectId.ToString());
+                                aggInfo.RowCount += rowCount;
+                                MergeNumericSummary(aggInfo.NumericColumns, numericSummary);
+                            }
+                            else
+                            {
+                                // 行追加模式：收集每行数据
+                                AppendRows(appendedRows, externalProject.Name, tableName, table);
+                            }
+                        }
+
+                        projectSummaries.Add(new JObject
+                        {
+                            ["project_id"] = projectId.ToString(),
+                            ["project_name"] = externalProject.Name,
+                            ["status"] = "success",
+                            ["table_count"] = tableNodes.Count,
+                            ["row_count"] = projectRowCount,
+                            ["tables"] = tablesArr
+                        });
+                        successCount++;
+                    }
+                    finally
                     {
-                        ["project_id"] = projectId.ToString(),
-                        ["project_name"] = externalProject.Name,
-                        ["status"] = "success",
-                        ["table_count"] = tableNodes.Count,
-                        ["row_count"] = projectRowCount,
-                        ["tables"] = tablesArr
-                    });
-                    successCount++;
+                        externalProject.Dal?.Dispose();
+                    }
                 }
 
                 // 构建合并结果
@@ -593,7 +600,7 @@ namespace AuditAI.McpServer.Services
                 string dbPath = GetExternalDbPath(projectId);
                 if (!File.Exists(dbPath)) return null;
 
-                var dal = new ProjectDAL(dbPath);
+                using var dal = new ProjectDAL(dbPath);
                 var dto = dal.GetProject();
                 return dto?.Name;
             }
@@ -751,13 +758,20 @@ namespace AuditAI.McpServer.Services
                 foreach (var pid in projectIds)
                 {
                     var extProject = OpenExternalProject(pid);
-                    evaluatedRefs.Add(new JObject
+                    try
                     {
-                        ["project_id"] = pid.ToString(),
-                        ["project_name"] = extProject?.Name ?? "未知",
-                        ["exists"] = extProject != null,
-                        ["table_count"] = extProject?.GetAllTableNodes().Count() ?? 0
-                    });
+                        evaluatedRefs.Add(new JObject
+                        {
+                            ["project_id"] = pid.ToString(),
+                            ["project_name"] = extProject?.Name ?? "未知",
+                            ["exists"] = extProject != null,
+                            ["table_count"] = extProject?.GetAllTableNodes().Count() ?? 0
+                        });
+                    }
+                    finally
+                    {
+                        extProject?.Dal?.Dispose();
+                    }
                 }
 
                 // 尝试使用 DataTable.Compute 进行基本运算
@@ -768,25 +782,32 @@ namespace AuditAI.McpServer.Services
                     var extProject = OpenExternalProject(pid);
                     if (extProject == null) continue;
 
-                    // 汇总该项目所有表格的数值列总和
-                    double projectTotal = 0;
-                    foreach (var tableNode in extProject.GetAllTableNodes())
+                    try
                     {
-                        try
+                        // 汇总该项目所有表格的数值列总和
+                        double projectTotal = 0;
+                        foreach (var tableNode in extProject.GetAllTableNodes())
                         {
-                            var table = tableNode.Table;
-                            if (table == null) continue;
-                            table.LoadAndReturn(true);
-                            var summary = CollectNumericSummary(table);
-                            foreach (var prop in summary.Properties())
+                            try
                             {
-                                projectTotal += prop.Value?.Value<double>() ?? 0;
+                                var table = tableNode.Table;
+                                if (table == null) continue;
+                                table.LoadAndReturn(true);
+                                var summary = CollectNumericSummary(table);
+                                foreach (var prop in summary.Properties())
+                                {
+                                    projectTotal += prop.Value?.Value<double>() ?? 0;
+                                }
                             }
+                            catch { }
                         }
-                        catch { }
+                        // 替换公式中的项目引用为汇总值
+                        expr = expr.Replace($"[{pid}]", projectTotal.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     }
-                    // 替换公式中的项目引用为汇总值
-                    expr = expr.Replace($"[{pid}]", projectTotal.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    finally
+                    {
+                        extProject.Dal?.Dispose();
+                    }
                 }
 
                 // 尝试计算剩余表达式

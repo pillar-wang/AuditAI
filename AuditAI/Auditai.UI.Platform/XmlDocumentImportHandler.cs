@@ -72,66 +72,74 @@ public class XmlDocumentImportHandler : DocumentImportHandler
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "只支持导入.docx文件");
 		}
 		string tempFileName = Path.GetTempFileName();
-		File.Copy(file, tempFileName, overwrite: true);
-		using (Package package = Package.Open(tempFileName))
+		try
 		{
-			GetParagraphStyles(package);
-			PackagePart part = package.GetPart(new Uri("/word/document.xml", UriKind.Relative));
-			using (Stream stream = part.GetStream())
+			File.Copy(file, tempFileName, overwrite: true);
+			using (Package package = Package.Open(tempFileName))
 			{
-				XDocument xDocument = XDocument.Load(stream);
-				FixNumbering(package, xDocument);
-				FixGb2312FontPart(xDocument);
-				FixPageBreak(xDocument);
-				FixHMerge(xDocument);
-				FixBookmarks(xDocument);
-				FixFields(xDocument);
-				FixImagesPart(part, xDocument);
-				FixParagraphStylesPart(xDocument);
-				RemoveVImageDataElementPart(xDocument);
-				stream.SetLength(0L);
-				using (var writer = System.Xml.XmlWriter.Create(stream, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
-					xDocument.Save(writer);
+				GetParagraphStyles(package);
+				PackagePart part = package.GetPart(new Uri("/word/document.xml", UriKind.Relative));
+				using (Stream stream = part.GetStream())
+				{
+					XDocument xDocument = XDocument.Load(stream);
+					FixNumbering(package, xDocument);
+					FixGb2312FontPart(xDocument);
+					FixPageBreak(xDocument);
+					FixHMerge(xDocument);
+					FixBookmarks(xDocument);
+					FixFields(xDocument);
+					FixImagesPart(part, xDocument);
+					FixParagraphStylesPart(xDocument);
+					RemoveVImageDataElementPart(xDocument);
+					stream.SetLength(0L);
+					using (var writer = System.Xml.XmlWriter.Create(stream, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
+						xDocument.Save(writer);
+				}
+				foreach (PackageRelationship item in part.GetRelationshipsByType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"))
+				{
+					Uri partUri = new Uri($"/word/{item.TargetUri}", UriKind.Relative);
+					PackagePart part2 = package.GetPart(partUri);
+					using Stream stream2 = part2.GetStream();
+					XDocument xDocument2 = XDocument.Load(stream2);
+					FixGb2312FontPart(xDocument2);
+					FixFooterTextboxPart(xDocument2);
+					FixImagesPart(part2, xDocument2);
+					FixParagraphStylesPart(xDocument2);
+					RemoveVImageDataElementPart(xDocument2);
+					stream2.SetLength(0L);
+					using (var writer = System.Xml.XmlWriter.Create(stream2, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
+						xDocument2.Save(writer);
+				}
+				foreach (PackageRelationship item2 in part.GetRelationshipsByType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"))
+				{
+					Uri partUri2 = new Uri($"/word/{item2.TargetUri}", UriKind.Relative);
+					PackagePart part3 = package.GetPart(partUri2);
+					using Stream stream3 = part3.GetStream();
+					XDocument xDocument3 = XDocument.Load(stream3);
+					FixGb2312FontPart(xDocument3);
+					FixFooterTextboxPart(xDocument3);
+					FixImagesPart(part3, xDocument3);
+					FixParagraphStylesPart(xDocument3);
+					RemoveVImageDataElementPart(xDocument3);
+					stream3.SetLength(0L);
+					using (var writer = System.Xml.XmlWriter.Create(stream3, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
+						xDocument3.Save(writer);
+				}
 			}
-			foreach (PackageRelationship item in part.GetRelationshipsByType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"))
+			DocumentEditor documentEditor = new DocumentEditor
 			{
-				Uri partUri = new Uri($"/word/{item.TargetUri}", UriKind.Relative);
-				PackagePart part2 = package.GetPart(partUri);
-				using Stream stream2 = part2.GetStream();
-				XDocument xDocument2 = XDocument.Load(stream2);
-				FixGb2312FontPart(xDocument2);
-				FixFooterTextboxPart(xDocument2);
-				FixImagesPart(part2, xDocument2);
-				FixParagraphStylesPart(xDocument2);
-				RemoveVImageDataElementPart(xDocument2);
-				stream2.SetLength(0L);
-				using (var writer = System.Xml.XmlWriter.Create(stream2, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
-					xDocument2.Save(writer);
-			}
-			foreach (PackageRelationship item2 in part.GetRelationshipsByType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"))
-			{
-				Uri partUri2 = new Uri($"/word/{item2.TargetUri}", UriKind.Relative);
-				PackagePart part3 = package.GetPart(partUri2);
-				using Stream stream3 = part3.GetStream();
-				XDocument xDocument3 = XDocument.Load(stream3);
-				FixGb2312FontPart(xDocument3);
-				FixFooterTextboxPart(xDocument3);
-				FixImagesPart(part3, xDocument3);
-				FixParagraphStylesPart(xDocument3);
-				RemoveVImageDataElementPart(xDocument3);
-				stream3.SetLength(0L);
-				using (var writer = System.Xml.XmlWriter.Create(stream3, new System.Xml.XmlWriterSettings { OmitXmlDeclaration = true }))
-					xDocument3.Save(writer);
-			}
+				Document = treeDoc.Document
+			};
+			documentEditor.PopulateDocument();
+			documentEditor.Import(tempFileName);
+			return documentEditor;
 		}
-		DocumentEditor documentEditor = new DocumentEditor
+		finally
 		{
-			Document = treeDoc.Document
-		};
-		documentEditor.PopulateDocument();
-		documentEditor.Import(tempFileName);
-		File.Delete(tempFileName);
-		return documentEditor;
+			// 修复 BUG: 此前 tempFileName 仅在成功路径删除，FixNumbering/FixHMerge/Import 等
+			// 任意步骤抛异常时临时文件会残留在 %TEMP% 目录，长期累积占满磁盘。
+			try { File.Delete(tempFileName); } catch { /* 忽略清理失败 */ }
+		}
 	}
 
 	private void GetParagraphStyles(Package pkg)

@@ -165,28 +165,34 @@ public class dlgTemplateEditor : C1RibbonForm
 	private async void DlgTemplateEditor_Shown(object sender, EventArgs e)
 	{
 		ctnMain.Enabled = false;
-		await PopulateCategoryCombo();
-		switch (_mode)
+		try
 		{
-		case Mode.Create:
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.CreateProject16);
-			await PopulateCreate();
-			break;
-		case Mode.Modify:
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(ContextResources.ctxMofify);
-			await PopulateModify();
-			break;
-		case Mode.Duplicate:
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.DuplicateProject16);
-			await PopulateDuplicate();
-			break;
-		case Mode.FromProject:
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.SaveAsTemplate16);
-			await PopulateFromProject();
-			break;
+			await PopulateCategoryCombo();
+			switch (_mode)
+			{
+			case Mode.Create:
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.CreateProject16);
+				await PopulateCreate();
+				break;
+			case Mode.Modify:
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(ContextResources.ctxMofify);
+				await PopulateModify();
+				break;
+			case Mode.Duplicate:
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.DuplicateProject16);
+				await PopulateDuplicate();
+				break;
+			case Mode.FromProject:
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.SaveAsTemplate16);
+				await PopulateFromProject();
+				break;
+			}
+			PopulateTemplate();
 		}
-		PopulateTemplate();
-		ctnMain.Enabled = true;
+		finally
+		{
+			ctnMain.Enabled = true;
+		}
 	}
 
 	internal bool ShowCreate()
@@ -349,9 +355,16 @@ public class dlgTemplateEditor : C1RibbonForm
 	{
 		if (!StorageRouter.IsLocalMode)
 		{
-			HashSet<string> hashSet = new HashSet<string>((await WebApiClient.GetTemplates()).Select((Auditai.DTO.Project p) => p.Category.Split('|')).SelectMany((string[] cats) => cats));
-			hashSet.Remove("");
-			cboCategory.Items.AddText(hashSet.ToArray());
+			try
+			{
+				HashSet<string> hashSet = new HashSet<string>((await WebApiClient.GetTemplates()).Select((Auditai.DTO.Project p) => p.Category.Split('|')).SelectMany((string[] cats) => cats));
+				hashSet.Remove("");
+				cboCategory.Items.AddText(hashSet.ToArray());
+			}
+			catch (Exception ex) when (ex is HttpRequestException || ex is System.IO.IOException)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
+			}
 		}
 	}
 

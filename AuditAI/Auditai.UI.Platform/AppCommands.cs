@@ -814,9 +814,6 @@ public static class AppCommands
 	public static AppCommandSystemSettings SystemSettings { get; } = new AppCommandSystemSettings();
 
 
-	public static AppCommandHelp Help { get; } = new AppCommandHelp();
-
-
 	public static AppCommandCheckUpdate CheckUpdate { get; } = new AppCommandCheckUpdate();
 
 
@@ -863,9 +860,6 @@ public static class AppCommands
 
 
 	public static AppCommandShowHelpSmall ShowHelpSmall { get; } = new AppCommandShowHelpSmall();
-
-
-	public static AppCommandHelpSmall HelpSmall { get; } = new AppCommandHelpSmall();
 
 
 	public static AppCommandTheme Theme { get; } = new AppCommandTheme();

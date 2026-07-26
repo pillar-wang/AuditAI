@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -121,7 +121,13 @@ internal static class Program
 		InitPlatformData();
 		
 		Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+#if DEBUG
+		// ⚠️ 安全警告：仅限本地开发测试使用！
+		// 此处全局禁用 SSL 证书验证，会使所有 HTTPS 请求暴露于中间人攻击（MITM）风险。
+		// 严禁用于生产环境或连接真实生产服务器；生产环境必须配置有效证书并移除此回调。
+		// 确保 Release 编译时 #if DEBUG 不生效，避免证书校验被意外关闭。
 		ServicePointManager.ServerCertificateValidationCallback = (RemoteCertificateValidationCallback)Delegate.Combine(ServicePointManager.ServerCertificateValidationCallback, (RemoteCertificateValidationCallback)((object a, X509Certificate b, X509Chain c, SslPolicyErrors d) => true));
+#endif
 		ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 		Application.ApplicationExit += Application_ApplicationExit;
@@ -265,7 +271,8 @@ internal static class Program
 			// 登录成功后校验 License（Task 22 已启用）
 			try
 			{
-				var licenseStatus = WebApiClient.GetLicenseStatus().GetAwaiter().GetResult();
+				// 用 Task.Run 脱离 UI 同步上下文，避免 sync-over-async 死锁
+				var licenseStatus = Task.Run(() => WebApiClient.GetLicenseStatus()).GetAwaiter().GetResult();
 				if (licenseStatus != null)
 				{
 					bool isExpired = licenseStatus["isExpired"]?.Value<bool>() ?? false;
@@ -425,14 +432,31 @@ internal static class Program
 		}
 	}
 
-	internal static Task Logout()
+	internal static async Task Logout()
 	{
 		if (HasLoggedOut)
 		{
-			return Task.CompletedTask;
+			return;
 		}
 		HasLoggedOut = true;
-		return Task.CompletedTask;
+		// 通知服务端清理会话，并停止 SignalR 长连接。
+		// 网络异常不阻塞退出流程（最坏情况是服务端保留脏会话，由其超时清理）。
+		try
+		{
+			await WebApiClient.ClientQuit();
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
+		try
+		{
+			SignalRClient.Stop();
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+		}
 	}
 
 	public static void ManageUsers()
@@ -1289,6 +1313,30 @@ internal static class Program
 		};
 	}
 
+	/// <summary>
+	/// 从 URL 查询字符串解析 projectId（格式：...?projectId=GUID）。
+	/// 解析失败返回 Guid.Empty（兼容旧调用）。
+	/// </summary>
+	private static Guid TryParseProjectIdFromUrl(string url)
+	{
+		try
+		{
+			int queryIdx = url.IndexOf('?');
+			if (queryIdx < 0) return Guid.Empty;
+			var query = url.Substring(queryIdx + 1);
+			foreach (var pair in query.Split('&'))
+			{
+				var kv = pair.Split(new[] { '=' }, 2);
+				if (kv.Length == 2 && string.Equals(kv[0], "projectId", StringComparison.OrdinalIgnoreCase))
+				{
+					if (Guid.TryParse(kv[1], out var pid)) return pid;
+				}
+			}
+		}
+		catch { }
+		return Guid.Empty;
+	}
+
 	private static async Task<Stream> HandleLocalApi(string url)
 	{
 		byte[] jsonBytes;
@@ -1328,7 +1376,9 @@ internal static class Program
 		}
 		if (url.Contains("Project/OpenProject"))
 		{
-			var result = await Auditai.LocalDataStore.StorageRouter.OpenProject(Guid.Empty); // projectId 从 URL 解析
+			// 从 URL 查询字符串解析 projectId（格式：Project/OpenProject?projectId=xxx）
+			var projectId = TryParseProjectIdFromUrl(url);
+			var result = await Auditai.LocalDataStore.StorageRouter.OpenProject(projectId);
 			var jo = new JObject { ["Item1"] = result.Item1, ["Item2"] = result.Item2 };
 			jsonBytes = Encoding.UTF8.GetBytes(jo.ToString());
 			return new MemoryStream(jsonBytes);

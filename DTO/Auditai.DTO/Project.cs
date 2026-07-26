@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +30,7 @@ public class Project
 
 	public ChargeType ChargeType { get; set; }
 
-	public IEnumerable<User> Users { get; set; }
+	public IEnumerable<User> Users { get; set; } = Enumerable.Empty<User>();
 
 	public bool TeamVisible { get; set; }
 
@@ -55,7 +55,7 @@ public class Project
 	{
 		Project project = (Project)MemberwiseClone();
 		project.Creator = Creator?.Clone();
-		project.Users = Users?.Select((User u) => u.Clone());
+		project.Users = Users?.Select((User u) => u.Clone()).ToList();
 		return project;
 	}
 }

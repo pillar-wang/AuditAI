@@ -28,7 +28,9 @@ public class MemberManager
 
 	public event EventHandler<long> DocParagraphChanged;
 
-	public event EventHandler<string> ProjectSynced;
+	// 阶段 3：事件签名从 EventHandler<string> 扩展为 EventHandler<(projectId, version)>。
+	// version 可能为 null（兜底链路）；订阅方需相应更新（全量搜索仅 MainForm.cs 一处订阅）。
+	public event EventHandler<(string projectId, string version)> ProjectSynced;
 
 	public event EventHandler<string> MemberInfoChanged;
 
@@ -59,6 +61,11 @@ public class MemberManager
 
 	// P2 协同增强 Task 9：对端段落编辑状态广播
 	public event Action<long, string> PeerParagraphEdit;
+
+	// 节点级强锁：表格锁状态变更事件。
+	// 参数: (projectId, tableId, lockerUserId) — lockerUserId=0 表示释放，其他值为持有锁的用户 Id。
+	// 订阅方（MainForm）据此更新本地 Table.Locker 字段，UI 立即响应只读/可编辑状态切换。
+	public event Action<string, long, long> TableLockChanged;
 
 	public static MemberManager GetInstance()
 	{
@@ -169,14 +176,30 @@ public class MemberManager
 		}
 	}
 
-	public void OnProjectSynced(string projectId)
+	// 阶段 3：新增 version 可选参数（默认 null，兼容旧调用方）。
+	// 由 MessageHandle 从 SignalR MessageReceivedEventArgs.Version 透传。
+	public void OnProjectSynced(string projectId, string version = null)
 	{
 		MainForm mainForm = Program.MainForm;
 		if (mainForm != null && mainForm.View.IsHandleCreated)
 		{
 			Program.MainForm.View.Invoke((InvokeDelegate)delegate
 			{
-				this.ProjectSynced?.Invoke(this, projectId);
+				this.ProjectSynced?.Invoke(this, (projectId, version));
+			});
+		}
+	}
+
+	// 节点级强锁：由 MessageHandle 从 PeerTableLockChanged 广播透传。
+	// lockerUserId=0 表示锁释放；其他值为持有锁的用户 Id。
+	public void OnTableLockChanged(string projectId, long tableId, long lockerUserId)
+	{
+		MainForm mainForm = Program.MainForm;
+		if (mainForm != null && mainForm.View.IsHandleCreated)
+		{
+			Program.MainForm.View.Invoke((InvokeDelegate)delegate
+			{
+				this.TableLockChanged?.Invoke(projectId, tableId, lockerUserId);
 			});
 		}
 	}

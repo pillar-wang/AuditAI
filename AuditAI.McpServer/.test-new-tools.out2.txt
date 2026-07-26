@@ -1,0 +1,61 @@
+
+=== 1. CellBorder 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+[get_cell_borders] args={"row":0,"table_node_id":5699421601793,"col":0}
+  FAIL: expected success=True, got False. message= error=单元格 (0,0) 不存在
+  Raw: {
+  "success": false,
+  "error": "单元格 (0,0) 不存在"
+}
+[set_cell_border] args={"row":0,"table_node_id":5699421601793,"edge":"top","col":0,"width":2}
+  FAIL: expected success=True, got False. message= error=单元格 (0,0) 不存在
+  Raw: {
+  "success": false,
+  "error": "单元格 (0,0) 不存在"
+}
+  -> top border NOT persisted (got )
+[set_cell_all_borders] args={"row":1,"table_node_id":5699421601793,"width":1,"col":1}
+  FAIL: expected success=True, got False. message= error=单元格 (1,1) 不存在
+  Raw: {
+  "success": false,
+  "error": "单元格 (1,1) 不存在"
+}
+[set_range_borders] args={"start_col":0,"start_row":0,"width":1,"end_col":2,"table_node_id":5699421601793,"mode":"all","end_row":2}
+  PASS: success=True 已对 0 个单元格应用 all 边框 (width=1)
+
+=== 2. TableStylePreset 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+[get_table_style] args={"table_node_id":5699421601793}
+  PASS: success=True 
+[apply_table_style_preset] args={"preset":"grid","table_node_id":5699421601793}
+  PASS: success=True 已应用预设样式: grid (internal_number=0)
+[set_custom_border_style] args={"table_node_id":5699421601793,"body_line":"thin","left_right_line":"none","up_down_line":"thick","second_line":"thin"}
+  PASS: success=True 已应用自定义边框样式
+
+=== 3. ValidationErrorNav 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+[get_validation_errors] args={}
+  PASS: success=True 
+  total_errors=1 total_passed=21 total_failed=1
+[get_previous_validation_error] args={"current_index":999}
+  PASS: success=True 
+  Found previous error at index 0
+
+=== 4. DocumentCharFormat 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+ConvertFrom-Json : Cannot bind argument to parameter 'InputObject' because it i
+s null.
+At E:\lq\AuditAI\AuditAI.McpServer\.test-new-tools.ps1:158 char:23
++ $docObj = $listDocs | ConvertFrom-Json
++                       ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidData: (:) [ConvertFrom-Json], ParameterBi 
+   ndingValidationException
+    + FullyQualifiedErrorId : ParameterArgumentValidationErrorNullNotAllowed,M 
+   icrosoft.PowerShell.Commands.ConvertFromJsonCommand
+ 
+No document node in test_template.db - skipping DocumentCharFormat tests
+
+=== 娴嬭瘯鎬荤粨 ===
+PASS: 6
+FAIL: 3
+SKIP: 2

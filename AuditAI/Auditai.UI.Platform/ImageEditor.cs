@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -113,10 +113,6 @@ public class ImageEditor
 
 	private readonly C1CommandLink lnkHideToolbar = new C1CommandLink();
 
-	private readonly C1Command _cmdHelpCenter;
-
-	private readonly C1CommandLink _lnkHelpCenter;
-
 	private Point _lastMousePos;
 
 	private Cursor _handHover = new Cursor(new MemoryStream(Resources.HandHover));
@@ -209,18 +205,7 @@ public class ImageEditor
 		lnkZoomIn.Command = cmdZoomIn;
 		cmdExportImage.Click += CmdExportImage_Click;
 		lnkExportImage.Command = cmdExportImage;
-		_cmdHelpCenter = new C1Command
-		{
-			Text = "帮助中心",
-			Image = Resources.HelpCenter,
-			Visible = SoftwareLicenseManager.IsShowHelpDocumentButton()
-		};
-		_cmdHelpCenter.Click += _cmdHelpCenter_Click;
-		_lnkHelpCenter = new C1CommandLink(_cmdHelpCenter)
-		{
-			Delimiter = true
-		};
-		_toolBar.CommandLinks.AddRange(new C1CommandLink[8] { lnkRotate90T, lnkRotate270T, lnkFlipHoriT, lnkFlipVertT, lnkZoomIn, lnkZoomOut, lnkExportImage, _lnkHelpCenter });
+		_toolBar.CommandLinks.AddRange(new C1CommandLink[7] { lnkRotate90T, lnkRotate270T, lnkFlipHoriT, lnkFlipVertT, lnkZoomIn, lnkZoomOut, lnkExportImage });
 		RibbonImageProcess imageProcess = MainForm.ImageProcess;
 		foreach (C1CommandLink commandLink in _toolBar.CommandLinks)
 		{
@@ -553,11 +538,6 @@ public class ImageEditor
 	private void CmdBack_Click(object sender, ClickEventArgs e)
 	{
 		Program.MainForm.Back();
-	}
-
-	private void _cmdHelpCenter_Click(object sender, ClickEventArgs e)
-	{
-		Program.MainForm.ShowHelpCenter();
 	}
 
 	private void CmdZoomOut_Click(object sender, ClickEventArgs e)

@@ -288,6 +288,10 @@ public class frmAlterInfo : C1RibbonForm
 
 	private async void btnConfirm_Click(object sender, EventArgs e)
 	{
+		// 修复 BUG: 此前缺少防重复点击机制，用户在 await WebApiClient.UpdateUserInfo /
+		// UpdatePhoneInfo / SignalRClient.ChangeMemberInfo 期间可重复点击，
+		// 导致多次发送更新请求和 SignalR 通知。现在禁用按钮直到异步操作完成。
+		btnConfirm.Enabled = false;
 		try
 		{
 			if (!Regex.IsMatch(txtUserName.Text.Trim(), "^.{2,20}$"))
@@ -369,6 +373,10 @@ public class frmAlterInfo : C1RibbonForm
 			string text = ((innerException == null) ? ex4.Message : innerException.Message);
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, text);
 		}
+		finally
+		{
+			btnConfirm.Enabled = true;
+		}
 	}
 
 	private void btnCancel_Click(object sender, EventArgs e)
@@ -441,22 +449,24 @@ public class frmAlterInfo : C1RibbonForm
 
 	private void pictureHead_Click(object sender, EventArgs e)
 	{
-		OpenFileDialog openFileDialog = new OpenFileDialog
+		using (OpenFileDialog openFileDialog = new OpenFileDialog
 		{
 			Filter = "图片文件|*.bmp;*.gif;*.jpg;*.jpeg;*.png;*.tiff"
-		};
-		if (openFileDialog.ShowDialog() == DialogResult.OK)
+		})
 		{
-			try
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
 			{
-				object obj = System.Drawing.Image.FromFile(openFileDialog.FileName).Clone();
-				Bitmap image = ((System.Drawing.Image)obj).ToSize(32, 32);
-				pictureHead.Image = image;
-				_headChanged = true;
-			}
-			catch (OutOfMemoryException)
-			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "未能打开此图片，请重试或者更改图片。");
+				try
+				{
+					object obj = System.Drawing.Image.FromFile(openFileDialog.FileName).Clone();
+					Bitmap image = ((System.Drawing.Image)obj).ToSize(32, 32);
+					pictureHead.Image = image;
+					_headChanged = true;
+				}
+				catch (OutOfMemoryException)
+				{
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "未能打开此图片，请重试或者更改图片。");
+				}
 			}
 		}
 	}

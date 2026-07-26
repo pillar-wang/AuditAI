@@ -1005,19 +1005,8 @@ public class TicketDesignEditor2
 			Image = Resources.FormulaCancel
 		};
 		c1Command2.Click += _cmdCancelDesign_Click;
-		C1Command c1Command3 = new C1Command
-		{
-			Text = "帮助中心",
-			Image = Resources.HelpCenter,
-			Visible = SoftwareLicenseManager.IsShowHelpDocumentButton()
-		};
-		c1Command3.Click += _cmdHelp_Click;
 		_rightToolBar.CommandLinks.Add(new C1CommandLink(c1Command));
 		_rightToolBar.CommandLinks.Add(new C1CommandLink(c1Command2));
-		_rightToolBar.CommandLinks.Add(new C1CommandLink(c1Command3)
-		{
-			Delimiter = true
-		});
 		_imageProcess = new RibbonImageProcess();
 		foreach (C1CommandLink commandLink in _rightToolBar.CommandLinks)
 		{
@@ -1850,18 +1839,19 @@ public class TicketDesignEditor2
 			if (_grid.Editor != null)
 			{
 				try
+			{
+				if (!_grid.FinishEditing(cancel: false))
 				{
-					if (!_grid.FinishEditing(cancel: false))
-					{
-						_grid.FinishEditing(cancel: true);
-					}
-					_grid.Editor = null;
+					_grid.FinishEditing(cancel: true);
 				}
-				catch
-				{
-				}
+				_grid.Editor = null;
 			}
-			_grid.Select();
+			catch (Exception ex)
+			{
+				ex.Log();
+			}
+		}
+		_grid.Select();
 		}
 		catch (Exception exception)
 		{
@@ -3182,11 +3172,6 @@ public class TicketDesignEditor2
 	private void _cmdSave_Click(object sender, ClickEventArgs e)
 	{
 		Save();
-	}
-
-	private void _cmdHelp_Click(object sender, ClickEventArgs e)
-	{
-		Program.MainForm.ShowHelpCenter();
 	}
 
 	private void _cmdSetColumnWidth_CommandStateQuery(object sender, CommandStateQueryEventArgs e)

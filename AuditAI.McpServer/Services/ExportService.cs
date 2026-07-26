@@ -34,8 +34,8 @@ namespace AuditAI.McpServer.Services
             {
                 SessionState.Current.EnsureProject();
 
-                if (string.IsNullOrWhiteSpace(outputPath))
-                    return ErrorJson("输出路径不能为空");
+                string pathError = ValidateOutputPath(outputPath);
+                if (pathError != null) return pathError;
 
                 var node = FindNode(nodeId);
                 if (node == null)
@@ -67,8 +67,8 @@ namespace AuditAI.McpServer.Services
             {
                 SessionState.Current.EnsureProject();
 
-                if (string.IsNullOrWhiteSpace(outputPath))
-                    return ErrorJson("输出路径不能为空");
+                string pathError = ValidateOutputPath(outputPath);
+                if (pathError != null) return pathError;
 
                 var node = FindNode(nodeId);
                 if (node == null)
@@ -101,8 +101,8 @@ namespace AuditAI.McpServer.Services
             {
                 SessionState.Current.EnsureProject();
 
-                if (string.IsNullOrWhiteSpace(outputPath))
-                    return ErrorJson("输出路径不能为空");
+                string pathError = ValidateOutputPath(outputPath);
+                if (pathError != null) return pathError;
 
                 var node = FindNode(nodeId);
                 if (node == null)
@@ -140,8 +140,8 @@ namespace AuditAI.McpServer.Services
             {
                 SessionState.Current.EnsureProject();
 
-                if (string.IsNullOrWhiteSpace(outputPath))
-                    return ErrorJson("输出路径不能为空");
+                string pathError = ValidateOutputPath(outputPath);
+                if (pathError != null) return pathError;
 
                 var node = FindNode(nodeId);
                 if (node == null)
@@ -184,6 +184,9 @@ namespace AuditAI.McpServer.Services
 
                 if (string.IsNullOrWhiteSpace(outputDir))
                     return ErrorJson("输出目录不能为空");
+
+                string dirError = ValidateOutputDir(outputDir);
+                if (dirError != null) return dirError;
 
                 if (string.IsNullOrWhiteSpace(format))
                     return ErrorJson("导出格式不能为空");
@@ -404,6 +407,83 @@ namespace AuditAI.McpServer.Services
                 ["error"] = message
             };
             return JsonConvert.SerializeObject(result, Formatting.Indented);
+        }
+
+        /// <summary>
+        /// 验证输出路径安全性：防止路径遍历攻击和写入系统关键目录。
+        /// 修复 BUG: 此前 MCP 工具直接接受 outputPath 参数未做校验，
+        /// 攻击者可传 ..\..\sensitive.xlsx 或 C:\Windows\System32\evil.dll 等危险路径。
+        /// </summary>
+        /// <param name="outputPath">用户提供的输出路径</param>
+        /// <returns>null 表示验证通过，否则返回错误 JSON</returns>
+        private static string ValidateOutputPath(string outputPath)
+        {
+            if (string.IsNullOrWhiteSpace(outputPath))
+                return ErrorJson("输出路径不能为空");
+
+            // 获取完整路径，检测路径遍历（..）
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(outputPath);
+            }
+            catch (Exception)
+            {
+                return ErrorJson("输出路径格式无效: " + outputPath);
+            }
+
+            // 拒绝原始路径中包含 .. 的路径（防止路径遍历）
+            if (outputPath.Contains(".."))
+                return ErrorJson("输出路径不能包含父目录引用（..）: " + outputPath);
+
+            // 拒绝写入系统关键目录
+            string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string[] protectedDirs = { systemRoot, programFiles, programFilesX86 };
+            foreach (var protectedDir in protectedDirs)
+            {
+                if (!string.IsNullOrEmpty(protectedDir) &&
+                    fullPath.StartsWith(protectedDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    return ErrorJson("不允许写入系统关键目录: " + protectedDir);
+            }
+
+            return null; // 验证通过
+        }
+
+        /// <summary>
+        /// 验证输出目录安全性（用于批量导出）
+        /// </summary>
+        private static string ValidateOutputDir(string outputDir)
+        {
+            if (string.IsNullOrWhiteSpace(outputDir))
+                return ErrorJson("输出目录不能为空");
+
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(outputDir);
+            }
+            catch (Exception)
+            {
+                return ErrorJson("输出目录路径格式无效: " + outputDir);
+            }
+
+            if (outputDir.Contains(".."))
+                return ErrorJson("输出目录路径不能包含父目录引用（..）: " + outputDir);
+
+            string systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string[] protectedDirs = { systemRoot, programFiles, programFilesX86 };
+            foreach (var protectedDir in protectedDirs)
+            {
+                if (!string.IsNullOrEmpty(protectedDir) &&
+                    fullPath.StartsWith(protectedDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    return ErrorJson("不允许写入系统关键目录: " + protectedDir);
+            }
+
+            return null;
         }
     }
 }

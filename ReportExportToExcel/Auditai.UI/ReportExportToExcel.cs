@@ -47,6 +47,9 @@ public class ReportExportToExcel
 
 	public void SaveValue(string path, ExcelContex contex)
 	{
+		// 修复 BUG: 此前直接 xlBook = new C1XLBook() 覆盖字段，旧实例未 Dispose，
+		// 批量导出场景下 C1XLBook 内部非托管资源会持续累积。
+		xlBook?.Dispose();
 		xlBook = new C1XLBook();
 		xlSheet = xlBook.Sheets[0];
 		string text = standardSheetName(Table.TreeNode.Number + " " + Table.TreeNode.Name);
@@ -205,44 +208,52 @@ public class ReportExportToExcel
 	{
 		List<ReportExportToExcel> list = new List<ReportExportToExcel>();
 		ExcelContex excelContex = new ExcelContex();
+		// 修复 BUG: 此前 c1XLBook 未 Dispose，批量导出时 C1XLBook 内部非托管资源泄漏。
 		C1XLBook c1XLBook = new C1XLBook();
-		for (int i = 0; i < batchs.Count; i++)
+		try
 		{
-			try
+			for (int i = 0; i < batchs.Count; i++)
 			{
-				Tuple<Auditai.Model.Table, PageSetup> tuple = batchs[i];
-				tuple.Item1.CalculateRecursive();
-				ReportExportToExcel reportExportToExcel = new ReportExportToExcel
+				try
 				{
-					Table = tuple.Item1,
-					PageSetup = tuple.Item2
-				};
-				XLSheet xLSheet = null;
-				if (i >= c1XLBook.Sheets.Count)
-				{
-					xLSheet = c1XLBook.Sheets.Add();
+					Tuple<Auditai.Model.Table, PageSetup> tuple = batchs[i];
+					tuple.Item1.CalculateRecursive();
+					ReportExportToExcel reportExportToExcel = new ReportExportToExcel
+					{
+						Table = tuple.Item1,
+						PageSetup = tuple.Item2
+					};
+					XLSheet xLSheet = null;
+					if (i >= c1XLBook.Sheets.Count)
+					{
+						xLSheet = c1XLBook.Sheets.Add();
+					}
+					xLSheet = c1XLBook.Sheets[i];
+					reportExportToExcel.SaveValue(filename, c1XLBook, xLSheet, excelContex);
+					list.Add(reportExportToExcel);
 				}
-				xLSheet = c1XLBook.Sheets[i];
-				reportExportToExcel.SaveValue(filename, c1XLBook, xLSheet, excelContex);
-				list.Add(reportExportToExcel);
+				catch (Exception)
+				{
+				}
 			}
-			catch (Exception)
+			foreach (ReportExportToExcel item in list)
 			{
+				try
+				{
+					item.SetFormula(excelContex);
+				}
+				catch (Exception)
+				{
+				}
+			}
+			if (list.Count > 0)
+			{
+				list.First().Save(excelContex);
 			}
 		}
-		foreach (ReportExportToExcel item in list)
+		finally
 		{
-			try
-			{
-				item.SetFormula(excelContex);
-			}
-			catch (Exception)
-			{
-			}
-		}
-		if (list.Count > 0)
-		{
-			list.First().Save(excelContex);
+			c1XLBook.Dispose();
 		}
 	}
 

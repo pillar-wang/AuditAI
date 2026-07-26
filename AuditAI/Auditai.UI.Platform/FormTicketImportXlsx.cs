@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -180,7 +180,18 @@ public class FormTicketImportXlsx
 		{
 			fontStyle |= FontStyle.Italic;
 		}
-		styleNew.Font = new Font(cell.FontFamily, cell.FontSize, fontStyle);
+		// 修复 BUG: OwnerDrawCell 每次绘制都创建新 Font 但未 Dispose 旧 Font，
+		// 导致 GDI 句柄泄漏（表格滚动或重绘时累积）。比较 Font 属性，
+		// 仅在变化时创建新 Font 并 Dispose 旧 Font。
+		Font oldFont = styleNew.Font;
+		if (oldFont == null
+			|| oldFont.FontFamily.Name != cell.FontFamily
+			|| oldFont.Size != cell.FontSize
+			|| oldFont.Style != fontStyle)
+		{
+			styleNew.Font = new Font(cell.FontFamily, cell.FontSize, fontStyle);
+			if (oldFont != null) oldFont.Dispose();
+		}
 		styleNew.ForeColor = cell.ForeColor;
 		styleNew.TextAlign = C1FlexGridEx.ToTextAlign(cell.Align);
 		styleNew.Margins = new System.Drawing.Printing.Margins(cell.Indent, 0, 0, 0);

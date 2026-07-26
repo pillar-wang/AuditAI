@@ -1,0 +1,54 @@
+
+=== 1. CellBorder 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+
+[3 get_cell_borders] args=[]
+  FAIL: no response
+
+[4 set_cell_border] args=[]
+  FAIL: no response
+
+[5 get_cell_borders] args=[]
+  FAIL: no response
+
+[6 set_cell_all_borders] args=[]
+  FAIL: no response
+
+[7 set_range_borders] args=[]
+  FAIL: no response
+
+=== 2. TableStylePreset 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+
+[8 get_table_style] args=[]
+  FAIL: no response
+
+[9 apply_table_style_preset] args=[]
+  FAIL: no response
+
+[10 set_custom_border_style] args=[]
+  FAIL: no response
+
+=== 3. ValidationErrorNav 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+
+[11 get_validation_errors] args=[]
+  FAIL: no response
+
+[12 get_next_validation_error] args=[]
+  FAIL: no response
+
+[13 get_previous_validation_error] args=[]
+  FAIL: no response
+
+=== 4. DocumentCharFormat 宸ュ叿娴嬭瘯锛?涓伐鍏凤級===
+
+
+[14 list_nodes_by_type] args=[]
+  FAIL: no response
+No document nodes found - skipping DocumentCharFormat tests
+
+=== 娴嬭瘯鎬荤粨 ===
+PASS: 
+FAIL: 12
+SKIP: 2
