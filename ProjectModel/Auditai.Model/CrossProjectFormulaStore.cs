@@ -36,11 +36,23 @@ public class CrossProjectFormulaStore
 
     /// <summary>
     /// 获取项目数据库路径（基于当前 project.Id 实时计算）
+    /// 使用绝对路径，确保在不同工作目录下都能正确定位
     /// </summary>
     private static string GetProjectDbPath(Project project)
     {
         long userId = User.Current?.Id ?? 1;
-        return Path.Combine("data", userId.ToString(), $"{project.Id}.db");
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine(baseDir, "data", userId.ToString(), $"{project.Id}.db");
+    }
+
+    /// <summary>
+    /// 获取外部项目数据库路径（与 MainForm.GetDbPathByGuid 保持一致的路径逻辑）
+    /// </summary>
+    private static string GetExternalDbPath(Guid projectId)
+    {
+        long userId = User.Current?.Id ?? 1;
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine(baseDir, "data", userId.ToString(), $"{projectId}.db");
     }
 
     /// <summary>
@@ -178,17 +190,12 @@ public class CrossProjectFormulaStore
 
     private Task<CrossProjectFormulaResult> EvaluateFormula(CrossProjectFormula formula)
     {
-        // 非本地模式暂不支持
-        if (!StorageRouter.IsLocalMode)
-        {
-            return Task.FromResult(new CrossProjectFormulaResult { FormulaId = formula.Id, Success = false, Error = "非本地模式暂不支持" });
-        }
-
         // 通过 ProjectDAL 打开外部项目数据库
-        string externalDbPath = Path.Combine("data", User.Current?.Id.ToString() ?? "1", $"{formula.SourceProjectId}.db");
+        // 服务端模式下，来源项目数据库需已下载到本地缓存（用户需先打开过来源项目）
+        string externalDbPath = GetExternalDbPath(formula.SourceProjectId);
         if (!File.Exists(externalDbPath))
         {
-            return Task.FromResult(new CrossProjectFormulaResult { FormulaId = formula.Id, Success = false, Error = "来源项目数据库不存在" });
+            return Task.FromResult(new CrossProjectFormulaResult { FormulaId = formula.Id, Success = false, Error = "来源项目数据库不存在，请先打开来源项目以下载到本地" });
         }
 
         using var dal = new ProjectDAL(externalDbPath);

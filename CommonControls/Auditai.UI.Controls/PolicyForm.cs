@@ -107,7 +107,7 @@ public class PolicyForm : C1RibbonForm
 		this.lblBottomInfo.Anchor = System.Windows.Forms.AnchorStyles.Top;
 		this.lblBottomInfo.BackColor = System.Drawing.Color.Transparent;
 		this.lblBottomInfo.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblBottomInfo.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblBottomInfo.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblBottomInfo.ForeColor = System.Drawing.Color.Black;
 		this.lblBottomInfo.Location = new System.Drawing.Point(4, 329);
 		this.lblBottomInfo.Name = "lblBottomInfo";
@@ -126,7 +126,7 @@ public class PolicyForm : C1RibbonForm
 		this.lblSubTitle.Anchor = System.Windows.Forms.AnchorStyles.Top;
 		this.lblSubTitle.BackColor = System.Drawing.Color.Transparent;
 		this.lblSubTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblSubTitle.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblSubTitle.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblSubTitle.ForeColor = System.Drawing.Color.Black;
 		this.lblSubTitle.Location = new System.Drawing.Point(4, 230);
 		this.lblSubTitle.Name = "lblSubTitle";
@@ -139,7 +139,7 @@ public class PolicyForm : C1RibbonForm
 		this.lblTitle.Anchor = System.Windows.Forms.AnchorStyles.Top;
 		this.lblTitle.BackColor = System.Drawing.Color.Transparent;
 		this.lblTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblTitle.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblTitle.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblTitle.ForeColor = System.Drawing.Color.Black;
 		this.lblTitle.Location = new System.Drawing.Point(4, 177);
 		this.lblTitle.Name = "lblTitle";
@@ -153,7 +153,7 @@ public class PolicyForm : C1RibbonForm
 		this.lblUserAgreement.BackColor = System.Drawing.Color.Transparent;
 		this.lblUserAgreement.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblUserAgreement.Cursor = System.Windows.Forms.Cursors.Hand;
-		this.lblUserAgreement.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblUserAgreement.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblUserAgreement.ForeColor = System.Drawing.Color.Black;
 		this.lblUserAgreement.Location = new System.Drawing.Point(140, 278);
 		this.lblUserAgreement.Name = "lblUserAgreement";
@@ -168,7 +168,7 @@ public class PolicyForm : C1RibbonForm
 		this.lblPolicy.BackColor = System.Drawing.Color.Transparent;
 		this.lblPolicy.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPolicy.Cursor = System.Windows.Forms.Cursors.Hand;
-		this.lblPolicy.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPolicy.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPolicy.ForeColor = System.Drawing.Color.Black;
 		this.lblPolicy.Location = new System.Drawing.Point(276, 278);
 		this.lblPolicy.Name = "lblPolicy";

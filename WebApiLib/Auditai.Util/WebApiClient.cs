@@ -1394,8 +1394,12 @@ public static class WebApiClient
 		};
 		JObject respObj = await SendAsObject<JObject>(options);
 		long taskId = (long?)respObj?["taskId"] ?? 0;
-		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
-		JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
+			File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+				$"[{DateTime.Now:HH:mm:ss.fff}] WaitingServerTaskRunOver START taskId={taskId}\n");
+			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
+			JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
+			File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+				$"[{DateTime.Now:HH:mm:ss.fff}] WaitingServerTaskRunOver DONE result={(jObject == null ? "null" : jObject.ToString())}\n");
 		string requestUri = jObject?.Value<string>("Url");
 		if (string.IsNullOrEmpty(requestUri))
 		{
@@ -1958,17 +1962,18 @@ public static class WebApiClient
 		});
 	}
 
-	public static async Task UploadFile(Guid fileId, Stream stream)
+	public static async Task UploadFile(Guid fileId, Stream stream, Guid projectId = default, string fileName = "file.bin")
 	{
 		if (IsLocalMode)
 		{
 			if (LocalUploadFileHandler != null) await LocalUploadFileHandler(fileId, stream);
 			return;
 		}
+		string query = $"?projectId={(projectId == Guid.Empty ? "" : projectId.ToString())}&fileName={Uri.EscapeDataString(fileName ?? "file.bin")}";
 		await Send(new RequestOptions
 		{
 			Method = HttpMethod.Post,
-			Url = "Project/UploadFile",
+			Url = "Project/UploadFile" + query,
 			Timeout = TimeSpan.FromMinutes(10.0),
 			WithAuthorization = true,
 			Body = stream,
@@ -2004,6 +2009,41 @@ public static class WebApiClient
 		{
 			Method = HttpMethod.Post,
 			Url = "Project/ImportProject" + query,
+			Timeout = TimeSpan.FromMinutes(10.0),
+			WithAuthorization = true,
+			Body = dbStream
+		});
+	}
+
+	/// <summary>
+	/// 服务端模式导入模板：将解压后的 template.db 二进制流 + 元信息（QueryString）上传到服务端，
+	/// 服务端创建 Projects 主库记录（Type=1, IsTemplate=1）并落盘到 Templates/ 目录 + seed 主库 TreeGroup/TreeNode。
+	/// 返回服务端创建的 Project DTO。
+	/// 与 ImportProject 的差异：去掉 auditee 参数（模板不需要），增加 teamVisible 参数；路由改为 Project/ImportTemplate。
+	/// </summary>
+	public static async Task<Project> ImportTemplate(
+		Stream dbStream,
+		string name,
+		string number,
+		string category,
+		string note,
+		DateTime createTime,
+		int schemaVersion,
+		bool teamVisible)
+	{
+		// QueryString 传递元信息（与 ImportProject 风格一致：Body 为裸二进制流）
+		var query = $"?name={Uri.EscapeDataString(name ?? "")}" +
+			$"&number={Uri.EscapeDataString(number ?? "")}" +
+			$"&category={Uri.EscapeDataString(category ?? "")}" +
+			$"&note={Uri.EscapeDataString(note ?? "")}" +
+			$"&createTime={Uri.EscapeDataString(createTime.ToString("o"))}" +
+			$"&schemaVersion={schemaVersion}" +
+			$"&teamVisible={teamVisible}";
+
+		return await SendAsObject<Project>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/ImportTemplate" + query,
 			Timeout = TimeSpan.FromMinutes(10.0),
 			WithAuthorization = true,
 			Body = dbStream

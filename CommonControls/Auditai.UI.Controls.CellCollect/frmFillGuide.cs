@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -968,7 +968,7 @@ public class frmFillGuide : C1RibbonForm
 		this.pnlSubHeader.Width = 1233;
 		this.c1Label2.AutoSize = true;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label2.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label2.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label2.Location = new System.Drawing.Point(347, 18);
 		this.c1Label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 		this.c1Label2.Name = "c1Label2";
@@ -979,7 +979,7 @@ public class frmFillGuide : C1RibbonForm
 		this.c1Label2.TextDetached = true;
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label1.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label1.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.Location = new System.Drawing.Point(22, 17);
 		this.c1Label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
 		this.c1Label1.Name = "c1Label1";
@@ -992,7 +992,7 @@ public class frmFillGuide : C1RibbonForm
 		this.comboAuxiliaryTree.DropHeight = -1;
 		this.comboAuxiliaryTree.DropWidth = -1;
 		this.comboAuxiliaryTree.Enabled = false;
-		this.comboAuxiliaryTree.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.comboAuxiliaryTree.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.comboAuxiliaryTree.GapHeight = 0;
 		this.comboAuxiliaryTree.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.comboAuxiliaryTree.ItemsDisplayMember = "";
@@ -1008,7 +1008,7 @@ public class frmFillGuide : C1RibbonForm
 		this.comboAccountTree.AllowSpinLoop = false;
 		this.comboAccountTree.DropHeight = -1;
 		this.comboAccountTree.DropWidth = -1;
-		this.comboAccountTree.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.comboAccountTree.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.comboAccountTree.GapHeight = 0;
 		this.comboAccountTree.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.comboAccountTree.ItemsDisplayMember = "";
@@ -1043,7 +1043,7 @@ public class frmFillGuide : C1RibbonForm
 		this.grdSubsidiary.Size = new System.Drawing.Size(1233, 535);
 		this.grdSubsidiary.TabIndex = 1;
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnConfirm.Location = new System.Drawing.Point(930, 27);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		this.btnConfirm.Name = "btnConfirm";
@@ -1053,7 +1053,7 @@ public class frmFillGuide : C1RibbonForm
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(1092, 27);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -1103,7 +1103,7 @@ public class frmFillGuide : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1237, 759);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(2, 4, 2, 4);
 		base.Name = "frmFillGuide";
 		base.ShowInTaskbar = false;

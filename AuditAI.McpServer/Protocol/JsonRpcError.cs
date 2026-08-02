@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace AuditAI.McpServer.Protocol
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace AuditAI.McpServer.Protocol
 {
     /// <summary>
     /// JSON-RPC 2.0 标准错误码

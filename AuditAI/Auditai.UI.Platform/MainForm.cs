@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -493,7 +493,8 @@ public class MainForm
 		{
 			Dock = DockStyle.Fill,
 			SplitterWidth = 0,
-			BackColor = Color.Transparent
+			BackColor = Color.Transparent,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		pnlCtnAllAboveSpace = new C1SplitterPanel
 		{
@@ -518,7 +519,8 @@ public class MainForm
 			SplitterWidth = 2,
 			SplitterColor = Color.Red,
 			BackColor = Color.Transparent,
-			BorderWidth = 0
+			BorderWidth = 0,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		pnlLedger = new C1SplitterPanel
 		{
@@ -536,7 +538,8 @@ public class MainForm
 			Dock = DockStyle.Fill,
 			SplitterWidth = 2,
 			BackColor = Color.Transparent,
-			BorderWidth = 0
+			BorderWidth = 0,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		pnlHelp = new C1SplitterPanel
 		{
@@ -567,7 +570,9 @@ public class MainForm
 		pnlContent = new C1SplitterPanel
 		{
 			DoubleBuffered = true,
-			BackColor = Color.Transparent
+			BackColor = Color.Transparent,
+			// 让 Excel/表格编辑区域与上方公式编辑栏之间留一点呼吸间距，避免贴边
+			Padding = new Padding(0, 6, 0, 0)
 		};
 		pnlMain = new C1SplitterPanel
 		{
@@ -610,31 +615,73 @@ public class MainForm
 		try
 		{
 			NetworkMonitor.Instance.NetworkStatusChanged += UpdateNetworkStatus;
+			// 启动时立即检查服务器状态，不等首个 15 秒定时器周期
+			NetworkMonitor.Instance.CheckNow();
 		}
 		catch { /* 订阅失败不影响主流程 */ }
 	}
 
 	// P2 协同增强 Task 11：标题栏网络状态指示器
-	// 在线 ● / 离线 ○，并显示待同步条目数
-	private DateTime _lastSyncTime = DateTime.Now;
+		// 在线 ● / 离线 ○，并显示待同步条目数
+		private DateTime _lastSyncTime = DateTime.Now;
+		// 服务器是否处于离线状态（用于状态变化时弹窗提示）
+		private bool _isServerOffline = false;
 
-	private void UpdateNetworkStatus(bool online)
-	{
-		if (View == null) return;
-		try
+		private void UpdateNetworkStatus(bool online)
 		{
-			if (View.InvokeRequired)
+			if (View == null) return;
+			try
 			{
-				View.Invoke((Action<bool>)UpdateNetworkStatus, online);
-				return;
+				if (View.InvokeRequired)
+				{
+					View.Invoke((Action<bool>)UpdateNetworkStatus, online);
+					return;
+				}
+				RefreshTitleBar();
+
+				// 服务器状态变化时弹窗提示
+				if (!online && !_isServerOffline)
+				{
+					// 在线 → 离线：提示服务器不可用
+					_isServerOffline = true;
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning,
+						"服务器不可用，无法进行登录、创建、删除、同步等操作。\r\n" +
+						"已打开的项目本地编辑不受影响，编辑内容将在服务器恢复后手动同步。\r\n" +
+						"请检查网络连接或联系管理员。");
+				}
+				else if (online && _isServerOffline)
+				{
+					// 离线 → 在线：提示服务器恢复并询问是否同步
+					_isServerOffline = false;
+					var result = Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question,
+						"服务器已恢复连接。\r\n是否立即同步数据？",
+						MessageBoxButtons.YesNo);
+					if (result == DialogResult.Yes)
+					{
+						_ = SyncProjects();
+					}
+				}
 			}
-			RefreshTitleBar();
+			catch
+			{
+				// UI 线程未就绪时忽略
+			}
 		}
-		catch
+
+		/// <summary>
+		/// 检查服务器是否可用。离线时弹窗提示并返回 false。
+		/// 供项目管理等需要服务器的操作调用。
+		/// </summary>
+		public bool EnsureServerAvailable()
 		{
-			// UI 线程未就绪时忽略
+			if (_isServerOffline || !NetworkMonitor.Instance.IsOnline)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning,
+					"服务器不可用，无法执行此操作。\r\n请等待服务器恢复连接后重试。");
+				return false;
+			}
+			return true;
 		}
-	}
 
 	/// <summary>
 	/// 刷新标题栏：在原有项目名 + 应用名后追加网络状态与待同步数。
@@ -1336,6 +1383,8 @@ public class MainForm
 			return null;
 		}
 	}
+	File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+		$"[{DateTime.Now:HH:mm:ss.fff}] ProgressForm closed, post-open steps START\n");
 	View.ActiveControl = null;
 		CurrentProject = toOpen;
 		PopulateRecents();
@@ -1343,7 +1392,13 @@ public class MainForm
 		try
 		{
 			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			{
+				File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+					$"[{DateTime.Now:HH:mm:ss.fff}] SignalRClient.OpenProject START\n");
 				await SignalRClient.OpenProject(id.ToString());
+				File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+					$"[{DateTime.Now:HH:mm:ss.fff}] SignalRClient.OpenProject DONE\n");
+			}
 		}
 		catch (Exception)
 		{
@@ -1354,7 +1409,11 @@ public class MainForm
 		AppCommands.TicketDesign.Enabled = CurrentProject.IsCurrentUserManager();
 		AppCommands.TicketMode.Enabled = CurrentProject.IsCurrentUserManager();
 		AppCommands.AccessControl.Enabled = CanAccessControl();
+		File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+			$"[{DateTime.Now:HH:mm:ss.fff}] PopulateProject START\n");
 		PopulateProject();
+		File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+			$"[{DateTime.Now:HH:mm:ss.fff}] PopulateProject DONE, LastNode={(toOpen.LastNode == null ? "null" : toOpen.LastNode.Id.ToString())}\n");
 		if (toOpen.LastNode == null)
 		{
 			SwitchToEmptyView();
@@ -1363,6 +1422,8 @@ public class MainForm
 		{
 			ProjectHierarchy.FindAndSelectNode(toOpen.LastNode);
 		}
+		File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+			$"[{DateTime.Now:HH:mm:ss.fff}] All post-open steps DONE\n");
 		if (_firstTimeOpen)
 		{
 			_firstTimeOpen = false;
@@ -1443,9 +1504,20 @@ public class MainForm
 				{
 					try
 					{
-						// 服务端模式：删除可能存在的旧缓存，强制重新下载
+						// 服务端模式：备份本地缓存后删除，强制重新下载
+						// 防止云端数据不完整时丢失本地完整数据（可从 .lastlocal 恢复）
+						int backupNodeCount = -1;
 						if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && File.Exists(fileName))
 						{
+							// 统计本地节点数（用于下载后对比完整性）
+							try
+							{
+								var backupDal = new ProjectDAL(fileName);
+								backupNodeCount = backupDal.GetTreeNodes().Count();
+							}
+							catch { }
+							// 备份本地 .db 到 .lastlocal
+							try { File.Copy(fileName, fileName + ".lastlocal", overwrite: true); } catch { }
 							try { File.Delete(fileName); } catch { }
 						}
 						TaskProgressValueUpdater taskProgressValueUpdater = new TaskProgressValueUpdater(0f, 0.8f, progressUpdater.UpdateProgress);
@@ -1487,15 +1559,19 @@ public class MainForm
 							ret2.Load(openProgressUpdater.UpdateProgress);
 						}
 						else
-						{
-							Tuple<Stream, int> tup = await WebApiClient.PullProjectDirect(dto.Id, taskProgressValueUpdater.UpdateProgress).ConfigureAwait(continueOnCapturedContext: false);
-							if (tup.Item2 <= 0)
 							{
-								throw new InvalidOperationException("服务器返回的项目数据库大小为 0，可能项目尚未同步");
-							}
-							string tempFile = Path.GetTempFileName();
-							using (Stream stream = tup.Item1)
-							{
+								File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+									$"[{DateTime.Now:HH:mm:ss.fff}] PullProjectDirect START projectId={dto.Id}\n");
+								Tuple<Stream, int> tup = await WebApiClient.PullProjectDirect(dto.Id, taskProgressValueUpdater.UpdateProgress).ConfigureAwait(continueOnCapturedContext: false);
+								File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+									$"[{DateTime.Now:HH:mm:ss.fff}] PullProjectDirect DONE length={tup.Item2}\n");
+								if (tup.Item2 <= 0)
+								{
+									throw new InvalidOperationException("服务器返回的项目数据库大小为 0，可能项目尚未同步");
+								}
+								string tempFile = Path.GetTempFileName();
+								using (Stream stream = tup.Item1)
+								{
 								using FileStream fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
 								byte[] buf = new byte[4096];
 								int total = 0;
@@ -1522,8 +1598,38 @@ public class MainForm
 								gZipStream.CopyTo(destination);
 							}
 							File.Delete(tempFile);
-							ret2.Dal = new ProjectDAL(fileName);
-							ret2.Load(openProgressUpdater.UpdateProgress);
+								File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+									$"[{DateTime.Now:HH:mm:ss.fff}] Download+Decompress DONE, Project.Load START\n");
+								ret2.Dal = new ProjectDAL(fileName);
+								ret2.Load(openProgressUpdater.UpdateProgress);
+								File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+									$"[{DateTime.Now:HH:mm:ss.fff}] Project.Load DONE\n");
+							// 下载后验证：如果云端节点数明显少于本地备份，自动恢复（不弹 MessageBox 避免线程池线程调用 UI 导致死锁）
+							if (backupNodeCount > 10)
+							{
+								try
+								{
+									int currentNodeCount = ret2.GetAllTreeNodes().Count();
+									File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+										$"[{DateTime.Now:HH:mm:ss.fff}] NodeCountCheck: backup={backupNodeCount}, current={currentNodeCount}\n");
+									if (currentNodeCount < backupNodeCount / 2)
+									{
+										File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+											$"[{DateTime.Now:HH:mm:ss.fff}] Auto-restoring from .lastlocal (cloud data incomplete)\n");
+										if (File.Exists(fileName + ".lastlocal"))
+										{
+											File.Copy(fileName + ".lastlocal", fileName, overwrite: true);
+											ret2.Dal = new ProjectDAL(fileName);
+											ret2.Reload(openProgressUpdater.UpdateProgress);
+											int restoredNodeCount = ret2.GetAllTreeNodes().Count();
+											int restoredGroupCount = ret2.TreeGroups.Count;
+											File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
+												$"[{DateTime.Now:HH:mm:ss.fff}] Reload DONE, nodes={restoredNodeCount}, groups={restoredGroupCount}\n");
+										}
+									}
+								}
+								catch { }
+							}
 						}
 					}
 					catch (IOException)
@@ -1810,14 +1916,16 @@ public class MainForm
 				FormulaMap.Draw();
 				CurrentProject.FormulaMapDirty = false;
 			}
-			FormulaMap.View.Show();
+			ctnMain.Visible = false;
+			FormulaMap.View.Visible = true;
 			FormulaMap.View.Focus();
 		}
 	}
 
 	public void HideFormulaMap()
 	{
-		FormulaMap.View.Hide();
+		FormulaMap.View.Visible = false;
+		ctnMain.Visible = true;
 	}
 
 	public void SwitchToPreview()
@@ -2548,8 +2656,22 @@ public class MainForm
 			item2.Save();
 		}
 		proj.Save();
-		progressUpdater.UpdateProgress(1f);
-	}
+			// 服务端模式下，自动推送项目级数据（TreeNode/TreeGroup/DataRefs/VFs）到云端
+			// 修复：保存操作只推送 Table/Document，不推送项目级数据，导致用户保存后未手动同步就关闭时，
+			// 云端树结构缺失，重新打开项目时树形导航不完整。
+			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && AutoPushEnabled)
+			{
+				try
+				{
+					await Syncer.Push(proj).ConfigureAwait(false);
+				}
+				catch (Exception)
+				{
+					// 推送失败不影响本地保存，后续手动同步可补传
+				}
+			}
+			progressUpdater.UpdateProgress(1f);
+		}
 
 	public async Task SyncProjects()
 	{

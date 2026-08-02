@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿extern alias CrawlerModelAlias;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -4636,7 +4636,7 @@ public class frmImport : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1330, 621);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmImport";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

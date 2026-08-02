@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -49,7 +49,7 @@ public class frmActivateLicense : Form
 		base.SuspendLayout();
 		// lblMachineCodeTitle
 		this.lblMachineCodeTitle.AutoSize = true;
-		this.lblMachineCodeTitle.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblMachineCodeTitle.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblMachineCodeTitle.Location = new System.Drawing.Point(20, 23);
 		this.lblMachineCodeTitle.Name = "lblMachineCodeTitle";
 		this.lblMachineCodeTitle.Size = new System.Drawing.Size(73, 22);
@@ -57,7 +57,7 @@ public class frmActivateLicense : Form
 		this.lblMachineCodeTitle.Text = "机器码：";
 		// txtMachineCode
 		this.txtMachineCode.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
-		this.txtMachineCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtMachineCode.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtMachineCode.Location = new System.Drawing.Point(104, 20);
 		this.txtMachineCode.Name = "txtMachineCode";
 		this.txtMachineCode.ReadOnly = true;
@@ -65,14 +65,14 @@ public class frmActivateLicense : Form
 		this.txtMachineCode.TabIndex = 1;
 		// lblLicenseKeyTitle
 		this.lblLicenseKeyTitle.AutoSize = true;
-		this.lblLicenseKeyTitle.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblLicenseKeyTitle.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblLicenseKeyTitle.Location = new System.Drawing.Point(20, 72);
 		this.lblLicenseKeyTitle.Name = "lblLicenseKeyTitle";
 		this.lblLicenseKeyTitle.Size = new System.Drawing.Size(73, 22);
 		this.lblLicenseKeyTitle.TabIndex = 2;
 		this.lblLicenseKeyTitle.Text = "激活码：";
 		// txtLicenseKey
-		this.txtLicenseKey.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtLicenseKey.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtLicenseKey.Location = new System.Drawing.Point(104, 68);
 		this.txtLicenseKey.Name = "txtLicenseKey";
 		this.txtLicenseKey.Size = new System.Drawing.Size(254, 30);
@@ -91,7 +91,7 @@ public class frmActivateLicense : Form
 		this.btnActivate.BackColor = System.Drawing.Color.FromArgb(0, 195, 245);
 		this.btnActivate.FlatAppearance.BorderSize = 0;
 		this.btnActivate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnActivate.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnActivate.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnActivate.ForeColor = System.Drawing.Color.White;
 		this.btnActivate.Location = new System.Drawing.Point(104, 163);
 		this.btnActivate.Name = "btnActivate";
@@ -104,7 +104,7 @@ public class frmActivateLicense : Form
 		this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 		this.btnCancel.FlatAppearance.BorderSize = 0;
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(241, 163);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(117, 39);
@@ -123,7 +123,7 @@ public class frmActivateLicense : Form
 		base.Controls.Add(this.lblLicenseKeyTitle);
 		base.Controls.Add(this.txtMachineCode);
 		base.Controls.Add(this.lblMachineCodeTitle);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

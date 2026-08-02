@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System.ComponentModel;
+﻿﻿using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Ribbon;
@@ -49,14 +49,20 @@ internal class InputTextFormImpl : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.txtInput).BeginInit();
 		base.SuspendLayout();
 		this.txtInput.AcceptsEscape = false;
+		this.txtInput.AcceptsReturn = true;
 		this.txtInput.AutoSize = false;
+		this.txtInput.BackColor = System.Drawing.Color.White;
+		this.txtInput.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.txtInput.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.txtInput.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtInput.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtInput.Location = new System.Drawing.Point(0, 0);
+		this.txtInput.Multiline = true;
 		this.txtInput.Name = "txtInput";
+		this.txtInput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 		this.txtInput.Size = new System.Drawing.Size(369, 339);
 		this.txtInput.TabIndex = 0;
 		this.txtInput.Tag = null;
+		this.txtInput.WordWrap = true;
 		this.txtInput.KeyDown += new System.Windows.Forms.KeyEventHandler(txtInput_KeyDown);
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;

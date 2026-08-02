@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -730,14 +730,8 @@ namespace AuditAI.McpServer.Services
 
             try
             {
-                // 检查是否为本地模式
-                if (!StorageRouter.IsLocalMode)
-                {
-                    result.Error = "非本地模式暂不支持跨项目公式求值";
-                    return result;
-                }
-
                 // 解析公式中的项目 Guid 引用
+                // 无论本地模式还是服务端模式，都通过本地数据库文件直接访问
                 var projectIds = new HashSet<Guid>();
                 int guidStart = formula.IndexOf('[');
                 while (guidStart >= 0)

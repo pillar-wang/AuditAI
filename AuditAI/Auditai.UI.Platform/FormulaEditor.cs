@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -343,13 +343,13 @@ public class FormulaEditor : ISetTheme
 			VerticalAlign = VerticalAlignEnum.Middle,
 			WordWrap = false,
 			ScrollBars = ScrollBars.None,
-			Font = new Font("微软雅黑", 10.5f)
+			Font = new Font("微软雅黑", 9f)
 		};
 		_pnlSourceCell = new C1SplitterPanel
 		{
 			Dock = PanelDockStyle.Left,
 			KeepRelativeSize = false,
-			Width = 250,
+			Width = 360,
 			Resizable = false,
 			BackColor = Color.Transparent,
 			BorderWidth = 0,
@@ -361,7 +361,7 @@ public class FormulaEditor : ISetTheme
 		{
 			Text = "函数",
 			Dock = DockStyle.Fill,
-			Font = new Font("微软雅黑", 10.5f)
+			Font = new Font("微软雅黑", 9f)
 		};
 		btnSelector.Click += Button_Click;
 		_functionSelectDropDownForm = new FunctionSelector();
@@ -377,7 +377,7 @@ public class FormulaEditor : ISetTheme
 		{
 			Dock = PanelDockStyle.Left,
 			KeepRelativeSize = false,
-			Width = 60,
+			Width = 70,
 			Resizable = false,
 			BackColor = Color.Transparent,
 			BorderWidth = 0
@@ -392,7 +392,8 @@ public class FormulaEditor : ISetTheme
 			Multiline = true,
 			ScrollBars = RichTextBoxScrollBars.None,
 			ImeMode = ImeMode.NoControl,
-			DetectUrls = false
+			DetectUrls = false,
+			Font = new Font("微软雅黑", 9f)
 		};
 		rtbFormula.KeyDown += rtbFormula_KeyDown;
 		rtbFormula.Enter += rtbFormula_Enter;
@@ -495,11 +496,11 @@ public class FormulaEditor : ISetTheme
 			{
 				x = 0;
 			}
-			_containerSourceCell.Width = 250;
+			_containerSourceCell.Width = 360;
 			_containerSourceCell.Height = View.Height;
 			_containerSourceCell.Location = new Point(x, 0);
 			x = _containerSourceCell.Location.X + _containerSourceCell.Width + 2;
-			_containerSelectorButton.Width = 60;
+			_containerSelectorButton.Width = 70;
 			_containerSelectorButton.Height = View.Height;
 			_containerSelectorButton.Location = new Point(x, 0);
 			x = _containerSelectorButton.Location.X + _containerSelectorButton.Width + 2;

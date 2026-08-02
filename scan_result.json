@@ -1,0 +1,2997 @@
+[
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\ChatForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlGroup",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "27.437",
+        "size_ratio_value": 27.437,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlChat",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "67.181",
+        "size_ratio_value": 67.181,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlSend",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlChat (Dock=None) 缺: SizeRatio≠100 (当前=67.181)",
+      "B: 主面板 pnlSend (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\ChatForm.cs",
+    "sc_name": "ctnChat",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlChatTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "13.115",
+        "size_ratio_value": 13.115,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlChatRecord",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlChatTitle (Dock=None) 缺: SizeRatio≠100 (当前=13.115)",
+      "B: 主面板 pnlChatRecord (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\ChatForm.cs",
+    "sc_name": "ctnSend",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlSendToolbar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "0.0",
+        "size_ratio_value": 0.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSendButton",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "27.778",
+        "size_ratio_value": 27.778,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSendContent",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlSendToolbar (Dock=None) 缺: SizeRatio≠100 (当前=0.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\dlgProjectEditor.cs",
+    "sc_name": "ctnMain",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "5.946",
+        "size_ratio_value": 5.946,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlProjectInfo",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "57.988",
+        "size_ratio_value": 57.988,
+        "keep_relative_size": null
+      },
+      {
+        "name": "c1SplitterPanel1",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "2.286",
+        "size_ratio_value": 2.286,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlUserHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.501",
+        "size_ratio_value": 9.501,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlEmpty",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.211",
+        "size_ratio_value": 4.211,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlUserSelector",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "97.872",
+        "size_ratio_value": 97.872,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 6,
+    "issues": [
+      "B: 主面板 pnlUserHeader (Dock=None) 缺: SizeRatio≠100 (当前=9.501)",
+      "B: 主面板 pnlUserSelector (Dock=None) 缺: SizeRatio≠100 (当前=97.872)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\dlgTeamCreator.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\dlgTeamSelector.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlToolbar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "16.834",
+        "size_ratio_value": 16.834,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSearch",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "5.556",
+        "size_ratio_value": 5.556,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTeamList",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlToolbar (Dock=None) 缺: SizeRatio≠100 (当前=16.834)",
+      "B: 主面板 pnlSearch (Dock=None) 缺: SizeRatio≠100 (当前=5.556)",
+      "B: 主面板 pnlTeamList (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\dlgTeamUserManagement.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlToolbar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "15.752",
+        "size_ratio_value": 15.752,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel2",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlToolbar (Dock=None) 缺: SizeRatio≠100 (当前=15.752)",
+      "B: 主面板 c1SplitterPanel2 (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\dlgTemplateEditor.cs",
+    "sc_name": "ctnMain",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlInfoInput",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "59.683",
+        "size_ratio_value": 59.683,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel1",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "1.818",
+        "size_ratio_value": 1.818,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlUserHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.662",
+        "size_ratio_value": 9.662,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlEmpty",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.301",
+        "size_ratio_value": 4.301,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlUserSelect",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "94.334",
+        "size_ratio_value": 94.334,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 6,
+    "issues": [
+      "B: 主面板 pnlUserHead (Dock=None) 缺: SizeRatio≠100 (当前=9.662)",
+      "B: 主面板 pnlUserSelect (Dock=None) 缺: SizeRatio≠100 (当前=94.334)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\DocumentEditor.cs",
+    "sc_name": "_viewContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlMain",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlToolbar (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlMain (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\EmptyView.cs",
+    "sc_name": "View",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormControlFormula.cs",
+    "sc_name": "_ctn",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlTbr",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlBottom",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlLabel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlRtb",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 4,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlTbr (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlBottom (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlLabel (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlRtb (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormHeaderEdit.cs",
+    "sc_name": "_splc",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlBottom",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlMain",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlBottom (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlMain (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormNodesIndexEdit.cs",
+    "sc_name": "_splAll",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlButtons",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlButtons (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormProjectManage.cs",
+    "sc_name": "_ctn",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlSearch",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlCategory",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlSearch (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlCategory (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 c1SplitterPanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormTicketImportXlsx.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormTimelineViewer.cs",
+    "sc_name": "_ctn",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlList",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlEntity",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlToolbar (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlList (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlEntity (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormTimelineViewer.cs",
+    "sc_name": "_ctnTable",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlTitle",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlTitle (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormulaEditor.cs",
+    "sc_name": "_containerFormulaTextBox",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlFormula",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormulaEditor.cs",
+    "sc_name": "_containerSelectorButton",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormulaEditor.cs",
+    "sc_name": "_containerSourceCell",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlSourceCell",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormulaEditor.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlAll",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormulaGridEditor.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\FormUserSetting.cs",
+    "sc_name": "ctnSetting",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlDockingTab",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "95.0",
+        "size_ratio_value": 95.0,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlBottomBtn",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "false"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlDockingTab (Dock=None) 缺: Location, Size, SizeRatio≠100 (当前=95.0)",
+      "B: 主面板 pnlBottomBtn (Dock=None) 缺: Location, Size"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmAccessManage.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlSearch",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "3.318",
+        "size_ratio_value": 3.318,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "5.548",
+        "size_ratio_value": 5.548,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlEditor",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlSearch (Dock=None) 缺: SizeRatio≠100 (当前=3.318)",
+      "B: 主面板 pnlEditor (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmAccessManage.cs",
+    "sc_name": "splSearch",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlSearchIcon",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSearchTxt",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlSearchTxt (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmAuxEdit.cs",
+    "sc_name": "ctnDropInput",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlInput",
+        "dock": "PanelDockStyle.Top",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "11.396",
+        "size_ratio_value": 11.396,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlFunctions",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "7.767",
+        "size_ratio_value": 7.767,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlFunctionHint",
+        "dock": "PanelDockStyle.Top",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "16.194",
+        "size_ratio_value": 16.194,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlCombo",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 4,
+    "issues": [
+      "B: 主面板 pnlFunctions (Dock=None) 缺: SizeRatio≠100 (当前=7.767)",
+      "B: 主面板 pnlCombo (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmIntelliFormat.cs",
+    "sc_name": "_spl",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlButtons",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlMain",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlButtons (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlMain (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmManageSnapshots.cs",
+    "sc_name": "_ctn",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "_pnl1",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "8.769",
+        "size_ratio_value": 8.769,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "_pnl2",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 _pnl2 (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmNodeSelector.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.0",
+        "size_ratio_value": 10.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSearch",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.598",
+        "size_ratio_value": 4.598,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlEditor",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlSearch (Dock=None) 缺: SizeRatio≠100 (当前=4.598)",
+      "B: 主面板 pnlEditor (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmNodeSelector.cs",
+    "sc_name": "splSearch",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlSearchIcon",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Right",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "5.882",
+        "size_ratio_value": 5.882,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSearchTxt",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlSearchTxt (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmNodeSelectorWithTicketRecord.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.0",
+        "size_ratio_value": 10.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSearch",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.598",
+        "size_ratio_value": 4.598,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlEditor",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlSearch (Dock=None) 缺: SizeRatio≠100 (当前=4.598)",
+      "B: 主面板 pnlEditor (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmSearch.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlInput",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "6.479",
+        "size_ratio_value": 6.479,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlEditor",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlInput (Dock=None) 缺: SizeRatio≠100 (当前=6.479)",
+      "B: 主面板 pnlEditor (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmSearchTicketRecord.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlInput",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "6.479",
+        "size_ratio_value": 6.479,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlEditor",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlInput (Dock=None) 缺: SizeRatio≠100 (当前=6.479)",
+      "B: 主面板 pnlEditor (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\frmSelectImport.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "7.463",
+        "size_ratio_value": 7.463,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTree",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlTree (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\ImageEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\InputListDropDown.cs",
+    "sc_name": "_spl",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlButtons",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlButtons (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\MainForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlLedger",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlMain",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlLedger (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlMain (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\MainForm.cs",
+    "sc_name": "ctnMain",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlTree",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlNav",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "_pnlNavLastSizeRatio",
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlHelp",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlFormula",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlContent",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 5,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlTree (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlNav (Dock=None) 缺: Location, Size",
+      "B: 主面板 pnlHelp (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlFormula (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlContent (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\MainForm.cs",
+    "sc_name": "ctnRibbonFormClientArea",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlCtnAllAboveSpace",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlCtnAllParent",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlCtnAllAboveSpace (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlCtnAllParent (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\PdfViewer.cs",
+    "sc_name": "View",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\SplitContainerRibbonControlHost.cs",
+    "sc_name": "_ctn",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TableEditor.cs",
+    "sc_name": "_navTreeContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_navTreeTitlePanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_navTreeGridPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _navTreeTitlePanel (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _navTreeGridPanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TableEditor.cs",
+    "sc_name": "c1SplitContainer2",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlValidation",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "33.0",
+        "size_ratio_value": 33.0,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlToolbar (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlValidation (Dock=None) 缺: Location, Size, SizeRatio≠100 (当前=33.0)",
+      "B: 主面板 pnlGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TicketDesignEditor2.cs",
+    "sc_name": "_windowContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_leftSidePanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_editorPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _leftSidePanel (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 c1SplitterPanel (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _editorPanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TicketInputEditor2.cs",
+    "sc_name": "_navTreeContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_switchViewPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_navTreePanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _switchViewPanel (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _navTreePanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TicketInputEditor2.cs",
+    "sc_name": "_splc",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlToolbar",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_editorPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlToolbar (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _editorPanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\TicketInputEditor2.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanelEx",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI\\Auditai.UI.Platform\\ValidationEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\AuditAI.Help\\HelpView\\HelpViewerForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlToolbar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.211",
+        "size_ratio_value": 9.211,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlPdfView",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlToolbar (Dock=None) 缺: SizeRatio≠100 (当前=9.211)",
+      "B: 主面板 pnlPdfView (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\FindReplace.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlFindText",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "63.636",
+        "size_ratio_value": 63.636,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlReplaceText",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlFindText (Dock=None) 缺: SizeRatio≠100 (当前=63.636)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\frmTableCollect.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlBottomButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "7.255",
+        "size_ratio_value": 7.255,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDockingTab",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlDockingTab (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\frmTableCollect.cs",
+    "sc_name": "ctnBlance",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlBalanceConditions",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "19.608",
+        "size_ratio_value": 19.608,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlBalanceGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "18.349",
+        "size_ratio_value": 18.349,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSelectorTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "12.245",
+        "size_ratio_value": 12.245,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlBalanceSelector",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 4,
+    "issues": [
+      "B: 主面板 pnlBalanceConditions (Dock=None) 缺: SizeRatio≠100 (当前=19.608)",
+      "B: 主面板 pnlBalanceGrid (Dock=None) 缺: SizeRatio≠100 (当前=18.349)",
+      "B: 主面板 pnlSelectorTitle (Dock=None) 缺: SizeRatio≠100 (当前=12.245)",
+      "B: 主面板 pnlBalanceSelector (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\frmTableCollect2.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlBottomButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "7.255",
+        "size_ratio_value": 7.255,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDockingTab",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlDockingTab (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\frmTableCollect2.cs",
+    "sc_name": "ctnBlance",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlBalanceConditions",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "19.608",
+        "size_ratio_value": 19.608,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTitlePanel",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "num",
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "panelDataTable",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlBalanceConditions (Dock=None) 缺: SizeRatio≠100 (当前=19.608)",
+      "B: 主面板 panelDataTable (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\GaugeForm.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "52.632",
+        "size_ratio_value": 52.632,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlGauge",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio≠100 (当前=52.632)",
+      "B: 主面板 pnlGauge (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\LinkForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "AutoSizeElement.None",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "25.806",
+        "size_ratio_value": 25.806,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlImage",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "23.438",
+        "size_ratio_value": 23.438,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlLink",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlMessage",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 4,
+    "issues": [
+      "A: AutoSizeElement = AutoSizeElement.None (错误，应为 Both)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\MergeTemplateSelector.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "8.176",
+        "size_ratio_value": 8.176,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTree",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlTree (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\MessageShowBox.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlImage",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlContent",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": []
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\ProgressForm2.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "52.632",
+        "size_ratio_value": 52.632,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlGauge",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio≠100 (当前=52.632)",
+      "B: 主面板 pnlGauge (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\ReplaceForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlFind",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "56.68",
+        "size_ratio_value": 56.68,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlReplace",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "26.923",
+        "size_ratio_value": 26.923,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlFind (Dock=None) 缺: SizeRatio≠100 (当前=56.68)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls\\UpdateForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.None",
+    "panels": [
+      {
+        "name": "pnlButtons",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlImage",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Left",
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlContent",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement = C1.Framework.AutoSizeElement.None (错误，应为 Both)",
+      "B: 主面板 pnlContent (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls.CellCollect\\frmCellCollect.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "6.0",
+        "size_ratio_value": 6.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlBottomBtn",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDockingTab",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "92.0",
+        "size_ratio_value": 92.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio≠100 (当前=6.0)",
+      "B: 主面板 pnlDockingTab (Dock=None) 缺: SizeRatio≠100 (当前=92.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls.CellCollect\\frmFillGuide.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "c1SplitterPanel2",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel1",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 c1SplitterPanel2 (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CommonControls\\Auditai.UI.Controls.CellCollect\\frmFillGuide.cs",
+    "sc_name": "ctnSubTab",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "c1SplitterPanel3",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSubHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.421",
+        "size_ratio_value": 10.421,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSubTable",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 c1SplitterPanel3 (Dock=None) 缺: SizeRatio",
+      "B: 主面板 pnlSubHeader (Dock=None) 缺: SizeRatio≠100 (当前=10.421)",
+      "B: 主面板 pnlSubTable (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net20\\CrawlerForm\\CrawlerForm.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlDataSource",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.23",
+        "size_ratio_value": 10.23,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlDataSource (Dock=None) 缺: SizeRatio≠100 (当前=10.23)",
+      "B: 主面板 c1SplitterPanel (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net20\\CrawlerForm\\CrawlerForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "18.49",
+        "size_ratio_value": 18.49,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTabDock",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio≠100 (当前=18.49)",
+      "B: 主面板 pnlTabDock (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net20\\CrawlerForm\\MessageBox.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "48.426",
+        "size_ratio_value": 48.426,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlMessage",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlButton (Dock=None) 缺: SizeRatio≠100 (当前=48.426)",
+      "B: 主面板 pnlMessage (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net40\\CrawlerForm\\CrawlerForm.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlDataSource",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.23",
+        "size_ratio_value": 10.23,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlDataSource (Dock=None) 缺: SizeRatio≠100 (当前=10.23)",
+      "B: 主面板 c1SplitterPanel (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net40\\CrawlerForm\\CrawlerForm.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlHeader",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "18.49",
+        "size_ratio_value": 18.49,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTabDock",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlHeader (Dock=None) 缺: SizeRatio≠100 (当前=18.49)",
+      "B: 主面板 pnlTabDock (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\CrawlerForm_net40\\CrawlerForm\\MessageBox.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlButton",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "48.426",
+        "size_ratio_value": 48.426,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlMessage",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlButton (Dock=None) 缺: SizeRatio≠100 (当前=48.426)",
+      "B: 主面板 pnlMessage (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\BalanceEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlBalanceTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.815",
+        "size_ratio_value": 4.815,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlBalanceHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.181",
+        "size_ratio_value": 4.181,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlBalanceGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlBalanceTitle (Dock=None) 缺: SizeRatio≠100 (当前=4.815)",
+      "B: 主面板 pnlBalanceHead (Dock=None) 缺: SizeRatio≠100 (当前=4.181)",
+      "B: 主面板 pnlBalanceGrid (Dock=None) 缺: Location, Size"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\frmBalanceEditor.cs",
+    "sc_name": "c1SplitContainer1",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlToolBar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.906",
+        "size_ratio_value": 9.906,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlToolBar (Dock=None) 缺: SizeRatio≠100 (当前=9.906)",
+      "B: 主面板 pnlGrid (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\frmImport.cs",
+    "sc_name": "ctnAll",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlTools",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "13.208",
+        "size_ratio_value": 13.208,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlInput",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.709",
+        "size_ratio_value": 9.709,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDatas",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlTools (Dock=None) 缺: SizeRatio≠100 (当前=13.208)",
+      "B: 主面板 pnlInput (Dock=None) 缺: SizeRatio≠100 (当前=9.709)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\frmVoucherEditor.cs",
+    "sc_name": "ctnVoucher",
+    "auto_size_element": "C1.Framework.AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlVoucherFoot",
+        "dock": "C1.Win.C1SplitContainer.PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "12.745",
+        "size_ratio_value": 12.745,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlToolbar",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "22.105",
+        "size_ratio_value": 22.105,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.774",
+        "size_ratio_value": 9.774,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "12.146",
+        "size_ratio_value": 12.146,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "95.0",
+        "size_ratio_value": 95.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 5,
+    "issues": [
+      "B: 主面板 pnlToolbar (Dock=None) 缺: SizeRatio≠100 (当前=22.105)",
+      "B: 主面板 pnlVoucherTitle (Dock=None) 缺: SizeRatio≠100 (当前=9.774)",
+      "B: 主面板 pnlVoucherHead (Dock=None) 缺: SizeRatio≠100 (当前=12.146)",
+      "B: 主面板 pnlVoucherGrid (Dock=None) 缺: SizeRatio≠100 (当前=95.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\LedgerAgingEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlAnalyzeTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.769",
+        "size_ratio_value": 4.769,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlAnalyzeHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlAnalyzeGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlAnalyzeTitle (Dock=None) 缺: SizeRatio≠100 (当前=4.769)",
+      "B: 主面板 pnlAnalyzeHead (Dock=None) 缺: SizeRatio",
+      "B: 主面板 pnlAnalyzeGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\LedgerDefaultPanel.cs",
+    "sc_name": "emptyView",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 1,
+    "issues": [
+      "A: AutoSizeElement 未设置"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\MultiLedgerViewer.cs",
+    "sc_name": "_spc",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "_pnlExplorer",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlList",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      },
+      {
+        "name": "_pnlViewer",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 _pnlExplorer (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlList (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 _pnlViewer (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\StructureEditor.cs",
+    "sc_name": "c1SplitContainer",
+    "auto_size_element": null,
+    "panels": [
+      {
+        "name": "pnlStructureGird",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "40.0",
+        "size_ratio_value": 40.0,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlStructureChart",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "A: AutoSizeElement 未设置",
+      "B: 主面板 pnlStructureGird (Dock=None) 缺: SizeRatio≠100 (当前=40.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\StructureEditor.cs",
+    "sc_name": "ctnStructureContent",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlStructureTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "3.0",
+        "size_ratio_value": 3.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "c1SplitterPanel",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlStructureTitle (Dock=None) 缺: SizeRatio≠100 (当前=3.0)",
+      "B: 主面板 c1SplitterPanel (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\SubsidiaryEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlSubsidiayFoot",
+        "dock": "PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "3.657",
+        "size_ratio_value": 3.657,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlSubsidiaryTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "5.025",
+        "size_ratio_value": 5.025,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSubsidiaryHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "2.0",
+        "size_ratio_value": 2.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlSubsidiaryGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "59.74",
+        "size_ratio_value": 59.74,
+        "keep_relative_size": "true"
+      },
+      {
+        "name": "pnlSubsidiaryVoucher",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 5,
+    "issues": [
+      "B: 主面板 pnlSubsidiaryTitle (Dock=None) 缺: SizeRatio≠100 (当前=5.025)",
+      "B: 主面板 pnlSubsidiaryHead (Dock=None) 缺: SizeRatio≠100 (当前=2.0)",
+      "B: 主面板 pnlSubsidiaryGrid (Dock=None) 缺: Location, Size, SizeRatio≠100 (当前=59.74)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\SubsidiaryEditor.cs",
+    "sc_name": "ctnVoucher",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlVoucherFoot",
+        "dock": "PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.204",
+        "size_ratio_value": 10.204,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "2.0",
+        "size_ratio_value": 2.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "95.0",
+        "size_ratio_value": 95.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 4,
+    "issues": [
+      "B: 主面板 pnlVoucherTitle (Dock=None) 缺: SizeRatio≠100 (当前=10.204)",
+      "B: 主面板 pnlVoucherHead (Dock=None) 缺: SizeRatio≠100 (当前=2.0)",
+      "B: 主面板 pnlVoucherGrid (Dock=None) 缺: SizeRatio≠100 (当前=95.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\SummaryEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlMonthTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.769",
+        "size_ratio_value": 4.769,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlMonthHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.181",
+        "size_ratio_value": 4.181,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlMonthGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlMonthTitle (Dock=None) 缺: SizeRatio≠100 (当前=4.769)",
+      "B: 主面板 pnlMonthHead (Dock=None) 缺: SizeRatio≠100 (当前=4.181)",
+      "B: 主面板 pnlMonthGrid (Dock=None) 缺: Location, Size"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\TrendencyEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlTrendTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "6.0",
+        "size_ratio_value": 6.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlTrendContent",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "95.0",
+        "size_ratio_value": 95.0,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlTrendTitle (Dock=None) 缺: SizeRatio≠100 (当前=6.0)",
+      "B: 主面板 pnlTrendContent (Dock=None) 缺: Location, Size, SizeRatio≠100 (当前=95.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\TrendencyEditor.cs",
+    "sc_name": "ctnTrendContent",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlTrendGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "0.0",
+        "size_ratio_value": 0.0,
+        "keep_relative_size": null
+      },
+      {
+        "name": "pnlTrendChart",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlTrendGrid (Dock=None) 缺: SizeRatio≠100 (当前=0.0)"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\ValidateEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlValidateTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "4.769",
+        "size_ratio_value": 4.769,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlValidateGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlValidateTitle (Dock=None) 缺: SizeRatio≠100 (当前=4.769)",
+      "B: 主面板 pnlValidateGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\VoucherListEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlVoucherListTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "3.0",
+        "size_ratio_value": 3.0,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherListGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": "100.0",
+        "size_ratio_value": 100.0,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlVoucherListTitle (Dock=None) 缺: SizeRatio≠100 (当前=3.0)",
+      "B: 主面板 pnlVoucherListGrid (Dock=None) 缺: Location, Size"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\VoucherMarkedEditor.cs",
+    "sc_name": "View",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlVouchers",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "true"
+      },
+      {
+        "name": "pnlDetails",
+        "dock": null,
+        "has_location": false,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlVouchers (Dock=None) 缺: Location, Size, SizeRatio",
+      "B: 主面板 pnlDetails (Dock=None) 缺: Location, SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\VoucherMarkedEditor.cs",
+    "sc_name": "ctnDetails",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlDetailFoot",
+        "dock": "PanelDockStyle.Bottom",
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "10.239",
+        "size_ratio_value": 10.239,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDetailHead",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "19.011",
+        "size_ratio_value": 19.011,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlDetailGrid",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": null
+      }
+    ],
+    "panel_count": 3,
+    "issues": [
+      "B: 主面板 pnlDetailHead (Dock=None) 缺: SizeRatio≠100 (当前=19.011)",
+      "B: 主面板 pnlDetailGrid (Dock=None) 缺: SizeRatio"
+    ]
+  },
+  {
+    "file": "e:\\lq\\AuditAI\\LedgerViewer2\\Auditai.UI.LedgerView\\VoucherMarkedEditor.cs",
+    "sc_name": "ctnVouchers",
+    "auto_size_element": "AutoSizeElement.Both",
+    "panels": [
+      {
+        "name": "pnlVoucherTitle",
+        "dock": null,
+        "has_location": true,
+        "has_size": true,
+        "size_ratio": "9.524",
+        "size_ratio_value": 9.524,
+        "keep_relative_size": "false"
+      },
+      {
+        "name": "pnlVoucherGrid",
+        "dock": null,
+        "has_location": false,
+        "has_size": false,
+        "size_ratio": null,
+        "size_ratio_value": null,
+        "keep_relative_size": "true"
+      }
+    ],
+    "panel_count": 2,
+    "issues": [
+      "B: 主面板 pnlVoucherTitle (Dock=None) 缺: SizeRatio≠100 (当前=9.524)",
+      "B: 主面板 pnlVoucherGrid (Dock=None) 缺: Location, Size, SizeRatio"
+    ]
+  }
+]

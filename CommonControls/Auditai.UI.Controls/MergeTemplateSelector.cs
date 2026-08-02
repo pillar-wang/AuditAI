@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -36,6 +36,13 @@ public class MergeTemplateSelector : C1RibbonForm
 	public TreeDocumentNode SelectedTemplete { get; set; }
 
 	public TreeTableNode CurrentTable { get; set; }
+
+	#region 按钮尺寸规范
+	private const int ButtonWidth = 110;
+	private const int ButtonHeight = 34;
+	private const int ButtonRightMargin = 50;
+	private const int ButtonGap = 12;
+	#endregion
 
 	public static MergeTemplateSelector GetInstance()
 	{
@@ -226,19 +233,19 @@ public class MergeTemplateSelector : C1RibbonForm
 		this.pnlButtons.TabIndex = 1;
 		this.pnlButtons.Width = 398;
 		this.btnCancle.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancle.Location = new System.Drawing.Point(268, 17);
+		this.btnCancle.Location = new System.Drawing.Point(398 - ButtonRightMargin - ButtonWidth, 17);
 		this.btnCancle.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancle.Name = "btnCancle";
-		this.btnCancle.Size = new System.Drawing.Size(91, 34);
+		this.btnCancle.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancle.TabIndex = 1;
 		this.btnCancle.Text = "取消";
 		this.btnCancle.UseVisualStyleBackColor = true;
 		this.btnCancle.Click += new System.EventHandler(btnCancle_Click);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Location = new System.Drawing.Point(135, 17);
+		this.btnConfirm.Location = new System.Drawing.Point(398 - ButtonRightMargin - ButtonWidth - ButtonGap - ButtonWidth, 17);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
+		this.btnConfirm.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnConfirm.TabIndex = 0;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
@@ -255,7 +262,7 @@ public class MergeTemplateSelector : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(398, 624);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "MergeTemplateSelector";
 		base.ShowInTaskbar = false;

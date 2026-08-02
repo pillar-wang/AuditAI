@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -80,17 +80,17 @@ public class MultiLedgerViewer
 			Dock = PanelDockStyle.Left,
 			Collapsible = false,
 			Resizable = true,
-			Width = 200,
+			Width = 190,
 			KeepRelativeSize = false,
 			MinWidth = 0
 		};
 		_spc.Panels.Add(_pnlList);
 		_tileList = new C1TileControlEx
 		{
-			CellWidth = 10,
-			CellHeight = 10,
+			CellWidth = 12,
+			CellHeight = 12,
 			AllowChecking = false,
-			CellSpacing = 20,
+			CellSpacing = 5,
 			Margin = new Padding(0),
 			Padding = new Padding(0),
 			GroupPadding = new Padding(0),
@@ -331,7 +331,8 @@ public class MultiLedgerViewer
 					Text1 = text,
 					Text = key,
 					VerticalSize = 9,
-					HorizontalSize = 18
+					HorizontalSize = 11,
+					ForeColor1 = Color.FromArgb(30, 41, 59)
 				};
 				_tileGroup.Tiles.Add(tile);
 				tile.Image1 = ((key == CurrentLedgerViewer?.CurrentFilePath) ? currentLedger : ledger);
@@ -381,41 +382,44 @@ public class MultiLedgerViewer
 	{
 		Template template = new Template();
 		template.Description = "Win32";
+		// 关闭按钮面板（顶部停靠，右上对齐）- 加大热区 18×18 解决点不到
 		PanelElement panelElement = new PanelElement();
-		panelElement.Alignment = ContentAlignment.TopRight;
-		panelElement.FixedHeight = 20;
-		panelElement.FixedWidth = 40;
-		panelElement.Margin = new Padding(0, 2, 2, 0);
+		panelElement.Dock = DockStyle.Top;
+		panelElement.FixedHeight = 18;
+		panelElement.AlignmentOfContents = ContentAlignment.TopRight;
 		ImageElement imageElement = new ImageElement();
-		imageElement.AlignmentOfContents = ContentAlignment.TopRight;
 		imageElement.ColumnIndex = 30;
-		imageElement.FixedWidth = 20;
+		imageElement.FixedWidth = 18;
+		imageElement.FixedHeight = 18;
 		imageElement.ImageSelector = ImageSelector.Image2;
+		imageElement.Margin = new Padding(0, 0, 2, 0);
 		panelElement.Children.Add(imageElement);
+		// 主图标面板（顶部停靠，居中）- 28×28 图标，按比例整体缩小
 		PanelElement panelElement2 = new PanelElement();
-		panelElement2.FixedHeight = 40;
-		panelElement2.FixedWidth = 40;
-		panelElement2.Margin = new Padding(0, 8, 0, 0);
-		panelElement2.Alignment = ContentAlignment.TopCenter;
+		panelElement2.Dock = DockStyle.Top;
+		panelElement2.FixedHeight = 34;
+		panelElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		ImageElement imageElement2 = new ImageElement();
-		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement2.FixedHeight = 40;
-		imageElement2.FixedWidth = 40;
+		imageElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
+		imageElement2.FixedHeight = 28;
+		imageElement2.FixedWidth = 28;
 		imageElement2.ImageSelector = ImageSelector.Image1;
+		imageElement2.Margin = new Padding(0, 5, 0, 1);
 		panelElement2.Children.Add(imageElement2);
+		// 文字面板（填充剩余空间，居中）- 紧凑 Padding
 		PanelElement panelElement3 = new PanelElement();
-		panelElement3.FixedHeight = 36;
-		panelElement3.FixedWidth = 180;
-		panelElement3.Alignment = ContentAlignment.BottomCenter;
+		panelElement3.Dock = DockStyle.Fill;
+		panelElement3.AlignmentOfContents = ContentAlignment.TopCenter;
+		panelElement3.Padding = new Padding(3, 2, 3, 2);
 		TextElement textElement = new TextElement();
 		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.SingleLine = false;
-		textElement.FixedHeight = 36;
-		textElement.FixedWidth = 180;
-		textElement.Margin = new Padding(0, 0, 0, 6);
+		textElement.Margin = new Padding(0, 0, 0, 0);
 		textElement.TextSelector = TextSelector.Text1;
-		textElement.ForeColorSelector = ForeColorSelector.ForeColor1;
+		textElement.ForeColor = Color.FromArgb(30, 41, 59);
+		textElement.ForeColorSelector = ForeColorSelector.Unbound;
+		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 		panelElement3.Children.Add(textElement);
 		template.Elements.Add(panelElement);
 		template.Elements.Add(panelElement2);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -27,6 +27,10 @@ public class ProjectHierarchy
     // 修复 BUG: 此前批量导出/打印按钮无防重复点击保护，耗时操作期间用户可多次点击，
     // 导致并发批量任务，资源占用激增。使用原子标志防止重入。
     private int _isBatchProcessing;
+
+    // 修复 BUG: 树节点左侧展开/折叠按钮区域点击不应触发节点选中导航
+    // 在 BeforeMouseDown 中检测并标记，在 MouseClick 中据此阻止 TreeNodeSelected 事件
+    private bool _isTreeButtonAreaClicked;
 
     // 分组右键菜单命令
     private C1Command cmdMoveUpGroup = new C1Command();
@@ -230,22 +234,16 @@ public class ProjectHierarchy
             SelectionMode = SelectionModeEnum.Cell,
             Font = new Font("微软雅黑", 10.5f)
         };
-        _grid.Styles.Normal.Border.Width = 0;
-        _grid.Styles.Normal.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
-        _grid.Styles.Alternate.Border.Width = 0;
-        _grid.Styles.Alternate.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
-        _grid.Styles.EmptyArea.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
-        _grid.DrawMode = DrawModeEnum.Normal;
-        _grid.Tree.Style = TreeStyleFlags.Symbols | TreeStyleFlags.ButtonBar;
-        _grid.Rows.DefaultSize = 33;
         _grid.Rows.Count = 0;
-        _grid.Rows.Fixed = 1;
+        _grid.Rows.Fixed = 0;
         _grid.Cols.Count = 1;
         _grid.Cols.Fixed = 0;
         _grid.Tree.Column = 0;
+        _grid.Rows.DefaultSize = 33;
         _grid.Cols[0].Width = 200;
         _grid.MouseClick += _grid_MouseClick;
         _grid.MouseDoubleClick += _grid_MouseDoubleClick;
+        _grid.BeforeMouseDown += _grid_BeforeMouseDown;
 
         Initialize();
     }
@@ -1560,6 +1558,45 @@ public class ProjectHierarchy
 
     #endregion
 
+    /// <summary>
+    /// 检测点击是否在树节点的展开/折叠按钮区域（单元格左侧约20像素）。
+    /// 使用 BeforeMouseDown 事件参数进行命中测试，比 MouseClick 更可靠。
+    /// </summary>
+    private bool IsTreeButtonArea(int x, int y)
+    {
+        HitTestInfo hitTestInfo = _grid.HitTest(x, y);
+        if (hitTestInfo.Type != HitTestTypeEnum.Cell)
+            return false;
+
+        if (hitTestInfo.Column != _grid.Tree.Column)
+            return false;
+
+        C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];
+        if (!row.IsNode)
+            return false;
+
+        // 获取单元格矩形，树按钮区域约占单元格左侧 20 像素
+        Rectangle cellRect = _grid.GetCellRect(hitTestInfo.Row, hitTestInfo.Column);
+        int treeButtonAreaWidth = 24;
+        return (x - cellRect.Left) < treeButtonAreaWidth;
+    }
+
+    /// <summary>
+    /// 在鼠标按下前检测是否点击了树按钮区域，若是则标记状态供 MouseClick 使用。
+    /// 这能可靠地阻止点击树按钮时触发节点选中导航事件。
+    /// </summary>
+    private void _grid_BeforeMouseDown(object sender, BeforeMouseDownEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left)
+        {
+            _isTreeButtonAreaClicked = IsTreeButtonArea(e.X, e.Y);
+        }
+        else
+        {
+            _isTreeButtonAreaClicked = false;
+        }
+    }
+
     private void _grid_MouseClick(object sender, MouseEventArgs e)
     {
         HitTestInfo hitTestInfo = _grid.HitTest();
@@ -1569,31 +1606,39 @@ public class ProjectHierarchy
             if (row.IsNode)
             {
                 Node node = row.Node;
-                
+
+                // 优先使用 BeforeMouseDown 中计算的标记；若不可用则回退到像素检测
+                bool isTreeButtonClick = _isTreeButtonAreaClicked;
+                if (!isTreeButtonClick && e.Button == MouseButtons.Left)
+                {
+                    isTreeButtonClick = IsTreeButtonArea(e.X, e.Y);
+                }
+
                 if (node.Key is TreeGroup group)
                 {
-                    SelectedNode = group;
-                    UpdateCurrentGroupModel(group);
+                    // 点击树按钮区域时不更新分组模型，避免误触导致分组切换
+                    if (!isTreeButtonClick)
+                    {
+                        SelectedNode = group;
+                        UpdateCurrentGroupModel(group);
+                    }
                 }
                 else if (node.Key is TreeNodeBase tnb)
                 {
-                    SelectedNode = tnb;
-                    UpdateCurrentGroupModel(tnb.Group);
-                    // 仅左键点击时触发选中事件，右键不触发以避免不必要的文档加载
-                    if (e.Button == MouseButtons.Left)
+                    // 点击树按钮区域时不更新选中状态，防止触发选中导航事件
+                    if (!isTreeButtonClick)
+                    {
+                        SelectedNode = tnb;
+                        UpdateCurrentGroupModel(tnb.Group);
                         TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                    }
                 }
-            }
-        }
 
-        // 左键点击树列时展开/折叠
-        if (e.Button == MouseButtons.Left && hitTestInfo.Type == HitTestTypeEnum.Cell && hitTestInfo.Column == _grid.Tree.Column)
-        {
-            C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];
-            if (row.IsNode)
-            {
-                Node node = row.Node;
-                node.Collapsed = !node.Collapsed;
+                // 仅在点击树按钮区域时触发展开/折叠
+                if (e.Button == MouseButtons.Left && isTreeButtonClick)
+                {
+                    node.Collapsed = !node.Collapsed;
+                }
             }
         }
 
@@ -1632,6 +1677,9 @@ public class ProjectHierarchy
                 ctxTreeNothing.ShowContextMenu(_grid, e.Location);
             }
         }
+
+        // 重置树按钮点击标记
+        _isTreeButtonAreaClicked = false;
     }
 
     private void View_MouseClick(object sender, MouseEventArgs e)
@@ -1653,10 +1701,18 @@ public class ProjectHierarchy
             C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];
             if (row.IsNode)
             {
-                Node node = row.Node;
-                TreeNodeBase tnb = node.Key as TreeNodeBase;
-                SelectedNode = tnb;
-                TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                // 双击也需检查是否点击在树按钮区域，避免误触
+                bool isTreeButtonClick = IsTreeButtonArea(e.X, e.Y);
+                if (!isTreeButtonClick)
+                {
+                    Node node = row.Node;
+                    TreeNodeBase tnb = node.Key as TreeNodeBase;
+                    if (tnb != null)
+                    {
+                        SelectedNode = tnb;
+                        TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                    }
+                }
             }
         }
     }

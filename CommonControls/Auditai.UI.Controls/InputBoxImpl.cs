@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -38,6 +38,33 @@ internal class InputBoxImpl : C1RibbonForm
 
 	public bool Valid { get; set; }
 
+	/// <summary>控件顶部距离 lblPrompt 底部的垂直间距</summary>
+	private const int ControlSpacing = 10;
+
+	/// <summary>左右边距</summary>
+	private const int SideMargin = 26;
+
+	/// <summary>按钮宽度（增大以提升点击舒适度）</summary>
+	private const int ButtonWidth = 110;
+
+	/// <summary>按钮高度</summary>
+	private const int ButtonHeight = 36;
+
+	/// <summary>按钮右侧距窗体右边缘的距离（避免按钮贴边）</summary>
+	private const int ButtonRightMargin = 50;
+
+	/// <summary>按钮之间的水平间距</summary>
+	private const int ButtonGap = 12;
+
+	/// <summary>窗体 ClientSize 宽度</summary>
+	private const int FormClientWidth = 600;
+
+	/// <summary>确定按钮 Left 坐标（取消按钮在右，确定按钮在其左）</summary>
+	private static readonly int BtnConfirmLeft = FormClientWidth - ButtonRightMargin - ButtonWidth - ButtonGap - ButtonWidth;
+
+	/// <summary>取消按钮 Left 坐标（最右侧）</summary>
+	private static readonly int BtnCancelLeft = FormClientWidth - ButtonRightMargin - ButtonWidth;
+
 	public InputBoxImpl()
 	{
 		InitializeComponent();
@@ -47,13 +74,13 @@ internal class InputBoxImpl : C1RibbonForm
 	public InputBoxImpl(string title = "", string prompt = "", InputFormEnum inputEnum = InputFormEnum.Num)
 	{
 		InitializeComponent();
-		txtInputLeft.Multiline = false;
-		txtInputLeft.AcceptsReturn = false;
-		txtInputLeft.Width = 590;
-		txtInputLeft.Height = 30;
 		Text = title;
 		lblPrompt.Text = prompt;
 		_inputFormEnum = inputEnum;
+
+		// 根据 prompt 内容自动调整 lblPrompt 高度和下方控件位置
+		LayoutControlsByPrompt(prompt);
+
 		switch (_inputFormEnum)
 		{
 		case InputFormEnum.Date:
@@ -107,9 +134,14 @@ internal class InputBoxImpl : C1RibbonForm
 			txtInputRight.Visible = false;
 			dateInputLeft.Visible = false;
 			dateInputRight.Visible = false;
-			base.ClientSize = new Size(600, 270);
-			btnConfirm.Location = new Point(360, 215);
-			btnCancel.Location = new Point(470, 215);
+			// 多重文本模式下，调整下方输入框和按钮位置
+			int mtInputTop = lblPrompt.Bottom + ControlSpacing;
+			txtInputLeft.Location = new Point(SideMargin, mtInputTop);
+			int btnTop = txtInputLeft.Bottom + ControlSpacing + 10;
+			base.ClientSize = new Size(FormClientWidth, btnTop + btnConfirm.Height + 20);
+			btnConfirm.Location = new Point(BtnConfirmLeft, btnTop);
+			btnCancel.Location = new Point(BtnCancelLeft, btnTop);
+			lblwarnNum.Location = new Point(SideMargin, txtInputLeft.Bottom + 4);
 			break;
 		case InputFormEnum.Time:
 			txtInputLeft.Visible = true;
@@ -157,6 +189,55 @@ internal class InputBoxImpl : C1RibbonForm
 			dateInputRight.Width = 275;
 			break;
 		}
+	}
+
+	/// <summary>
+	/// 根据 prompt 长度自动计算 lblPrompt 的高度，
+	/// 并调整下方输入控件、警告标签和按钮的垂直位置，
+	/// 确保长提示文字不被截断。
+	/// </summary>
+	private void LayoutControlsByPrompt(string prompt)
+	{
+		if (string.IsNullOrEmpty(prompt)) return;
+		if (_inputFormEnum == InputFormEnum.MultiText) return; // MultiText 单独处理
+
+		Font font = lblPrompt.Font;
+		int maxWidth = 550; // lblPrompt 设计宽度
+		int minHeight = 28;
+
+		SizeF size;
+		using (var g = CreateGraphics())
+		{
+			StringFormat fmt = (StringFormat)StringFormat.GenericTypographic.Clone();
+			fmt.FormatFlags |= StringFormatFlags.LineLimit;
+			size = g.MeasureString(prompt, font, maxWidth, fmt);
+		}
+
+		int lblHeight = Math.Max(minHeight, (int)Math.Ceiling(size.Height) + 4);
+		lblPrompt.Height = lblHeight;
+
+		// 下方控件的 Top = lblPrompt.Bottom + 间距
+		int inputTop = lblPrompt.Bottom + ControlSpacing;
+
+		// 调整输入控件 Location
+		txtInputLeft.Location = new Point(txtInputLeft.Left, inputTop);
+		txtInputRight.Location = new Point(txtInputRight.Left, inputTop);
+		dateInputLeft.Location = new Point(dateInputLeft.Left, inputTop);
+		dateInputRight.Location = new Point(dateInputRight.Left, inputTop);
+
+		// 警告标签位置
+		lblwarnNum.Location = new Point(lblwarnNum.Left, txtInputLeft.Bottom + 4);
+
+		// 按钮位置（Bottom 对齐）
+		int btnTop = inputTop + Math.Max(txtInputLeft.Height, dateInputLeft.Height) + ControlSpacing + 8;
+		btnConfirm.Location = new Point(btnConfirm.Left, btnTop);
+		btnCancel.Location = new Point(btnCancel.Left, btnTop);
+
+		// 调整窗体 ClientSize
+		int totalHeight = btnTop + btnConfirm.Height + 20;
+		int minFormHeight = 175;
+		if (totalHeight < minFormHeight) totalHeight = minFormHeight;
+		base.ClientSize = new Size(FormClientWidth, totalHeight);
 	}
 
 	public void SetInputLeftWidth(int width = 390)
@@ -362,8 +443,64 @@ internal class InputBoxImpl : C1RibbonForm
 		Theme.SetCurrentObject(btnConfirm);
 		Theme.SetCurrentObject(btnCancel);
 		base.AcceptButton = btnConfirm;
+
+		// 根据提示文字的长度自动布局控件（避免 lblPrompt 过高时，下方输入框/按钮看不见）
+		LayoutControlsByPrompt(lblPrompt.Text ?? "");
+
+		// 超长提示：如果 lblPrompt 计算出的实际高度比预设固定值高很多，提示内容改成可滚动的只读 TextBox，防止窗体过大
+		ApplyPromptAutoScrollOrTextBox();
+
+		// 多重文本模式：添加垂直滚动条，内容多时可滚动浏览
+		if (_inputFormEnum == InputFormEnum.MultiText)
+		{
+			txtInputLeft.WordWrap = true;
+			txtInputLeft.ScrollBars = ScrollBars.Vertical;
+		}
+
 		return base.ShowDialog();
 	}
+
+	/// <summary>当提示文字超长（> MaxPromptHeight）时，把 lblPrompt 隐藏，换成一个同样区域的只读可滚动 C1TextBox。
+	/// 这样不会让整个窗体尺寸过大，用户可以滚动阅读。</summary>
+	private void ApplyPromptAutoScrollOrTextBox()
+	{
+		const int maxPromptHeight = 120;
+		if (_promptTextBox != null)
+		{
+			// 已有滚动文本框，重置可见性
+			_promptTextBox.Visible = lblPrompt.Height > maxPromptHeight;
+			lblPrompt.Visible = !_promptTextBox.Visible;
+			if (_promptTextBox.Visible)
+				_promptTextBox.Text = lblPrompt.Text ?? "";
+			return;
+		}
+
+		if (lblPrompt.Height <= maxPromptHeight) return;
+
+		var textBox = new C1TextBoxEx
+		{
+			Name = "txtPromptScroll",
+			BackColor = BackColor,
+			BorderStyle = BorderStyle.None,
+			Multiline = true,
+			ReadOnly = true,
+			ScrollBars = ScrollBars.Vertical,
+			WordWrap = true,
+			Font = new Font("微软雅黑", 10.5f),
+			Location = lblPrompt.Location,
+			Size = new Size(lblPrompt.Width, maxPromptHeight),
+			Text = lblPrompt.Text ?? "",
+			Anchor = lblPrompt.Anchor
+		};
+		textBox.VerticalAlign = VerticalAlignEnum.Top;
+		_promptTextBox = textBox;
+		Controls.Add(textBox);
+		textBox.BringToFront();
+		lblPrompt.Visible = false;
+	}
+
+	/// <summary>Prompt 超长时承载滚动显示的只读 TextBox</summary>
+	private C1TextBoxEx _promptTextBox;
 
 	protected override void Dispose(bool disposing)
 	{
@@ -405,20 +542,20 @@ internal class InputBoxImpl : C1RibbonForm
 		this.txtInputLeft.KeyPress += new System.Windows.Forms.KeyPressEventHandler(txtInputLeft_KeyPress);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnConfirm.Location = new System.Drawing.Point(360, 130);
+		this.btnConfirm.Location = new System.Drawing.Point(BtnConfirmLeft, 130);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(98, 36);
+		this.btnConfirm.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(470, 130);
+		this.btnCancel.Location = new System.Drawing.Point(BtnCancelLeft, 130);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(98, 36);
+		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
@@ -485,7 +622,7 @@ internal class InputBoxImpl : C1RibbonForm
 		base.AcceptButton = this.btnConfirm;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(600, 175);
+		base.ClientSize = new System.Drawing.Size(FormClientWidth, 175);
 		base.Controls.Add(this.dateInputRight);
 		base.Controls.Add(this.txtInputRight);
 		base.Controls.Add(this.dateInputLeft);

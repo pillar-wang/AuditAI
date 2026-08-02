@@ -887,7 +887,7 @@ internal class SubsidiaryEditor : ISetTheme
 			Name = empty,
 			Text = empty,
 			Tag = userdata,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			ForeColor = Color.Black
 		};
 		c1DockingTabPage.TabClick += delegate(object s1, EventArgs e1)

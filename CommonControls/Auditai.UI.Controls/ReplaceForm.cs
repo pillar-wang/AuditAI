@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -76,6 +76,12 @@ public class ReplaceForm : C1RibbonForm
 	public event EventHandler<FindReplaceEventArgs> Replace_ReplaceKeyDown;
 
 	public event EventHandler<FindReplaceEventArgs> Replace_ReplaceAllKeyDown;
+
+	#region 按钮尺寸规范
+	private const int ButtonWidth = 110;
+	private const int ButtonHeight = 34;
+	private const int ButtonRightMargin = 50;
+	#endregion
 
 	public ReplaceForm()
 	{
@@ -287,7 +293,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.Controls.Add(this.c1Label1);
 		this.pnlFind.Controls.Add(this.ckWholeWord);
 		this.pnlFind.Controls.Add(this.ckMatchCase);
-		this.pnlFind.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlFind.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.pnlFind.Height = 182;
 		this.pnlFind.KeepRelativeSize = false;
 		this.pnlFind.Location = new System.Drawing.Point(0, 0);
@@ -298,7 +304,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.TabIndex = 1;
 		this.cboScope.AllowSpinLoop = false;
 		this.cboScope.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cboScope.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.cboScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.cboScope.GapHeight = 0;
 		this.cboScope.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cboScope.ItemsDisplayMember = "";
@@ -313,7 +319,7 @@ public class ReplaceForm : C1RibbonForm
 		this.lblScope.AutoSize = true;
 		this.lblScope.BackColor = System.Drawing.Color.Transparent;
 		this.lblScope.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblScope.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblScope.ForeColor = System.Drawing.Color.Black;
 		this.lblScope.Location = new System.Drawing.Point(16, 60);
 		this.lblScope.Name = "lblScope";
@@ -323,16 +329,16 @@ public class ReplaceForm : C1RibbonForm
 		this.lblScope.Text = "查找范围：";
 		this.lblScope.TextDetached = true;
 		this.lblScope.VisualStyleBaseStyle = C1.Win.C1Input.VisualStyle.Office2007Blue;
-		this.btnDisplayReplace.Location = new System.Drawing.Point(478, 96);
+		this.btnDisplayReplace.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 96);
 		this.btnDisplayReplace.Name = "btnDisplayReplace";
-		this.btnDisplayReplace.Size = new System.Drawing.Size(104, 34);
+		this.btnDisplayReplace.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnDisplayReplace.TabIndex = 13;
 		this.btnDisplayReplace.Text = "替换";
 		this.btnDisplayReplace.UseVisualStyleBackColor = true;
 		this.btnDisplayReplace.Click += new System.EventHandler(btnDisplayReplace_Click);
-		this.btnNext.Location = new System.Drawing.Point(478, 13);
+		this.btnNext.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 13);
 		this.btnNext.Name = "btnNext";
-		this.btnNext.Size = new System.Drawing.Size(104, 34);
+		this.btnNext.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnNext.TabIndex = 12;
 		this.btnNext.Text = "查找下一个";
 		this.btnNext.UseVisualStyleBackColor = true;
@@ -383,7 +389,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlReplace.Controls.Add(this.c1Label2);
 		this.pnlReplace.Controls.Add(this.txtReplaceBy);
 		this.pnlReplace.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlReplace.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlReplace.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.pnlReplace.Height = 139;
 		this.pnlReplace.Location = new System.Drawing.Point(0, 183);
 		this.pnlReplace.MinHeight = 0;
@@ -392,16 +398,16 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlReplace.Size = new System.Drawing.Size(629, 139);
 		this.pnlReplace.SizeRatio = 26.923;
 		this.pnlReplace.TabIndex = 0;
-		this.btnReplace2.Location = new System.Drawing.Point(478, 20);
+		this.btnReplace2.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 20);
 		this.btnReplace2.Name = "btnReplace2";
-		this.btnReplace2.Size = new System.Drawing.Size(104, 34);
+		this.btnReplace2.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnReplace2.TabIndex = 14;
 		this.btnReplace2.Text = "替换";
 		this.btnReplace2.UseVisualStyleBackColor = true;
 		this.btnReplace2.Click += new System.EventHandler(btnReplace_Click);
-		this.btnReplaceAll.Location = new System.Drawing.Point(478, 77);
+		this.btnReplaceAll.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 77);
 		this.btnReplaceAll.Name = "btnReplaceAll";
-		this.btnReplaceAll.Size = new System.Drawing.Size(104, 34);
+		this.btnReplaceAll.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnReplaceAll.TabIndex = 0;
 		this.btnReplaceAll.Text = "全部替换";
 		this.btnReplaceAll.UseVisualStyleBackColor = true;

@@ -1020,7 +1020,8 @@ public class TicketInputEditor2 : ISetTheme
 		_gridResizingManager.ResizeRow += _gridResizingManager_ResizeRow;
 		_splc = new C1SplitContainer
 		{
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		_pnlToolbar = new C1SplitterPanel
 		{
@@ -1154,7 +1155,8 @@ public class TicketInputEditor2 : ISetTheme
 		_splc.Panels.Add(_pnlToolbar);
 		_navTreeContainer = new C1SplitContainer
 		{
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		_switchViewPanel = new C1SplitterPanelEx
 		{
@@ -1169,8 +1171,6 @@ public class TicketInputEditor2 : ISetTheme
 		};
 		_navTreePanel = new C1SplitterPanel
 		{
-			Dock = PanelDockStyle.Top,
-			SizeRatio = 100.0
 		};
 		_otbNavs = new C1OutBarEx
 		{
@@ -1188,7 +1188,8 @@ public class TicketInputEditor2 : ISetTheme
 		C1SplitContainer c1SplitContainer = new C1SplitContainer
 		{
 			Dock = DockStyle.Fill,
-			BackColor = Color.Transparent
+			BackColor = Color.Transparent,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		C1SplitterPanelEx c1SplitterPanelEx = new C1SplitterPanelEx
 		{

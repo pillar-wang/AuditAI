@@ -555,25 +555,22 @@ public class ReferenceEditor
 				Name = selectedProject.Name
 			};
 			
-			// 本地模式下加载外部项目数据
-			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			// 加载外部项目数据（本地和服务端模式均支持，服务端模式下需来源项目已下载到本地缓存）
+			try
 			{
-				try
+				string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
+				var dal = new Auditai.DTO.ProjectDAL(dbPath);
+				var dto = dal.GetProject();
+				if (dto != null)
 				{
-					string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
-					var dal = new Auditai.DTO.ProjectDAL(dbPath);
-					var dto = dal.GetProject();
-					if (dto != null)
-					{
-						externalProject.Dal = dal;
-						externalProject.PopulateFieldsFromDto(dto);
-						externalProject.Name = dto.Name;
-						externalProject.Load();
-					}
+					externalProject.Dal = dal;
+					externalProject.PopulateFieldsFromDto(dto);
+					externalProject.Name = dto.Name;
+					externalProject.Load();
 				}
-				catch { }
 			}
-			
+			catch { }
+
 			// 获取该项目的表格列表
 			var tableNodes = externalProject.GetAllTableNodes();
 			if (tableNodes == null || !tableNodes.Any())
@@ -581,18 +578,18 @@ public class ReferenceEditor
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "该项目没有可用的表格");
 				return;
 			}
-			
+
 			// 弹出表格选择对话框
 			using (var tableForm = new Form())
 			{
 				tableForm.Text = "选择表格 - " + selectedProject.Name;
 				tableForm.Size = new Size(400, 300);
 				tableForm.StartPosition = FormStartPosition.CenterParent;
-				
+
 				var treeView = new TreeView();
 				treeView.Dock = DockStyle.Fill;
 				tableForm.Controls.Add(treeView);
-				
+
 				foreach (var node in tableNodes)
 				{
 					var tn = treeView.Nodes.Add(node.Name);
@@ -668,23 +665,21 @@ public class ReferenceEditor
 				Name = selectedProject.Name
 			};
 
-			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			// 加载外部项目数据（本地和服务端模式均支持）
+			try
 			{
-				try
+				string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
+				var dal = new Auditai.DTO.ProjectDAL(dbPath);
+				var dto = dal.GetProject();
+				if (dto != null)
 				{
-					string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
-					var dal = new Auditai.DTO.ProjectDAL(dbPath);
-					var dto = dal.GetProject();
-					if (dto != null)
-					{
-						externalProject.Dal = dal;
-						externalProject.PopulateFieldsFromDto(dto);
-						externalProject.Name = dto.Name;
-						externalProject.Load();
-					}
+					externalProject.Dal = dal;
+					externalProject.PopulateFieldsFromDto(dto);
+					externalProject.Name = dto.Name;
+					externalProject.Load();
 				}
-				catch { }
 			}
+			catch { }
 
 			var tableNodes = externalProject.GetAllTableNodes();
 			if (tableNodes == null || !tableNodes.Any())
@@ -797,23 +792,21 @@ public class ReferenceEditor
 				Name = selectedProject.Name
 			};
 
-			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			// 加载外部项目数据（本地和服务端模式均支持）
+			try
 			{
-				try
+				string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
+				var dal = new Auditai.DTO.ProjectDAL(dbPath);
+				var dto = dal.GetProject();
+				if (dto != null)
 				{
-					string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
-					var dal = new Auditai.DTO.ProjectDAL(dbPath);
-					var dto = dal.GetProject();
-					if (dto != null)
-					{
-						externalProject.Dal = dal;
-						externalProject.PopulateFieldsFromDto(dto);
-						externalProject.Name = dto.Name;
-						externalProject.Load();
-					}
+					externalProject.Dal = dal;
+					externalProject.PopulateFieldsFromDto(dto);
+					externalProject.Name = dto.Name;
+					externalProject.Load();
 				}
-				catch { }
 			}
+			catch { }
 
 			var tableNodes = externalProject.GetAllTableNodes();
 			if (tableNodes == null || !tableNodes.Any())
@@ -915,23 +908,21 @@ public class ReferenceEditor
 				Name = selectedProject.Name
 			};
 
-			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			// 加载外部项目数据（本地和服务端模式均支持）
+			try
 			{
-				try
+				string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
+				var dal = new Auditai.DTO.ProjectDAL(dbPath);
+				var dto = dal.GetProject();
+				if (dto != null)
 				{
-					string dbPath = MainForm.GetDbPathByGuid(selectedProject.Id);
-					var dal = new Auditai.DTO.ProjectDAL(dbPath);
-					var dto = dal.GetProject();
-					if (dto != null)
-					{
-						externalProject.Dal = dal;
-						externalProject.PopulateFieldsFromDto(dto);
-						externalProject.Name = dto.Name;
-						externalProject.Load();
-					}
+					externalProject.Dal = dal;
+					externalProject.PopulateFieldsFromDto(dto);
+					externalProject.Name = dto.Name;
+					externalProject.Load();
 				}
-				catch { }
 			}
+			catch { }
 
 			var tableNodes = externalProject.GetAllTableNodes();
 			if (tableNodes == null || !tableNodes.Any())

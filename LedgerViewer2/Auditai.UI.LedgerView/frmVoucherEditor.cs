@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -1718,7 +1718,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.grdVoucher.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this.grdVoucher.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.grdVoucher.DrawMode = C1.Win.C1FlexGrid.DrawModeEnum.OwnerDraw;
-		this.grdVoucher.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdVoucher.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdVoucher.Location = new System.Drawing.Point(0, 0);
 		this.grdVoucher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdVoucher.Name = "grdVoucher";
@@ -1737,7 +1737,7 @@ public class frmVoucherEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1030, 654);
 		base.Controls.Add(this.ctnVoucher);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmVoucherEditor";
 		this.Text = "编辑凭证";

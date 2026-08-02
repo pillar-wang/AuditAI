@@ -53,7 +53,7 @@ public class frmTileSearch : Form
 		this.txtKeyword.AutoSize = false;
 		this.txtKeyword.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.txtKeyword.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.txtKeyword.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtKeyword.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtKeyword.Location = new System.Drawing.Point(0, 0);
 		this.txtKeyword.Name = "txtKeyword";
 		this.txtKeyword.Size = new System.Drawing.Size(413, 42);

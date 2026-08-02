@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -487,6 +487,14 @@ namespace Auditai.LocalDataStore
                     // 跳过无法读取的模板文件
                 }
             }
+
+            // 填充每个模板的成员信息（从主库 ProjectMembers 表读取）
+            // 修复: 原实现未填充 Users，导致列表模式"可编辑的用户"/"可使用的用户"显示为空
+            foreach (var template in templates)
+            {
+                template.Users = GetProjectMembers(template.Id);
+            }
+
             return templates;
         }
 
@@ -905,11 +913,11 @@ namespace Auditai.LocalDataStore
                     }
                 }.ExecuteNonQuery();
 
-                // 添加当前用户为项目成员（管理员角色）
+                // 添加当前用户为项目成员（管理员角色：UserRole.Manager=0）
                 long currentUserId = Auditai.Model.User.Current?.Id ?? 1;
                 new SQLiteCommand(@"
                     INSERT OR IGNORE INTO ProjectMembers (ProjectId, UserId, Role)
-                    VALUES (@ProjectId, @UserId, 1)", conn, tx)
+                    VALUES (@ProjectId, @UserId, 0)", conn, tx)
                 {
                     Parameters = {
                         new("@ProjectId", project.Id.ToString()),
@@ -924,6 +932,92 @@ namespace Auditai.LocalDataStore
                 tx.Rollback();
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 注册导入的模板到本地主库 + 复制 .db 到 Data\Templates\{templateId}.db + 复制 FileCache。
+        /// 与 RegisterImportedProject 的差异：
+        /// 1. .db 落盘到 Data\Templates\{templateId}.db（不是 data/{userId}/{projectId}.db）
+        /// 2. Type=1（Template）固定写入
+        /// 3. 成员来自 newTemplate.Users（dlgTemplateEditor 编辑结果），而非仅当前用户
+        /// </summary>
+        public static async Task<Auditai.DTO.Project> RegisterImportedTemplate(
+            string tempDbPath,
+            List<string> tempFileCacheFiles,
+            Auditai.DTO.Project newTemplate)
+        {
+            return await Task.Run(() =>
+            {
+                // 1. 复制 .db 到 Data\Templates\{templateId}.db
+                Directory.CreateDirectory(_templatesPath);
+                string targetDbPath = Path.Combine(_templatesPath, $"{newTemplate.Id}.db");
+                File.Copy(tempDbPath, targetDbPath, overwrite: true);
+
+                // 2. 复制 FileCache 到 data/{userId}/{templateId}/FileCache/（与项目导入路径一致，模板打开时也从这里读）
+                long userId = Auditai.Model.User.Current?.Id ?? 1;
+                if (tempFileCacheFiles != null && tempFileCacheFiles.Count > 0)
+                {
+                    string newCacheDir = Path.Combine("data", userId.ToString(), newTemplate.Id.ToString(), "FileCache");
+                    Directory.CreateDirectory(newCacheDir);
+                    foreach (string f in tempFileCacheFiles)
+                    {
+                        try { File.Copy(f, Path.Combine(newCacheDir, Path.GetFileName(f)), overwrite: true); }
+                        catch { /* 单个文件复制失败不影响整体导入 */ }
+                    }
+                }
+
+                // 3. 注册到本地主库 Projects 表（Type=1=Template）
+                using var conn = CreateConnection();
+                EnsureProjectColumns(conn);
+                using var tx = conn.BeginTransaction();
+                try
+                {
+                    new SQLiteCommand(@"
+                        INSERT INTO Projects (Id, Name, Number, Category, Auditee, Note, Type, Version,
+                            TeamId, ParentId, CreatedBy, CreatedAt, IsDeleted)
+                        VALUES (@Id, @Name, @Number, @Category, '', @Note, 1, 1,
+                            @TeamId, @ParentId, 1, @CreatedAt, 0)", conn, tx)
+                    {
+                        Parameters = {
+                            new("@Id", newTemplate.Id.ToString()),
+                            new("@Name", newTemplate.Name ?? ""),
+                            new("@Number", newTemplate.Number ?? ""),
+                            new("@Category", newTemplate.Category ?? ""),
+                            new("@Note", newTemplate.Note ?? ""),
+                            new("@TeamId", Auditai.Model.User.Current?.TeamId.ToString() ?? ""),
+                            new("@ParentId", newTemplate.ParentId.HasValue ? newTemplate.ParentId.Value.ToString() : (object)DBNull.Value),
+                            new("@CreatedAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+                        }
+                    }.ExecuteNonQuery();
+
+                    // 添加模板成员（来自 dlgTemplateEditor 编辑结果）
+                    if (newTemplate.Users != null)
+                    {
+                        foreach (var user in newTemplate.Users)
+                        {
+                            new SQLiteCommand(@"
+                                INSERT OR IGNORE INTO ProjectMembers (ProjectId, UserId, Role)
+                                VALUES (@ProjectId, @UserId, @Role)", conn, tx)
+                            {
+                                Parameters = {
+                                    new("@ProjectId", newTemplate.Id.ToString()),
+                                    new("@UserId", user.Id.ToString()),
+                                    new("@Role", (int)user.Role)
+                                }
+                            }.ExecuteNonQuery();
+                        }
+                    }
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+
+                return newTemplate;
+            });
         }
 
         /// <summary>
@@ -1008,8 +1102,8 @@ namespace Auditai.LocalDataStore
                         conn.Open();
                         using var cmd = conn.CreateCommand();
                         cmd.CommandText = @"
-                            UPDATE TreeNode SET Version=0, Dirty=0, ServerIndex=0;
-                            UPDATE TreeGroup SET Dirty=0, ServerIndex=0;
+                            UPDATE TreeNode SET Status=0, Version=0, Dirty=0, ServerIndex=0;
+                            UPDATE TreeGroup SET Status=0, Dirty=0, ServerIndex=0;
                             UPDATE [Table] SET Dirty=0;
                             UPDATE Document SET Dirty=0;";
                         cmd.ExecuteNonQuery();
@@ -1036,7 +1130,7 @@ namespace Auditai.LocalDataStore
                 CreateTime = DateTime.Now
             });
 
-            // 创建默认的侧边栏分组
+            // 创建默认的侧边栏分组（只保留分组结构，不预置任何节点——用户按需创建）
             emptyDal.SaveTreeGroups(new[]
             {
                 new Auditai.DTO.TreeGroup
@@ -1048,37 +1142,6 @@ namespace Auditai.LocalDataStore
                     Dirty = 0,
                     ServerIndex = 0
                 }
-            });
-
-            // 创建默认的文档节点
-            long nextId = 2; // TreeGroup 用了 1，从 2 开始
-            var defaultDocNodeId = new Auditai.DTO.Id64(nextId++);
-            emptyDal.SaveTreeNodes(new[]
-            {
-                new Auditai.DTO.TreeNode
-                {
-                    Id = defaultDocNodeId,
-                    GroupId = new Auditai.DTO.Id64(1),
-                    ParentId = Auditai.DTO.Id64.Zero,
-                    Name = "审计报告",
-                    Type = 2, // 文档类型
-                    Status = 0,
-                    Dirty = 0,
-                    Index = 0,
-                    Version = 0,
-                    ServerIndex = 0
-                }
-            });
-
-            // 为默认文档节点创建 Document 记录
-            emptyDal.SaveDocument(new Auditai.DTO.Document
-            {
-                Id = defaultDocNodeId,
-                Version = 0,
-                Locker = 0,
-                SectPr = Auditai.Model.Properties.Resource.DefaultSectPr,
-                MergeTable = Auditai.DTO.Id64.Zero,
-                Dirty = 0
             });
         }
 

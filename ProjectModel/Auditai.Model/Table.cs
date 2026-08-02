@@ -310,6 +310,11 @@ public class Table
 			{
 				return !TreeNode.HasWritePermission();
 			}
+			// Locker != 0：如果锁持有者是当前用户自己，不算锁定（自己获取的锁自己可编辑）
+			if (Locker == Auditai.Model.User.Current?.Id)
+			{
+				return false;
+			}
 			return true;
 		}
 	}

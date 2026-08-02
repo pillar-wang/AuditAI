@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -51,7 +51,7 @@ public class LedgerDefaultPanel : ISetTheme
 
 	private SolidBrush solidBrush;
 
-	private Font progressFont = new Font("微软雅黑", 9f, FontStyle.Regular);
+	private Font progressFont = new Font("微软雅黑", 10.5f, FontStyle.Regular);
 
 	private const string SEND_WAITACCEPT_TIP = "正在等待接收";
 
@@ -135,17 +135,17 @@ public class LedgerDefaultPanel : ISetTheme
 		_owner = owner;
 		_tileControl = new C1TileControlEx
 		{
-			CellWidth = 20,
-			CellHeight = 15,
+			CellWidth = 15,
+			CellHeight = 13,
 			AllowChecking = false,
 			Dock = DockStyle.Fill,
-			CellSpacing = 20,
+			CellSpacing = 8,
 			Margin = new Padding(0),
 			Padding = new Padding(0),
 			GroupPadding = new Padding(0),
 			Orientation = LayoutOrientation.Vertical,
 			TileBorderColor = Color.White,
-			GroupSpacing = 5,
+			GroupSpacing = 6,
 			ShowToolTips = false
 		};
 		_fileTemplate = CreateFileTemplate();
@@ -1024,35 +1024,6 @@ public class LedgerDefaultPanel : ISetTheme
 			{
 				TileFlag = TileFlag.OtherPositionButton
 			};
-			group.Tiles[0].Click += async delegate
-			{
-				OpenFileDialog openFileDialog = new OpenFileDialog
-				{
-					Filter = "账套文件（*.db,*.001）|*.db;*.001"
-				};
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					try
-					{
-						await _owner.OpenLedger(openFileDialog.FileName, userCache: false);
-					}
-					catch (FileNotFoundException exception)
-					{
-						exception.Log();
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件不存在！");
-					}
-					catch (SQLiteException exception2)
-					{
-						exception2.Log();
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件未能识别为账套格式文件，无法打开。");
-					}
-					catch (Exception ex)
-					{
-						ex.Log();
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
-					}
-				}
-			};
 			_tileControl.Groups.Add(group);
 		}
 	}
@@ -1141,11 +1112,11 @@ public class LedgerDefaultPanel : ISetTheme
 		{
 			Tag = tileInfo,
 			Text = text,
-			VerticalSize = 8,
-			HorizontalSize = 9,
+			VerticalSize = 9,
+			HorizontalSize = 10,
 			Template = _fileTemplate,
 			Image1 = image,
-			ForeColor1 = Color.Red
+			ForeColor1 = Color.FromArgb(30, 41, 59)
 		};
 	}
 
@@ -1153,41 +1124,42 @@ public class LedgerDefaultPanel : ISetTheme
 	{
 		Template template = new Template();
 		template.Description = "Win32";
+		// 关闭按钮面板（顶部，子元素右上对齐）- 加大热区，便于点击
 		PanelElement panelElement = new PanelElement();
-		panelElement.Alignment = ContentAlignment.TopRight;
-		panelElement.FixedHeight = 20;
-		panelElement.FixedWidth = 32;
-		panelElement.Margin = new Padding(0, 2, 2, 0);
+		panelElement.Dock = DockStyle.Top;
+		panelElement.FixedHeight = 18;
+		panelElement.AlignmentOfContents = ContentAlignment.TopRight;
 		ImageElement imageElement = new ImageElement();
-		imageElement.AlignmentOfContents = ContentAlignment.TopRight;
 		imageElement.ColumnIndex = 30;
 		imageElement.FixedWidth = 20;
+		imageElement.FixedHeight = 18;
 		imageElement.ImageSelector = ImageSelector.Image2;
+		imageElement.Margin = new Padding(0, 0, 2, 0);
 		panelElement.Children.Add(imageElement);
+		// 主图标面板（顶部，子元素居中）- 32×32px 图标，压缩垂直方向冗余
 		PanelElement panelElement2 = new PanelElement();
-		panelElement2.FixedHeight = 48;
-		panelElement2.FixedWidth = 48;
-		panelElement2.Margin = new Padding(0, 14, 0, 0);
-		panelElement2.Alignment = ContentAlignment.TopCenter;
+		panelElement2.Dock = DockStyle.Top;
+		panelElement2.FixedHeight = 38;
+		panelElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		ImageElement imageElement2 = new ImageElement();
-		imageElement2.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement2.FixedHeight = 48;
-		imageElement2.FixedWidth = 48;
+		imageElement2.FixedHeight = 32;
+		imageElement2.FixedWidth = 32;
 		imageElement2.ImageSelector = ImageSelector.Image1;
+		imageElement2.Margin = new Padding(0, 6, 0, 0);
 		panelElement2.Children.Add(imageElement2);
+		// 文字面板（填充剩余空间，子元素顶部居中）- 进一步压缩
 		PanelElement panelElement3 = new PanelElement();
-		panelElement3.FixedHeight = 42;
-		panelElement3.FixedWidth = 170;
-		panelElement3.Alignment = ContentAlignment.BottomCenter;
+		panelElement3.Dock = DockStyle.Fill;
+		panelElement3.FixedHeight = 40;
+		panelElement3.AlignmentOfContents = ContentAlignment.TopCenter;
+		panelElement3.Padding = new Padding(4, 4, 4, 4);
 		TextElement textElement = new TextElement();
-		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.SingleLine = false;
-		textElement.FixedHeight = 42;
-		textElement.FixedWidth = 170;
-		textElement.Margin = new Padding(0, 0, 0, 8);
-		textElement.TextSelector = TextSelector.Text1;
-		textElement.ForeColorSelector = ForeColorSelector.ForeColor1;
+		textElement.TextSelector = TextSelector.Default;
+		textElement.ForeColor = Color.FromArgb(30, 41, 59);
+		textElement.ForeColorSelector = ForeColorSelector.Unbound;
+		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 		panelElement3.Children.Add(textElement);
 		template.Elements.Add(panelElement);
 		template.Elements.Add(panelElement2);
@@ -1242,9 +1214,43 @@ public class LedgerDefaultPanel : ISetTheme
 				await CancelSend(e.Tile);
 			}
 		}
+		else if (tileInfo.TileFlag.HasFlag(TileFlag.OtherPositionButton))
+		{
+			await OpenOtherLedger();
+		}
 		else if (tileInfo.TileFlag.HasFlag(TileFlag.LocalFile))
 		{
 			SelectedTile = e.Tile;
+		}
+	}
+
+	private async Task OpenOtherLedger()
+	{
+		OpenFileDialog openFileDialog = new OpenFileDialog
+		{
+			Filter = "账套文件（*.db,*.001）|*.db;*.001"
+		};
+		if (openFileDialog.ShowDialog() == DialogResult.OK)
+		{
+			try
+			{
+				await _owner.OpenLedger(openFileDialog.FileName, userCache: false);
+			}
+			catch (FileNotFoundException exception)
+			{
+				exception.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件不存在！");
+			}
+			catch (SQLiteException exception2)
+			{
+				exception2.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件未能识别为账套格式文件，无法打开。");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -725,7 +725,9 @@ public class FormProjectManage : ISetTheme
 			["RB_OPENTEMPLATE"] = Resources.OpenTemplate,
 			["RB_MODIFYTEMPLATE"] = Resources.ModifyTemplate,
 			["RB_DELETETEMPLATE"] = Resources.RemoveTemplate,
-			["RB_DUPLICATETEMPLATE"] = Resources.DuplicateTemplate,
+			["RB_DUPLICATETEMPLATE"] = Resources.DuplicateProject,
+			["RB_EXPORTTEMPLATE"] = Resources.ProjectExport,
+			["RB_IMPORTTEMPLATE"] = Resources.ProjectExport,
 			["RB_REFRESHTEMPLATE"] = Resources.RefreshTemplate,
 			["RB_SEARCH"] = Resources.SearchProject,
 			["RB_RESTORESELECT"] = Resources.RestoreProject,
@@ -772,6 +774,8 @@ public class FormProjectManage : ISetTheme
 		AddRibbonButton(group2, "RB_MODIFYTEMPLATE", "修改" + StringConstBase.Current.Template);
 		AddRibbonButton(group2, "RB_DELETETEMPLATE", "删除" + StringConstBase.Current.Template);
 		AddRibbonButton(group2, "RB_DUPLICATETEMPLATE", "复制" + StringConstBase.Current.Template);
+		AddRibbonButton(group2, "RB_EXPORTTEMPLATE", "导出" + StringConstBase.Current.Template);
+		AddRibbonButton(group2, "RB_IMPORTTEMPLATE", "导入" + StringConstBase.Current.Template);
 		group2.Items.Add(GetRibbonButton("RB_SEARCH"));
 		ribbonButton = AddRibbonButton(group2, "RB_SHARETEMPLATE", "跨组织分享" + StringConstBase.Current.Template);
 		ribbonButton.Visible = SoftwareLicenseManager.IsAllowShowShareProjectButton();
@@ -1318,7 +1322,7 @@ public class FormProjectManage : ISetTheme
 				var users = project.Users ?? Enumerable.Empty<Auditai.DTO.User>();
 				if (project.SystemBuild)
 				{
-					if (Auditai.Model.User.Current.IsSystemSupporter)
+					if (Auditai.Model.User.Current.IsSystemAdmin || Auditai.Model.User.Current.IsSystemSupporter)
 					{
 						value = project.Creator?.Name ?? "";
 						value2 = users.Where((Auditai.DTO.User u) => u.Role == UserRole.Editor);
@@ -1865,6 +1869,8 @@ public class FormProjectManage : ISetTheme
 		{
 			return;
 		}
+		// 服务器不可用时阻止删除操作
+		if (!Program.MainForm.EnsureServerAvailable()) return;
 		string text = ((State == ViewState.Project) ? StringConstBase.Current.Project : (StringConstBase.Current.Template ?? ""));
 		if (Program.MainForm?.CurrentProject?.Id == SelectedProject.Id)
 		{
@@ -2159,14 +2165,36 @@ public class FormProjectManage : ISetTheme
 			{
 				// 读取元信息预览
 				var metadata = ProjectArchive.ReadMetadata(ofd.FileName);
+
+				// 占位创建时间（2000-01-01）显示为"未设置"
+				string createTimeDisplay;
+				var placeholder = new DateTime(2000, 1, 1);
+				if (metadata.CreateTime == default ||
+					(metadata.CreateTime >= placeholder && metadata.CreateTime < placeholder.AddDays(1)))
+				{
+					createTimeDisplay = "未设置（将使用当前时间）";
+				}
+				else
+				{
+					createTimeDisplay = metadata.CreateTime.ToString("yyyy-MM-dd");
+				}
+
+				string currentUser = Auditai.Model.User.Current?.Name ??
+									Auditai.Model.User.Current?.UserName ??
+									"当前登录用户";
+
 				string preview = $"项目名称：{metadata.ProjectName}\n" +
 					$"项目编号：{metadata.ProjectNumber}\n" +
 					$"项目类别：{metadata.Category}\n" +
 					$"被审计单位：{metadata.Auditee}\n" +
-					$"创建时间：{metadata.CreateTime:yyyy-MM-dd}\n" +
+					$"创建时间：{createTimeDisplay}\n" +
 					$"导出时间：{metadata.ExportTime:yyyy-MM-dd HH:mm}\n" +
 					$"导出人：{metadata.ExportedBy}\n" +
-					$"版本：v{metadata.SchemaVersion}";
+					$"版本：v{metadata.SchemaVersion}\n" +
+					$"——————\n" +
+					$"创建者：{currentUser}（导入操作人）\n" +
+					$"项目经理：{currentUser}（导入操作人，管理员权限）";
+
 				if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question,
 					$"确认导入以下项目？\n\n{preview}", MessageBoxButtons.OKCancel, "导入项目确认") != DialogResult.OK)
 					return;
@@ -2182,6 +2210,163 @@ public class FormProjectManage : ISetTheme
 				ex.Log();
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
 					"导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "导入失败");
+			}
+		}
+	}
+
+	/// <summary>导出选中模板为 .auditaitemplate 归档文件（含模板数据库和元信息）</summary>
+	private async Task ExportTemplateFile()
+	{
+		var selected = SelectedProject;
+		if (selected == null)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择要导出的" + StringConstBase.Current.Template);
+			return;
+		}
+		if (selected.Type != ProjectType.Template)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				"请选择一个" + StringConstBase.Current.Template + "（当前选择的是" + StringConstBase.Current.Project + "）");
+			return;
+		}
+		string defaultName = string.IsNullOrWhiteSpace(selected.Number)
+			? $"{selected.Name}.auditaitemplate"
+			: $"{selected.Number} {selected.Name}.auditaitemplate";
+		foreach (char c in Path.GetInvalidFileNameChars())
+			defaultName = defaultName.Replace(c, '_');
+		using (var sfd = new SaveFileDialog
+		{
+			Filter = "模板归档文件 (*.auditaitemplate)|*.auditaitemplate",
+			FileName = defaultName,
+			Title = "导出" + StringConstBase.Current.Template
+		})
+		{
+			if (sfd.ShowDialog() != DialogResult.OK) return;
+			try
+			{
+				// 服务端模式下，本地可能无 .db 缓存或缓存已过期，
+				// 必须先调用 OpenProjectDb_DownloadIfNotExist 拉取最新 .db 到本地，再执行归档导出。
+				if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+				{
+					var downloaded = await Program.MainForm.OpenProjectDb_DownloadIfNotExist(selected);
+					if (downloaded == null)
+					{
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+							"无法从服务器下载" + StringConstBase.Current.Template + "数据，导出已取消。", MessageBoxButtons.OK, "导出失败");
+						return;
+					}
+				}
+				await Task.Run(() => TemplateArchive.Export(selected, sfd.FileName));
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					$"{StringConstBase.Current.Template}导出成功！\n文件路径：{sfd.FileName}\n\n可将此文件发送给其他人员，通过\"导入{StringConstBase.Current.Template}\"功能打开。",
+					MessageBoxButtons.OK, "导出完成");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"导出失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "导出失败");
+			}
+		}
+	}
+
+	/// <summary>从 .auditaitemplate 归档文件导入模板（弹出 dlgTemplateEditor 让用户编辑模板信息）</summary>
+	private async Task ImportTemplate()
+	{
+		using (var ofd = new OpenFileDialog
+		{
+			Filter = "模板归档文件 (*.auditaitemplate)|*.auditaitemplate",
+			Title = "导入" + StringConstBase.Current.Template,
+			CheckFileExists = true
+		})
+		{
+			if (ofd.ShowDialog() != DialogResult.OK) return;
+			TemplateImportContext ctx = null;
+			try
+			{
+				// 1. 读取元信息预览
+				var metadata = TemplateArchive.ReadMetadata(ofd.FileName);
+
+				// 占位创建时间（2000-01-01）显示为"未设置"
+				string createTimeDisplay;
+				var placeholder = new DateTime(2000, 1, 1);
+				if (metadata.CreateTime == default ||
+					(metadata.CreateTime >= placeholder && metadata.CreateTime < placeholder.AddDays(1)))
+				{
+					createTimeDisplay = "未设置（将使用当前时间）";
+				}
+				else
+				{
+					createTimeDisplay = metadata.CreateTime.ToString("yyyy-MM-dd");
+				}
+
+				string currentUser = Auditai.Model.User.Current?.Name ??
+									Auditai.Model.User.Current?.UserName ??
+									"当前登录用户";
+
+				string preview = $"{StringConstBase.Current.Template}名称：{metadata.TemplateName}\n" +
+					$"{StringConstBase.Current.Template}编号：{metadata.TemplateNumber}\n" +
+					$"{StringConstBase.Current.Template}类别：{metadata.Category}\n" +
+					$"创建时间：{createTimeDisplay}\n" +
+					$"导出时间：{metadata.ExportTime:yyyy-MM-dd HH:mm}\n" +
+					$"导出人：{metadata.ExportedBy}\n" +
+					$"版本：v{metadata.SchemaVersion}\n" +
+					$"——————\n" +
+					$"创建者：{currentUser}（导入操作人）";
+
+				if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question,
+					$"确认导入以下{StringConstBase.Current.Template}？\n\n{preview}",
+					MessageBoxButtons.OKCancel, $"导入{StringConstBase.Current.Template}确认") != DialogResult.OK)
+					return;
+
+				// 2. 解压到临时目录（不执行注册）
+				ctx = await Task.Run(() => TemplateArchive.ExtractAsync(ofd.FileName));
+
+				// 3. 弹出 dlgTemplateEditor 让用户编辑模板信息（名称/编号/类别/备注/成员/TeamVisible）
+				//    复用 ShowFromProject 模式（与"另存为模板"流程一致），避免跨团队导入时成员失效
+				var newTemplate = ctx.ProjectDto.Clone();
+				newTemplate.Id = ctx.NewTemplateId;
+				newTemplate.Type = ProjectType.Template;
+				newTemplate.ChargeType = ChargeType.None;
+				newTemplate.Users = new Auditai.DTO.User[1]
+				{
+					new Auditai.DTO.User
+					{
+						Id = Auditai.Model.User.Current.Id,
+						UserName = Auditai.Model.User.Current.UserName,
+						Role = UserRole.Editor,
+						Name = Auditai.Model.User.Current.Name
+					}
+				};
+
+				var editor = new dlgTemplateEditor();
+				editor.Template = newTemplate;
+				if (!editor.ShowFromProject())
+				{
+					return; // 用户取消
+				}
+
+				// 4. 将编辑后的信息写入临时 .db（重置 Id/Name/Number 等 + 同步状态）
+				TemplateArchive.ApplyEditorResult(ctx, newTemplate);
+
+				// 5. 执行注册（本地模式：File.Copy + 主库注册；服务端模式：HTTP 上传 .db 流）
+				var created = await TemplateArchive.ImportAsync(ctx, newTemplate);
+
+				_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+				await Populate();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					$"{StringConstBase.Current.Template}导入成功！\n新{StringConstBase.Current.Template}名称：{created.Name}",
+					MessageBoxButtons.OK, "导入完成");
+			}
+			catch (Exception ex)
+			{
+				ex.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"导入失败！失败原因：" + ex.Message, MessageBoxButtons.OK, "导入失败");
+			}
+			finally
+			{
+				ctx?.Dispose(); // 清理临时目录
 			}
 		}
 	}
@@ -2282,10 +2467,67 @@ public class FormProjectManage : ISetTheme
 	{
 		if (SelectedProject.Type != ProjectType.Template || !SelectedProject.SystemBuild || SelectedProject.ChargeType != ChargeType.Pay || !SoftwareLicenseManager.IsUsePayProjectOutOfLicenseLimit())
 		{
+			// 非系统模板使用权限校验：TeamVisible=false 时只有成员列表中的用户可使用
+			if (SelectedProject.Type == ProjectType.Template
+				&& !SelectedProject.SystemBuild
+				&& !await CanUseTemplateAsync())
+			{
+				return;
+			}
 			await CreateProject(SelectedProject);
 			return;
 		}
 		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "您是" + SoftwareLicenseManager.GetUnPayedLicenseDisplayName() + "用户，您选中的" + StringConstBase.Current.Template + "为" + SoftwareLicenseManager.GetPayedLicenseDisplayName() + "用户专用，请联系官方客服升级为" + SoftwareLicenseManager.GetPayedLicenseDisplayName() + "用户后再使用该" + StringConstBase.Current.Template + "创建" + StringConstBase.Current.Project + "！");
+	}
+
+	/// <summary>
+	/// 非系统模板使用权限校验。
+	/// TeamVisible=true：全体团队成员可用；TeamVisible=false：只有成员列表中的用户才能使用。
+	/// 系统管理员/系统支持人员/团队管理员可绕过。
+	/// 列表接口返回的 Users 可能为空，远程模式下拉取完整模板详情后再校验。
+	/// 拉取失败或仍无 Users 时，按可见即允许处理（与 CanModifyProject 一致，服务端最终鉴权）。
+	/// </summary>
+	private async Task<bool> CanUseTemplateAsync()
+	{
+		var current = Auditai.Model.User.Current;
+		if (current == null) return true;
+
+		// 系统管理员/系统支持人员/团队管理员可绕过
+		if (current.IsSystemAdmin || current.IsSystemSupporter || current.IsTeamAdmin) return true;
+
+		// TeamVisible=true：全体团队成员可用
+		if (SelectedProject.TeamVisible) return true;
+
+		// TeamVisible=false：检查成员列表
+		var users = SelectedProject.Users;
+
+		// 列表接口返回的 Users 可能为空，远程模式下拉取完整模板详情
+		if ((users == null || !users.Any()) && !Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			try
+			{
+				var fullTemplate = await WebApiClient.GetProjectDto(SelectedProject.Id);
+				users = fullTemplate?.Users;
+			}
+			catch (HttpRequestException)
+			{
+				return true; // 拉取失败，按可见即允许（服务端最终鉴权）
+			}
+		}
+
+		// 仍无 Users 信息，按可见即允许处理（与 CanModifyProject 一致）
+		if (users == null || !users.Any()) return true;
+
+		// 检查当前用户是否在成员列表中（Editor 或 User 角色均可使用）
+		if (!users.Any(u => u.Id == current.Id))
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				"您不在该" + StringConstBase.Current.Template + "的成员列表中，无法使用此" +
+				StringConstBase.Current.Template + "。请联系" + StringConstBase.Current.Template +
+				"管理员将您添加为成员，或使用其他" + StringConstBase.Current.Template + "。");
+			return false;
+		}
+		return true;
 	}
 
 	private async Task CreateTemplate()
@@ -2327,6 +2569,14 @@ public class FormProjectManage : ISetTheme
 	{
 		if (!HasSelectedProject)
 		{
+			return;
+		}
+		// 防御性兜底：系统下发的模板仅系统管理员/系统支持人员可编辑
+		// 即使 CanOpenTemplate 漏判，这里也阻止误操作
+		if (SelectedProject.SystemBuild && !Auditai.Model.User.Current.IsSystemAdmin && !Auditai.Model.User.Current.IsSystemSupporter)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				"系统下发的模板仅系统管理员可编辑，请使用「复制" + StringConstBase.Current.Template + "」创建团队副本后编辑");
 			return;
 		}
 		Auditai.DTO.Project clone = SelectedProject.Clone();
@@ -2483,6 +2733,7 @@ public class FormProjectManage : ISetTheme
 			GetRibbonButton("RB_MODIFYTEMPLATE").Enabled = CanOpenTemplate();
 			GetRibbonButton("RB_DELETETEMPLATE").Enabled = CanOpenTemplate();
 			GetRibbonButton("RB_DUPLICATETEMPLATE").Enabled = HasSelectedProject;
+			GetRibbonButton("RB_EXPORTTEMPLATE").Enabled = HasSelectedProject;
 			GetRibbonButton("RB_SHARETEMPLATE").Visible = CanSeeShareProject();
 			GetRibbonButton("RB_SHARETEMPLATE").Enabled = CanOpenTemplate();
 		}
@@ -2584,6 +2835,14 @@ public class FormProjectManage : ISetTheme
 		{
 			return false;
 		}
+		// 系统下发的模板（SystemBuild=true）：仅系统管理员/系统支持人员可编辑
+		// 其他团队成员不得在本团队编辑系统下发的模板，需通过「复制模板」创建团队副本后编辑
+		if (SelectedProject.SystemBuild && !Auditai.Model.User.Current.IsSystemAdmin && !Auditai.Model.User.Current.IsSystemSupporter)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				"系统下发的模板仅系统管理员可编辑，请使用「复制" + StringConstBase.Current.Template + "」创建团队副本后编辑");
+			return false;
+		}
 		if (Auditai.Model.User.Current.IsSystemSupporter)
 		{
 			return true;
@@ -2683,6 +2942,8 @@ public class FormProjectManage : ISetTheme
 
 	private async Task DeleteProjectFromServer()
 	{
+		// 服务器不可用时阻止删除操作
+		if (!Program.MainForm.EnsureServerAvailable()) return;
 		if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Exclamation, "此操作将彻底删除所选数据，无法恢复，请谨慎确认此次操作！", MessageBoxButtons.OKCancel) != DialogResult.OK)
 		{
 			return;
@@ -2714,6 +2975,8 @@ public class FormProjectManage : ISetTheme
 
 	private async Task DeleteAllProjectFromServer()
 	{
+		// 服务器不可用时阻止删除操作
+		if (!Program.MainForm.EnsureServerAvailable()) return;
 		if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Exclamation, "此操作将彻底删除回收站数据，无法恢复，请谨慎确认此次操作！", MessageBoxButtons.OKCancel) != DialogResult.OK)
 		{
 			return;
@@ -3033,6 +3296,12 @@ public class FormProjectManage : ISetTheme
 						await ShareProject();
 					}
 					break;
+				case 'I':
+					if (name == "RB_IMPORTPROJECT")
+					{
+						await ImportProject();
+					}
+					break;
 				}
 				break;
 			case 14:
@@ -3089,6 +3358,16 @@ public class FormProjectManage : ISetTheme
 					if (name == "RB_DELETETEMPLATE")
 					{
 						await DeleteProject();
+					}
+					break;
+				case 'P':
+					if (name == "RB_EXPORTTEMPLATE")
+					{
+						await ExportTemplateFile();
+					}
+					else if (name == "RB_IMPORTTEMPLATE")
+					{
+						await ImportTemplate();
 					}
 					break;
 				}
@@ -3148,15 +3427,9 @@ public class FormProjectManage : ISetTheme
 					await ShareProject();
 				}
 				break;
-			case 'I':
-				if (name == "RB_IMPORTPROJECT")
-				{
-					await ImportProject();
-				}
-				break;
 			}
 			break;
-			case 19:
+		case 19:
 				if (name == "RB_DUPLICATEPROJECT")
 				{
 					await DuplicateProject();

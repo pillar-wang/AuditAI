@@ -41,9 +41,9 @@ namespace Auditai.UI.Platform
             {
                 // 某些环境（如沙箱）可能不支持 NetworkChange，忽略
             }
-            // 每 30 秒主动 ping 一次服务器，作为 NetworkAddressChanged 的补充
+            // 启动后 5 秒首次检查，之后每 15 秒 ping 一次服务器（原 30 秒，缩短以更快感知服务器状态变化）
             _pingTimer = new Timer(PingServer, null,
-                TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+                TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15));
         }
 
         private void OnNetworkAddressChanged(object sender, EventArgs e)
@@ -56,6 +56,12 @@ namespace Auditai.UI.Platform
         {
             CheckServerReachability();
         }
+
+        /// <summary>
+        /// 立即触发一次服务器可达性检查，不等定时器周期。
+        /// 供 MainForm 启动时调用，尽快检测服务器状态。
+        /// </summary>
+        public void CheckNow() => CheckServerReachability();
 
         /// <summary>
         /// 通过 HTTP GET 健康检查端点判定服务器是否可达。

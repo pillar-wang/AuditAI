@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -41,6 +41,16 @@ public class SelectBoxForm : C1RibbonForm
 
 	public List<string> SelectedValues { get; set; } = new List<string>();
 
+	#region 按钮尺寸规范（与 MessageShowBox/UpdateForm/InputBoxImpl 保持一致）
+	/// <summary>按钮宽度</summary>
+	private const int ButtonWidth = 110;
+	/// <summary>按钮高度</summary>
+	private const int ButtonHeight = 34;
+	/// <summary>按钮右侧距面板右边缘的距离</summary>
+	private const int ButtonRightMargin = 50;
+	/// <summary>按钮之间的水平间距</summary>
+	private const int ButtonGap = 12;
+	#endregion
 
 	private SelectBoxForm()
 	{
@@ -153,7 +163,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbExceptSelect.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.ckbExceptSelect.BackColor = System.Drawing.SystemColors.Control;
 		this.ckbExceptSelect.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckbExceptSelect.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ckbExceptSelect.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ckbExceptSelect.ForeColor = System.Drawing.SystemColors.ControlText;
 		this.ckbExceptSelect.Location = new System.Drawing.Point(244, 4);
 		this.ckbExceptSelect.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -167,7 +177,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbCheckAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 		this.ckbCheckAll.BackColor = System.Drawing.SystemColors.Control;
 		this.ckbCheckAll.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckbCheckAll.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ckbCheckAll.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ckbCheckAll.ForeColor = System.Drawing.SystemColors.ControlText;
 		this.ckbCheckAll.Location = new System.Drawing.Point(35, 4);
 		this.ckbCheckAll.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -178,22 +188,22 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbCheckAll.UseVisualStyleBackColor = true;
 		this.ckbCheckAll.Value = null;
 		this.ckbCheckAll.CheckedChanged += new System.EventHandler(ckbCheckAll_CheckedChanged);
-		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnConfirm.Location = new System.Drawing.Point(31, 55);
+		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnConfirm.Location = new System.Drawing.Point(374 - ButtonRightMargin - ButtonWidth - ButtonGap - ButtonWidth, 55);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
-		this.btnConfirm.Size = new System.Drawing.Size(91, 34);
+		this.btnConfirm.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnConfirm.TabIndex = 3;
 		this.btnConfirm.Text = "确定";
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(243, 55);
+		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Location = new System.Drawing.Point(374 - ButtonRightMargin - ButtonWidth, 55);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(91, 34);
+		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 4;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
@@ -201,7 +211,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.checkListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.checkListBox.CheckOnClick = true;
 		this.checkListBox.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.checkListBox.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.checkListBox.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.checkListBox.FormattingEnabled = true;
 		this.checkListBox.IntegralHeight = false;
 		this.checkListBox.Location = new System.Drawing.Point(0, 0);
@@ -248,7 +258,7 @@ public class SelectBoxForm : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(374, 381);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

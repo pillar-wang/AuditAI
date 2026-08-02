@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -208,6 +208,21 @@ public class Project
 	{
 	}
 
+	/// <summary>
+	/// 重置加载状态并重新加载所有数据（用于从备份恢复后重新加载）
+	/// </summary>
+	public void Reload(TaskProgressValueReportCallback progressReportCallback = null)
+	{
+		isLoaded = false;
+		TreeGroups.Clear();
+		RemovedTreeGroups.Clear();
+		RemovedTreeNodes.Clear();
+		TreeNodesToDelete.Clear();
+		TreeGroupsToDelete.Clear();
+		_dicTableNodes.Clear();
+		Load(progressReportCallback);
+	}
+
 	public void Load(TaskProgressValueReportCallback progressReportCallback = null)
 	{
 		if (progressReportCallback == null)
@@ -247,41 +262,44 @@ public class Project
 			TreeGroups.Add(item);
 		}
 		progressReportCallback(0.2f);
-		IEnumerable<TreeNode> treeNodes = Dal.GetTreeNodes();
-		var list = treeNodes.Select((TreeNode dto) => new
-		{
-			dto = dto,
-			model = TreeNodeBase.FromDto(dto)
-		}).ToList();
-		foreach (var item2 in list.Join(TreeGroups, outer => outer.dto.GroupId, inner => inner.Id, (tuple, group) => new { tuple, group }))
-		{
-			item2.tuple.model.Group = item2.group;
-			if (!item2.tuple.dto.ParentId.HasValue)
+			IEnumerable<TreeNode> treeNodes = Dal.GetTreeNodes();
+			var list = treeNodes.Select((TreeNode dto) => new
 			{
-				item2.group.RootNodes.Add(item2.tuple.model);
-			}
-			if (item2.tuple.model is TreeTableNode value)
+				dto = dto,
+				model = TreeNodeBase.FromDto(dto)
+			}).ToList();
+			foreach (var item2 in list.Join(TreeGroups, outer => outer.dto.GroupId, inner => inner.Id, (tuple, group) => new { tuple, group }))
 			{
-				_dicTableNodes.Add(item2.tuple.model.Id, value);
+				item2.tuple.model.Group = item2.group;
+				if (!item2.tuple.dto.ParentId.HasValue)
+				{
+					item2.group.RootNodes.Add(item2.tuple.model);
+				}
+				if (item2.tuple.model is TreeTableNode value)
+				{
+					_dicTableNodes.Add(item2.tuple.model.Id, value);
+				}
 			}
-		}
-		progressReportCallback(0.4f);
-		foreach (var item3 in list.Join(list, outer => outer.dto.Id, inner => inner.dto.ParentId, (parent, child) => new { parent, child }))
-		{
-			((TreeDirectoryNode)item3.parent.model).Children.Add(item3.child.model);
-			item3.child.model.Parent = (TreeDirectoryNode)item3.parent.model;
-		}
-		foreach (Id64 localRemovedTreeGroup in Dal.GetLocalRemovedTreeGroups())
-		{
-			RemovedTreeGroups.Add(localRemovedTreeGroup);
-		}
-		foreach (Id64 localRemovedTreeNode in Dal.GetLocalRemovedTreeNodes())
-		{
-			RemovedTreeNodes.Add(localRemovedTreeNode);
-		}
-		progressReportCallback(0.6f);
-		DataReferenceManager.Reset();
-		FormulaStore.Load().Wait();
+			progressReportCallback(0.4f);
+			System.Diagnostics.Debug.WriteLine($"[Project.Load] 0.4f reached, list.Count={list.Count}, starting parent-child join");
+			foreach (var item3 in list.Join(list, outer => outer.dto.Id, inner => inner.dto.ParentId, (parent, child) => new { parent, child }))
+			{
+				((TreeDirectoryNode)item3.parent.model).Children.Add(item3.child.model);
+				item3.child.model.Parent = (TreeDirectoryNode)item3.parent.model;
+			}
+			foreach (Id64 localRemovedTreeGroup in Dal.GetLocalRemovedTreeGroups())
+			{
+				RemovedTreeGroups.Add(localRemovedTreeGroup);
+			}
+			foreach (Id64 localRemovedTreeNode in Dal.GetLocalRemovedTreeNodes())
+			{
+				RemovedTreeNodes.Add(localRemovedTreeNode);
+			}
+			progressReportCallback(0.6f);
+			System.Diagnostics.Debug.WriteLine("[Project.Load] 0.6f reached, starting FormulaStore.Load");
+			DataReferenceManager.Reset();
+			FormulaStore.Load().Wait();
+			System.Diagnostics.Debug.WriteLine("[Project.Load] FormulaStore.Load done, starting DataReferences");
 		foreach (Auditai.DTO.DataReference dataReference in Dal.GetDataReferences())
 		{
 			DataReferenceManager._dic.Add(dataReference.Key, new DataReference
@@ -341,6 +359,8 @@ public class Project
 	public void Save()
 	{
 		Dal.BeginTransaction();
+		try
+		{
 		Dal.SaveProject(ToDto());
 		Dal.SaveTreeGroups(TreeGroups.Select((TreeGroup g) => g.ToDto()));
 		Dal.RemoveTreeGroups(RemovedTreeGroups);
@@ -373,6 +393,12 @@ public class Project
 		FormatComplianceChecker._toDelete.Clear();
 		_toDeleteCrossDocumentRules.Clear();
 		NeedSave = false;
+		}
+		catch
+		{
+			try { Dal.Rollback(); } catch { }
+			throw;
+		}
 	}
 
 	public void ThrowIfMaxExceeded()

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -342,6 +342,47 @@ public class dlgTemplateEditor : C1RibbonForm
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "模板成员为必填项，请填写！");
 			return false;
 		}
+		var userList = enumerable.ToList();
+		// 校验1: 成员归属团队校验 —— 选中的成员必须来自当前团队的用户列表
+		var validTeamUserIds = new HashSet<long>(
+			(Context?.RootUsers ?? new List<Auditai.DTO.User>()).Select(u => u.Id)
+				.Concat((Context?.UserGroups ?? new List<UserGroup>())
+					.SelectMany(g => g.DescendantsUsers()).Select(u => u.Id))
+		);
+		var invalidUser = userList.FirstOrDefault(u => !validTeamUserIds.Contains(u.Id));
+			if (invalidUser != null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"成员\"" + invalidUser.Name + "\"不属于当前团队，请重新选择成员！");
+				return false;
+			}
+			// 校验2: 创建者必须在成员列表中且角色为可编辑的用户（系统管理员/支持人员可绕过）
+			var currentUser = Auditai.Model.User.Current;
+			if (currentUser != null && !currentUser.IsSystemAdmin && !currentUser.IsSystemSupporter)
+			{
+				var creatorInList = userList.FirstOrDefault(u => u.Id == currentUser.Id);
+				if (creatorInList == null)
+				{
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+						"创建者必须在成员列表中，请勾选自己为成员！");
+					return false;
+				}
+				if (creatorInList.Role != UserRole.Editor)
+				{
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+						"创建者的角色必须为\"可编辑的用户\"，请调整自己的角色！");
+					return false;
+				}
+			}
+			// 校验3: 未勾选"所有同事可用"时，至少有 1 名"可使用的用户"
+			if (!chkAllMembers.Checked && !userList.Any(u => u.Role == UserRole.User))
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+					"未勾选\"所有同事可用\"时，成员中至少要包含一名\"可使用的用户\"，" +
+					"否则其他同事将无法使用此" + StringConstBase.Current.Template + "。" +
+					"如需全体同事可用，请勾选\"所有同事可用\"。");
+				return false;
+			}
 		Template.Category = cboCategory.Text;
 		Template.Name = txtName.Text;
 		Template.Note = txtNote.Text;
@@ -518,7 +559,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.inputPanel.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.inputPanel.DesignScaleFactor = 1.293737f;
 		this.inputPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
+		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
 		this.inputPanel.Items.Add(this.基本信息);
 		this.inputPanel.Items.Add(this.lblNumber);
 		this.inputPanel.Items.Add(this.txtNumber);
@@ -605,7 +646,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlButtons.Size = new System.Drawing.Size(1100, 82);
 		this.pnlButtons.TabIndex = 1;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(962, 27);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(91, 34);
@@ -614,7 +655,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnOk.Location = new System.Drawing.Point(826, 27);
 		this.btnOk.Name = "btnOk";
 		this.btnOk.Size = new System.Drawing.Size(91, 34);
@@ -643,7 +684,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1SplitterPanel1.Width = 8;
 		this.c1InputPanel3.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
+		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
 		this.c1InputPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel3.Name = "c1InputPanel3";
 		this.c1InputPanel3.Size = new System.Drawing.Size(8, 541);
@@ -660,7 +701,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlUserHead.SizeRatio = 9.662;
 		this.pnlUserHead.TabIndex = 3;
 		this.txbSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txbSearch.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txbSearch.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txbSearch.Location = new System.Drawing.Point(83, 5);
 		this.txbSearch.Name = "txbSearch";
 		this.txbSearch.Size = new System.Drawing.Size(295, 27);
@@ -695,7 +736,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1InputPanel2.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel2.DesignScaleFactor = 1.293737f;
 		this.c1InputPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
+		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
 		this.c1InputPanel2.Items.Add(this.inputGroupHeader1);
 		this.c1InputPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel2.Name = "c1InputPanel2";
@@ -715,7 +756,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlEmpty.TabIndex = 4;
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 9f);
+		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Name = "c1InputPanel1";
 		this.c1InputPanel1.Size = new System.Drawing.Size(450, 21);
@@ -731,7 +772,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1100, 625);
 		base.Controls.Add(this.ctnMain);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

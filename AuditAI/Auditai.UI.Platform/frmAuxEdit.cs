@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -867,7 +867,7 @@ public class frmAuxEdit : Form
 		AutoScaleMode = AutoScaleMode.Font;
 		ClientSize = new Size(1030, 740);
 		Controls.Add(ctnDock);
-		Font = new Font("Noto Sans SC", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font = new Font("Noto Sans SC", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		Margin = new Padding(4, 5, 4, 5);
 		Name = "frmAuxEdit";
 		ShowInTaskbar = false;

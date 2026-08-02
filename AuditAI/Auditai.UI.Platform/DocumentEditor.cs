@@ -130,6 +130,7 @@ public class DocumentEditor : UserControl
 		{
 			BorderWidth = 0,
 			Dock = DockStyle.Fill,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 
 		// 右侧工具栏面板（先加 Right 面板）

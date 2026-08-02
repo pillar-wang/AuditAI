@@ -113,14 +113,8 @@ public class CrossProjectDataRefManager
 
             try
             {
-                // 非本地模式暂不支持
-            if (!StorageRouter.IsLocalMode)
-            {
-                result.ErrorMessage = "非本地模式暂不支持跨项目数据引用";
-                return result;
-            }
-
-            // 打开外部项目数据库
+                // 打开外部项目数据库
+            // 服务端模式下，来源项目数据库可能需要先从服务器下载到本地缓存
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
             if (!File.Exists(externalDbPath))
             {
@@ -143,7 +137,9 @@ public class CrossProjectDataRefManager
                     result.RefStatus = 2; // DefaultValue
                     return result;
                 }
-                result.ErrorMessage = "来源项目数据库不存在";
+                result.ErrorMessage = StorageRouter.IsLocalMode
+                    ? "来源项目数据库不存在"
+                    : "来源项目数据库不在本地缓存中，请先在项目中打开来源项目以下载到本地";
                 return result;
             }
 
@@ -336,6 +332,16 @@ public class CrossProjectDataRefManager
             catch (Exception)
             {
             }
+
+            // 服务端模式下，将通过 SQL 直接写入的 Cell 变更同步到服务器
+            // Syncer.Push(table) 会检查内存中 Cell 的 Status 和 Dirty 标志：
+            //   - Status == Synced && Dirty.AnySet() → 以 Action=2（修改）推送
+            // 由于 ExecuteRef 通过 SQL 设置了 Dirty=1（IsValueDirty），需要重新加载 Table
+            // 让内存中的 Cell.Dirty 反映数据库中的值，然后推送
+            if (!StorageRouter.IsLocalMode && result.Success)
+            {
+                await PushTableChangesToServerAsync(dataRef.TargetTableId);
+            }
         }
         catch (SQLiteException sqlex)
         {
@@ -515,7 +521,9 @@ public class CrossProjectDataRefManager
             string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
             if (!File.Exists(externalDbPath))
             {
-                status.Description = "来源项目数据库文件不存在";
+                status.Description = StorageRouter.IsLocalMode
+                    ? "来源项目数据库文件不存在"
+                    : "来源项目不在本地缓存中，请先打开来源项目以下载到本地";
                 return status;
             }
             status.ProjectExists = true;
@@ -608,6 +616,36 @@ public class CrossProjectDataRefManager
     }
 
     #region — Private Helpers —
+
+    /// <summary>
+    /// 服务端模式下，将跨项目引用写入的 Cell 变更同步到服务器。
+    /// 由于 ExecuteRef 通过 SQL 直接修改了数据库中的 Cell（设置 Dirty=1），
+    /// 需要重新加载 Table 让内存中的 Cell.Dirty 反映数据库值，
+    /// 然后调用 Syncer.Push(table) 以 Action=2（修改）推送到服务器。
+    /// </summary>
+    private async Task PushTableChangesToServerAsync(Id64 targetTableId)
+    {
+        try
+        {
+            var table = _currentProject.GetTableById(targetTableId);
+            if (table == null) return;
+
+            // 重新加载 Table 数据，使内存中的 Cell.Dirty 反映数据库中的 Dirty=1
+            table._loaded = false;
+            table.LoadAndReturn();
+
+            // 推送变更到服务器
+            await Syncer.Push(table).ConfigureAwait(false);
+
+            // 推送完成后保存 Table，将 Dirty 重置为 0（标记为已同步）
+            table.Save();
+        }
+        catch (Exception)
+        {
+            // 同步失败不应阻断跨项目引用的主流程，变更已写入本地 .db
+            // 下次 Table.Save() 或项目保存时会再次触发同步
+        }
+    }
 
     /// <summary>
     /// 安全反序列化 JSON，对 null/空白输入返回 default

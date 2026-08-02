@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -734,6 +734,24 @@ public class TableEditor : ISetTheme
 	private const int MAX_ADD_COLUMNS_ONCE = 50;
 
 	public const int MIN_ROW_NUMBER_COL_WIDTH = 56;
+
+/// <summary>UI 层单元格显示缩放系数（仅渲染时使用，不入库、不改持久化数据）。</summary>
+	/// <remarks>用户希望「显示上更大一点」，直接从 .db 读取 Width / Height 后在此层放大即可。</remarks>
+	private const double CellUiScaleFactor = 1.5d;
+
+	/// <summary>把模型层的像素尺寸（Width / Height）放大到 UI 显示尺寸，结果至少为 1。</summary>
+	private static int ScaleUiPx(int modelPx)
+	{
+		int scaled = (int)Math.Round(modelPx * CellUiScaleFactor, MidpointRounding.AwayFromZero);
+		return scaled < 1 ? 1 : scaled;
+	}
+
+	/// <summary>把 UI 显示层的像素尺寸还原为模型层尺寸（入库前调用，避免持久化被放大）。</summary>
+	private static int UnscaleUiPx(int viewPx)
+	{
+		int unscaled = (int)Math.Round(viewPx / CellUiScaleFactor, MidpointRounding.AwayFromZero);
+		return unscaled < 1 ? 1 : unscaled;
+	}
 
 	public static readonly Cursor CursorCross;
 
@@ -4711,18 +4729,28 @@ public class TableEditor : ISetTheme
 		}
 		pnlGrid.SuspendDrawing();
 		_isUpdatingView = true;
+		// 切表/切项目渲染新表前，强制清理所有子编辑器残留的编辑态，防止 SetFormulaContext() 被 stale IsEditing=true 卡死导致点击单元格公式栏禁用
+		ResetAllEditorStates();
 		FormulaEditor.View.SuspendDrawing();
 		View.Enabled = true;
 		_table.LoadAndReturn();
 		if (!_table.LocalExists)
 		{
 			SetCorruptedView();
+			_isUpdatingView = false;
+			FormulaEditor.View.Enabled = false;
+			FormulaEditor.View.ResumeDrawing();
+			pnlGrid.ResumeDrawing();
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "表格 " + _table.TreeNode.Name + " 未同步到本地，请重新同步。\n若同步后仍无数据，则表格还未同步过，请联系该表格的创建人执行同步。");
 			return;
 		}
 		if (_table.IsCorrupted)
 		{
 			SetCorruptedView();
+			_isUpdatingView = false;
+			FormulaEditor.View.Enabled = false;
+			FormulaEditor.View.ResumeDrawing();
+			pnlGrid.ResumeDrawing();
 			if (!StorageRouter.IsLocalMode)
 			{
 				if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
@@ -4832,7 +4860,8 @@ public class TableEditor : ISetTheme
 		}
 		else if (!ValidationEditor.IsEditing && !_isFormatBrushing)
 		{
-			_ = _isEditingHeaders;
+			// 兜底：非子编辑器编辑态 + 非格式刷时，给 FormulaEditor.Enabled 一个默认值（防止下面 SetFormulaContext() 因故被 skip 时禁用状态残留）
+			FormulaEditor.View.Enabled = Table != null && HasSchemaPermission() && !IsTableLocked;
 		}
 		_isUpdatingView = false;
 		SetFormulaContext();
@@ -4841,12 +4870,12 @@ public class TableEditor : ISetTheme
 		FormulaEditor.View.ResumeDrawing();
 		pnlGrid.ResumeDrawing();
 
-		// 检查跨项目数据引用更新通知
-		try
-		{
-			var project = Auditai.Model.Project.Current;
-			if (project != null && StorageRouter.IsLocalMode)
+		// 检查跨项目数据引用更新通知（本地和服务端模式均支持）
+			try
 			{
+				var project = Auditai.Model.Project.Current;
+				if (project != null)
+				{
 				int notifyCount = CrossProjectRefSyncNotifier.GetPendingNotificationCount(project.Id);
 				if (notifyCount > 0)
 				{
@@ -8016,14 +8045,14 @@ public class TableEditor : ISetTheme
 				if (item.IsExisting)
 				{
 					_grid.AutoSizeRow(item.Index + _grid.Rows.Fixed);
-					if (_grid.BodyGetRow(item.Index).Height < Table.Rows.DefaultHeight)
+					if (_grid.BodyGetRow(item.Index).Height < ScaleUiPx(Table.Rows.DefaultHeight))
 					{
 						item.UpdateHeight(Table.Rows.DefaultHeight);
-						_grid.BodyGetRow(item.Index).Height = item.Height;
+						_grid.BodyGetRow(item.Index).Height = ScaleUiPx(item.Height);
 					}
 					else
 					{
-						item.UpdateHeight(_grid.BodyGetRow(item.Index).Height);
+						item.UpdateHeight(UnscaleUiPx(_grid.BodyGetRow(item.Index).Height));
 					}
 				}
 			}
@@ -9114,9 +9143,154 @@ public class TableEditor : ISetTheme
 		SetNavTreeTitlePanelBackgroundBrush();
 	}
 
+	/// <summary>
+	/// 重置所有子编辑器的编辑态（切表/切项目时调用，防 IsEditing 残留导致 SetFormulaContext 被 early return 卡死。
+	/// 只清理窗体已关闭/已 Disposed 的 stale IsEditing；对于真正处于 ShowDialog/Show 中的活跃窗体不会碰。
+	/// </summary>
+	private void ResetStaleEditorStates()
+	{
+		// 1. AuxEditor（TableBody 用）：只有 View != null 且 Visible/!Disposed 才算真的在编辑
+		if (AuxEditor != null && AuxEditor.IsEditing)
+		{
+			if (AuxEditor.View == null || AuxEditor.View.IsDisposed || !AuxEditor.View.Visible)
+				AuxEditor.IsEditing = false;
+		}
+		// 2. TitleEditor.AuxEditor
+		if (TitleEditor?.AuxEditor != null && TitleEditor.AuxEditor.IsEditing)
+		{
+			if (TitleEditor.AuxEditor.View == null || TitleEditor.AuxEditor.View.IsDisposed || !TitleEditor.AuxEditor.View.Visible)
+				TitleEditor.AuxEditor.IsEditing = false;
+		}
+		// 3. FootEditor.AuxEditor
+		if (FootEditor?.AuxEditor != null && FootEditor.AuxEditor.IsEditing)
+		{
+			if (FootEditor.AuxEditor.View == null || FootEditor.AuxEditor.View.IsDisposed || !FootEditor.AuxEditor.View.Visible)
+				FootEditor.AuxEditor.IsEditing = false;
+		}
+		// 4. LedgerCollectFormulaEditor
+		if (LedgerCollectFormulaEditor != null && LedgerCollectFormulaEditor.IsEditing)
+		{
+			if (LedgerCollectFormulaEditor.View == null || LedgerCollectFormulaEditor.View.IsDisposed || !LedgerCollectFormulaEditor.View.Visible)
+				LedgerCollectFormulaEditor.IsEditing = false;
+		}
+		// 5. ValidationEditor.Cancel 内部会判断 IsEditing，它的窗体是内置 Grid + ShowDialog，Dispose 后直接 Cancel 最安全
+		//    它的 View 是 C1FlexGrid + 自有 _grid；不需要管 Visible，直接 Cancel 就好（Cancel 内部会自己跳过 !IsEditing）
+		//    但是 ValidationEditor.Cancel 依赖 Table/Grid，切换表后可能 Table 还没 Set，这里只针对 stale 标记清理
+		if (ValidationEditor != null && ValidationEditor.IsEditing)
+		{
+			// 它的 View 实际上是 Program.MainForm.ValidationEditor.View（即 frmValidFormula），做安全的兜底：
+			try
+			{
+				var viewProp = ValidationEditor.GetType().GetProperty("View");
+				if (viewProp != null)
+				{
+					Form view = viewProp.GetValue(ValidationEditor) as Form;
+					if (view == null || view.IsDisposed || !view.Visible)
+						ValidationEditor.IsEditing = false;
+				}
+			}
+			catch
+			{
+				// 反射失败就算了，跳过
+			}
+		}
+		// 6. FormControlFormula：它的 IsEditing 是 private set，调用新增的 Cancel() 最稳
+		//    但 FormControlFormula.Cancel 会强制 IsEditing=false；它的 _form 没打开的情况 Cancel 内部也安全
+		//    为了不打扰正在打开的 form，我们先检测 form 状态：
+		if (FormControlFormula != null && FormControlFormula.IsEditing)
+		{
+			try
+			{
+				var formField = FormControlFormula.GetType().GetField("_form", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+				if (formField != null)
+				{
+					Form f = formField.GetValue(FormControlFormula) as Form;
+					if (f == null || f.IsDisposed || !f.Visible)
+						FormControlFormula.Cancel(); // 安全调用，Cancel 内部会 finally 设 IsEditing=false
+				}
+			}
+			catch
+			{
+				// 反射失败，直接调 Cancel（内部有 try-catch）
+				try { FormControlFormula.Cancel(); } catch { }
+			}
+		}
+	}
+
+	/// <summary>
+	/// PopulateTable 开头调用：无条件取消所有可能处于编辑态的子编辑器（切表/切项目时）。
+	/// 强制清理：PopulateTable 本身代表一张表的重新渲染，之前的编辑态都不应保留。
+	/// </summary>
+	private void ResetAllEditorStates()
+	{
+		// 清空两个全局编辑态标记，防止切表/切项目时卡在 SetFormulaContext 的 early return 里
+		_isEditingHeaders = false;
+		_isFormatBrushing = false;
+		// FormulaEditor：显式取消，防止切表时 IsEditing 残留
+		// 它的 IsEditing 是 private set，通过 FinishEditing(cancel: true) 或 Cancel 方法；没找到公开方法的话，就只重置其他 Editor + FormulaEditor.Context.Kind=None
+		// 先强制 Populate 重置：先调用它的公开 Populate 方法把 Kind 设 None
+		// （另外在 PopulateTable L4710 已经设过 Kind=None，这里保险再设 + Enabled=true 默认值）
+
+		// ValidationEditor.Cancel：最稳（内部 IsEditing=false）
+		try { if (ValidationEditor != null) ValidationEditor.Cancel(); } catch { }
+		// AuxEditors：重置所有 3 个实例的 IsEditing=false，先尝试关闭对应窗体
+		ResetAuxEditor(AuxEditor);
+		ResetAuxEditor(TitleEditor?.AuxEditor);
+		ResetAuxEditor(FootEditor?.AuxEditor);
+		// LedgerCollectFormulaEditor：强制置 false，先关掉 View（如果还开着）
+		try
+		{
+			if (LedgerCollectFormulaEditor != null)
+			{
+				if (LedgerCollectFormulaEditor.View != null && !LedgerCollectFormulaEditor.View.IsDisposed && LedgerCollectFormulaEditor.View.Visible)
+				{
+					LedgerCollectFormulaEditor.View.DialogResult = DialogResult.Cancel;
+					LedgerCollectFormulaEditor.View.Close();
+				}
+				LedgerCollectFormulaEditor.IsEditing = false;
+			}
+		}
+		catch { }
+		// FormControlFormula：调 Cancel
+		try { if (FormControlFormula != null) FormControlFormula.Cancel(); } catch { }
+		// TitleEditor / FootEditor 自己的 IsEditing（它们自带的编辑态）
+		try { if (TitleEditor != null) TitleEditor.IsEditing = false; } catch { }
+		try { if (FootEditor != null) FootEditor.IsEditing = false; } catch { }
+	}
+	private static void ResetAuxEditor(AuxEditor ax)
+	{
+		if (ax == null) return;
+		try
+		{
+			if (ax.View != null && !ax.View.IsDisposed && ax.View.Visible)
+			{
+				ax.View.DialogResult = DialogResult.Cancel;
+				ax.View.Close();
+			}
+		}
+		catch { }
+		finally
+		{
+			ax.IsEditing = false;
+		}
+	}
+
 	public void SetFormulaContext()
 	{
-		if (Table == null || _isUpdatingView || _isEditingHeaders || (FormulaEditor.IsEditing && !FormulaEditor.IsFinishingEditing) || ValidationEditor.IsEditing || AuxEditor.IsEditing || TitleEditor.AuxEditor.IsEditing || FootEditor.AuxEditor.IsEditing || LedgerCollectFormulaEditor.IsEditing || _isFormatBrushing || FormControlFormula.IsEditing)
+		if (Table == null)
+		{
+			return;
+		}
+		// 公式编辑器自身正在编辑中：尊重，跳过（不被 stale 子编辑器影响）
+		if (FormulaEditor.IsEditing && !FormulaEditor.IsFinishingEditing)
+		{
+			return;
+		}
+		// 先清理 stale 的 Editor.IsEditing（View 已关但标记没清），防止误触发 early return
+		ResetStaleEditorStates();
+		if (_isUpdatingView || _isEditingHeaders || _isFormatBrushing
+			|| ValidationEditor.IsEditing || AuxEditor.IsEditing || TitleEditor.AuxEditor.IsEditing
+			|| FootEditor.AuxEditor.IsEditing || LedgerCollectFormulaEditor.IsEditing || FormControlFormula.IsEditing)
 		{
 			return;
 		}
@@ -9544,14 +9718,14 @@ public class TableEditor : ISetTheme
 						int heightDisplay = _grid.BodyGetRow(i).HeightDisplay;
 						if (heightDisplay > 0)
 						{
-							Table.Rows[i].UpdateHeight(heightDisplay);
+							Table.Rows[i].UpdateHeight(UnscaleUiPx(heightDisplay));
 						}
 					}
 				}
 				else
 				{
 					_grid.AutoSizeRow(_resizingRow);
-					Table.Rows[_resizingRow - _grid.Rows.Fixed].UpdateHeight(_grid.Rows[_resizingRow].HeightDisplay);
+					Table.Rows[_resizingRow - _grid.Rows.Fixed].UpdateHeight(UnscaleUiPx(_grid.Rows[_resizingRow].HeightDisplay));
 					PopulateMerges();
 				}
 				DoLayout();
@@ -9569,13 +9743,13 @@ public class TableEditor : ISetTheme
 					_grid.EndUpdate();
 					for (int j = _grid.BodyCol; j <= _grid.BodyColSel; j++)
 					{
-						Table.Columns[j].UpdateWidth(_grid.BodyGetCol(j).WidthDisplay);
+						Table.Columns[j].UpdateWidth(UnscaleUiPx(_grid.BodyGetCol(j).WidthDisplay));
 					}
 				}
 				else
 				{
 					_grid.AutoSizeCol(_resizingColumn);
-					Table.Columns[_resizingColumn - _grid.Cols.Fixed].UpdateWidth(_grid.Cols[_resizingColumn].WidthDisplay);
+					Table.Columns[_resizingColumn - _grid.Cols.Fixed].UpdateWidth(UnscaleUiPx(_grid.Cols[_resizingColumn].WidthDisplay));
 					PopulateMerges();
 				}
 				DoLayout();
@@ -9742,7 +9916,7 @@ public class TableEditor : ISetTheme
 				{
 					for (int i = _grid.BodySelection.TopRow; i <= _grid.BodySelection.BottomRow; i++)
 					{
-						Table.Rows[i].UpdateHeight(num);
+						Table.Rows[i].UpdateHeight(UnscaleUiPx(num));
 					}
 				}
 				catch (ArgumentOutOfRangeException ex)
@@ -9753,7 +9927,7 @@ public class TableEditor : ISetTheme
 			}
 			else
 			{
-				Table.Rows[_resizingRow - _grid.Rows.Fixed].UpdateHeight(num);
+				Table.Rows[_resizingRow - _grid.Rows.Fixed].UpdateHeight(UnscaleUiPx(num));
 			}
 			PopulateRowsHeight();
 			DoLayout();
@@ -9775,7 +9949,7 @@ public class TableEditor : ISetTheme
 				{
 					for (int j = _grid.BodySelection.LeftCol; j <= _grid.BodySelection.RightCol; j++)
 					{
-						Table.Columns[j].UpdateWidth(num2);
+						Table.Columns[j].UpdateWidth(UnscaleUiPx(num2));
 					}
 				}
 				catch (ArgumentOutOfRangeException ex2)
@@ -9786,7 +9960,7 @@ public class TableEditor : ISetTheme
 			}
 			else
 			{
-				Table.Columns[_resizingColumn - _grid.Cols.Fixed].UpdateWidth(num2);
+				Table.Columns[_resizingColumn - _grid.Cols.Fixed].UpdateWidth(UnscaleUiPx(num2));
 			}
 			Point scrollPosition = _grid.ScrollPosition;
 			pnlGrid.SuspendDrawing();
@@ -13092,7 +13266,8 @@ public class TableEditor : ISetTheme
 		C1SplitContainer c1SplitContainer2 = (View = new C1SplitContainer
 		{
 			BorderWidth = 0,
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		});
 		c1SplitContainer2.SuspendLayout();
 		pnlToolbar = new C1SplitterPanel
@@ -13145,12 +13320,11 @@ public class TableEditor : ISetTheme
 		_navTreeTitlePanel.MouseMove += _navTreeTitle_MouseMove;
 		_navTreeGridPanel = new C1SplitterPanel
 		{
-			Dock = PanelDockStyle.Top,
-			SizeRatio = 100.0
 		};
 		_navTreeContainer = new C1SplitContainer
 		{
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
 		_navTreeGridPanel.Controls.Add(TableNavGrid.View);
 		_navTreeContainer.Panels.Add(_navTreeTitlePanel);
@@ -13501,7 +13675,7 @@ public class TableEditor : ISetTheme
 
 	private void PopulateEditingColumnHeaders()
 	{
-		_grid.Rows[0].Height = Table.SumHeaderHeight(Table.GetNumCaptionRows());
+		_grid.Rows[0].Height = ScaleUiPx(Table.SumHeaderHeight(Table.GetNumCaptionRows()));
 		_grid.Rows[0].StyleNew.WordWrap = true;
 		for (int i = 0; i < Table.Columns.Count; i++)
 		{
@@ -13540,7 +13714,7 @@ public class TableEditor : ISetTheme
 
 	private void PopulateColumn(Auditai.Model.Column model, C1.Win.C1FlexGrid.Column view)
 	{
-		view.Width = model.Width;
+		view.Width = ScaleUiPx(model.Width);
 		view.Visible = model.Visible;
 		view.DataType = null;
 		view.AllowEditing = CanEditColumn(model);
@@ -13554,9 +13728,9 @@ public class TableEditor : ISetTheme
 		{
 			PopulateRow(Table.Rows[i], _grid.BodyGetRow(i));
 		}
-		if (_grid.Cols[0].Width < 56)
+		if (_grid.Cols[0].Width < ScaleUiPx(MIN_ROW_NUMBER_COL_WIDTH))
 		{
-			_grid.Cols[0].Width = 73;
+			_grid.Cols[0].Width = ScaleUiPx(73);
 		}
 		_grid.EndUpdate();
 	}
@@ -13593,7 +13767,7 @@ public class TableEditor : ISetTheme
 			{
 				_grid.SetData(0, k + _grid.Cols.Fixed, Table.Columns[k].CaptionDisplay);
 			}
-			_grid.Rows[0].Height = Table.SumHeaderHeight(Table.GetNumCaptionRows());
+			_grid.Rows[0].Height = ScaleUiPx(Table.SumHeaderHeight(Table.GetNumCaptionRows()));
 		}
 		else
 		{
@@ -13614,7 +13788,7 @@ public class TableEditor : ISetTheme
 			{
 				try
 				{
-					_grid.Rows[m].Height = _table.GetHeaderHeight(m);
+					_grid.Rows[m].Height = ScaleUiPx(_table.GetHeaderHeight(m));
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -13639,7 +13813,7 @@ public class TableEditor : ISetTheme
 
 	private void PopulateRow(Auditai.Model.Row model, C1.Win.C1FlexGrid.Row view)
 	{
-		view.Height = model.Height;
+		view.Height = ScaleUiPx(model.Height);
 		view.AllowEditing = !model.IsLocked && CanEditRow(model);
 	}
 
@@ -15185,7 +15359,7 @@ public class TableEditor : ISetTheme
 		_grid.BeginUpdate();
 		for (int i = 0; i < Table.Rows.Count; i++)
 		{
-			_grid.BodyGetRow(i).Height = Table.Rows[i].Height;
+			_grid.BodyGetRow(i).Height = ScaleUiPx(Table.Rows[i].Height);
 		}
 		_grid.EndUpdate();
 		DoLayout();

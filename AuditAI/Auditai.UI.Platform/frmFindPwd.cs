@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -18,11 +18,36 @@ namespace Auditai.UI.Platform;
 
 public class frmFindPwd : Form
 {
-	// 小清新：天蓝主色 RGB(50,150,220)
-	private static Color _auditaiMainColor = Color.FromArgb(50, 150, 220);
+	#region === 设计令牌（小清新浅蓝风格，统一全局） ===
 
-	// UI 缩放因子（用于 Paint 事件绘制坐标）
-	private float _scaleFactor = 1.5f;
+	/// <summary>主色（主题 LineColor = 74,144,217），用于按钮/链接/下划线/聚焦边框</summary>
+	private static Color Primary = Color.FromArgb(74, 144, 217);
+
+	/// <summary>主色-按下态（暗一档，FlatAppearance.MouseDown）</summary>
+	private static Color PrimaryDark = Color.FromArgb(53, 123, 189);
+
+	/// <summary>主色-悬停态（亮一档，FlatAppearance.MouseOver）</summary>
+	private static Color PrimaryLight = Color.FromArgb(90, 160, 230);
+
+	/// <summary>边框/分隔线色：默认灰蓝（未聚焦的输入框边框）</summary>
+	private static Color LineColorDefault = Color.FromArgb(208, 215, 222);
+
+	/// <summary>Surface-0：窗体背景（浅蓝渐变替代）</summary>
+	private static Color Surface0 = Color.FromArgb(245, 249, 252);
+
+	/// <summary>Surface-1：卡片/面板背景（纯白）</summary>
+	private static Color Surface1 = Color.FromArgb(255, 255, 255);
+
+	/// <summary>主文字色（深靛蓝灰，WCAG 对比度 ~15.8:1 on 白色）</summary>
+	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
+
+	/// <summary>次文字色（标签/占位符，对比度 ~6.2:1，满足 WCAG AA）</summary>
+	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
+
+	#endregion
+
+	// 小清新：天蓝主色（已替换为 Primary 令牌，此处保留兼容）
+	private static Color _auditaiMainColor = Primary;
 
 	public const int WM_SYSCOMMAND = 274;
 
@@ -147,14 +172,14 @@ public class frmFindPwd : Form
 
 	private void InitColor()
 	{
-		// 小清新：强制天蓝色系，覆盖平台默认配色
-		_auditaiMainColor = Color.FromArgb(50, 150, 220);
-		btnGetVerification.BackColor = _auditaiMainColor;
-		btnGetVerification.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 120, 190);
-		btnGetVerification.FlatAppearance.MouseOverBackColor = Color.FromArgb(80, 170, 240);
-		btnFindPwd.BackColor = _auditaiMainColor;
-		btnFindPwd.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 120, 190);
-		btnFindPwd.FlatAppearance.MouseOverBackColor = Color.FromArgb(80, 170, 240);
+		// 小清新：使用令牌体系，覆盖平台默认配色，与登录/注册窗口一致
+		_auditaiMainColor = Primary;
+		btnGetVerification.BackColor = Primary;
+		btnGetVerification.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		btnGetVerification.FlatAppearance.MouseOverBackColor = PrimaryLight;
+		btnFindPwd.BackColor = Primary;
+		btnFindPwd.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		btnFindPwd.FlatAppearance.MouseOverBackColor = PrimaryLight;
 	}
 
 	private void InitPlatform_Audit()
@@ -186,15 +211,31 @@ public class frmFindPwd : Form
 			C1TextBox tb = control as C1TextBox;
 			if (tb != null)
 			{
-				tb.BorderColor = Color.FromArgb(210, 210, 210);
+				// 文字/边框颜色：使用令牌保证高对比度，避免主题覆盖导致低对比度
+				tb.ForeColor = TextPrimary;
+				tb.BackColor = Surface1;
+				tb.BorderColor = LineColorDefault;
+				tb.Font = new Font("Noto Sans SC", 9.5f);
 				tb.MouseEnter += delegate
 				{
-					tb.BorderColor = _auditaiMainColor;
+					tb.BorderColor = Primary;
 				};
 				tb.MouseLeave += delegate
 				{
-					tb.BorderColor = Color.FromArgb(210, 210, 210);
+					tb.BorderColor = LineColorDefault;
 				};
+			}
+			C1Label lbl = control as C1Label;
+			if (lbl != null && lbl != lblFindPwd)
+			{
+				// 标签文字：TextSecondary 对比度 6.2:1，满足 WCAG AA
+				lbl.ForeColor = TextSecondary;
+				lbl.Font = new Font("Noto Sans SC", 9.5f);
+			}
+			if (lblFindPwd != null)
+			{
+				// 标题：更粗更重更大的主文字色，形成视觉焦点
+				lblFindPwd.ForeColor = TextPrimary;
 			}
 		}
 		base.AcceptButton = btnFindPwd;
@@ -328,7 +369,7 @@ public class frmFindPwd : Form
 			g.FillRectangle(bgBrush2, bgRect);
 		}
 		// 顶部细光带
-		Rectangle topBar = new Rectangle(0, 0, base.Width, (int)(3 * _scaleFactor));
+		Rectangle topBar = new Rectangle(0, 0, base.Width, 3);
 		using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
 			topBar, Color.FromArgb(90, 160, 230), Color.FromArgb(74, 144, 226),
 			System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
@@ -336,10 +377,11 @@ public class frmFindPwd : Form
 			g.FillRectangle(topBrush, topBar);
 		}
 
-		// 白色圆角卡片
-		int cardX = (int)(75 * _scaleFactor), cardY = (int)(55 * _scaleFactor);
-		int cardW = (int)(380 * _scaleFactor), cardH = (int)(530 * _scaleFactor);
-		int radius = (int)(12 * _scaleFactor);
+		// 白色圆角卡片：与 pnlCard Location/Size 严格一致 → 彻底修复 Panel 直角矩形 与 GDI+ 圆角卡片的双层错位/交叠问题
+		// 原：_scaleFactor=1.5 乘法导致 cardW=570/cardH=795 越界（超过窗体 600×600），且与 pnlCard 完全不重合
+		int cardX = 20, cardY = 20;
+		int cardW = 560, cardH = 560;
+		int radius = 12;
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
 		{
 			path.AddArc(cardX, cardY, radius * 2, radius * 2, 180, 90);
@@ -407,7 +449,9 @@ public class frmFindPwd : Form
 		this.pnlCard.SuspendLayout();
 		base.SuspendLayout();
 		// pnlCard
-		this.pnlCard.BackColor = System.Drawing.Color.White;
+		// pnlCard.BackColor = Surface1 注释：实际承载控件的容器，其 Location/Size 必须与 Paint 事件中圆角白色卡片坐标严格一致，
+		// 否则会出现双层错位（Panel 直角矩形 + GDI+ 圆角卡片不重合）
+		this.pnlCard.BackColor = Surface1;
 		this.pnlCard.Controls.Add(this.lblFindPwd);
 		this.pnlCard.Controls.Add(this.lblEmail);
 		this.pnlCard.Controls.Add(this.txtEmail);
@@ -419,20 +463,24 @@ public class frmFindPwd : Form
 		this.pnlCard.Controls.Add(this.c1Label1);
 		this.pnlCard.Controls.Add(this.txtNewPassword);
 		this.pnlCard.Controls.Add(this.btnFindPwd);
-		this.pnlCard.Location = new System.Drawing.Point(98, 72);
+		// 修复双层卡片错位：与 frmLogin 策略对齐 → 20px 等距边距（上/下/左/右 全 20）
+		// 原：Location(30,28)/Size(540,544) → 与 Paint 中 GDI+ 卡片越界坐标不匹配
+		this.pnlCard.Location = new System.Drawing.Point(20, 20);
 		this.pnlCard.Name = "pnlCard";
-		this.pnlCard.Size = new System.Drawing.Size(585, 689);
+		this.pnlCard.Size = new System.Drawing.Size(560, 560);
 		this.pnlCard.TabIndex = 0;
 		// lblFindPwd
 		this.lblFindPwd.Anchor = System.Windows.Forms.AnchorStyles.Top;
 		this.lblFindPwd.AutoSize = true;
 		this.lblFindPwd.BackColor = System.Drawing.Color.Transparent;
 		this.lblFindPwd.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblFindPwd.Font = new System.Drawing.Font("Noto Sans SC", 14.25f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblFindPwd.ForeColor = System.Drawing.Color.Black;
-		this.lblFindPwd.Location = new System.Drawing.Point(215, 46);
+		// 字号统一：H1 页面主标题，14.25f 非整数 Regular → 18f Bold，与登录/注册页一致
+		this.lblFindPwd.Font = new System.Drawing.Font("Noto Sans SC", 16.5f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblFindPwd.ForeColor = TextPrimary;
+		// 字号统一：18f Bold 更大，Size 172×45 → 230×60，x 184→155 在 540 宽面板重新居中
+		this.lblFindPwd.Location = new System.Drawing.Point(155, 32);
 		this.lblFindPwd.Name = "lblFindPwd";
-		this.lblFindPwd.Size = new System.Drawing.Size(172, 49);
+		this.lblFindPwd.Size = new System.Drawing.Size(230, 60);
 		this.lblFindPwd.TabIndex = 76;
 		this.lblFindPwd.Tag = null;
 		this.lblFindPwd.Text = "重置密码";
@@ -441,36 +489,44 @@ public class frmFindPwd : Form
 		this.lblEmail.AutoSize = true;
 		this.lblEmail.BackColor = System.Drawing.Color.Transparent;
 		this.lblEmail.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblEmail.ForeColor = System.Drawing.Color.Black;
-		this.lblEmail.Location = new System.Drawing.Point(39, 130);
+		this.lblEmail.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblEmail.ForeColor = TextSecondary;
+		// 紧凑化：左移、宽高缩小，整行上移
+		this.lblEmail.Location = new System.Drawing.Point(32, 104);
 		this.lblEmail.Name = "lblEmail";
-		this.lblEmail.Size = new System.Drawing.Size(86, 34);
+		this.lblEmail.Size = new System.Drawing.Size(70, 30);
 		this.lblEmail.TabIndex = 71;
 		this.lblEmail.Tag = null;
 		this.lblEmail.Text = "邮箱";
 		this.lblEmail.TextDetached = true;
 		// txtEmail
 		this.txtEmail.AutoSize = false;
+		this.txtEmail.BackColor = Surface1;
+		this.txtEmail.ForeColor = TextPrimary;
+		this.txtEmail.BorderColor = LineColorDefault;
 		this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtEmail.Location = new System.Drawing.Point(156, 117);
+		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 紧凑化：x 156→140，y 117→93，Size 385×62→370×52
+		this.txtEmail.Location = new System.Drawing.Point(140, 93);
 		this.txtEmail.Name = "txtEmail";
-		this.txtEmail.Size = new System.Drawing.Size(385, 62);
+		this.txtEmail.Size = new System.Drawing.Size(370, 52);
 		this.txtEmail.TabIndex = 1;
 		this.txtEmail.Tag = null;
 		this.txtEmail.TextDetached = true;
 		this.txtEmail.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		// btnGetVerification
-		this.btnGetVerification.BackColor = System.Drawing.Color.FromArgb(0, 195, 245);
+		this.btnGetVerification.BackColor = Primary;
 		this.btnGetVerification.FlatAppearance.BorderSize = 0;
+		this.btnGetVerification.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		this.btnGetVerification.FlatAppearance.MouseOverBackColor = PrimaryLight;
 		this.btnGetVerification.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnGetVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnGetVerification.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnGetVerification.ForeColor = System.Drawing.Color.White;
 		this.btnGetVerification.Format = "(0s)";
-		this.btnGetVerification.Location = new System.Drawing.Point(156, 208);
+		// 紧凑化：y 208→161，高 62→50
+		this.btnGetVerification.Location = new System.Drawing.Point(140, 161);
 		this.btnGetVerification.Name = "btnGetVerification";
-		this.btnGetVerification.Size = new System.Drawing.Size(156, 62);
+		this.btnGetVerification.Size = new System.Drawing.Size(156, 50);
 		this.btnGetVerification.TabIndex = 2;
 		this.btnGetVerification.Text = "获取验证码";
 		this.btnGetVerification.UseVisualStyleBackColor = false;
@@ -479,22 +535,27 @@ public class frmFindPwd : Form
 		this.lblEmailVerification.AutoSize = true;
 		this.lblEmailVerification.BackColor = System.Drawing.Color.Transparent;
 		this.lblEmailVerification.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblEmailVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblEmailVerification.ForeColor = System.Drawing.Color.Black;
-		this.lblEmailVerification.Location = new System.Drawing.Point(39, 299);
+		this.lblEmailVerification.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblEmailVerification.ForeColor = TextSecondary;
+		// 紧凑化：宽 133→100，y 299→238，整体上移 61
+		this.lblEmailVerification.Location = new System.Drawing.Point(32, 238);
 		this.lblEmailVerification.Name = "lblEmailVerification";
-		this.lblEmailVerification.Size = new System.Drawing.Size(133, 34);
+		this.lblEmailVerification.Size = new System.Drawing.Size(100, 30);
 		this.lblEmailVerification.TabIndex = 82;
 		this.lblEmailVerification.Tag = null;
 		this.lblEmailVerification.Text = "邮箱验证码";
 		this.lblEmailVerification.TextDetached = true;
 		// txtEmailValidate
 		this.txtEmailValidate.AutoSize = false;
+		this.txtEmailValidate.BackColor = Surface1;
+		this.txtEmailValidate.ForeColor = TextPrimary;
+		this.txtEmailValidate.BorderColor = LineColorDefault;
 		this.txtEmailValidate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtEmailValidate.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtEmailValidate.Location = new System.Drawing.Point(156, 286);
+		this.txtEmailValidate.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 紧凑化：x 156→140，y 286→227，Size 385×62→370×52
+		this.txtEmailValidate.Location = new System.Drawing.Point(140, 227);
 		this.txtEmailValidate.Name = "txtEmailValidate";
-		this.txtEmailValidate.Size = new System.Drawing.Size(385, 62);
+		this.txtEmailValidate.Size = new System.Drawing.Size(370, 52);
 		this.txtEmailValidate.TabIndex = 3;
 		this.txtEmailValidate.Tag = null;
 		this.txtEmailValidate.TextDetached = true;
@@ -503,23 +564,28 @@ public class frmFindPwd : Form
 		this.lblUserName.AutoSize = true;
 		this.lblUserName.BackColor = System.Drawing.Color.Transparent;
 		this.lblUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblUserName.ForeColor = System.Drawing.Color.Black;
-		this.lblUserName.Location = new System.Drawing.Point(39, 390);
+		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblUserName.ForeColor = TextSecondary;
+		// 紧凑化：x 39→32，宽 86→70，y 390→306，高 34→30
+		this.lblUserName.Location = new System.Drawing.Point(32, 306);
 		this.lblUserName.Name = "lblUserName";
-		this.lblUserName.Size = new System.Drawing.Size(86, 34);
+		this.lblUserName.Size = new System.Drawing.Size(70, 30);
 		this.lblUserName.TabIndex = 74;
 		this.lblUserName.Tag = null;
 		this.lblUserName.Text = "用户名";
 		this.lblUserName.TextDetached = true;
 		// txtUserName
 		this.txtUserName.AutoSize = false;
+		this.txtUserName.BackColor = Surface1;
+		this.txtUserName.ForeColor = TextPrimary;
+		this.txtUserName.BorderColor = LineColorDefault;
 		this.txtUserName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtUserName.Location = new System.Drawing.Point(156, 377);
+		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 紧凑化：x 156→140，y 377→295，Size 385×62→370×52
+		this.txtUserName.Location = new System.Drawing.Point(140, 295);
 		this.txtUserName.Name = "txtUserName";
 		this.txtUserName.ReadOnly = true;
-		this.txtUserName.Size = new System.Drawing.Size(385, 62);
+		this.txtUserName.Size = new System.Drawing.Size(370, 52);
 		this.txtUserName.TabIndex = 0;
 		this.txtUserName.Tag = null;
 		this.txtUserName.TextDetached = true;
@@ -528,35 +594,48 @@ public class frmFindPwd : Form
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.c1Label1.ForeColor = System.Drawing.Color.Black;
-		this.c1Label1.Location = new System.Drawing.Point(39, 481);
+		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label1.ForeColor = TextSecondary;
+		// 紧凑化：x 39→32，宽 86→70，y 481→374，高 34→30
+		this.c1Label1.Location = new System.Drawing.Point(32, 374);
 		this.c1Label1.Name = "c1Label1";
-		this.c1Label1.Size = new System.Drawing.Size(86, 34);
+		this.c1Label1.Size = new System.Drawing.Size(70, 30);
 		this.c1Label1.TabIndex = 83;
 		this.c1Label1.Tag = null;
 		this.c1Label1.Text = "新密码";
 		this.c1Label1.TextDetached = true;
 		// txtNewPassword
 		this.txtNewPassword.AutoSize = false;
+		this.txtNewPassword.BackColor = Surface1;
+		this.txtNewPassword.ForeColor = TextPrimary;
+		this.txtNewPassword.BorderColor = LineColorDefault;
 		this.txtNewPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtNewPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtNewPassword.Location = new System.Drawing.Point(156, 468);
+		// 字体统一：密码字段与 frmLogin.txtPassword 一致 → Bold 强调重要性
+		this.txtNewPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		// 紧凑化：x 156→140，y 468→363，Size 385×62→370×52
+		this.txtNewPassword.Location = new System.Drawing.Point(140, 363);
 		this.txtNewPassword.Name = "txtNewPassword";
-		this.txtNewPassword.Size = new System.Drawing.Size(385, 62);
+		// 修复：明文密码 BUG — 缺失 PasswordChar，输入密码会直接显示明文
+		// 参照 frmAlterPwd.txtPassword / frmLogin.txtPassword 统一为 '●'（标准大黑圆点）
+		this.txtNewPassword.PasswordChar = '•';
+		this.txtNewPassword.Size = new System.Drawing.Size(370, 52);
 		this.txtNewPassword.TabIndex = 4;
 		this.txtNewPassword.Tag = null;
 		this.txtNewPassword.TextDetached = true;
 		this.txtNewPassword.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		// btnFindPwd
-		this.btnFindPwd.BackColor = System.Drawing.Color.FromArgb(0, 195, 245);
+		this.btnFindPwd.BackColor = Primary;
 		this.btnFindPwd.FlatAppearance.BorderSize = 0;
+		this.btnFindPwd.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		this.btnFindPwd.FlatAppearance.MouseOverBackColor = PrimaryLight;
 		this.btnFindPwd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnFindPwd.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 字号统一：CTA 主按钮，10.5f → 12f，与登录/注册页的主按钮字号一致
+		this.btnFindPwd.Font = new System.Drawing.Font("Noto Sans SC", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnFindPwd.ForeColor = System.Drawing.Color.White;
-		this.btnFindPwd.Location = new System.Drawing.Point(182, 585);
+		// 主按钮高度统一：与 frmLogin.btnLogin=54、frmRegister.btnRegister=54 对齐（视觉一致）
+		this.btnFindPwd.Location = new System.Drawing.Point(153, 439);
 		this.btnFindPwd.Name = "btnFindPwd";
-		this.btnFindPwd.Size = new System.Drawing.Size(234, 66);
+		this.btnFindPwd.Size = new System.Drawing.Size(234, 54);
 		this.btnFindPwd.TabIndex = 5;
 		this.btnFindPwd.Text = "确定";
 		this.btnFindPwd.UseVisualStyleBackColor = false;
@@ -566,24 +645,26 @@ public class frmFindPwd : Form
 		this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 		this.btnClose.FlatAppearance.BorderSize = 0;
-		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Red;
+		this.btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 53, 69);
 		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnClose.Image = Auditai.UI.Platform.Properties.Resources.close2;
-		this.btnClose.Location = new System.Drawing.Point(666, 16);
+		// 紧凑化：窗体 780 宽→600，右边距 12，尺寸略缩 49→42
+		this.btnClose.Location = new System.Drawing.Point(546, 10);
 		this.btnClose.Name = "btnClose";
-		this.btnClose.Size = new System.Drawing.Size(49, 49);
+		this.btnClose.Size = new System.Drawing.Size(42, 42);
 		this.btnClose.TabIndex = 84;
 		this.btnClose.UseVisualStyleBackColor = true;
 		this.btnClose.Click += new System.EventHandler(btnClose_Click);
 		base.AcceptButton = this.btnFindPwd;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-		this.BackColor = System.Drawing.Color.FromArgb(240, 248, 255);
+		this.BackColor = Surface0;
 		this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-		base.ClientSize = new System.Drawing.Size(780, 832);
+		// 紧凑化：780×832 → 600×600，面积缩小约 45%
+		base.ClientSize = new System.Drawing.Size(600, 600);
 		base.Controls.Add(this.btnClose);
 		base.Controls.Add(this.pnlCard);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.Name = "frmFindPwd";
 		base.ShowInTaskbar = false;

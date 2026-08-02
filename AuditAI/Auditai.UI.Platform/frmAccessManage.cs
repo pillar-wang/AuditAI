@@ -865,7 +865,7 @@ public class frmAccessManage : C1RibbonForm
 		this.c1SuperLabel1.TabIndex = 2;
 		this.c1SuperLabel1.UseMnemonic = true;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(980, 12);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -875,7 +875,7 @@ public class frmAccessManage : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnCertain.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCertain.Location = new System.Drawing.Point(867, 12);
 		this.btnCertain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCertain.Name = "btnCertain";
@@ -907,7 +907,7 @@ public class frmAccessManage : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1095, 824);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmAccessManage";
 		base.ShowInTaskbar = false;

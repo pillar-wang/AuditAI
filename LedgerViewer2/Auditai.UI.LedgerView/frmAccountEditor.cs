@@ -339,7 +339,7 @@ internal class frmAccountEditor : C1RibbonForm
 		base.Controls.Add(this.btnCancel);
 		base.Controls.Add(this.btnConfirm);
 		base.Controls.Add(this.lblAccountCode);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

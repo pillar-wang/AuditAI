@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -338,6 +338,34 @@ public class FormControlFormula
 	private void OnClosed()
 	{
 		this.Closed?.Invoke(this, EventArgs.Empty);
+	}
+
+	/// <summary>
+	/// 外部重置编辑态（切表/切项目时调用），
+	/// 清理 stale 的 IsEditing=true 残留，防止点击单元格时 SetFormulaContext 被 early return 卡死后公式栏永久禁用。
+	/// </summary>
+	public void Cancel()
+	{
+		try
+		{
+			if (_form != null && !_form.IsDisposed)
+			{
+				_form.FormClosed -= _form_FormClosed;
+				if (_form.Visible)
+				{
+					_form.DialogResult = DialogResult.Cancel;
+					_form.Close();
+				}
+			}
+		}
+		catch
+		{
+			// 忽略窗体操作异常（比如已 Disposed）
+		}
+		finally
+		{
+			IsEditing = false;
+		}
 	}
 
 	private bool ValidateFormula(out string formula)

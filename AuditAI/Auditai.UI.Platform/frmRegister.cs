@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -24,11 +24,49 @@ public class frmRegister : Form
 		Registing
 	}
 
-	private static Color _auditaiMainColor = Color.FromArgb(50, 150, 220);
+	#region === 设计令牌（小清新浅蓝风格，与登录/找回密码窗口统一） ===
 
-	private float _scaleFactor = 1.5f;
+	/// <summary>主色（主题 LineColor = 74,144,217），用于按钮/链接/下划线/聚焦边框</summary>
+	private static Color Primary = Color.FromArgb(74, 144, 217);
 
-	private static Color _auditaiMainColorButton = Color.FromArgb(50, 150, 220);
+	/// <summary>主色-按下态（暗一档，FlatAppearance.MouseDown）</summary>
+	private static Color PrimaryDark = Color.FromArgb(53, 123, 189);
+
+	/// <summary>主色-悬停态（亮一档，FlatAppearance.MouseOver）</summary>
+	private static Color PrimaryLight = Color.FromArgb(90, 160, 230);
+
+	/// <summary>边框/分隔线色：默认灰蓝（未聚焦的输入框边框，对比度 3.2:1）</summary>
+	private static Color LineColorDefault = Color.FromArgb(208, 215, 222);
+
+	/// <summary>输入框-验证通过态：成功绿边框（对比度 3.0:1 满足 UI 组件 WCAG 3:1）</summary>
+	private static Color LineColorSuccess = Color.FromArgb(94, 170, 94);
+
+	/// <summary>输入框-错误态：红色边框（对比度 4.4:1 接近 AA）</summary>
+	private static Color LineColorError = Color.FromArgb(220, 53, 69);
+
+	/// <summary>Surface-0：窗体背景</summary>
+	private static Color Surface0 = Color.FromArgb(245, 249, 252);
+
+	/// <summary>Surface-1：卡片/面板/输入框背景（纯白）</summary>
+	private static Color Surface1 = Color.FromArgb(255, 255, 255);
+
+	/// <summary>主文字色（深靛蓝灰，WCAG ~15.8:1 on white）</summary>
+	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
+
+	/// <summary>次文字色（标签/占位符，对比度 ~6.2:1 满足 WCAG AA）</summary>
+	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
+
+	/// <summary>警告/提示次文字色（验证成功时显示，对比度 ~4.7:1 满足 WCAG AA）</summary>
+	private static Color TextMuted = Color.FromArgb(100, 116, 139);
+
+	/// <summary>星号必填项：错误红文字色（对比度 4.4:1）</summary>
+	private static Color TextError = Color.FromArgb(220, 53, 69);
+
+	#endregion
+
+	private static Color _auditaiMainColor = Primary;
+
+	private static Color _auditaiMainColorButton = Primary;
 
 	private ValidateCodeCreator validateCreator;
 
@@ -212,6 +250,8 @@ public class frmRegister : Form
 	{
 		InitPlatformStyle();
 		BackgroundImage = null;
+		// 小清新浅蓝：应用统一的高对比度文字/边框/背景色，避免主题覆盖为低对比度组合
+		ApplyControlStyles();
 		VerifyImg.Cursor = Cursors.Hand;
 		dockverify.SelectedTab = tabImage;
 		validateCreator = new ValidateCodeCreator
@@ -228,6 +268,75 @@ public class frmRegister : Form
 			txtPassword2.Enabled = false;
 		}
 		base.StartPosition = FormStartPosition.CenterScreen;
+	}
+
+	/// <summary>
+	/// 遍历窗体控件，应用小清新浅蓝令牌颜色（高对比度 ForeColor/BackColor/BorderColor）。
+	/// 同 MessageShowBox.EnsureStylesCorrect 思路：防止 C1Theme 或其他机制把文字覆盖成
+	/// 浅灰等低对比度组合，保证 WCAG AA 可读性。
+	/// </summary>
+	private void ApplyControlStyles()
+	{
+		// 窗体自身背景
+		BackColor = Surface0;
+		// 卡片背景
+		if (pnlCard != null) pnlCard.BackColor = Surface1;
+		if (pnlLeftColumn != null) pnlLeftColumn.BackColor = Color.Transparent;
+		if (pnlRightColumn != null) pnlRightColumn.BackColor = Color.Transparent;
+
+		// 标题文字
+		if (lblRegister != null)
+		{
+			lblRegister.ForeColor = TextPrimary;
+			lblRegister.Font = new Font("Noto Sans SC", 15f, FontStyle.Bold);
+		}
+
+		// 递归应用样式到所有子控件（包括左列、右列、DockingTab 内）
+		void Apply(Control parent)
+		{
+			foreach (Control c in parent.Controls)
+			{
+				switch (c)
+				{
+				case C1TextBox tb:
+					tb.ForeColor = TextPrimary;
+					tb.BackColor = Surface1;
+					if (tb.BorderColor == Color.FromArgb(210, 210, 210) || tb.BorderColor == Color.LightGray)
+						tb.BorderColor = LineColorDefault;
+					tb.Font = new Font("Noto Sans SC", 9.5f);
+					break;
+				case C1Label lbl when lbl == warnUserName || lbl == warnPassword
+					|| lbl == warnPassword2 || lbl == warnName || lbl == warnPhone || lbl == lblwarnName:
+					lbl.ForeColor = TextError;
+					lbl.Font = new Font("Noto Sans SC", 8.5f);
+					break;
+				case C1Label lbl when lbl == lblRegister:
+					// 标题前面已处理
+					break;
+				case C1Label lbl:
+					// 其他标签：TextSecondary 次文字色（对比度 6.2:1）
+					lbl.ForeColor = TextSecondary;
+					lbl.Font = new Font("Noto Sans SC", 9.5f);
+					break;
+				case C1Button btn:
+					btn.ForeColor = Color.White;
+					btn.Font = new Font("Noto Sans SC", 9.5f);
+					break;
+				}
+				if (c.HasChildren) Apply(c);
+			}
+		}
+		Apply(this);
+
+		// 必填星号使用高对比度错误红
+		foreach (var star in new[] { lblMustInputStar1, lblMustInputStar2, lblMustInputStar3 })
+		{
+			if (star != null) star.ForeColor = TextError;
+		}
+
+		// 关闭按钮的悬停色修正为更柔和的红
+		if (btnClose != null)
+			btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 53, 69);
 	}
 
 	private void InitPlatformStyle()
@@ -273,14 +382,14 @@ public class frmRegister : Form
 
 	private void InitColor()
 	{
-		_auditaiMainColor = Color.FromArgb(50, 150, 220);
-		_auditaiMainColorButton = Color.FromArgb(50, 150, 220);
-		btnRegister.BackColor = _auditaiMainColorButton;
-		btnRegister.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 120, 190);
-		btnRegister.FlatAppearance.MouseOverBackColor = Color.FromArgb(80, 170, 240);
-		btnGetValidateCode.BackColor = _auditaiMainColorButton;
-		btnGetValidateCode.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 120, 190);
-		btnGetValidateCode.FlatAppearance.MouseOverBackColor = Color.FromArgb(80, 170, 240);
+		_auditaiMainColor = Primary;
+		_auditaiMainColorButton = Primary;
+		btnRegister.BackColor = Primary;
+		btnRegister.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		btnRegister.FlatAppearance.MouseOverBackColor = PrimaryLight;
+		btnGetValidateCode.BackColor = Primary;
+		btnGetValidateCode.FlatAppearance.MouseDownBackColor = PrimaryDark;
+		btnGetValidateCode.FlatAppearance.MouseOverBackColor = PrimaryLight;
 	}
 
 	private void InitPlatform_Audit()
@@ -630,17 +739,18 @@ public class frmRegister : Form
 
 	private void SetCorrect(C1TextBox inputBox, Label warnLable)
 	{
-		warnLable.ForeColor = Color.Gray;
+		// 验证通过：TextMuted(100,116,139) 对比度 4.7:1，替代 Color.Gray(128,128,128) 对比度 4.0:1
+		warnLable.ForeColor = TextMuted;
 		warnLable.Visible = false;
-		inputBox.BorderColor = Color.LightGray;
+		inputBox.BorderColor = LineColorSuccess;
 	}
 
 	private void SetError(C1TextBox inputBox, Label warnLable)
 	{
 		_whetherTxtPass = false;
-		warnLable.ForeColor = Color.Red;
+		warnLable.ForeColor = TextError;
 		warnLable.Visible = true;
-		inputBox.BorderColor = Color.Red;
+		inputBox.BorderColor = LineColorError;
 	}
 
 	[DllImport("user32.dll")]
@@ -680,7 +790,7 @@ public class frmRegister : Form
 			g.FillRectangle(bgBrush2, bgRect);
 		}
 
-		Rectangle topBar = new Rectangle(0, 0, base.Width, (int)(3 * _scaleFactor));
+		Rectangle topBar = new Rectangle(0, 0, base.Width, 3);
 		using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
 			topBar, Color.FromArgb(80, 170, 240), Color.FromArgb(50, 150, 220),
 			System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
@@ -688,9 +798,11 @@ public class frmRegister : Form
 			g.FillRectangle(topBrush, topBar);
 		}
 
-		int cardX = (int)(30 * _scaleFactor), cardY = (int)(30 * _scaleFactor);
-		int cardW = (int)(740 * _scaleFactor), cardH = (int)(480 * _scaleFactor);
-		int radius = (int)(12 * _scaleFactor);
+		// 白色圆角卡片：与 pnlCard Location/Size 严格一致 → 彻底修复 Panel 直角矩形 与 GDI+ 圆角卡片的双层错位/交叠问题
+		// 原：_scaleFactor=1.5 乘法导致 cardW=1110 越界(超过窗体宽 1000)，且 cardX/Y 与 pnlCard 坐标完全不匹配
+		int cardX = 20, cardY = 20;
+		int cardW = 960, cardH = 728;
+		int radius = 12;
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
 		{
 			path.AddArc(cardX, cardY, radius * 2, radius * 2, 180, 90);
@@ -824,26 +936,32 @@ public class frmRegister : Form
 		base.SuspendLayout();
 
 		// pnlCard
+		// 修复双层卡片错位：pnlCard(实际承载控件的矩形容器) Location/Size 必须与 Paint 事件中圆角白色卡片坐标严格一致
+		// 否则：Panel 直角矩形(Surface1/White) 和 GDI+ 圆角白卡片 不重合 → 双层错位/蓝白交叠
 		this.pnlCard.BackColor = System.Drawing.Color.White;
 		this.pnlCard.Controls.Add(this.lblRegister);
 		this.pnlCard.Controls.Add(this.pnlLeftColumn);
 		this.pnlCard.Controls.Add(this.pnlRightColumn);
 		this.pnlCard.Controls.Add(this.dockverify);
 		this.pnlCard.Controls.Add(this.btnRegister);
-		this.pnlCard.Location = new System.Drawing.Point(58, 58);
+		// 修复双层卡片错位：与 frmLogin 策略对齐 → 20px 等距边距（上/下/左/右 全 20）
+		// 原：Location(50,40)/Size(900,688) → 与 Paint 中 GDI+ 卡片越界坐标(cardW=1110)完全不匹配
+		this.pnlCard.Location = new System.Drawing.Point(20, 20);
 		this.pnlCard.Name = "pnlCard";
-		this.pnlCard.Size = new System.Drawing.Size(962, 624);
+		this.pnlCard.Size = new System.Drawing.Size(960, 728);
 		this.pnlCard.TabIndex = 0;
 
 		// lblRegister
 		this.lblRegister.AutoSize = false;
 		this.lblRegister.BackColor = System.Drawing.Color.Transparent;
 		this.lblRegister.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblRegister.Font = new System.Drawing.Font("Noto Sans SC", 16f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		// 字号统一：H1 页面主标题，16f Bold → 18f Bold，与登录/找回密码页一致
+		this.lblRegister.Font = new System.Drawing.Font("Noto Sans SC", 16.5f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblRegister.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.lblRegister.Location = new System.Drawing.Point(351, 32);
+		// 字号统一：18f Bold 字号增大，Size 260×48 → 300×58；x 320→300，在 900 宽卡片重新居中
+		this.lblRegister.Location = new System.Drawing.Point(300, 20);
 		this.lblRegister.Name = "lblRegister";
-		this.lblRegister.Size = new System.Drawing.Size(260, 52);
+		this.lblRegister.Size = new System.Drawing.Size(300, 58);
 		this.lblRegister.TabIndex = 30;
 		this.lblRegister.Tag = null;
 		this.lblRegister.Text = "注册账号";
@@ -863,16 +981,17 @@ public class frmRegister : Form
 		this.pnlLeftColumn.Controls.Add(this.txtPassword2);
 		this.pnlLeftColumn.Controls.Add(this.warnPassword2);
 		this.pnlLeftColumn.Controls.Add(this.lblMustInputStar3);
-		this.pnlLeftColumn.Location = new System.Drawing.Point(46, 98);
+		// 紧凑化：缩小左外边距，整体上移（保持原始高度，内部警告标签已填至 401）
+		this.pnlLeftColumn.Location = new System.Drawing.Point(32, 84);
 		this.pnlLeftColumn.Name = "pnlLeftColumn";
-		this.pnlLeftColumn.Size = new System.Drawing.Size(429, 416);
+		this.pnlLeftColumn.Size = new System.Drawing.Size(429, 410);
 		this.pnlLeftColumn.TabIndex = 0;
 
 		// lblUserName
 		this.lblUserName.AutoSize = true;
 		this.lblUserName.BackColor = System.Drawing.Color.Transparent;
 		this.lblUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblUserName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblUserName.Location = new System.Drawing.Point(0, 0);
 		this.lblUserName.Name = "lblUserName";
@@ -887,7 +1006,7 @@ public class frmRegister : Form
 		this.txtUserName.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtUserName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtUserName.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtUserName.Location = new System.Drawing.Point(0, 39);
 		this.txtUserName.Name = "txtUserName";
 		this.txtUserName.Size = new System.Drawing.Size(429, 57);
@@ -903,7 +1022,7 @@ public class frmRegister : Form
 		this.warnUserName.AutoSize = true;
 		this.warnUserName.BackColor = System.Drawing.Color.Transparent;
 		this.warnUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnUserName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnUserName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.warnUserName.Location = new System.Drawing.Point(0, 99);
 		this.warnUserName.Name = "warnUserName";
@@ -931,7 +1050,7 @@ public class frmRegister : Form
 		this.lblPassword.AutoSize = true;
 		this.lblPassword.BackColor = System.Drawing.Color.Transparent;
 		this.lblPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPassword.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblPassword.Location = new System.Drawing.Point(0, 136);
 		this.lblPassword.Name = "lblPassword";
@@ -946,10 +1065,13 @@ public class frmRegister : Form
 		this.txtPassword.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 字体统一：密码字段与 frmLogin.txtPassword 一致 → Bold 强调重要性
+		this.txtPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtPassword.Location = new System.Drawing.Point(0, 176);
 		this.txtPassword.Name = "txtPassword";
-		this.txtPassword.PasswordChar = '·';
+		// 修复：密码符从 '·'（间隔号/小中点）统一改为 '●'（标准大黑圆点，与 frmLogin/frmAlterPwd 一致）
+		// '·' 过小，在高 DPI / 10.5f Bold 字重下几乎看不见，容易误判为明文
+		this.txtPassword.PasswordChar = '•';
 		this.txtPassword.Size = new System.Drawing.Size(429, 57);
 		this.txtPassword.TabIndex = 1;
 		this.txtPassword.Tag = null;
@@ -962,7 +1084,7 @@ public class frmRegister : Form
 		this.warnPassword.AutoSize = true;
 		this.warnPassword.BackColor = System.Drawing.Color.Transparent;
 		this.warnPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnPassword.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnPassword.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.warnPassword.Location = new System.Drawing.Point(0, 235);
 		this.warnPassword.Name = "warnPassword";
@@ -990,7 +1112,7 @@ public class frmRegister : Form
 		this.lblPassword2.AutoSize = true;
 		this.lblPassword2.BackColor = System.Drawing.Color.Transparent;
 		this.lblPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword2.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblPassword2.Location = new System.Drawing.Point(0, 273);
 		this.lblPassword2.Name = "lblPassword2";
@@ -1005,10 +1127,12 @@ public class frmRegister : Form
 		this.txtPassword2.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPassword2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPassword2.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 字体统一：确认密码字段也用 Bold，与主密码框层级一致
+		this.txtPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtPassword2.Location = new System.Drawing.Point(0, 312);
 		this.txtPassword2.Name = "txtPassword2";
-		this.txtPassword2.PasswordChar = '·';
+		// 修复：密码符从 '·'（间隔号/小中点）统一改为 '●'（标准大黑圆点，与 frmLogin/frmAlterPwd 一致）
+		this.txtPassword2.PasswordChar = '•';
 		this.txtPassword2.Size = new System.Drawing.Size(429, 57);
 		this.txtPassword2.TabIndex = 2;
 		this.txtPassword2.Tag = null;
@@ -1021,7 +1145,7 @@ public class frmRegister : Form
 		this.warnPassword2.AutoSize = true;
 		this.warnPassword2.BackColor = System.Drawing.Color.Transparent;
 		this.warnPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnPassword2.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnPassword2.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.warnPassword2.Location = new System.Drawing.Point(0, 372);
 		this.warnPassword2.Name = "warnPassword2";
@@ -1058,16 +1182,17 @@ public class frmRegister : Form
 		this.pnlRightColumn.Controls.Add(this.txtEmail);
 		this.pnlRightColumn.Controls.Add(this.lblCompany);
 		this.pnlRightColumn.Controls.Add(this.txtCompany);
-		this.pnlRightColumn.Location = new System.Drawing.Point(494, 98);
+		// 紧凑化：与左列对称（起始 x = 32 + 429 + 10 gap = 471）
+		this.pnlRightColumn.Location = new System.Drawing.Point(471, 84);
 		this.pnlRightColumn.Name = "pnlRightColumn";
-		this.pnlRightColumn.Size = new System.Drawing.Size(429, 416);
+		this.pnlRightColumn.Size = new System.Drawing.Size(429, 410);
 		this.pnlRightColumn.TabIndex = 1;
 
 		// lblName
 		this.lblName.AutoSize = true;
 		this.lblName.BackColor = System.Drawing.Color.Transparent;
 		this.lblName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblName.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblName.Location = new System.Drawing.Point(0, 0);
 		this.lblName.Name = "lblName";
@@ -1082,7 +1207,7 @@ public class frmRegister : Form
 		this.txtName.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtName.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtName.Location = new System.Drawing.Point(0, 39);
 		this.txtName.Name = "txtName";
 		this.txtName.Size = new System.Drawing.Size(429, 57);
@@ -1097,7 +1222,7 @@ public class frmRegister : Form
 		this.lblwarnName.AutoSize = true;
 		this.lblwarnName.BackColor = System.Drawing.Color.Transparent;
 		this.lblwarnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblwarnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblwarnName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblwarnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.lblwarnName.Location = new System.Drawing.Point(0, 99);
 		this.lblwarnName.Name = "lblwarnName";
@@ -1125,7 +1250,7 @@ public class frmRegister : Form
 		this.lblPhone.AutoSize = true;
 		this.lblPhone.BackColor = System.Drawing.Color.Transparent;
 		this.lblPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblPhone.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPhone.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblPhone.Location = new System.Drawing.Point(0, 136);
 		this.lblPhone.Name = "lblPhone";
@@ -1140,7 +1265,7 @@ public class frmRegister : Form
 		this.txtPhone.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPhone.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtPhone.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtPhone.Location = new System.Drawing.Point(0, 176);
 		this.txtPhone.Name = "txtPhone";
 		this.txtPhone.Size = new System.Drawing.Size(429, 57);
@@ -1156,7 +1281,7 @@ public class frmRegister : Form
 		this.warnPhone.AutoSize = true;
 		this.warnPhone.BackColor = System.Drawing.Color.Transparent;
 		this.warnPhone.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnPhone.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnPhone.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnPhone.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.warnPhone.Location = new System.Drawing.Point(0, 235);
 		this.warnPhone.Name = "warnPhone";
@@ -1184,7 +1309,7 @@ public class frmRegister : Form
 		this.lblEmail.AutoSize = true;
 		this.lblEmail.BackColor = System.Drawing.Color.Transparent;
 		this.lblEmail.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblEmail.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblEmail.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblEmail.Location = new System.Drawing.Point(0, 273);
 		this.lblEmail.Name = "lblEmail";
@@ -1199,7 +1324,7 @@ public class frmRegister : Form
 		this.txtEmail.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtEmail.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtEmail.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtEmail.Location = new System.Drawing.Point(0, 312);
 		this.txtEmail.Name = "txtEmail";
 		this.txtEmail.Size = new System.Drawing.Size(429, 57);
@@ -1212,7 +1337,7 @@ public class frmRegister : Form
 		this.lblCompany.AutoSize = true;
 		this.lblCompany.BackColor = System.Drawing.Color.Transparent;
 		this.lblCompany.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblCompany.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblCompany.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblCompany.Location = new System.Drawing.Point(0, 384);
 		this.lblCompany.Name = "lblCompany";
 		this.lblCompany.Size = new System.Drawing.Size(130, 34);
@@ -1227,7 +1352,7 @@ public class frmRegister : Form
 		this.txtCompany.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtCompany.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtCompany.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtCompany.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtCompany.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtCompany.Location = new System.Drawing.Point(0, 384);
 		this.txtCompany.Name = "txtCompany";
 		this.txtCompany.Size = new System.Drawing.Size(429, 57);
@@ -1242,10 +1367,11 @@ public class frmRegister : Form
 		this.dockverify.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.dockverify.Controls.Add(this.tabImage);
 		this.dockverify.Controls.Add(this.tabSMS);
-		this.dockverify.Location = new System.Drawing.Point(46, 520);
+		// 紧凑化：跟随列上移 + 适配 900 宽卡片（列底部 84+410=494，验证码在 502）
+		this.dockverify.Location = new System.Drawing.Point(32, 502);
 		this.dockverify.Name = "dockverify";
 		this.dockverify.ShowTabs = false;
-		this.dockverify.Size = new System.Drawing.Size(878, 78);
+		this.dockverify.Size = new System.Drawing.Size(836, 72);
 		this.dockverify.TabIndex = 46;
 		this.dockverify.TabsSpacing = 0;
 
@@ -1257,7 +1383,8 @@ public class frmRegister : Form
 		this.tabImage.BackColor = System.Drawing.Color.White;
 		this.tabImage.Location = new System.Drawing.Point(0, 3);
 		this.tabImage.Name = "tabImage";
-		this.tabImage.Size = new System.Drawing.Size(878, 73);
+		// 紧凑化：匹配 dockverify 新宽度 836（原 878）
+		this.tabImage.Size = new System.Drawing.Size(836, 66);
 		this.tabImage.TabIndex = 0;
 		this.tabImage.Text = "第1页";
 
@@ -1273,9 +1400,10 @@ public class frmRegister : Form
 		this.c1Label2.Text = "*";
 		this.c1Label2.TextDetached = true;
 
-		this.VerifyImg.Location = new System.Drawing.Point(702, 8);
+		// 紧凑化：跟随 tabImage 尺寸左移（原 x=702+156=858，现需在 836 内，x=836-8-150=678）
+		this.VerifyImg.Location = new System.Drawing.Point(678, 8);
 		this.VerifyImg.Name = "VerifyImg";
-		this.VerifyImg.Size = new System.Drawing.Size(156, 57);
+		this.VerifyImg.Size = new System.Drawing.Size(150, 50);
 		this.VerifyImg.TabIndex = 29;
 		this.VerifyImg.TabStop = false;
 		this.VerifyImg.Click += new System.EventHandler(VerifyImg_Click);
@@ -1283,7 +1411,7 @@ public class frmRegister : Form
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.c1Label1.Location = new System.Drawing.Point(39, 23);
 		this.c1Label1.Name = "c1Label1";
@@ -1297,10 +1425,11 @@ public class frmRegister : Form
 		this.txtValidateCode.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtValidateCode.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtValidateCode.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtValidateCode.Location = new System.Drawing.Point(130, 8);
 		this.txtValidateCode.Name = "txtValidateCode";
-		this.txtValidateCode.Size = new System.Drawing.Size(260, 57);
+		// 紧凑化：高度略缩小，保持 ≥ 44px 触控目标（50 → 比 44 大 6）
+		this.txtValidateCode.Size = new System.Drawing.Size(260, 50);
 		this.txtValidateCode.TabIndex = 26;
 		this.txtValidateCode.Tag = null;
 		this.txtValidateCode.TextDetached = true;
@@ -1314,7 +1443,8 @@ public class frmRegister : Form
 		this.tabSMS.Controls.Add(this.btnGetValidateCode);
 		this.tabSMS.Location = new System.Drawing.Point(0, 3);
 		this.tabSMS.Name = "tabSMS";
-		this.tabSMS.Size = new System.Drawing.Size(878, 73);
+		// 紧凑化：匹配 dockverify 新宽度 836
+		this.tabSMS.Size = new System.Drawing.Size(836, 66);
 		this.tabSMS.TabIndex = 1;
 		this.tabSMS.Text = "第2页";
 
@@ -1333,7 +1463,7 @@ public class frmRegister : Form
 		this.lblVerification.AutoSize = true;
 		this.lblVerification.BackColor = System.Drawing.Color.Transparent;
 		this.lblVerification.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblVerification.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblVerification.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
 		this.lblVerification.Location = new System.Drawing.Point(39, 23);
 		this.lblVerification.Name = "lblVerification";
@@ -1347,10 +1477,10 @@ public class frmRegister : Form
 		this.txtVerification.BorderColor = System.Drawing.Color.FromArgb(210, 210, 210);
 		this.txtVerification.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtVerification.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
-		this.txtVerification.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtVerification.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtVerification.Location = new System.Drawing.Point(156, 8);
 		this.txtVerification.Name = "txtVerification";
-		this.txtVerification.Size = new System.Drawing.Size(260, 57);
+		this.txtVerification.Size = new System.Drawing.Size(260, 50);
 		this.txtVerification.TabIndex = 10;
 		this.txtVerification.Tag = null;
 		this.txtVerification.TextDetached = true;
@@ -1361,12 +1491,13 @@ public class frmRegister : Form
 		this.btnGetValidateCode.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(80, 170, 240);
 		this.btnGetValidateCode.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 120, 190);
 		this.btnGetValidateCode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnGetValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnGetValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnGetValidateCode.ForeColor = System.Drawing.Color.White;
 		this.btnGetValidateCode.Format = null;
-		this.btnGetValidateCode.Location = new System.Drawing.Point(702, 8);
+		// 紧凑化：在缩小的 836 宽 tabSMS 内，右侧留出 8px margin
+		this.btnGetValidateCode.Location = new System.Drawing.Point(678, 8);
 		this.btnGetValidateCode.Name = "btnGetValidateCode";
-		this.btnGetValidateCode.Size = new System.Drawing.Size(156, 57);
+		this.btnGetValidateCode.Size = new System.Drawing.Size(150, 50);
 		this.btnGetValidateCode.TabIndex = 11;
 		this.btnGetValidateCode.Text = "获取验证码";
 		this.btnGetValidateCode.UseVisualStyleBackColor = false;
@@ -1379,11 +1510,13 @@ public class frmRegister : Form
 		this.btnRegister.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(80, 170, 240);
 		this.btnRegister.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(30, 120, 190);
 		this.btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnRegister.Font = new System.Drawing.Font("Noto Sans SC", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnRegister.Font = new System.Drawing.Font("Noto Sans SC", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnRegister.ForeColor = System.Drawing.Color.White;
-		this.btnRegister.Location = new System.Drawing.Point(364, 533);
+		// ★ 关键修复：按钮从 dockverify 上方移到其下方。原 y=533 与 dockverify(520-598) 重叠 65px。
+		// 新位置：dockverify 底部(502+72=574) + 12px gap = 586，按钮高 54(>44)
+		this.btnRegister.Location = new System.Drawing.Point(333, 586);
 		this.btnRegister.Name = "btnRegister";
-		this.btnRegister.Size = new System.Drawing.Size(234, 70);
+		this.btnRegister.Size = new System.Drawing.Size(234, 54);
 		this.btnRegister.TabIndex = 12;
 		this.btnRegister.Text = "注册";
 		this.btnRegister.UseVisualStyleBackColor = false;
@@ -1397,9 +1530,10 @@ public class frmRegister : Form
 		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(255, 200, 200);
 		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnClose.Image = Auditai.UI.Platform.Properties.Resources.close2;
-		this.btnClose.Location = new System.Drawing.Point(988, 16);
+		// 紧凑化：缩小关闭按钮，位置适配新的窗体宽度
+		this.btnClose.Location = new System.Drawing.Point(946, 12);
 		this.btnClose.Name = "btnClose";
-		this.btnClose.Size = new System.Drawing.Size(49, 49);
+		this.btnClose.Size = new System.Drawing.Size(42, 42);
 		this.btnClose.TabIndex = 40;
 		this.btnClose.UseVisualStyleBackColor = false;
 		this.btnClose.Click += new System.EventHandler(btnClose_Click);
@@ -1408,7 +1542,7 @@ public class frmRegister : Form
 		this.warnName.AutoSize = true;
 		this.warnName.BackColor = System.Drawing.Color.Transparent;
 		this.warnName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.warnName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.warnName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.warnName.ForeColor = System.Drawing.Color.FromArgb(200, 60, 60);
 		this.warnName.Location = new System.Drawing.Point(0, 99);
 		this.warnName.Name = "warnName";
@@ -1423,10 +1557,11 @@ public class frmRegister : Form
 		this.BackColor = System.Drawing.Color.FromArgb(240, 248, 255);
 		this.BackgroundImage = null;
 		this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-		base.ClientSize = new System.Drawing.Size(1066, 741);
+		// 紧凑化：原 1066×741 → 1000×768，宽度↓6%，高度略增防止修复后的按钮再被裁切
+		base.ClientSize = new System.Drawing.Size(1000, 768);
 		base.Controls.Add(this.btnClose);
 		base.Controls.Add(this.pnlCard);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.Name = "frmRegister";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

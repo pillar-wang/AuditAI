@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -55,6 +55,12 @@ public class GaugeForm<T> : C1RibbonForm
 			_progressColor = value;
 		}
 	}
+
+	#region 按钮尺寸规范
+	private const int ButtonWidth = 110;
+	private const int ButtonHeight = 34;
+	private const int ButtonRightMargin = 50;
+	#endregion
 
 	public GaugeForm(ProgressForm<T> owner)
 	{
@@ -304,9 +310,9 @@ public class GaugeForm<T> : C1RibbonForm
 		base.SuspendLayout();
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
 		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(376, 51);
+		this.btnCancel.Location = new System.Drawing.Point(520 - ButtonRightMargin - ButtonWidth, 51);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(91, 34);
+		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 3;
 		this.btnCancel.Text = "取消";
 		this.btnCancel.UseVisualStyleBackColor = true;
