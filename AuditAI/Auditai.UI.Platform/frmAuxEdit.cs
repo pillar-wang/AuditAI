@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -102,6 +102,20 @@ public class frmAuxEdit : Form
 	public C1TextBoxEx txbCommentInput;
 	public C1TextBoxEx txbDefaultInput;
 
+	/// <summary>给按钮应用圆角区域（与 frmFindPwd 保持一致的统一设计语言）</summary>
+	private void ApplyRoundedButton(Control btn, int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(btn.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(btn.Width - radius * 2, btn.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, btn.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			btn.Region = new System.Drawing.Region(path);
+		}
+	}
+
 	public frmAuxEdit(AuxEditor owner)
 	{
 		ctx1 = new C1ContextMenu();
@@ -141,7 +155,30 @@ public class frmAuxEdit : Form
 		ctxOtherFunc = new C1ContextMenu();
 		_owner = owner;
 		InitializeComponent();
+		// 统一设计语言：按钮最终尺寸确定后再应用 8px 圆角 Region
+		ApplyRoundedButton(btnConfirm, 8);
+		ApplyRoundedButton(btnCancle, 8);
 		Initialize();
+		// 统一设计语言：C1Button 皮肤会覆盖设计时配色，构造末尾重设主/次按钮样式
+		RefreshButtonStyles();
+	}
+
+	/// <summary>统一设计语言：重新应用主/次按钮配色（防止 C1Button 皮肤/主题覆盖）</summary>
+	private void RefreshButtonStyles()
+	{
+		// 主按钮：Brand 蓝底白字
+		btnConfirm.BackColor = AuditTheme.Brand;
+		btnConfirm.ForeColor = Color.White;
+		btnConfirm.FlatStyle = FlatStyle.Flat;
+		btnConfirm.FlatAppearance.BorderSize = 0;
+		btnConfirm.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		btnConfirm.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		// 次按钮：白底灰字 + 浅蓝边框
+		btnCancle.BackColor = Color.White;
+		btnCancle.ForeColor = Color.FromArgb(30, 41, 59);
+		btnCancle.FlatStyle = FlatStyle.Flat;
+		btnCancle.FlatAppearance.BorderSize = 1;
+		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
 	}
 
 	private TextBoxBase ActiveTextBox()
@@ -597,11 +634,14 @@ public class frmAuxEdit : Form
 		rtbDropInput.VScrollPos = 0;
 
 		ctnDock.AutoSizeElement = AutoSizeElement.Both;
-		ctnDock.BackColor = Color.FromArgb(164, 195, 235);
+		// 统一设计语言：容器背景由旧 C1 蓝改为现代浅色表面色
+		ctnDock.BackColor = Color.FromArgb(245, 249, 252);
 		ctnDock.CollapsingAreaColor = Color.FromArgb(221, 231, 238);
 		ctnDock.Dock = DockStyle.Fill;
-		ctnDock.FixedLineColor = Color.FromArgb(119, 147, 185);
-		ctnDock.ForeColor = Color.FromArgb(21, 66, 139);
+		// 统一设计语言：固定线由旧深蓝改为浅灰
+		ctnDock.FixedLineColor = Color.FromArgb(208, 215, 222);
+		// 统一设计语言：前景文字由旧深蓝改为深灰蓝
+		ctnDock.ForeColor = Color.FromArgb(30, 41, 59);
 		ctnDock.HeaderHeight = 27;
 		ctnDock.Location = new Point(0, 0);
 		ctnDock.Margin = new Padding(4, 5, 4, 5);
@@ -609,10 +649,11 @@ public class frmAuxEdit : Form
 		ctnDock.Panels.Add(pnlButtons);
 		ctnDock.Panels.Add(pnlInputBox);
 		ctnDock.Size = new Size(1030, 740);
-		ctnDock.SplitterColor = Color.FromArgb(119, 147, 185);
+		// 统一设计语言：分隔条颜色同步为浅灰
+		ctnDock.SplitterColor = Color.FromArgb(208, 215, 222);
 		ctnDock.SplitterWidth = 0;
 		ctnDock.TabIndex = 1;
-		ctnDock.ToolTipGradient = ToolTipGradient.Blue;
+		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
 
 		pnlButtons.Controls.Add(btnCancle);
 		pnlButtons.Controls.Add(btnConfirm);
@@ -626,25 +667,40 @@ public class frmAuxEdit : Form
 		pnlButtons.TabIndex = 2;
 		pnlButtons.Width = 1030;
 
+		// 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框），高度 40（面板 52 内 Y=6 上下各 6 居中）
 		btnCancle.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-		btnCancle.Location = new Point(909, 9);
+		btnCancle.Location = new Point(909, 6);
 		btnCancle.Margin = new Padding(4, 5, 4, 5);
 		btnCancle.Name = "btnCancle";
-		btnCancle.Size = new Size(91, 34);
+		btnCancle.Size = new Size(91, 40);
 		btnCancle.TabIndex = 1;
 		btnCancle.Text = "取消";
-		btnCancle.UseVisualStyleBackColor = true;
-		btnCancle.VisualStyleBaseStyle = (C1.Win.C1Input.VisualStyle)2;
+		btnCancle.FlatStyle = FlatStyle.Flat;
+		btnCancle.FlatAppearance.BorderSize = 1;
+		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnCancle.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
+		btnCancle.ForeColor = Color.FromArgb(30, 41, 59);
+		btnCancle.BackColor = Color.White;
+		btnCancle.UseVisualStyleBackColor = false;
+		btnCancle.Font = new Font("Noto Sans SC", 9.5f);
 		btnCancle.Click += btnCancle_Click;
 
+		// 统一设计语言：主按钮（品牌蓝底白字、无边框），高度 40 与取消按钮对齐
 		btnConfirm.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-		btnConfirm.Location = new Point(775, 9);
+		btnConfirm.Location = new Point(775, 6);
 		btnConfirm.Margin = new Padding(4, 5, 4, 5);
 		btnConfirm.Name = "btnConfirm";
-		btnConfirm.Size = new Size(91, 34);
+		btnConfirm.Size = new Size(91, 40);
 		btnConfirm.TabIndex = 0;
 		btnConfirm.Text = "确定";
-		btnConfirm.UseVisualStyleBackColor = true;
+		btnConfirm.FlatStyle = FlatStyle.Flat;
+		btnConfirm.FlatAppearance.BorderSize = 0;
+		btnConfirm.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		btnConfirm.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		btnConfirm.ForeColor = Color.White;
+		btnConfirm.BackColor = AuditTheme.Brand;
+		btnConfirm.UseVisualStyleBackColor = false;
+		btnConfirm.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
 		btnConfirm.Click += btnConfirm_Click;
 
 		pnlInputBox.Controls.Add(DockingTab);
@@ -1033,7 +1089,9 @@ public class frmAuxEdit : Form
 
 	private bool UseWildcardImpl(string text, int pos)
 	{
-		if (text == null) return false;
+		// 修复：原实现仅判 text==null，当光标位于输入框最开头（pos==0）时
+		// text[-1] 抛 IndexOutOfRangeException。
+		if (text == null || pos <= 0 || pos > text.Length) return false;
 		char c = text[pos - 1];
 		if (c == '=' || c == '>' || c == '<') return true;
 		try

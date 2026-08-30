@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -443,6 +443,8 @@ public class Table
 					_isFormulaDependenciesLoaded = false;
 					_formulaTriggers.Clear();
 					CellPropManager.DicCellAttachments.Clear();
+					// 清空撤销/重做栈，防止历史命令引用已不存在的 Cell/Row 对象
+					CommandsManager.Clear();
 					Auditai.DTO.Table table = Project.Dal.GetTable(Id);
 					if (table == null)
 					{
@@ -507,7 +509,13 @@ public class Table
 						dictionary.Add(cellStyle.Id, cellStyle);
 						CellStyles.Add(cellStyle);
 					}
-					DefaultStyle = dictionary[table.DefaultStyleId];
+					if (!dictionary.TryGetValue(table.DefaultStyleId, out var defaultStyle))
+					{
+						// 防御：DefaultStyleId 指向样式缺失（脏数据）时用第一个样式兜底，
+						// 避免 KeyNotFoundException 导致整表被误判为损坏。
+						defaultStyle = CellStyles.FirstOrDefault();
+					}
+					DefaultStyle = defaultStyle;
 					Dictionary<Id64, Column> dictionary2 = new Dictionary<Id64, Column>();
 					foreach (Auditai.DTO.Column column2 in Project.Dal.GetColumns(Id))
 					{
@@ -529,9 +537,9 @@ public class Table
 						column.Permissions.Deserialize(column2.Permissions);
 						column.CaptionStyle.Deserialize(column2.CaptionStyle);
 						column.CrossAttributes.Deserialize(column2.CrossAttributes);
-						if (column2.StyleId.HasValue)
+						if (column2.StyleId.HasValue && dictionary.TryGetValue(column2.StyleId.Value, out var colStyle))
 						{
-							column.Style = dictionary[column2.StyleId.Value];
+							column.Style = colStyle;
 						}
 						Columns._list.Add(column);
 						dictionary2.Add(column2.Id, column);
@@ -567,10 +575,20 @@ public class Table
 					List<Auditai.DTO.Cell> list = Project.Dal.GetCells(Id).ToList();
 					foreach (Auditai.DTO.Cell item in list)
 					{
+						// 防御：Cell 引用的 Row/Column 已被删除（本地删除后待同步/同步合并的正常中间态）
+						// 时跳过该 Cell 并记入待删列表，避免 KeyNotFoundException 把整表误判为损坏。
+						if (!dictionary3.TryGetValue(item.RowId, out var cellRow) || !dictionary2.TryGetValue(item.ColumnId, out var cellCol))
+						{
+							if (!item.Id.IsZero())
+							{
+								CellsToDelete.Add(item.Id);
+							}
+							continue;
+						}
 						Cell cell = new Cell
 						{
-							Row = dictionary3[item.RowId],
-							Column = dictionary2[item.ColumnId],
+							Row = cellRow,
+							Column = cellCol,
 							Id = item.Id,
 							Value = item.Value.Value,
 							Dirty = new CellDirtyMask(item.Dirty),
@@ -579,9 +597,9 @@ public class Table
 							CollectSource = item.CollectSource,
 							HeaderFormula = item.HeaderFormula
 						};
-						if (item.StyleId.HasValue)
+						if (item.StyleId.HasValue && dictionary.TryGetValue(item.StyleId.Value, out var cellStyle))
 						{
-							cell.Style = dictionary[item.StyleId.Value];
+							cell.Style = cellStyle;
 						}
 						cell.DeserializeCellPrivateData(item.Value.AdditionalData);
 						Cells._list.Add(cell);
@@ -598,20 +616,11 @@ public class Table
 					{
 						LoadRowOwnerLoadView();
 					}
-					if (Rows.Count * Columns.Count != Cells.Count)
-					{
-						IsCorrupted = true;
-						try
-						{
-							string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
-							System.IO.File.AppendAllText(logPath,
-								$"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] CORRUPTION CHECK FAILED: TableId={Id}, Name={TreeNode?.Name}\r\n" +
-								$"  Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}, Expected={Rows.Count * Columns.Count}\r\n" +
-								new string('=', 80) + "\r\n");
-						}
-						catch { }
-						return this;
-					}
+					// 注意：这里不再做 Rows*Cols != Cells 的一刀切损坏判定。
+					// 原判定位置在 RemovedXxx 待删列表加载之前，且公式不含待删项，
+					// 会把"本地已删除行列、待删 Cells 尚未落盘"的正常同步中间态误判为损坏，
+					// 进而触发 RepairFromCloudAsync（重置 Version=0 全量推送）造成连锁误报。
+					// 一致性校验移到 RemovedXxx 加载完成后，用宽容公式判定（见下方）。
 					foreach (Merge dtoM in Project.Dal.GetMerges(Id))
 					{
 						CellMerge cellMerge = new CellMerge();
@@ -639,6 +648,47 @@ public class Table
 					foreach (Id64 localRemovedCell in Project.Dal.GetLocalRemovedCells(Id))
 					{
 						RemovedCells.Add(localRemovedCell);
+					}
+					// 单元格一致性：加载时不做"损坏"判定，直接自动修复。
+				// 增删行列、改公式等正常编辑（尤其本地已改而云端未同步的中间态）会让
+				// Rows*Cols != Cells 天然成立；任何数量公式都无法覆盖复合编辑场景，
+				// 一旦据此判定"损坏"就会误触发云端全量重建（RepairFromCloudAsync）。
+				// 因此这里只负责把内存模型修复为一致：清理孤儿 Cells + 补全缺失 Cells，
+				// 结构性真错误由保存时 ThrowIfCellCountError / 加载异常兜底。
+				if (Rows.Count * Columns.Count != Cells._list.Count)
+					{
+						try
+						{
+							// a) 清理孤儿 Cells（Row/Column 已不在当前 Rows/Columns 中）
+							var validRowIds = new HashSet<Id64>(Rows.Select(r => r.Id));
+							var validColIds = new HashSet<Id64>(Columns.Select(c => c.Id));
+							var orphanCells = Cells.Where(c => c.Row == null || c.Column == null
+								|| !validRowIds.Contains(c.Row.Id) || !validColIds.Contains(c.Column.Id)).ToList();
+							foreach (var orphan in orphanCells)
+							{
+								if (!orphan.Id.IsZero())
+								{
+									CellsToDelete.Add(orphan.Id);
+								}
+								Cells._list.Remove(orphan);
+							}
+							// b) 按 Rows × Columns 笛卡尔积补全缺失 Cells
+						if (Rows.Count * Columns.Count > Cells._list.Count)
+						{
+							EnsureAllCellsExist();
+						}
+						// 注意：不设置表级 NeedSave——孤儿已记入 CellsToDelete、补全格自带
+						// Cell.NeedSave，Save() 会无条件处理；表级标记只会触发多余的保存流程。
+						string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_table_load_error.log");
+							System.IO.File.AppendAllText(logPath,
+								$"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] LOAD AUTO-REPAIR (not corruption): TableId={Id}, Name={TreeNode?.Name}\r\n" +
+								$"  Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells._list.Count}, OrphansRemoved={orphanCells.Count}\r\n" +
+								new string('=', 80) + "\r\n");
+						}
+						catch
+						{
+							// 自动修复失败不阻断加载，交由保存时校验兜底
+						}
 					}
 					_loaded = true;
 					IsCorrupted = false;
@@ -697,11 +747,18 @@ public class Table
 
 	public bool IsManager()
 	{
-		if (!Project.Current.Users.Any((KeyValuePair<Auditai.DTO.User, UserRole> u) => u.Key.Id == User.Current.Id))
+		// 修复：原实现用静态 Project.Current（全局当前项目）而非本表所属项目（this.Project）
+		// 判断管理员身份，多项目场景下判断的是错误的项目成员表。优先用本表所属项目。
+		Project project = Project ?? Project.Current;
+		if (project == null || User.Current == null)
 		{
 			return false;
 		}
-		return Project.Current.Users.First((KeyValuePair<Auditai.DTO.User, UserRole> u) => u.Key.Id == User.Current.Id).Value == UserRole.Manager;
+		if (!project.Users.Any((KeyValuePair<Auditai.DTO.User, UserRole> u) => u.Key.Id == User.Current.Id))
+		{
+			return false;
+		}
+		return project.Users.First((KeyValuePair<Auditai.DTO.User, UserRole> u) => u.Key.Id == User.Current.Id).Value == UserRole.Manager;
 	}
 
 	private bool CanLoad(Row row)
@@ -897,7 +954,52 @@ public class Table
 			
 			if (result == PullResult.NotExist)
 			{
-				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 服务端不存在此表格");
+				// 云端没有这张表：把修复后的本地数据推回云端重建。
+				// 这是"云端修复失败"死锁的关键解药——服务器端没有数据时，
+				// 与其直接报失败，不如把本地（可修复的）数据推送上去创建表格。
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 服务端不存在此表格，改为将本地数据推送回云端重建");
+
+				// 1) 确保本地数据已完整加载且一致（加载异常时 Rows/Columns/Cells 可能为空或部分）
+				IsCorrupted = false;
+				_loaded = false;
+				try
+				{
+					LoadAndReturn();
+				}
+				catch (Exception loadEx2)
+				{
+					System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 推送前本地加载异常（忽略，尽量用已加载的数据推送）: {loadEx2.Message}");
+				}
+				if (Rows.Count * Columns.Count != Cells.Count)
+				{
+					EnsureAllCellsExist();
+				}
+				if (DefaultStyle == null && CellStyles.Any())
+				{
+					DefaultStyle = CellStyles.First();
+				}
+
+				// 2) 整表以 New 状态推送，确保 Synced 且未变更的行列也会被发送（Version=0 全量重建）
+				foreach (Column column in Columns) column.Status = SyncStatus.New;
+				foreach (Row row in Rows) row.Status = SyncStatus.New;
+				foreach (Cell cell in Cells) cell.Status = SyncStatus.New;
+				foreach (CellStyle cellStyle in CellStyles) cellStyle.Status = SyncStatus.New;
+				foreach (CellMerge cellMerge in MergedCells) cellMerge.Status = SyncStatus.New;
+				TreeNode.IsEntityDirty = true;
+
+				// 3) 推送回云端创建表格
+				PushResult pushResult = await Syncer.Push(this, reportCallback).ConfigureAwait(continueOnCapturedContext: false);
+				System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 推送结果: {pushResult}");
+				if (pushResult == PushResult.Success)
+				{
+					Save();
+					_loaded = false;
+					IsCorrupted = false;
+					LoadAndReturn();
+					System.Diagnostics.Debug.WriteLine($"[RepairFromCloudAsync] 推送重建完成: IsCorrupted={IsCorrupted}, Rows={Rows.Count}, Cols={Columns.Count}, Cells={Cells.Count}");
+					return !IsCorrupted;
+				}
+				return false;
 			}
 			return false;
 		}
@@ -909,7 +1011,58 @@ public class Table
 		}
 	}
 
-	private void EnsureAllCellsExist()
+	/// <summary>
+	/// 采用云端版本：丢弃本地未同步修改，从云端全量重建表格。
+	/// 供冲突解决对话框"采用云端"分支使用。
+	/// </summary>
+	public async Task<bool> AdoptServerStateAsync()
+	{
+		if (Syncer.Disabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+		{
+			return false;
+		}
+		try
+		{
+			TreeNode.IsEntityDirty = false;
+			TreeNode.Version = 0;
+			_loaded = false;
+			// 清空本地内存中的全部数据，让 Pull/Merge 以云端数据完全重建（等价于放弃本地修改）
+			CellStyles.Clear();
+			Columns.Clear();
+			Rows.Clear();
+			Cells.Clear();
+			MergedCells.Clear();
+			RemovedMerges.Clear();
+			RemovedColumns.Clear();
+			RemovedRows.Clear();
+			RemovedCells.Clear();
+			ColumnsToDelete.Clear();
+			RowsToDelete.Clear();
+			CellsToDelete.Clear();
+			MergesToDelete.Clear();
+			HeaderRowCache.Clear();
+			CellPropManager.DicCellAttachments.Clear();
+			CommandsManager.Clear();
+			_isFormulaDependenciesLoaded = false;
+			_formulaTriggers.Clear();
+			PullResult result = await Syncer.Pull(this).ConfigureAwait(continueOnCapturedContext: false);
+			if (result != PullResult.Success && result != PullResult.AlreadyLatest)
+			{
+				return false;
+			}
+			TreeNode.IsEntityDirty = false;
+			Save();
+			_loaded = false;
+			IsCorrupted = false;
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	internal void EnsureAllCellsExist()
 	{
 		var cellDic = new Dictionary<Tuple<Id64, Id64>, Cell>();
 		foreach (Cell cell in Cells)
@@ -1763,8 +1916,19 @@ public class Table
 		{
 			return new int[0];
 		}
-		return (from h in s.Split(',')
-			select int.Parse(h)).ToArray();
+		// 防御：容忍历史数据中的损坏/非数字项（int.Parse 抛 FormatException 会
+		// 导致整个表格加载失败并被标记为损坏）。逐项 TryParse，跳过非法项，
+		// 仅当全部非法时回退为空数组，最大限度保留可用数据。注意保留 -1
+		// 哨兵值（SetHeaderHeight 用它表示"未设置"），不做符号过滤以免索引错位。
+		List<int> list = null;
+		foreach (string h in s.Split(','))
+		{
+			if (int.TryParse(h, out var height))
+			{
+				(list ??= new List<int>()).Add(height);
+			}
+		}
+		return list?.ToArray() ?? new int[0];
 	}
 
 	internal void InitTableForCreate(InitTableMode mode)
@@ -1899,7 +2063,94 @@ public class Table
 	{
 		if (Rows.Count * Columns.Count != Cells._list.Count)
 		{
-			throw new TableModelException("表格 " + TreeNode.Name + " 已损坏，请尝试重新载入表格或者删除本表格。");
+			// 先尝试自动修复：补全缺失单元格、清理多余单元格
+			TryRepairCellCountBeforeSave();
+			if (Rows.Count * Columns.Count != Cells._list.Count)
+			{
+				throw new TableModelException("表格 " + TreeNode.Name + " 已损坏，请尝试重新载入表格或者删除本表格。");
+			}
+		}
+	}
+
+	/// <summary>
+	/// 保存前尝试自动修复 Rows.Count * Columns.Count != Cells.Count 的不一致。
+	/// 1) 清理 Row 或 Column 已不存在导致的多余 Cells（加入 CellsToDelete，从 Cells._list 移除）
+	/// 2) 补全缺失的 Cells（调用 EnsureAllCellsExist）
+	/// 修复后由调用方再次校验；仍不一致才抛异常。
+	/// </summary>
+	private void TryRepairCellCountBeforeSave()
+	{
+		try
+		{
+			// 0) 同一 (Row, Column) 位置出现重复 Cell 时去重。
+			// 重复来源：自动补全的空白格（新本地 Id）与 Pull 下发的真实格（云端 Id）
+			// 在 Merge 中按 Id 合并导致同位置共存。去重规则优先保留用户编辑过的格
+			// （Dirty 有设置或 Status=New），其次保留有内容/公式的格，防止空白格挤掉真实数据。
+			var posCellMap = new Dictionary<Tuple<Id64, Id64>, Cell>();
+			var duplicateCells = new List<Cell>();
+			int CellKeepScore(Cell c) => (((c.Dirty.AnySet() || c.Status == SyncStatus.New) ? 2 : 0)
+				+ ((((c.Value is string sv) ? !string.IsNullOrEmpty(sv) : c.Value != null) || !string.IsNullOrEmpty(c.Formula)) ? 1 : 0));
+			foreach (Cell c in Cells)
+			{
+				if (c.Row == null || c.Column == null)
+				{
+					continue; // 孤儿由步骤 1 处理
+				}
+				var key = Tuple.Create(c.Row.Id, c.Column.Id);
+				if (!posCellMap.TryGetValue(key, out var keep))
+				{
+					posCellMap[key] = c;
+					continue;
+				}
+				Cell drop = (CellKeepScore(keep) >= CellKeepScore(c)) ? c : keep;
+				if (drop == c)
+				{
+					duplicateCells.Add(c);
+				}
+				else
+				{
+					duplicateCells.Add(keep);
+					posCellMap[key] = c;
+				}
+			}
+			foreach (Cell dup in duplicateCells)
+			{
+				if (!dup.Id.IsZero())
+				{
+					CellsToDelete.Add(dup.Id);
+				}
+				Cells._list.Remove(dup);
+			}
+
+			// 1) 清理多余 Cells（其 Row 或 Column 已不在当前 Rows/Columns 中）
+			var validRowIds = new HashSet<Id64>(Rows.Select(r => r.Id));
+			var validColIds = new HashSet<Id64>(Columns.Select(c => c.Id));
+			var orphanCells = Cells.Where(c => c.Row == null || c.Column == null
+				|| !validRowIds.Contains(c.Row.Id) || !validColIds.Contains(c.Column.Id)).ToList();
+			if (orphanCells.Count > 0)
+			{
+				foreach (var orphan in orphanCells)
+				{
+					// Cell.Id 是 Id64 结构体（非可空），直接加入待删除集合
+					if (!orphan.Id.IsZero())
+					{
+						CellsToDelete.Add(orphan.Id);
+					}
+					Cells._list.Remove(orphan);
+				}
+				NeedSave = true;
+			}
+
+			// 2) 补全缺失 Cells（基于现有 Rows × Columns 笛卡尔积）
+			if (Rows.Count * Columns.Count > Cells._list.Count)
+			{
+				EnsureAllCellsExist();
+				NeedSave = true;
+			}
+		}
+		catch
+		{
+			// 修复失败不抛出，由调用方 ThrowIfCellCountError 兜底
 		}
 	}
 

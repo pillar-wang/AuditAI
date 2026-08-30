@@ -241,7 +241,12 @@ public class SnapshotManager
 			dictionary.Add(cellStyle2.Id, cellStyle);
 			treeTableNode.Table.CellStyles.Add(cellStyle);
 		}
-		treeTableNode.Table.DefaultStyle = dictionary[table.DefaultStyleId];
+		// 修复：快照数据不完整时原 dictionary[table.DefaultStyleId] 直接索引抛 KeyNotFoundException
+		// 使快照恢复崩溃。TryGetValue 兜底为 null（后续加载有空引用防御）。
+		if (dictionary.TryGetValue(table.DefaultStyleId, out var defaultStyle))
+		{
+			treeTableNode.Table.DefaultStyle = defaultStyle;
+		}
 		Dictionary<Id64, Column> dictionary2 = new Dictionary<Id64, Column>();
 		Dictionary<Id64, Column> dictionary3 = new Dictionary<Id64, Column>();
 		foreach (Auditai.DTO.Column column2 in tableDAL.GetColumns())
@@ -266,7 +271,11 @@ public class SnapshotManager
 			column.CaptionStyle.Deserialize(column2.CaptionStyle);
 			if (column2.StyleId.HasValue)
 			{
-				column.Style = dictionary[column2.StyleId.Value];
+				// 修复：快照数据不完整时原 dictionary[column2.StyleId.Value] 抛 KeyNotFoundException。
+				if (dictionary.TryGetValue(column2.StyleId.Value, out var colStyle))
+				{
+					column.Style = colStyle;
+				}
 			}
 			dictionary2.Add(column2.Id, column);
 			dictionary3.Add(column.Id, column);
@@ -300,7 +309,14 @@ public class SnapshotManager
 		{
 			for (int j = 0; j < treeTableNode.Table.Columns.Count; j++)
 			{
-				Auditai.DTO.Cell cell = list[i * treeTableNode.Table.Columns.Count + j];
+				// 修复：原 list[i * Columns.Count + j] 假定数量精确匹配且行主序，
+				// 快照数据异常（行列数不一致）时 IndexOutOfRangeException。越界时跳过。
+				int cellIndex = i * treeTableNode.Table.Columns.Count + j;
+				if (cellIndex >= list.Count)
+				{
+					continue;
+				}
+				Auditai.DTO.Cell cell = list[cellIndex];
 				Cell cell2 = new Cell
 				{
 					Row = treeTableNode.Table.Rows[i],
@@ -315,7 +331,11 @@ public class SnapshotManager
 				};
 				if (cell.StyleId.HasValue)
 				{
-					cell2.Style = dictionary[cell.StyleId.Value];
+					// 修复：快照数据不完整时原 dictionary[cell.StyleId.Value] 抛 KeyNotFoundException。
+					if (dictionary.TryGetValue(cell.StyleId.Value, out var cellStyle))
+					{
+						cell2.Style = cellStyle;
+					}
 				}
 				cell2.DeserializeCellPrivateData(cell.Value.AdditionalData);
 				dictionary4.Add(cell.Id, cell2);
@@ -326,7 +346,11 @@ public class SnapshotManager
 		foreach (CellProp cellProp in tableDAL.GetCellProps())
 		{
 			CellAttachments cellAttachments = new CellAttachments();
-			Cell cell3 = dictionary4[cellProp.CellId];
+			// 修复：快照附件引用了不存在的单元格时原 dictionary4[cellProp.CellId] 抛 KeyNotFoundException。
+			if (!dictionary4.TryGetValue(cellProp.CellId, out var cell3))
+			{
+				continue;
+			}
 			cellAttachments.Deserialize(cellProp.Attachments);
 			foreach (CellAttachment attachment in cellAttachments.Attachments)
 			{

@@ -72,6 +72,12 @@ public class FormulaMap : ISetTheme
 	{
 		_flip = !_flip;
 		UserState myState = SignalRClient.UserState;
+		// 修复：原 SignalRClient.UserState 未判空，且 long.Parse 在 TreeNodeId 非数字时
+		// 于定时器线程抛未处理异常。
+		if (myState == null || myState.ProjectId == null)
+		{
+			return;
+		}
 		Group group = MemberManager.GetInstance().GetGroup(SignalRClient.UserState.ProjectId);
 		if (group == null)
 		{
@@ -85,7 +91,11 @@ public class FormulaMap : ISetTheme
 			_avatars.Clear();
 			foreach (Member item in enumerable)
 			{
-				long nId = long.Parse(item.UserState.TreeNodeId);
+				// 修复：TreeNodeId 非数字时 TryParse 跳过该成员，不中断整个定时器回调。
+				if (!long.TryParse(item.UserState.TreeNodeId, out long nId))
+				{
+					continue;
+				}
 				GraphNode n2 = _graph.Nodes.FirstOrDefault((GraphNode n) => n.ModelNode.Id.Value == nId);
 				n2 = GetRoot(n2);
 				if (n2 != null && !n2.Rect.IsEmpty)

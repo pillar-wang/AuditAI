@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -37,6 +37,17 @@ public static class Syncer
 		int num = table.Columns.Count + table.RemovedColumns.Count + table.Rows.Count + table.RemovedRows.Count + table.Cells.Count + table.RemovedRows.Count + table.CellStyles.Count() + table.MergedCells.Count + table.MergesToDelete.Count;
 		int num2 = 0;
 		table.LoadAndReturn();
+		if (table.Version == 0)
+		{
+			// 防御：Version=0 表示云端尚无此表数据，必须整表全量推送。
+			// 但若本地存在 Synced 且未变更的行列（半同步/损坏后遗留），Push 的增量逻辑
+			// 会跳过它们导致云端缺行缺列。统一强制为 New，确保全量重建。
+			foreach (Column column in table.Columns) column.Status = SyncStatus.New;
+			foreach (Row row in table.Rows) row.Status = SyncStatus.New;
+			foreach (Cell cell in table.Cells) cell.Status = SyncStatus.New;
+			foreach (CellStyle cellStyle in table.CellStyles) cellStyle.Status = SyncStatus.New;
+			foreach (CellMerge cellMerge in table.MergedCells) cellMerge.Status = SyncStatus.New;
+		}
 		PushTable pushTable = new PushTable();
 		Auditai.DTO.Table table2 = table.ToDto();
 		pushTable.Id = table2.Id.Value;
@@ -1313,7 +1324,6 @@ public static class Syncer
 			try
 			{
 				await Pull(table).ConfigureAwait(false);
-				MergeWithConflictResolution(table, null, null);
 			}
 			catch
 			{
@@ -1466,31 +1476,57 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
-			CellStyle cellStyle = new CellStyle
+			// 修复：服务端 Pull 全量下发所有样式，原实现直接 Add 导致样式池每次 Pull 翻倍累积。
+			// 已存在（按 Id 匹配）则就地更新字段（保留 Status），不存在才新建。
+			CellStyle cellStyle = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == item.Id);
+			if (cellStyle == null)
 			{
-				Id = new Id64(item.Id),
-				BackColor = item.BackColor,
-				FontFamily = item.FontFamily,
-				FontSize = item.FontSize,
-				ForeColor = item.ForeColor,
-				Align = (CellTextAlign?)item.Align,
-				Margin = item.Margin,
-				Bold = item.Bold,
-				Italic = item.Italic,
-				Underline = item.Underline,
-				DataType = Util.NullableIntToDataType(item.DataType),
-				Status = SyncStatus.Synced,
-				Format = DataFormat.Parse(item.Format),
-				Locker = item.Locker,
-				DefaultValue = item.DefaultValue,
-				Comment = item.Comment
-			};
-			table.CellStyles.Add(cellStyle);
+				cellStyle = new CellStyle
+				{
+					Id = new Id64(item.Id),
+					BackColor = item.BackColor,
+					FontFamily = item.FontFamily,
+					FontSize = item.FontSize,
+					ForeColor = item.ForeColor,
+					Align = (CellTextAlign?)item.Align,
+					Margin = item.Margin,
+					Bold = item.Bold,
+					Italic = item.Italic,
+					Underline = item.Underline,
+					DataType = Util.NullableIntToDataType(item.DataType),
+					Status = SyncStatus.Synced,
+					Format = DataFormat.Parse(item.Format),
+					Locker = item.Locker,
+					DefaultValue = item.DefaultValue,
+					Comment = item.Comment
+				};
+				table.CellStyles.Add(cellStyle);
+			}
+			else
+			{
+				cellStyle.BackColor = item.BackColor;
+				cellStyle.FontFamily = item.FontFamily;
+				cellStyle.FontSize = item.FontSize;
+				cellStyle.ForeColor = item.ForeColor;
+				cellStyle.Align = (CellTextAlign?)item.Align;
+				cellStyle.Margin = item.Margin;
+				cellStyle.Bold = item.Bold;
+				cellStyle.Italic = item.Italic;
+				cellStyle.Underline = item.Underline;
+				cellStyle.DataType = Util.NullableIntToDataType(item.DataType);
+				cellStyle.Format = DataFormat.Parse(item.Format);
+				cellStyle.Locker = item.Locker;
+				cellStyle.DefaultValue = item.DefaultValue;
+				cellStyle.Comment = item.Comment;
+			}
 		}
 		long? defaultStyleId = ((pullTable.DefaultStyleId == null || pullTable.DefaultStyleId.IsNull) ? null : new long?(pullTable.DefaultStyleId.Value));
 		if (defaultStyleId.HasValue)
 		{
-			table.DefaultStyle = table.CellStyles.First((CellStyle s) => s.Id.Value == defaultStyleId.Value);
+			// 防御：若服务端返回的 defaultStyleId 不在本次收到的 CellStyles 中，
+			// First 会抛 InvalidOperationException 中断整个 Pull。改用 FirstOrDefault
+			// 并置空，避免一闪而过的脏数据让整表同步失败。
+			table.DefaultStyle = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == defaultStyleId.Value);
 			table.Dirty.IsDefaultStyleDirty = false;
 		}
 		if (table.Rows.Count > 0)
@@ -1524,6 +1560,71 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
+			// 修复：本地已删除且未推送的列，保留删除意图（推送时以 DelColumn 同步到云端），
+			// 不再被服务端数据复活。
+			if (table.RemovedColumns.Contains(new Id64(add2.Id)))
+			{
+				continue;
+			}
+			// 修复：本地已存在该列时不得整列替换对象——原实现既丢失本地未推送的修改，
+			// 又导致既有 Cell.Column 引用悬空的旧对象。改为按脏掩码就地合并字段。
+			if (dictionary.TryGetValue(new Id64(add2.Id), out var existCol))
+			{
+				if (existCol.Status == SyncStatus.New)
+				{
+					continue;
+				}
+				if (!existCol.Dirty.IsCaptionDirty)
+				{
+					existCol.Caption = add2.Caption;
+				}
+				if (!existCol.Dirty.IsWidthDirty)
+				{
+					existCol.Width = add2.Width;
+				}
+				if (!existCol.Dirty.IsVisibleDirty)
+				{
+					existCol.Visible = add2.Visible;
+				}
+				if (!existCol.IsIndexDirty)
+				{
+					existCol.ServerIndex = add2.Index;
+					existCol.Index = add2.Index;
+				}
+				if (add2.StyleId.HasValue && !existCol.Dirty.IsStyleDirty)
+				{
+					existCol.Style = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == add2.StyleId);
+				}
+				if (!existCol.Dirty.IsCaptionStyleDirty)
+				{
+					existCol.CaptionStyle.Deserialize(add2.CaptionStyle);
+				}
+				if (!existCol.Dirty.IsConsolidateAttribsDirty)
+				{
+					existCol.ConsolidateAttributes = ConsolidateAttributes.Deserialize(add2.ConsolidateAttribs);
+				}
+				if (!existCol.Dirty.IsFormulaDirty)
+				{
+					existCol.Formula = add2.Formula;
+				}
+				if (!existCol.Dirty.IsSubtotalAttribDirty)
+				{
+					existCol.SubtotalAttributes = (ColumnSubtotal)add2.SubtotalAttribs;
+				}
+				if (!existCol.Dirty.IsPermissionsDirty)
+				{
+					existCol.Permissions.Deserialize(add2.Permissions);
+				}
+				if (!existCol.Dirty.IsCaptionFormulaDirty)
+				{
+					existCol.CaptionFormula = add2.CaptionFormula;
+				}
+				if (!existCol.Dirty.IsCrossAttributesDirty)
+				{
+					existCol.CrossAttributes.Deserialize(add2.CrossAttributes);
+				}
+				continue;
+			}
 			Column column = new Column
 			{
 				Id = new Id64(add2.Id),
@@ -1544,11 +1645,10 @@ public static class Syncer
 			column.CrossAttributes.Deserialize(add2.CrossAttributes);
 			if (add2.StyleId.HasValue)
 			{
-				column.Style = table.CellStyles.First((CellStyle s) => s.Id.Value == add2.StyleId);
-			}
-			if (dictionary.ContainsKey(column.Id))
-			{
-				linkedList.Find(dictionary[column.Id]).Value = column;
+				// 修复：与上方 DefaultStyleId 的 FirstOrDefault 兜底保持一致。
+				// 服务端引用的 StyleId 若不在本次 Pull 的 CellStyles 中（脏数据/半同步），
+				// 原 First() 会抛 InvalidOperationException 中断整个 Pull。
+				column.Style = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == add2.StyleId);
 			}
 			dictionary[column.Id] = column;
 			foreach (Row item2 in table.Rows.Where((Row r) => r.Status == SyncStatus.New))
@@ -1571,11 +1671,20 @@ public static class Syncer
 				toDel2.Status = SyncStatus.ServerDeleted;
 				dictionary.Remove(toDel2.Id);
 				linkedList.Remove(toDel2);
-				foreach (Cell item4 in dictionary3.Values.Where((Cell c) => c.Column == toDel2 && c.Status == SyncStatus.New).ToList())
+				// 清理所有关联该列的 Cell（不仅限 Status=New），防止孤儿 Cell 遗留在 dictionary3 中
+				foreach (Cell item4 in dictionary3.Values.Where((Cell c) => c.Column == toDel2).ToList())
 				{
-					dictionary3.Remove(item4.Id);
-					table.CellsToDelete.Add(item4.Id);
+					if (item4.Status == SyncStatus.New)
+					{
+						table.CellsToDelete.Add(item4.Id);
+					}
+					else
+					{
+						table.RemovedCells.Add(item4.Id);
+						table.CellsToDelete.Add(item4.Id);
+					}
 					item4.Status = SyncStatus.ServerDeleted;
+					dictionary3.Remove(item4.Id);
 				}
 			}
 			table.RemovedColumns.Remove(item3.Id);
@@ -1674,6 +1783,52 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
+			// 修复：本地已删除且未推送的行，保留删除意图（推送时以 DelRow 同步到云端），
+			// 不再被服务端数据复活。
+			if (table.RemovedRows.Contains(new Id64(item5.Id)))
+			{
+				continue;
+			}
+			// 修复：本地已存在该行时不得整行替换对象——原实现既丢失本地未推送的修改，
+			// 又导致既有 Cell.Row 引用悬空的旧对象。改为按脏掩码就地合并字段。
+			if (dictionary2.TryGetValue(new Id64(item5.Id), out var existRow))
+			{
+				if (existRow.Status == SyncStatus.New)
+				{
+					continue;
+				}
+				existRow.NeedSave = true;
+				if (!existRow.Dirty.IsHeightDirty)
+				{
+					existRow.Height = item5.Height;
+				}
+				if (!existRow.Dirty.IsVisibleDirty)
+				{
+					existRow.Visible = item5.Visible;
+				}
+				if (!existRow.IsIndexDirty)
+				{
+					existRow.ServerIndex = item5.Index;
+					existRow.Index = item5.Index;
+				}
+				if (!existRow.Dirty.IsLockerDirty)
+				{
+					existRow.Locker = item5.Locker;
+				}
+				if (!existRow.Dirty.IsRoleDirty)
+				{
+					existRow.Role = (RowRole)item5.Role;
+				}
+				if (!existRow.Dirty.IsPermissionsDirty)
+				{
+					existRow.Permissions.Deserialize(item5.Permissions);
+				}
+				if (!existRow.Dirty.IsCreatorDirty)
+				{
+					existRow.Creator = item5.Creator;
+				}
+				continue;
+			}
 			Row row2 = new Row
 			{
 				NeedSave = true,
@@ -1689,10 +1844,6 @@ public static class Syncer
 				Creator = item5.Creator
 			};
 			row2.Permissions.Deserialize(item5.Permissions);
-			if (dictionary2.ContainsKey(row2.Id))
-			{
-				linkedList2.Find(dictionary2[row2.Id]).Value = row2;
-			}
 			dictionary2[row2.Id] = row2;
 			foreach (Column item6 in table.Columns.Where((Column c) => c.Status == SyncStatus.New))
 			{
@@ -1714,11 +1865,20 @@ public static class Syncer
 				dictionary2.Remove(toDel.Id);
 				linkedList2.Remove(toDel);
 				toDel.Status = SyncStatus.ServerDeleted;
-				foreach (Cell item8 in dictionary3.Values.Where((Cell c) => c.Row == toDel && c.Status == SyncStatus.New).ToList())
+				// 清理所有关联该行的 Cell（不仅限 Status=New），防止孤儿 Cell 遗留在 dictionary3 中
+				foreach (Cell item8 in dictionary3.Values.Where((Cell c) => c.Row == toDel).ToList())
 				{
-					dictionary3.Remove(item8.Id);
-					table.CellsToDelete.Add(item8.Id);
+					if (item8.Status == SyncStatus.New)
+					{
+						table.CellsToDelete.Add(item8.Id);
+					}
+					else
+					{
+						table.RemovedCells.Add(item8.Id);
+						table.CellsToDelete.Add(item8.Id);
+					}
 					item8.Status = SyncStatus.ServerDeleted;
+					dictionary3.Remove(item8.Id);
 				}
 			}
 			table.RemovedRows.Remove(item7.Id);
@@ -1774,30 +1934,68 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
-			if (dictionary.TryGetValue(new Id64(add.cId.Value), out var value3) && dictionary2.TryGetValue(new Id64(add.rId.Value), out var value4))
+			// 修复：本地已删除且未推送的单元格，保留删除意图（推送时以 DelCell 同步到云端），
+			// 不再被服务端数据复活。
+			if (table.RemovedCells.Contains(new Id64(add.Id)))
 			{
-				BinaryValue binaryValue = new BinaryValue(add.Value.GetBytes());
-				Cell cell3 = new Cell
-				{
-					Id = new Id64(add.Id),
-					Dirty = default(CellDirtyMask),
-					Status = SyncStatus.Synced,
-					Column = value3,
-					Row = value4,
-					Value = binaryValue.Value,
-					NeedSave = true,
-					Formula = add.Formula.Value,
-					Style = ((!add.StyleId.IsNull) ? table.CellStyles.FirstOrDefault((CellStyle cs) => cs.Id.Value == add.StyleId.Value) : null),
-					CollectSource = add.CollectSource.Value,
-					HeaderFormula = add.HeaderFormula.Value
-				};
-				cell3.DeserializeCellPrivateData(binaryValue.AdditionalData);
-				dictionary3[cell3.Id] = cell3;
+				continue;
 			}
-			else
+			if (!dictionary.TryGetValue(new Id64(add.cId.Value), out var value3) || !dictionary2.TryGetValue(new Id64(add.rId.Value), out var value4))
 			{
+				// 引用的行/列不存在（如本地已删且未推送）→ 记入待删，推送时从云端清理
 				table.RemovedCells.Add(new Id64(add.Id));
+				continue;
 			}
+			// 修复：本地已存在该单元格时不得整格覆盖——原实现无条件用服务端值替换本地对象，
+			// Pull 全量下发时会把本地未推送的单元格编辑静默抹掉。改为按脏掩码就地合并。
+			if (dictionary3.TryGetValue(new Id64(add.Id), out var existCell))
+			{
+				if (existCell.Status == SyncStatus.New)
+				{
+					continue;
+				}
+				existCell.NeedSave = true;
+				if (!existCell.Dirty.IsValueDirty)
+				{
+					BinaryValue binaryValue2 = new BinaryValue(add.Value.GetBytes());
+					existCell.Value = binaryValue2.Value;
+					existCell.DeserializeCellPrivateData(binaryValue2.AdditionalData);
+				}
+				if (!existCell.Dirty.IsFormulaDirty)
+				{
+					existCell.Formula = add.Formula.Value;
+				}
+				if (!add.StyleId.IsNull && !existCell.Dirty.IsStyleDirty)
+				{
+					existCell.Style = table.CellStyles.FirstOrDefault((CellStyle cs) => cs.Id.Value == add.StyleId.Value);
+				}
+				if (!existCell.Dirty.IsCollectSourceDirty)
+				{
+					existCell.CollectSource = add.CollectSource.Value;
+				}
+				if (!existCell.Dirty.IsHeaderFormulaDirty)
+				{
+					existCell.HeaderFormula = add.HeaderFormula.Value;
+				}
+				continue;
+			}
+			BinaryValue binaryValue = new BinaryValue(add.Value.GetBytes());
+			Cell cell3 = new Cell
+			{
+				Id = new Id64(add.Id),
+				Dirty = default(CellDirtyMask),
+				Status = SyncStatus.Synced,
+				Column = value3,
+				Row = value4,
+				Value = binaryValue.Value,
+				NeedSave = true,
+				Formula = add.Formula.Value,
+				Style = ((!add.StyleId.IsNull) ? table.CellStyles.FirstOrDefault((CellStyle cs) => cs.Id.Value == add.StyleId.Value) : null),
+				CollectSource = add.CollectSource.Value,
+				HeaderFormula = add.HeaderFormula.Value
+			};
+			cell3.DeserializeCellPrivateData(binaryValue.AdditionalData);
+			dictionary3[cell3.Id] = cell3;
 		}
 		foreach (var item10 in pullTable.DelCells.Select((PullCell c) => new { c.Id }))
 		{
@@ -1875,7 +2073,16 @@ public static class Syncer
 			}
 			else
 			{
-				linkedList3.AddAfter(linkedList3.Find(previous.Value), item11);
+				// 防御：相邻列可能已在本次 Merge 中被删除（不在 linkedList3 中），Find 返回 null 时退化为追加到末尾
+				LinkedListNode<Column> anchor = linkedList3.Find(previous.Value) ?? linkedList3.Last;
+				if (anchor == null)
+				{
+					linkedList3.AddFirst(item11);
+				}
+				else
+				{
+					linkedList3.AddAfter(anchor, item11);
+				}
 			}
 		}
 		table.Columns.Clear();
@@ -1897,7 +2104,16 @@ public static class Syncer
 			}
 			else
 			{
-				linkedList4.AddAfter(linkedList4.Find(previous2.Value), item12);
+				// 防御：相邻行可能已在本次 Merge 中被删除（不在 linkedList4 中），Find 返回 null 时退化为追加到末尾
+				LinkedListNode<Row> anchor2 = linkedList4.Find(previous2.Value) ?? linkedList4.Last;
+				if (anchor2 == null)
+				{
+					linkedList4.AddFirst(item12);
+				}
+				else
+				{
+					linkedList4.AddAfter(anchor2, item12);
+				}
 			}
 		}
 		table.Rows.Clear();
@@ -1912,7 +2128,12 @@ public static class Syncer
 			}
 		}
 		table.Cells.Clear();
+		// 重建 Cells 列表时过滤孤儿 Cell（Row 或 Column 已不存在），防止 Cells 数量与 Rows×Columns 不匹配
+		var validRowIds = new HashSet<Id64>(table.Rows.Select(r => r.Id));
+		var validColIds = new HashSet<Id64>(table.Columns.Select(c => c.Id));
 		foreach (Cell item13 in from c in dictionary3.Values
+			where c.Row != null && c.Column != null
+				&& validRowIds.Contains(c.Row.Id) && validColIds.Contains(c.Column.Id)
 			orderby c.Row.Index, c.Column.Index
 			select c)
 		{
@@ -1931,6 +2152,11 @@ public static class Syncer
 		foreach (var item14 in pullTable.NewMerges.Select((PullMerge j) => new { j.Id, j.TopLeft, j.BottomRight }))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
+			// 修复：本地已删除且未推送的合并，保留删除意图，不再被服务端数据复活
+			if (table.RemovedMerges.Contains(new Id64(item14.Id)))
+			{
+				continue;
+			}
 			if (dictionary3.TryGetValue(new Id64(item14.TopLeft.Value), out var value7) && dictionary3.TryGetValue(new Id64(item14.BottomRight.Value), out var value8))
 			{
 				table.MergedCells.Add(new CellMerge
@@ -1949,6 +2175,10 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
+			// 修复：原循环体为空，服务端已删除的附件在本地永不清理，
+			// 导致 Pull 后本地与云端附件不一致。此处从字典中移除对应项。
+			Id64 delCellId = new Id64(item15.cellId);
+			table.CellPropManager.DicCellAttachments.Remove(delCellId);
 		}
 		foreach (var item16 in pullTable.NewCellProps.Select((PullCellProp cp) => new
 		{
@@ -1978,6 +2208,15 @@ public static class Syncer
 				value10.Dirty = false;
 				value10.Deserialize(item17.attachments);
 			}
+		}
+		// Merge 完成后清空撤销/重做栈，防止历史命令引用已替换的 Cell/Row 对象
+		table.CommandsManager.Clear();
+		// 防御：Merge 后保证 行数×列数==单元格数，缺则补全。
+		// 避免"半合并"状态（服务器新增行/列与本地 New 行列交集未被完整建格）被后续 Save
+		// 落库成损坏表——这是"点一次同步坏一堆表"的根因之一。
+		if (table.Rows.Count * table.Columns.Count != table.Cells.Count)
+		{
+			table.EnsureAllCellsExist();
 		}
 	}
 
@@ -2437,6 +2676,32 @@ public static class Syncer
 		}))
 		{
 			taskProgressValueUpdater.UpdateProgress(num2++, num);
+			// 修复：本地已删除且未推送的段落，保留删除意图（推送时以 Del 同步到云端），
+			// 不再被服务端数据复活。
+			if (document.RemovedParagraphs.Contains(item.Id))
+			{
+				continue;
+			}
+			// 修复：本地已存在该段落时不得整段替换——原实现无条件用服务端内容覆盖本地对象，
+			// Pull 全量下发时会把本地未推送的段落编辑静默抹掉。改为按脏掩码就地合并。
+			if (dictionary.TryGetValue(item.Id, out var existPara))
+			{
+				if (existPara.Status == SyncStatus.New)
+				{
+					continue;
+				}
+				if (!existPara.Dirty.IsStreamDirty)
+				{
+					existPara.Stream = Encoding.UTF8.GetString(ZipCompressor.Decompress(item.Stream));
+					existPara.Section = ((item.Section == null) ? null : Encoding.UTF8.GetString(ZipCompressor.Decompress(item.Section)));
+				}
+				existPara.ServerIndex = item.Index;
+				if (!existPara.Dirty.IsCommentDirty)
+				{
+					existPara.Comment = item.Comment;
+				}
+				continue;
+			}
 			Paragraph value = new Paragraph
 			{
 				Id = item.Id,
@@ -2501,7 +2766,19 @@ public static class Syncer
 			orderby p.Index
 			select p)
 		{
-			int index = list[item5.Index - 1].Index + 1;
+			// 修复：原 list[item5.Index - 1] 直接用旧段落快照索引 + 1 基索引。
+			// 当 Index==0（新段落）时 list[-1] 越下界；当 Index-1 >= list.Count
+			// （多个新段落/索引不连续）时越上界，抛 IndexOutOfRangeException 中断文档同步。
+			int index;
+			if (item5.Index <= 0 || item5.Index - 1 >= list.Count)
+			{
+				index = document.Paragraphs.Count;
+			}
+			else
+			{
+				index = list[item5.Index - 1].Index + 1;
+			}
+			index = Math.Max(0, Math.Min(index, document.Paragraphs.Count));
 			document.Paragraphs.Insert(index, item5);
 		}
 	}

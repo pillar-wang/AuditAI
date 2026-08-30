@@ -230,10 +230,15 @@ public static class NumberingHelper
 		match = ArabicHalfParen.Match(s);
 		if (match.Success)
 		{
+			// 修复：原 int.Parse 在超长数字时抛 OverflowException，改用 TryParse 兜底。
+			if (!int.TryParse(match.Groups[1].Value, out int num5))
+			{
+				return null;
+			}
 			return new Numbering
 			{
 				Series = 6,
-				Number = int.Parse(match.Groups[1].Value)
+				Number = num5
 			};
 		}
 		match = ChineseChapter.Match(s);
@@ -448,6 +453,16 @@ public static class NumberingHelper
 
 	public static string NumToUpperRoman(int num)
 	{
+		// 修复：num>=4000 时 num2=num/1000>=4，roman1[3-num2] 负索引抛 IndexOutOfRangeException。
+		// 罗马数字标准只到 3999，超限时按千位取模折中输出（避免崩溃），或按需求另行处理。
+		if (num <= 0)
+		{
+			return string.Empty;
+		}
+		if (num >= 4000)
+		{
+			num = num % 4000; // 超出标准罗马数字范围，取余避免越界（不改变正常 1-3999 行为）
+		}
 		int num2 = num / 1000;
 		num %= 1000;
 		int num3 = num / 100;

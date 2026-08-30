@@ -926,7 +926,10 @@ public class ReportPreview
 	private RenderObject MainTableSettupImpl()
 	{
 		DataTable.SplitHorzBehavior = SplitBehaviorEnum.SplitIfNeeded;
-		PageSetup.IsPrintIndex = false;
+		// 修复：原实现无条件强制 IsPrintIndex=false，导致用户通过 ToggleRowIndexVisible
+		// 切换"打印序号"时被此处重置、序号功能整体失效。
+		// PageSetup.IsPrintIndex 默认即为 false（PageSetup.cs 构造函数），
+		// 删除强制赋值后默认行为不变，仅让用户切换真正生效。
 		if (PageSetup.IsPrintIndex)
 		{
 			SetIndex();
@@ -1086,6 +1089,9 @@ public class ReportPreview
 		{
 			return;
 		}
+		// 修复：原实现列索引硬编码 +1（为序号列预留），但 IsPrintIndex 关闭时序号列不存在，
+		// 小计会偏右一列。改为按 IsPrintIndex 动态偏移，与 SetHideCols 的偏移逻辑一致。
+		int colOffset = PageSetup.IsPrintIndex ? 1 : 0;
 		int num = Table.SubTotal.GroupColumns.Min((Id64 t) => Table.Columns.GetById(t).Index);
 		int count = Table.SubTotal.GroupColumns.Count;
 		int num2 = 0;
@@ -1117,13 +1123,13 @@ public class ReportPreview
 					DataTable.Rows[num2].Height = DataTable.Rows[num2 - 1].Height;
 				}
 				dictionary.Add(Tuple.Create(item.Key.Item1, item.Key.Item2), num2);
-				DataTable.Cells[num2, num + 1].SpanCols = count;
-				DataTable.Rows[num2][num + 1].Text = Table.SubTotal.TotalName;
-				DataTable.Rows[num2][num + 1].Style.TextAlignVert = AlignVertEnum.Center;
-				DataTable.Rows[num2][num + 1].Style.TextAlignHorz = AlignHorzEnum.Center;
+				DataTable.Cells[num2, num + colOffset].SpanCols = count;
+				DataTable.Rows[num2][num + colOffset].Text = Table.SubTotal.TotalName;
+				DataTable.Rows[num2][num + colOffset].Style.TextAlignVert = AlignVertEnum.Center;
+				DataTable.Rows[num2][num + colOffset].Style.TextAlignHorz = AlignHorzEnum.Center;
 			}
-			DataTable.Rows[num2][Table.Columns.GetById(item.Key.Item3).Index + 1].Text = item.Value.ToString();
-			DataTable.Rows[num2][Table.Columns.GetById(item.Key.Item3).Index + 1].Style.TextAlignVert = AlignVertEnum.Center;
+			DataTable.Rows[num2][Table.Columns.GetById(item.Key.Item3).Index + colOffset].Text = item.Value.ToString();
+			DataTable.Rows[num2][Table.Columns.GetById(item.Key.Item3).Index + colOffset].Style.TextAlignVert = AlignVertEnum.Center;
 		}
 	}
 

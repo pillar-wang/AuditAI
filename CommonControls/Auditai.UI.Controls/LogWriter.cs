@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 
@@ -42,6 +42,23 @@ public static class LogWriter
 			streamWriter.WriteLine(exception.ToString());
 			streamWriter.WriteLine("##### END");
 			streamWriter.WriteLine();
+		}
+		catch (Exception)
+		{
+		}
+	}
+
+	/// <summary>
+	/// 写入诊断信息日志（非异常）。用于定位同步卡死等问题的确切位置。
+	/// 自动附加线程ID与时间戳，便于追踪并发与时序。
+	/// </summary>
+	public static void Info(string message)
+	{
+		try
+		{
+			using FileStream stream = new FileStream(LogFile, FileMode.Append, FileAccess.Write);
+			using StreamWriter streamWriter = new StreamWriter(stream);
+			streamWriter.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] [TID:{System.Threading.Thread.CurrentThread.ManagedThreadId}] {message}");
 		}
 		catch (Exception)
 		{

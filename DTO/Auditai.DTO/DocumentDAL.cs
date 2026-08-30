@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using Dapper;
 
@@ -17,8 +17,11 @@ public class DocumentDAL
 	public DocumentDAL(string fileName)
 	{
 		connectionStringBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
-		connectionStringBuilder.SyncMode = SynchronizationModes.Off;
+		// 修复：与 ProjectDAL 保持一致，Off 模式在进程异常终止时丢失数据/损坏 -wal。
+		connectionStringBuilder.SyncMode = SynchronizationModes.Normal;
 		connectionStringBuilder.DataSource = fileName;
+		// M4: 与 ProjectDAL 保持一致，busy_timeout 15 秒，降低并发锁冲突导致的 SQLITE_BUSY 异常
+		connectionStringBuilder.BusyTimeout = 15000;
 		SetPragma();
 		CreateConfig();
 	}
@@ -50,6 +53,9 @@ public class DocumentDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
+		// 修复：Document 表无主键，纯 INSERT 会累积重复行（GetDocument 只取第一条，行为不可预期）。
+		// 该表语义为"每库一条文档配置"，改为先删后插保持单行。
+		sQLiteConnection.Execute("DELETE FROM `Document`", null, sQLiteTransaction);
 		sQLiteConnection.Execute("INSERT INTO `Document`(`Locker`,`SectPr`,`MergeTable`) VALUES(@Locker,@SectPr,@MergeTable)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
@@ -64,7 +70,8 @@ public class DocumentDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Paragraph`(`Id`,`Index`,`Stream`,`Section`,`Comment`) VALUES(@Id,@Index,@Stream,@Section,@Comment)", dtos, sQLiteTransaction);
+		// 修复：Paragraph 有主键，纯 INSERT 重复保存同 Id 抛 UNIQUE 冲突。改为 INSERT OR REPLACE。
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Paragraph`(`Id`,`Index`,`Stream`,`Section`,`Comment`) VALUES(@Id,@Index,@Stream,@Section,@Comment)", dtos, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 }

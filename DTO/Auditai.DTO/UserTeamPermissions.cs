@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using Auditai.Model;
+﻿﻿﻿﻿﻿﻿﻿﻿using Auditai.Model;
 using Newtonsoft.Json;
 
 namespace Auditai.DTO;
@@ -39,8 +39,11 @@ public class UserTeamPermissions
 
 	public static UserTeamPermissions Parse(string s)
 	{
-		string[] values = GetValues();
+		// 修复：s 为空时原实现 s.Split 抛 NRE；GetValues 返回空数组时 values[0] 越界。
 		UserTeamPermissions userTeamPermissions = new UserTeamPermissions();
+		if (string.IsNullOrEmpty(s)) return userTeamPermissions;
+		string[] values = GetValues();
+		if (values == null || values.Length == 0) return userTeamPermissions;
 		string[] array = s.Split('|');
 		foreach (string text in array)
 		{

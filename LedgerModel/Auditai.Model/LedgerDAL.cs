@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
@@ -151,20 +151,59 @@ internal class LedgerDAL
 				dicAcc[item.id].Parent = dicAcc[item.parentId];
 			}
 		}
-		ret.AuxiliaryClasses.AddRange(cnn.Query<AuxiliaryClass>("SELECT `code`,`name` FROM `ItemClass` ORDER BY `id`"));
-		ret.AuxiliaryItems.AddRange(from row in cnn.Query("SELECT `classId`,`code`,`name` FROM `Item` ORDER BY `id`")
-			select new AuxiliaryItem
+		// 修复：原实现用列表索引当作外键 id（如 AuxiliaryClasses[(int)row.classId]），
+		// 而 DB id 通常从 1 开始、列表索引从 0 开始，会取错实体或越界。
+		// 改为按 id 建立字典，并用 TryGetValue 兜底脏数据。
+		Dictionary<int, AuxiliaryClass> classMap = new Dictionary<int, AuxiliaryClass>();
+		foreach (dynamic row in cnn.Query("SELECT `id`,`code`,`name` FROM `ItemClass` ORDER BY `id`"))
+		{
+			AuxiliaryClass auxiliaryClass = new AuxiliaryClass
 			{
-				Class = ret.AuxiliaryClasses[(int)row.classId],
 				Code = (string)row.code,
 				Name = (string)row.name
-			});
+			};
+			ret.AuxiliaryClasses.Add(auxiliaryClass);
+			classMap[(int)row.id] = auxiliaryClass;
+		}
+		Dictionary<int, AuxiliaryItem> itemMap = new Dictionary<int, AuxiliaryItem>();
+		foreach (dynamic row in cnn.Query("SELECT `id`,`classId`,`code`,`name` FROM `Item` ORDER BY `id`"))
+		{
+			AuxiliaryItem auxiliaryItem = new AuxiliaryItem
+			{
+				Class = classMap.TryGetValue((int)row.classId, out var cls) ? cls : null,
+				Code = (string)row.code,
+				Name = (string)row.name
+			};
+			itemMap[(int)row.id] = auxiliaryItem;
+			ret.AuxiliaryItems.Add(auxiliaryItem);
+		}
 		foreach (AuxiliaryItem auxiliaryItem2 in ret.AuxiliaryItems)
 		{
-			auxiliaryItem2.Class.Items.Add(auxiliaryItem2);
+			if (auxiliaryItem2.Class != null)
+			{
+				auxiliaryItem2.Class.Items.Add(auxiliaryItem2);
+			}
 		}
-		ret.VoucherTypes.AddRange(cnn.Query<VoucherType>("SELECT `name` FROM `VoucherType` ORDER BY `id`"));
-		ret.Currencies.AddRange(cnn.Query<Currency>("SELECT `name` FROM `ForeignCurrency` ORDER BY `id`"));
+		Dictionary<int, VoucherType> voucherTypeMap = new Dictionary<int, VoucherType>();
+		foreach (dynamic row in cnn.Query("SELECT `id`,`name` FROM `VoucherType` ORDER BY `id`"))
+		{
+			VoucherType voucherType = new VoucherType
+			{
+				Name = (string)row.name
+			};
+			ret.VoucherTypes.Add(voucherType);
+			voucherTypeMap[(int)row.id] = voucherType;
+		}
+		Dictionary<int, Currency> currencyMap = new Dictionary<int, Currency>();
+		foreach (dynamic row in cnn.Query("SELECT `id`,`name` FROM `ForeignCurrency` ORDER BY `id`"))
+		{
+			Currency currency = new Currency
+			{
+				Name = (string)row.name
+			};
+			ret.Currencies.Add(currency);
+			currencyMap[(int)row.id] = currency;
+		}
 		Dictionary<int, Voucher> dictionary = new Dictionary<int, Voucher>();
 		IEnumerable<object> enumerable2 = cnn.Query("SELECT `id`,`type`,`number`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark` FROM `Voucher` ORDER BY `id`");
 		Dictionary<string, Account> tempAccountMap = ret.Accounts.ToDictionary((Account a) => a.Code, (Account a) => a);
@@ -172,7 +211,7 @@ internal class LedgerDAL
 		{
 			Voucher voucher = new Voucher();
 			voucher.Id = (int)item2.id;
-			voucher.Type = ret.VoucherTypes[(int)item2.type];
+			voucher.Type = voucherTypeMap.TryGetValue((int)item2.type, out var vt) ? vt : null;
 			voucher.Number = (string)item2.number;
 			voucher.Day = (DateTime)item2.day;
 			voucher.Digest = (string)item2.digest;
@@ -181,7 +220,7 @@ internal class LedgerDAL
 			voucher.Quantity = (double)item2.quantity;
 			voucher.UnitPrice = ((double)item2.unitPrice).ToDecimalSafe();
 			voucher.Account = dicAcc[(int)item2.accountId];
-			voucher.Currency = ret.Currencies[(int)item2.foreignId];
+			voucher.Currency = currencyMap.TryGetValue((int)item2.foreignId, out var cur) ? cur : null;
 			voucher.ForeignAmount = (decimal)item2.foreignAmount;
 			voucher.ExchangeRate = (double)item2.exchangeRate;
 			voucher.Maker = (string)item2.maker;
@@ -201,7 +240,13 @@ internal class LedgerDAL
 		}
 		foreach (dynamic item3 in cnn.Query("SELECT voucherId,itemId FROM VoucherItemRel"))
 		{
-			dictionary[(int)item3.voucherId].Details.Add(ret.AuxiliaryItems[(int)item3.itemId]);
+			// 修复：原 dictionary[(int)item3.voucherId] 在凭证引用缺失时 KeyNotFoundException。
+			// TryGetValue 跳过脏关联行。
+			if (dictionary.TryGetValue((int)item3.voucherId, out var voucher4) &&
+				itemMap.TryGetValue((int)item3.itemId, out var auxItem))
+			{
+				voucher4.Details.Add(auxItem);
+			}
 		}
 		var enumerable3 = from row in cnn.Query("SELECT accountId,itemId,balance FROM ItemBalance")
 			select new
@@ -212,16 +257,20 @@ internal class LedgerDAL
 			};
 		foreach (var item4 in enumerable3)
 		{
-			Account key = dicAcc[item4.AccountId];
-			AuxiliaryItem auxiliaryItem = ret.AuxiliaryItems[item4.ItemId];
-			AccountBalance accountBalance = ret.InitialBalance[key];
-			if (!accountBalance.ClassBalances.TryGetValue(auxiliaryItem.Class, out var value))
+			if (!dicAcc.TryGetValue(item4.AccountId, out var accountKey) ||
+				!itemMap.TryGetValue(item4.ItemId, out var auxItem2) ||
+				auxItem2.Class == null ||
+				!ret.InitialBalance.TryGetValue(accountKey, out var accountBalance))
+			{
+				continue;
+			}
+			if (!accountBalance.ClassBalances.TryGetValue(auxItem2.Class, out var value))
 			{
 				value = new ClassBalance();
-				accountBalance.ClassBalances.Add(auxiliaryItem.Class, value);
+				accountBalance.ClassBalances.Add(auxItem2.Class, value);
 			}
 			value.Total += item4.Balance;
-			value.ItemBalances.Add(auxiliaryItem, item4.Balance);
+			value.ItemBalances.Add(auxItem2, item4.Balance);
 		}
 		return ret;
 	}
@@ -541,10 +590,11 @@ internal class LedgerDAL
 		{
 			c.Execute("alter table `Voucher` add column `number1` text", null, sQLiteTransaction);
 			c.Execute("update `Voucher` set `number1`=`number`", null, sQLiteTransaction);
-			c.Execute("drop index `idx_v_number`", null, sQLiteTransaction);
+			// 修复：原 drop index 无 IF EXISTS，索引不存在（新库）时抛异常导致整个构造失败。
+			c.Execute("drop index if exists `idx_v_number`", null, sQLiteTransaction);
 			c.Execute("alter table `Voucher` drop column `number`", null, sQLiteTransaction);
 			c.Execute("alter table `Voucher` rename column `number1` to `number`", null, sQLiteTransaction);
-			c.Execute("create index `idx_v_number` on `Voucher`(`number`)", null, sQLiteTransaction);
+			c.Execute("create index if not exists `idx_v_number` on `Voucher`(`number`)", null, sQLiteTransaction);
 		}
 		sQLiteTransaction.Commit();
 	}

@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -73,6 +73,17 @@ internal static class Program
 	[STAThread]
 	private static void Main()
 	{
+		// ★ 单实例保护：防止多实例并发读写本地数据库/配置文件导致损坏
+		bool mutexCreatedNew;
+		var singleInstanceMutex = new System.Threading.Mutex(true, "Global\\AuditAI_SingleInstance", out mutexCreatedNew);
+		if (!mutexCreatedNew)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "程序已在运行中。", MessageBoxButtons.OK, "提示");
+			return;
+		}
+		// 保持 Mutex 存活至进程退出，防止被 GC 回收导致互斥失效
+		GC.KeepAlive(singleInstanceMutex);
+
 		// 启用 Per-Monitor DPI 感知，确保文字清晰
 		try
 		{
@@ -85,12 +96,31 @@ internal static class Program
 
 		Application.EnableVisualStyles();
 		Application.SetCompatibleTextRenderingDefault(defaultValue: true);
-		
+
+		// ★ 全局异常钩子必须尽早注册（早于 StorageRouter.Initialize 等可能失败的初始化），
+		// 确保启动序列异常也能被记录日志并执行数据库 WAL checkpoint
+		Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+		Application.ApplicationExit += Application_ApplicationExit;
+		// 兜底：进程被强制终止（如任务管理器结束进程、Windows 关机）时，
+		// ApplicationExit 可能不触发，但 ProcessExit 仍有机会执行（约 2-3 秒）。
+		// 在此处再做一次数据库 checkpoint，最大限度避免 -wal 残留导致数据库损坏。
+		AppDomain.CurrentDomain.ProcessExit += (s, e) => CleanupProjectDatabases();
+
 		// ★ 必须放在最前面：抑制 C1 评估弹窗，在任何可能加载 C1 程序集的代码之前执行
 		SuppressC1EvalDialog();
-		
+
 		// ★ 新增：初始化本地存储（必须在 StartAuditaiPlatform 之前）
-		Auditai.LocalDataStore.StorageRouter.Initialize();
+		try
+		{
+			Auditai.LocalDataStore.StorageRouter.Initialize();
+		}
+		catch (Exception ex)
+		{
+			ex.Log("本地数据初始化失败");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "本地数据初始化失败，程序即将退出。\r\n" + ex.Message);
+			Environment.Exit(1);
+		}
 
 		// P2 协同增强 Task 10：网络恢复时自动重放离线 Push 队列
 		try
@@ -119,8 +149,7 @@ internal static class Program
 		ParseClientInfo();
 		
 		InitPlatformData();
-		
-		Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
+
 #if DEBUG
 		// ⚠️ 安全警告：仅限本地开发测试使用！
 		// 此处全局禁用 SSL 证书验证，会使所有 HTTPS 请求暴露于中间人攻击（MITM）风险。
@@ -129,25 +158,22 @@ internal static class Program
 		ServicePointManager.ServerCertificateValidationCallback = (RemoteCertificateValidationCallback)Delegate.Combine(ServicePointManager.ServerCertificateValidationCallback, (RemoteCertificateValidationCallback)((object a, X509Certificate b, X509Chain c, SslPolicyErrors d) => true));
 #endif
 		ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-		AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-		Application.ApplicationExit += Application_ApplicationExit;
-		// 兜底：进程被强制终止（如任务管理器结束进程、Windows 关机）时，
-		// ApplicationExit 可能不触发，但 ProcessExit 仍有机会执行（约 2-3 秒）。
-		// 在此处再做一次数据库 checkpoint，最大限度避免 -wal 残留导致数据库损坏。
-		AppDomain.CurrentDomain.ProcessExit += (s, e) => CleanupProjectDatabases();
 		UserSet.Load();
 		
 		UserSet.InitializeDefaultTheme(GetPlatformDefaultThemeId());
 		InitDefaultUserSet();
 		Theme.SelectedThemeById(UserSet.Config.CurrentTheme);
+		// 注册 Google Blue 主题精修回调（所有调用 SetCurrentTree 的窗体自动生效）
+		Theme.ThemeRefineAction = ThemeApplier.ApplyDialogStyle;
 		
 		StartAuditaiPlatform();
 		if (!ApplicationExitMark)
 		{
 			Application.Run();
 		}
-		UserSet.Save();
-		ProjectInfoManager.GetInstance().Save();
+		// 退出保存配置：失败仅记日志，不能阻断退出流程
+		try { UserSet.Save(); } catch (Exception ex) { ex.Log("退出保存用户配置失败"); }
+		try { ProjectInfoManager.GetInstance().Save(); } catch (Exception ex) { ex.Log("退出保存项目信息失败"); }
 	}
 
 	private static void InitDefaultUserSet()
@@ -272,7 +298,10 @@ internal static class Program
 			try
 			{
 				// 用 Task.Run 脱离 UI 同步上下文，避免 sync-over-async 死锁
-				var licenseStatus = Task.Run(() => WebApiClient.GetLicenseStatus()).GetAwaiter().GetResult();
+				// 5 秒超时保护：服务器不可达时避免 UI 冻结最长 30 秒（超时按校验失败容错放行）
+				var licenseTask = Task.Run(() => WebApiClient.GetLicenseStatus());
+				var completedTask = Task.WhenAny(licenseTask, Task.Delay(5000)).GetAwaiter().GetResult();
+				var licenseStatus = (completedTask == licenseTask) ? licenseTask.Result : null;
 				if (licenseStatus != null)
 				{
 					bool isExpired = licenseStatus["isExpired"]?.Value<bool>() ?? false;
@@ -378,7 +407,7 @@ internal static class Program
 		switch (ClientPlatformType)
 		{
 		case PlatformType.AuditPlatform:
-			return "20";
+			return "21";
 		case PlatformType.EnterpriseManagerPlatform:
 		case PlatformType.TableDevelopPlatform:
 		case PlatformType.ProductionCostAccountingSystem:
@@ -581,7 +610,10 @@ internal static class Program
 		}
 	}
 
-	private static async void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+	// 修复：必须为同步方法。async void 处理器中 await Logout() 会让出控制权，
+	// 随后进程被 CLR 终止，导致清理代码（WAL checkpoint）不会执行，-wal 残留引发数据库损坏。
+	// 进程将死场景同步等待无死锁风险，Logout 内部已捕获网络异常。
+	private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 	{
 		string rootStatckTrace = null;
 		if (_IsInProcessUnhandleException)
@@ -591,10 +623,16 @@ internal static class Program
 		try
 		{
 			_IsInProcessUnhandleException = true;
-			Exception ex = (Exception)e.ExceptionObject;
+			// 用 as 判空取异常：栈溢出等场景 e.ExceptionObject 可能不是 Exception，直接强转会二次崩溃
+			Exception ex = e.ExceptionObject as Exception;
+			if (ex == null)
+			{
+				ex = new Exception("未知严重异常（ExceptionObject 非 Exception 类型，可能为栈溢出）: " + e.ExceptionObject);
+			}
 			if (ex is TargetInvocationException ex2)
 			{
-				ex = ex2.InnerException;
+				// 解包失败（InnerException 为空）时保留原异常，避免后续空引用
+				ex = ex2.InnerException ?? ex;
 			}
 			string exceptStr = GetOpeningProjectDebugInfo() + $"UserId:\t{Auditai.Model.User.Current?.Id}\n{GetAppVersionInfo()}{GetAppServerInfo()}\n{ex}";
 			Exception innerException = ex.InnerException;
@@ -632,7 +670,9 @@ internal static class Program
 		try
 		{
 			_IsInProcessUnhandleException = true;
-			await Logout();
+			// 同步等待 Logout（停止 SignalR + 通知服务端清理会话）：
+			// 进程即将终止，同步阻塞无死锁风险；Logout 内部已捕获网络异常，此处再兜底
+			Logout().GetAwaiter().GetResult();
 		}
 		catch (Exception)
 		{
@@ -640,7 +680,7 @@ internal static class Program
 		finally
 		{
 			_IsInProcessUnhandleException = false;
-			// 异常退出时同样需要清理数据库，防止 -wal 残留导致下次打开数据库损坏
+			// 异常退出时同样需要同步清理数据库，防止 -wal 残留导致下次打开数据库损坏
 			try { CleanupProjectDatabases(); } catch { }
 		}
 	}
@@ -1158,7 +1198,27 @@ internal static class Program
 
 	private static void ParseClientInfo()
 	{
+		// 修复：原实现恒硬编码为 AuditPlatform，导致 EnterpriseReport/TableDevelop/Custom 等
+		// 多平台分支运行时全部不可达（死代码），产品线定制能力失效。
+		// 改为优先从 app.config 读取 "PlatformType" 配置（按枚举名，不区分大小写），
+		// 未配置或值无效时回退 AuditPlatform，保持现有行为不变。
 		ClientPlatformType = PlatformType.AuditPlatform;
+		try
+		{
+			string configured = System.Configuration.ConfigurationManager.AppSettings["PlatformType"];
+			if (!string.IsNullOrWhiteSpace(configured))
+			{
+				if (Enum.TryParse(configured, ignoreCase: true, out PlatformType parsed) &&
+					Enum.IsDefined(typeof(PlatformType), parsed) && parsed != PlatformType.UnKnown)
+				{
+					ClientPlatformType = parsed;
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// 配置读取失败时保持默认 AuditPlatform
+		}
 	}
 
 	private static void InitPlatformData()
@@ -1564,6 +1624,9 @@ internal static class Program
 		}
 
 		// 方案二：后台线程扫描窗口作为后备方案
+		// 修复：原实现按标题关键词（About/License/评估）宽泛匹配，会误关应用自身的
+		// "关于"对话框/许可相关窗体。收窄为：仅当标题同时含 "ComponentOne" 且含评估/试用
+		// 特征时才关闭，减少误伤。窗口扫描仅作为 license patch（方案一）的后备。
 		var thread = new System.Threading.Thread(() =>
 		{
 			uint currentPid = (uint)Process.GetCurrentProcess().Id;
@@ -1582,12 +1645,12 @@ internal static class Program
 							GetWindowText(hWnd, sb, 256);
 							string title = sb.ToString();
 
-							if (title.Contains("ComponentOne") ||
-								title.Contains("评估") ||
+							bool isComponentOne = title.IndexOf("ComponentOne", StringComparison.OrdinalIgnoreCase) >= 0;
+							bool isEvalTrial = title.Contains("评估") ||
 								title.IndexOf("Evaluation", StringComparison.OrdinalIgnoreCase) >= 0 ||
-								title.IndexOf("Trial", StringComparison.OrdinalIgnoreCase) >= 0 ||
-								title.IndexOf("License", StringComparison.OrdinalIgnoreCase) >= 0 ||
-								title.IndexOf("About", StringComparison.OrdinalIgnoreCase) >= 0)
+								title.IndexOf("Trial", StringComparison.OrdinalIgnoreCase) >= 0;
+							// 仅关闭"ComponentOne 评估/试用"类弹窗，不再因 About/License 单独出现而误关。
+							if (isComponentOne && isEvalTrial)
 							{
 								// 发送关闭消息
 								SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);

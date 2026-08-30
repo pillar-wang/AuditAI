@@ -112,6 +112,9 @@ public class RowCollection : IEnumerable<Row>, IEnumerable
 			_table.NeedSave = true;
 			_table.RemoveInvalidMerges();
 			_table.Ticket.IsCacheExpired = true;
+			// 行顺序已改变，清空公式引擎缓存的旧行序单元格列表，
+			// 否则后续公式求值（如 VLookUp/填充公式）会按旧行序取值导致数据错位。
+			FormulaEvaluator.ClearCache();
 		}
 	}
 
@@ -131,6 +134,8 @@ public class RowCollection : IEnumerable<Row>, IEnumerable
 		_table.Cells._list.InsertRange(startIndex * _table.Columns.Count, list2);
 		ResetIndex();
 		_table.Ticket.IsCacheExpired = true;
+		// 行重排（排序）后清空公式引擎缓存，避免后续公式按旧行序取值导致数据错位。
+		FormulaEvaluator.ClearCache();
 		bool NeedSave()
 		{
 			if (pickupOrder.Count == 0)
@@ -150,7 +155,14 @@ public class RowCollection : IEnumerable<Row>, IEnumerable
 
 	public void Remove(int index, int count)
 	{
-		if (index >= _table.Rows.Count)
+		if (index < 0 || index >= _table.Rows.Count)
+		{
+			return;
+		}
+		// 修复：原实现仅检查 index，未检查 index+count>Rows.Count，越界时
+		// _list[i]/_table[i,j]/RemoveRange 抛 ArgumentOutOfRangeException。
+		count = System.Math.Min(count, _table.Rows.Count - index);
+		if (count <= 0)
 		{
 			return;
 		}

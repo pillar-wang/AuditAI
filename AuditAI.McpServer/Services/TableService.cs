@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -33,6 +33,33 @@ namespace AuditAI.McpServer.Services
 
                 int rowCount = table.Rows.Count;
                 int colCount = table.Columns.Count;
+
+                // 修复：行/列数为 0 时，Clamp 把 sr/er/sc/ec 都钳为 0，后续
+                // for 循环访问 table.Rows[0] 抛 ArgumentOutOfRangeException 返回"获取失败"。
+                // 空表应直接返回空数据成功结果。
+                if (rowCount == 0 || colCount == 0)
+                {
+                    var emptyResult = new JObject
+                    {
+                        ["success"] = true,
+                        ["table_node_id"] = tableNodeId,
+                        ["table_id"] = table.Id.Value.ToString(),
+                        ["title"] = table.Title?.TitleCell?.Value?.ToString() ?? "",
+                        ["row_count"] = rowCount,
+                        ["col_count"] = colCount,
+                        ["range"] = new JObject
+                        {
+                            ["start_row"] = 0,
+                            ["end_row"] = Math.Max(0, rowCount - 1),
+                            ["start_col"] = 0,
+                            ["end_col"] = Math.Max(0, colCount - 1)
+                        },
+                        ["column_headers"] = new JArray(),
+                        ["rows"] = new JArray(),
+                        ["merged_cells"] = new JArray()
+                    };
+                    return JsonConvert.SerializeObject(emptyResult, Formatting.Indented);
+                }
 
                 int sr = Clamp(startRow ?? 0, 0, Math.Max(0, rowCount - 1));
                 int er = Clamp(endRow ?? rowCount - 1, sr, rowCount - 1);

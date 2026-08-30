@@ -278,7 +278,7 @@ internal class frmAccountEditor : C1RibbonForm
 		this.lblAccountCode.BackColor = System.Drawing.Color.Transparent;
 		this.lblAccountCode.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblAccountCode.ForeColor = System.Drawing.Color.Black;
-		this.lblAccountCode.Location = new System.Drawing.Point(1, 26);
+		this.lblAccountCode.Location = new System.Drawing.Point(1, 23);
 		this.lblAccountCode.Name = "lblAccountCode";
 		this.lblAccountCode.Size = new System.Drawing.Size(130, 22);
 		this.lblAccountCode.TabIndex = 0;

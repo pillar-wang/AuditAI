@@ -294,7 +294,7 @@ public class AccountTreeEditor : ISetTheme
 					AuxiliaryClass firstOrDefaultAuxiliary = TableCollectorAbstract.GetFirstOrDefaultAuxiliary(ledger, account, sheet);
 					AppendAuxiliaryItems(node, firstOrDefaultAuxiliary);
 				}
-				foreach (Account child in account.Children)
+				foreach (Account child in account.Children.OrderBy((Account c) => c.Code))
 				{
 					AddChildren(child, node);
 				}

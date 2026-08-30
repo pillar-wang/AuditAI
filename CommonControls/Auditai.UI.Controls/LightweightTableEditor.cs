@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1FlexGrid;
@@ -178,13 +178,13 @@ namespace Auditai.UI.Controls
             _grid.Styles.EmptyArea.BackColor = Color.White;
             _grid.Styles.EmptyArea.Border.Style = BorderStyleEnum.None;
 
-            // 选区高亮（蓝色 - 目标表默认色）
-            _grid.Styles.Highlight.BackColor = Color.FromArgb(0, 120, 215);
+            // 选区高亮（Google Blue 品牌蓝）
+            _grid.Styles.Highlight.BackColor = Color.FromArgb(26, 115, 232);
             _grid.Styles.Highlight.ForeColor = Color.White;
 
-            // 焦点单元格
-            _grid.Styles.Focus.BackColor = Color.FromArgb(200, 230, 255);
-            _grid.Styles.Focus.ForeColor = Color.Black;
+            // 焦点单元格（淡蓝）
+            _grid.Styles.Focus.BackColor = Color.FromArgb(232, 240, 254);
+            _grid.Styles.Focus.ForeColor = Color.FromArgb(15, 23, 42);
 
             // 行列头
             _grid.Rows.DefaultSize = 28;

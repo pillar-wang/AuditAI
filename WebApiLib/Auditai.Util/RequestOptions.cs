@@ -11,7 +11,8 @@ public class RequestOptions
 
 	public string Url { get; set; }
 
-	public TimeSpan Timeout { get; set; } = System.Threading.Timeout.InfiniteTimeSpan;
+	/// <summary>请求超时，默认 100 秒（与 TimeoutHandler 兜底一致）；长耗时操作应显式设置更大的值</summary>
+	public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100.0);
 
 
 	public bool WithAuthorization { get; set; }

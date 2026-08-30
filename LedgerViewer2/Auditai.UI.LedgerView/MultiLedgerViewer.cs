@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -35,6 +35,10 @@ public class MultiLedgerViewer
 	public Dictionary<string, LedgerViewer> OpenedLedgerViewerDic = new Dictionary<string, LedgerViewer>();
 
 	private bool shouldShowFillToTable = true;
+
+	private const string OpenOtherLedgerMarker = "##OpenOtherLedger##";
+
+	private const int LedgerTileHorizontalSize = 10;
 
 	public C1SplitContainer View => _spc;
 
@@ -80,9 +84,9 @@ public class MultiLedgerViewer
 			Dock = PanelDockStyle.Left,
 			Collapsible = false,
 			Resizable = true,
-			Width = 190,
+			Width = 210,
 			KeepRelativeSize = false,
-			MinWidth = 0
+			MinWidth = 200
 		};
 		_spc.Panels.Add(_pnlList);
 		_tileList = new C1TileControlEx
@@ -97,7 +101,7 @@ public class MultiLedgerViewer
 			Orientation = LayoutOrientation.Vertical,
 			TileBorderColor = Color.Transparent,
 			GroupSpacing = 5,
-			ShowToolTips = false,
+			ShowToolTips = true,
 			AllowCloseButton = true
 		};
 		_pnlList.Controls.Add(_tileList);
@@ -324,20 +328,33 @@ public class MultiLedgerViewer
 			if (File.Exists(key))
 			{
 				string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(key);
-				string text = ((fileNameWithoutExtension.Length > 20) ? (fileNameWithoutExtension.Substring(0, 20) + "...") : fileNameWithoutExtension);
+				string text = ((fileNameWithoutExtension.Length > 24) ? (fileNameWithoutExtension.Substring(0, 24) + "...") : fileNameWithoutExtension);
 				Tile tile = new Tile
 				{
 					Template = _template,
 					Text1 = text,
 					Text = key,
+					ToolTipText = fileNameWithoutExtension,
 					VerticalSize = 9,
-					HorizontalSize = 11,
+					HorizontalSize = LedgerTileHorizontalSize,
 					ForeColor1 = Color.FromArgb(30, 41, 59)
 				};
 				_tileGroup.Tiles.Add(tile);
 				tile.Image1 = ((key == CurrentLedgerViewer?.CurrentFilePath) ? currentLedger : ledger);
 			}
 		}
+		Tile openTile = new Tile
+		{
+			Template = _template,
+			Text1 = "打开其他账套",
+			Text = OpenOtherLedgerMarker,
+			ToolTipText = "打开其他账套",
+			VerticalSize = 9,
+			HorizontalSize = LedgerTileHorizontalSize,
+			ForeColor1 = Color.FromArgb(30, 41, 59),
+			Image1 = Resources.GraphDir
+		};
+		_tileGroup.Tiles.Add(openTile);
 	}
 
 	public bool IsLedgerEmpty()
@@ -382,35 +399,35 @@ public class MultiLedgerViewer
 	{
 		Template template = new Template();
 		template.Description = "Win32";
-		// 关闭按钮面板（顶部停靠，右上对齐）- 加大热区 18×18 解决点不到
+		// 关闭按钮面板（顶部停靠，右上对齐）- 预留独立高度，避免被图标面板遮挡
 		PanelElement panelElement = new PanelElement();
 		panelElement.Dock = DockStyle.Top;
-		panelElement.FixedHeight = 18;
+		panelElement.FixedHeight = 24;
 		panelElement.AlignmentOfContents = ContentAlignment.TopRight;
 		ImageElement imageElement = new ImageElement();
 		imageElement.ColumnIndex = 30;
-		imageElement.FixedWidth = 18;
-		imageElement.FixedHeight = 18;
+		imageElement.FixedWidth = 20;
+		imageElement.FixedHeight = 20;
 		imageElement.ImageSelector = ImageSelector.Image2;
-		imageElement.Margin = new Padding(0, 0, 2, 0);
+		imageElement.Margin = new Padding(0, 0, 3, 0);
 		panelElement.Children.Add(imageElement);
-		// 主图标面板（顶部停靠，居中）- 28×28 图标，按比例整体缩小
+		// 主图标面板（顶部停靠，居中）- 32×32 图标，上下留白均衡
 		PanelElement panelElement2 = new PanelElement();
 		panelElement2.Dock = DockStyle.Top;
-		panelElement2.FixedHeight = 34;
+		panelElement2.FixedHeight = 40;
 		panelElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		ImageElement imageElement2 = new ImageElement();
 		imageElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
-		imageElement2.FixedHeight = 28;
-		imageElement2.FixedWidth = 28;
+		imageElement2.FixedHeight = 32;
+		imageElement2.FixedWidth = 32;
 		imageElement2.ImageSelector = ImageSelector.Image1;
-		imageElement2.Margin = new Padding(0, 5, 0, 1);
+		imageElement2.Margin = new Padding(0, 4, 0, 4);
 		panelElement2.Children.Add(imageElement2);
 		// 文字面板（填充剩余空间，居中）- 紧凑 Padding
 		PanelElement panelElement3 = new PanelElement();
 		panelElement3.Dock = DockStyle.Fill;
 		panelElement3.AlignmentOfContents = ContentAlignment.TopCenter;
-		panelElement3.Padding = new Padding(3, 2, 3, 2);
+		panelElement3.Padding = new Padding(3, 4, 3, 2);
 		TextElement textElement = new TextElement();
 		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
@@ -428,11 +445,16 @@ public class MultiLedgerViewer
 		return template;
 	}
 
-	private void _tileList_TileClicked(object sender, TileEventArgs e)
+	private async void _tileList_TileClicked(object sender, TileEventArgs e)
 	{
 		try
 		{
 			string text = e.Tile.Text;
+			if (text == OpenOtherLedgerMarker)
+			{
+				await OpenOtherLedgerDialog();
+				return;
+			}
 			if (OpenedLedgerViewerDic.ContainsKey(text))
 			{
 				LedgerViewer ledgerViewer = OpenedLedgerViewerDic[text];
@@ -453,7 +475,38 @@ public class MultiLedgerViewer
 
 	private async void _tileList_TileCloseClick(object sender, TileEventArgs e)
 	{
+		if (e.Tile.Text == OpenOtherLedgerMarker)
+		{
+			return;
+		}
 		await CloseLedger(e.Tile.Text);
+	}
+
+	private async Task OpenOtherLedgerDialog()
+	{
+		using (OpenFileDialog openFileDialog = new OpenFileDialog
+		{
+			Filter = "账套文件（*.db,*.001）|*.db;*.001"
+		})
+		{
+			if (openFileDialog.ShowDialog() != DialogResult.OK)
+			{
+				return;
+			}
+			try
+			{
+				await OpenLedger(openFileDialog.FileName, userCache: false);
+			}
+			catch (FileNotFoundException)
+			{
+				OnLedgerNotFound();
+			}
+			catch (Exception ex2)
+			{
+				ex2.Log();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.Message);
+			}
+		}
 	}
 
 	private async void LedgerDefaultPanel_DoubleClickTile(object sender, Tile e)

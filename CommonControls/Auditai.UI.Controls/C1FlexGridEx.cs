@@ -1042,6 +1042,50 @@ public class C1FlexGridEx : C1FlexGrid
 		return num;
 	}
 
+	public void AutoSizeColsFill(int minWidth = 80)
+	{
+		if (base.Cols == null || base.Cols.Count <= base.Cols.Fixed)
+			return;
+		if (base.ClientSize.Width <= 0)
+			return;
+		base.BeginUpdate();
+		try
+		{
+			base.AutoSizeCols(base.Cols.Fixed, base.Cols.Count - 1, 10);
+			int totalWidth = 0;
+			for (int i = base.Cols.Fixed; i < base.Cols.Count; i++)
+			{
+				if (base.Cols[i].Width < minWidth)
+					base.Cols[i].Width = minWidth;
+				totalWidth += base.Cols[i].Width;
+			}
+			int available = base.ClientSize.Width - base.Cols[0].Width;
+			int extra = available - totalWidth;
+			if (extra > 0 && base.Cols.Count > base.Cols.Fixed)
+			{
+				int perCol = extra / (base.Cols.Count - base.Cols.Fixed);
+				for (int i = base.Cols.Fixed; i < base.Cols.Count; i++)
+					base.Cols[i].Width += perCol;
+				int remainder = extra - perCol * (base.Cols.Count - base.Cols.Fixed);
+				if (remainder > 0)
+					base.Cols[base.Cols.Count - 1].Width += remainder;
+			}
+		}
+		finally
+		{
+			base.EndUpdate();
+		}
+	}
+
+	public void BindAutoSizeColsFill(Control parent)
+	{
+		parent.SizeChanged += delegate
+		{
+			if (base.Visible)
+				AutoSizeColsFill();
+		};
+	}
+
 	public bool RangeIntersects(CellRange r1, CellRange r2)
 	{
 		if (r2.TopRow <= r1.BottomRow && r2.BottomRow >= r1.TopRow && r2.LeftCol <= r1.RightCol)

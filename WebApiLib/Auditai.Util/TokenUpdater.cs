@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Configuration;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +17,8 @@ public class TokenUpdater
 	private volatile bool _running = false;
 
 	private bool _reloginInProgress = false;
+
+	private bool _elapsedInProgress = false;
 
 	public TimeSpan Interval { get; set; }
 
@@ -56,6 +58,11 @@ public class TokenUpdater
 	private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
 	{
 		if (!_running) return;
+		// 修复：System.Timers.Timer 默认 AutoReset=true，一次 UpdateToken 耗时超过
+		// 间隔时会重入并发执行，并发写 Token/Cookie 文件（删除+重建+加密，非原子）有损坏风险。
+		// 用标志串行化，重入时直接放弃本次刷新。
+		if (_elapsedInProgress) return;
+		_elapsedInProgress = true;
 		var token = _cts.Token;
 		try
 		{
@@ -94,6 +101,10 @@ public class TokenUpdater
 		}
 		catch
 		{
+		}
+		finally
+		{
+			_elapsedInProgress = false;
 		}
 	}
 

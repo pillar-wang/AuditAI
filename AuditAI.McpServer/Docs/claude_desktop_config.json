@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "auditai": {
-      "command": "e:\\lq\\AuditAI\\AuditAI.McpServer\\bin\\Debug\\net462\\AuditAI.McpServer.exe",
+      "command": "{INSTALL_DIR}\\AuditAI\\McpServer\\AuditAI.McpServer.exe",
       "args": [],
-      "cwd": "e:\\lq\\AuditAI\\AuditAI.McpServer\\bin\\Debug\\net462"
+      "cwd": "{INSTALL_DIR}\\AuditAI\\McpServer"
     }
   }
 }

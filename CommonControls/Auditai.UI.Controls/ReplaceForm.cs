@@ -1,7 +1,8 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using C1.Framework;
 using C1.Win.C1Input;
@@ -81,10 +82,99 @@ public class ReplaceForm : C1RibbonForm
 	private const int ButtonWidth = 110;
 	private const int ButtonHeight = 34;
 	private const int ButtonRightMargin = 50;
+	/// <summary>按钮圆角半径（统一规范 8px）</summary>
+	private const int ButtonRadius = 8;
 	#endregion
+
+	#region === 设计令牌（同 MessageShowBox，支持 Google Blue 主题） ===
+
+	private Color Primary;
+	private Color PrimaryDark;
+	private Color PrimaryLight;
+	private Color LineColorDefault;
+	private Color TextPrimary;
+	private Color Surface0;
+
+	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走 Google Blue 色板，其余走默认小清新浅蓝</summary>
+	private void LoadThemeColors()
+	{
+		var theme = Theme.SelectedAuditaiTheme;
+		if (theme != null && theme.Name == "auditai_GoogleBlue")
+		{
+			// Google Blue 色板
+			Primary = Color.FromArgb(26, 115, 232);
+			PrimaryDark = Color.FromArgb(21, 87, 176);
+			PrimaryLight = Color.FromArgb(23, 101, 204);
+			LineColorDefault = Color.FromArgb(226, 232, 240);
+			TextPrimary = Color.FromArgb(15, 23, 42);
+			Surface0 = Color.FromArgb(248, 250, 252);
+		}
+		else
+		{
+			// 默认：小清新浅蓝
+			Primary = Color.FromArgb(74, 144, 217);
+			PrimaryDark = Color.FromArgb(53, 123, 189);
+			PrimaryLight = Color.FromArgb(90, 160, 230);
+			LineColorDefault = Color.FromArgb(208, 215, 222);
+			TextPrimary = Color.FromArgb(30, 41, 59);
+			Surface0 = Color.FromArgb(245, 249, 252);
+		}
+	}
+
+	#endregion
+
+	/// <summary>
+	/// 统一按钮样式：主按钮=蓝底白字无边框；次按钮=白底深灰字+浅灰边框；均 Flat + 8px 圆角 Region
+	/// </summary>
+	private void ApplyButtonStyle(C1Button btn, bool isPrimary)
+	{
+		btn.FlatStyle = FlatStyle.Flat;
+		if (isPrimary)
+		{
+			// 主按钮：Primary 蓝填充 + 白字（悬停/按下深浅变体）
+			btn.BackColor = Primary;
+			btn.ForeColor = Color.White;
+			btn.FlatAppearance.BorderSize = 0;
+			btn.FlatAppearance.MouseDownBackColor = PrimaryDark;
+			btn.FlatAppearance.MouseOverBackColor = PrimaryLight;
+		}
+		else
+		{
+			// 次按钮：白底深灰字 + 浅灰边框，视觉低调
+			btn.BackColor = Color.White;
+			btn.ForeColor = TextPrimary;
+			btn.FlatAppearance.BorderColor = LineColorDefault;
+			btn.FlatAppearance.BorderSize = 1;
+			btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(240, 247, 252);
+			btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 249, 252);
+		}
+		// 8px 圆角 Region（四角 AddArc，同 MessageShowBox）
+		using (var path = new GraphicsPath())
+		{
+			int r = ButtonRadius * 2;
+			path.AddArc(0, 0, r, r, 180, 90);
+			path.AddArc(btn.Width - r, 0, r, r, 270, 90);
+			path.AddArc(btn.Width - r, btn.Height - r, r, r, 0, 90);
+			path.AddArc(0, btn.Height - r, r, r, 90, 90);
+			path.CloseFigure();
+			btn.Region = new Region(path);
+		}
+	}
+
+	/// <summary>统一重设按钮样式（构造末尾调用；主题应用后再次调用防 C1Theme 覆盖，同 UpdateForm.EnsureStylesCorrect）</summary>
+	private void RefreshButtonStyles()
+	{
+		// 查找下一个/全部替换=主动作主按钮；替换/显示替换区=次按钮
+		ApplyButtonStyle(btnNext, isPrimary: true);
+		ApplyButtonStyle(btnReplaceAll, isPrimary: true);
+		ApplyButtonStyle(btnReplace2, isPrimary: false);
+		ApplyButtonStyle(btnDisplayReplace, isPrimary: false);
+	}
 
 	public ReplaceForm()
 	{
+		// 先加载主题颜色令牌（须在 InitializeComponent 之前，同 MessageShowBox）
+		LoadThemeColors();
 		InitializeComponent();
 		base.TopMost = true;
 		base.StartPosition = FormStartPosition.CenterScreen;
@@ -95,6 +185,8 @@ public class ReplaceForm : C1RibbonForm
 		cboScope.ItemsDataSource = ScopeModeDic.Keys;
 		cboScope.DataSource = ScopeModeDic.Values;
 		cboScope.SelectedIndex = 0;
+		// 统一按钮样式 + 8px 圆角（构造末尾统一应用）
+		RefreshButtonStyles();
 	}
 
 	public void SetCanReplace(bool canReplace = true)
@@ -218,12 +310,16 @@ public class ReplaceForm : C1RibbonForm
 	public void ShowFind()
 	{
 		Theme.SetCurrentTree(this);
+		// 主题应用后重设按钮样式，防止被 C1Theme 覆盖
+		RefreshButtonStyles();
 		Show(IsReplace: false);
 	}
 
 	public void ShowReplace()
 	{
 		Theme.SetCurrentTree(this);
+		// 主题应用后重设按钮样式，防止被 C1Theme 覆盖
+		RefreshButtonStyles();
 		Show(IsReplace: true);
 	}
 
@@ -271,17 +367,21 @@ public class ReplaceForm : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.txtReplaceBy).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(164, 195, 235);
+		// 统一设计语言：旧蓝紫背景 → 浅色背景
+		this.ctnAll.BackColor = Surface0;
 		this.ctnAll.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
-		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
+		// 旧蓝分隔线 → 统一浅灰边框色
+		this.ctnAll.FixedLineColor = LineColorDefault;
+		// 旧深蓝前景 → 统一深灰文字色
+		this.ctnAll.ForeColor = TextPrimary;
 		this.ctnAll.Location = new System.Drawing.Point(0, 0);
 		this.ctnAll.Name = "ctnAll";
 		this.ctnAll.Panels.Add(this.pnlFind);
 		this.ctnAll.Panels.Add(this.pnlReplace);
 		this.ctnAll.Size = new System.Drawing.Size(629, 322);
-		this.ctnAll.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		// 旧蓝分隔条 → 统一浅灰
+		this.ctnAll.SplitterColor = LineColorDefault;
 		this.ctnAll.SplitterWidth = 2;
 		this.ctnAll.TabIndex = 0;
 		this.ctnAll.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
@@ -293,7 +393,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.Controls.Add(this.c1Label1);
 		this.pnlFind.Controls.Add(this.ckWholeWord);
 		this.pnlFind.Controls.Add(this.ckMatchCase);
-		this.pnlFind.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlFind.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（字号不变）
 		this.pnlFind.Height = 182;
 		this.pnlFind.KeepRelativeSize = false;
 		this.pnlFind.Location = new System.Drawing.Point(0, 0);
@@ -304,7 +404,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.TabIndex = 1;
 		this.cboScope.AllowSpinLoop = false;
 		this.cboScope.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cboScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.cboScope.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.cboScope.GapHeight = 0;
 		this.cboScope.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cboScope.ItemsDisplayMember = "";
@@ -319,8 +419,9 @@ public class ReplaceForm : C1RibbonForm
 		this.lblScope.AutoSize = true;
 		this.lblScope.BackColor = System.Drawing.Color.Transparent;
 		this.lblScope.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblScope.ForeColor = System.Drawing.Color.Black;
+		this.lblScope.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		// 界面文字统一深灰（原 Color.Black）
+		this.lblScope.ForeColor = TextPrimary;
 		this.lblScope.Location = new System.Drawing.Point(16, 60);
 		this.lblScope.Name = "lblScope";
 		this.lblScope.Size = new System.Drawing.Size(130, 31);
@@ -328,20 +429,20 @@ public class ReplaceForm : C1RibbonForm
 		this.lblScope.Tag = null;
 		this.lblScope.Text = "查找范围：";
 		this.lblScope.TextDetached = true;
-		this.lblScope.VisualStyleBaseStyle = C1.Win.C1Input.VisualStyle.Office2007Blue;
+		// 移除旧主题残留 VisualStyleBaseStyle=Office2007Blue（外观改由统一设计语言/C1 主题接管，删除后不影响使用）
 		this.btnDisplayReplace.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 96);
 		this.btnDisplayReplace.Name = "btnDisplayReplace";
 		this.btnDisplayReplace.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnDisplayReplace.TabIndex = 13;
 		this.btnDisplayReplace.Text = "替换";
-		this.btnDisplayReplace.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（RefreshButtonStyles 应用）
 		this.btnDisplayReplace.Click += new System.EventHandler(btnDisplayReplace_Click);
 		this.btnNext.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 13);
 		this.btnNext.Name = "btnNext";
 		this.btnNext.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnNext.TabIndex = 12;
 		this.btnNext.Text = "查找下一个";
-		this.btnNext.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（RefreshButtonStyles 应用）
 		this.btnNext.Click += new System.EventHandler(btnNext_Click);
 		this.txtSearchTarget.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtSearchTarget.Location = new System.Drawing.Point(112, 16);
@@ -363,7 +464,8 @@ public class ReplaceForm : C1RibbonForm
 		this.ckWholeWord.BackColor = System.Drawing.Color.Transparent;
 		this.ckWholeWord.BorderColor = System.Drawing.Color.Transparent;
 		this.ckWholeWord.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckWholeWord.ForeColor = System.Drawing.Color.Black;
+		// 界面文字统一深灰（原 Color.Black）
+		this.ckWholeWord.ForeColor = TextPrimary;
 		this.ckWholeWord.Location = new System.Drawing.Point(16, 135);
 		this.ckWholeWord.Name = "ckWholeWord";
 		this.ckWholeWord.Padding = new System.Windows.Forms.Padding(1);
@@ -375,7 +477,8 @@ public class ReplaceForm : C1RibbonForm
 		this.ckMatchCase.BackColor = System.Drawing.Color.Transparent;
 		this.ckMatchCase.BorderColor = System.Drawing.Color.Transparent;
 		this.ckMatchCase.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckMatchCase.ForeColor = System.Drawing.Color.Black;
+		// 界面文字统一深灰（原 Color.Black）
+		this.ckMatchCase.ForeColor = TextPrimary;
 		this.ckMatchCase.Location = new System.Drawing.Point(16, 99);
 		this.ckMatchCase.Name = "ckMatchCase";
 		this.ckMatchCase.Padding = new System.Windows.Forms.Padding(1);
@@ -389,7 +492,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlReplace.Controls.Add(this.c1Label2);
 		this.pnlReplace.Controls.Add(this.txtReplaceBy);
 		this.pnlReplace.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlReplace.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlReplace.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（字号不变）
 		this.pnlReplace.Height = 139;
 		this.pnlReplace.Location = new System.Drawing.Point(0, 183);
 		this.pnlReplace.MinHeight = 0;
@@ -403,20 +506,20 @@ public class ReplaceForm : C1RibbonForm
 		this.btnReplace2.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnReplace2.TabIndex = 14;
 		this.btnReplace2.Text = "替换";
-		this.btnReplace2.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（RefreshButtonStyles 应用）
 		this.btnReplace2.Click += new System.EventHandler(btnReplace_Click);
 		this.btnReplaceAll.Location = new System.Drawing.Point(629 - ButtonRightMargin - ButtonWidth, 77);
 		this.btnReplaceAll.Name = "btnReplaceAll";
 		this.btnReplaceAll.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnReplaceAll.TabIndex = 0;
 		this.btnReplaceAll.Text = "全部替换";
-		this.btnReplaceAll.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（RefreshButtonStyles 应用）
 		this.btnReplaceAll.Click += new System.EventHandler(btnReplaceAll_Click);
 		this.c1Label2.AutoSize = true;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label2.Location = new System.Drawing.Point(16, 26);
+		this.c1Label2.Location = new System.Drawing.Point(16, 22);
 		this.c1Label2.Name = "c1Label2";
-		this.c1Label2.Size = new System.Drawing.Size(107, 31);
+		this.c1Label2.Size = new System.Drawing.Size(92, 31);
 		this.c1Label2.TabIndex = 7;
 		this.c1Label2.Tag = null;
 		this.c1Label2.Text = "替换为：";

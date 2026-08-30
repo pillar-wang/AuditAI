@@ -63,13 +63,10 @@ public abstract class CrawlerBase
 			array = new string[1] { string.Empty };
 		}
 		int timeout = 3;
-		string[] array2 = array;
-		int num = 0;
-		if (num >= array2.Length)
+		// 修复：原反编译残留把 for 循环拍平成单次执行（int num=0; if (num>=Length) return; text=array2[num];），
+		// 导致只扫描第一个 SQL Server 实例，其余实例被忽略。恢复为遍历全部实例，找到即返回。
+		foreach (string text in array)
 		{
-			return;
-		}
-		string text = array2[num];
 		try
 		{
 			DatabaseInfo databaseInfo = new DatabaseInfo
@@ -191,6 +188,7 @@ public abstract class CrawlerBase
 		catch
 		{
 		}
+		}
 	}
 
 	public static void ScanLocalDesktop(out string module, out string path)
@@ -235,6 +233,12 @@ public abstract class CrawlerBase
 		}
 		catch (AuthenticationException)
 		{
+			return false;
+		}
+		catch (UnauthorizedAccessException)
+		{
+			// 修复：原实现未捕获 UnauthorizedAccessException（非 IOException 子类），
+			// 遍历无权限目录时崩溃。无权限目录视为未找到即可。
 			return false;
 		}
 	}

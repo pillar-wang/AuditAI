@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -97,7 +97,7 @@ public class frmNodeSelector : C1RibbonForm
 
 	private new DialogResult ShowDialog()
 	{
-		base.Size = new Size(471, 594);
+		base.Size = new Size(550, 650);
 		return base.ShowDialog();
 	}
 
@@ -1104,13 +1104,13 @@ public class frmNodeSelector : C1RibbonForm
 		this.ckbExportExcel.Location = new System.Drawing.Point(6, 14);
 		this.ckbExportExcel.Name = "ckbExportExcel";
 		this.ckbExportExcel.Padding = new System.Windows.Forms.Padding(1);
-		this.ckbExportExcel.Size = new System.Drawing.Size(303, 31);
+		this.ckbExportExcel.Size = new System.Drawing.Size(360, 31);
 		this.ckbExportExcel.TabIndex = 3;
 		this.ckbExportExcel.Text = "同文件夹下表格导出至一个Excel文件";
 		this.ckbExportExcel.UseVisualStyleBackColor = true;
 		this.ckbExportExcel.Value = null;
 		this.btnCertain.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCertain.Location = new System.Drawing.Point(306, 10);
+		this.btnCertain.Location = new System.Drawing.Point(370, 10);
 		this.btnCertain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCertain.Name = "btnCertain";
 		this.btnCertain.Size = new System.Drawing.Size(91, 34);
@@ -1119,7 +1119,7 @@ public class frmNodeSelector : C1RibbonForm
 		this.btnCertain.UseVisualStyleBackColor = true;
 		this.btnCertain.Click += new System.EventHandler(btnCertain_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Location = new System.Drawing.Point(419, 10);
+		this.btnCancel.Location = new System.Drawing.Point(483, 10);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(91, 34);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.IO;
 using System.Linq;
 using Auditai.DTO;
@@ -206,14 +206,15 @@ namespace AuditAI.McpServer.Services
 
                 foreach (var idToken in nodeIds)
                 {
-                    long nodeId = idToken.Value<long>();
-                    var item = new JObject
-                    {
-                        ["node_id"] = nodeId.ToString()
-                    };
-
+                    var item = new JObject();
                     try
                     {
+                        // 修复：原 long nodeId = idToken.Value<long>() 位于内层 try 之外，
+                        // 任一元素非整数即抛异常被外层 catch 吞掉，整个批量导出中断、
+                        // 之前已成功的项结果全部丢失。移入内层 try，单项解析失败按 fail 计数继续。
+                        long nodeId = idToken.Value<long>();
+                        item["node_id"] = nodeId.ToString();
+
                         var node = FindNode(nodeId);
                         if (node == null)
                         {

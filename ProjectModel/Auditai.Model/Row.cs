@@ -153,7 +153,9 @@ public class Row
 		}
 	}
 
-	public bool IsLocked => _locker != 0;
+	// 修复：原 _locker != 0 判定用户自己加的锁在本行仍为锁定，与 Table.IsLocked
+	// （自己持有的锁可编辑）语义不一致，用户对自己的行锁执行编辑操作会被误拦截。
+	public bool IsLocked => _locker != 0 && _locker != Auditai.Model.User.Current?.Id;
 
 	public bool NeedSave { get; set; }
 

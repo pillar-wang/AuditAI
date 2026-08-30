@@ -519,7 +519,7 @@ public class frmCellCollect : C1RibbonForm
 		this.comboStartMonth.TextDetached = true;
 		this.lblCollectObject.AutoSize = true;
 		this.lblCollectObject.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblCollectObject.Location = new System.Drawing.Point(18, 22);
+		this.lblCollectObject.Location = new System.Drawing.Point(18, 17);
 		this.lblCollectObject.Name = "lblCollectObject";
 		this.lblCollectObject.Size = new System.Drawing.Size(68, 17);
 		this.lblCollectObject.TabIndex = 3;

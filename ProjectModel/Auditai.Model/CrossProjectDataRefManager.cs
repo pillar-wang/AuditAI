@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -201,8 +201,13 @@ public class CrossProjectDataRefManager
                     var srcColumns = sourceDal.GetColumns(dataRef.SourceTableId).OrderBy(c => c.Index).ToList();
                     var srcColumnNames = srcColumns.Select(c => c.Caption).ToList();
                     var validationResult = CrossProjectRefValidator.ValidateData(sourceData, srcColumnNames);
-                    if (!validationResult.IsValid)
+                    // 修复：原实现对验证结果完全忽略（空 if 体），数据校验形同虚设。
+                    // 验证失败时记录错误数量，供调用方感知，但不中断后续处理。
+                    if (!validationResult.IsValid && validationResult.Errors != null && validationResult.Errors.Count > 0)
                     {
+                        result.ErrorMessage = string.IsNullOrEmpty(result.ErrorMessage)
+                            ? $"数据验证发现 {validationResult.Errors.Count} 处问题"
+                            : result.ErrorMessage + $"; 数据验证发现 {validationResult.Errors.Count} 处问题";
                     }
 
                     // 如果有筛选配置，应用筛选
@@ -893,8 +898,10 @@ public class CrossProjectDataRefManager
         for (int i = 0; i < filteredData.Count; i++)
         {
             int targetRowIndex = targetStartRow + i;
-            if (targetRowIndex >= targetRows.Count)
-                break; // 目标行不够时停止
+            // 修复：原实现只检查上界，targetStartRow 为负（非法/被篡改配置）时
+            // targetRows[负数] 抛 IndexOutOfRangeException。补下界检查。
+            if (targetRowIndex < 0 || targetRowIndex >= targetRows.Count)
+                break; // 目标行不够/越界时停止
 
             var targetRow = targetRows[targetRowIndex];
 

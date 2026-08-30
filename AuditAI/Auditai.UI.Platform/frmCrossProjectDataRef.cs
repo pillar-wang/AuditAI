@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -582,18 +582,18 @@ public class frmCrossProjectDataRef : Form
         var fontBtn = new Font("Noto Sans SC", 9f);
         var fontBtnBold = new Font("Noto Sans SC", 9f, FontStyle.Bold);
 
-        // ---- 颜色常量（与向导/主界面一致） ----
-        var colorHeaderBg = Color.FromArgb(0, 120, 215);       // 顶部标题栏深蓝
-        var colorHeaderFg = Color.White;                        // 顶部标题栏白字
-        var colorBtnPrimary = Color.FromArgb(0, 120, 215);      // 主操作按钮蓝
-        var colorBtnRefresh = Color.FromArgb(0, 150, 80);       // 刷新按钮绿
-        var colorBtnDanger = Color.FromArgb(200, 80, 80);       // 删除按钮红
-        var colorBtnNormal = Color.FromArgb(255, 255, 255);     // 普通按钮白
-        var colorBtnNormalFg = Color.FromArgb(60, 60, 60);      // 普通按钮深灰字
-        var colorBtnBorder = Color.FromArgb(200, 200, 200);     // 按钮边框灰
-        var colorBottomBg = Color.FromArgb(248, 249, 251);      // 底部按钮区浅灰
-        var colorGridFixedBg = Color.FromArgb(243, 245, 248);   // 表头浅灰
-        var colorGridAltBg = Color.FromArgb(248, 249, 251);     // 隔行浅灰
+        // ---- 颜色常量（Google Blue 风格） ----
+        var colorHeaderBg = AuditTheme.Brand;                      // 顶部标题栏 Google 蓝
+        var colorHeaderFg = Color.White;                            // 顶部标题栏白字
+        var colorBtnPrimary = AuditTheme.Brand;                     // 主操作按钮 Google 蓝
+        var colorBtnRefresh = AuditTheme.SuccessText;               // 刷新按钮绿
+        var colorBtnDanger = AuditTheme.ErrorText;                  // 删除按钮红
+        var colorBtnNormal = AuditTheme.Surface;                    // 普通按钮白
+        var colorBtnNormalFg = AuditTheme.TextSecondary;            // 普通按钮深灰字
+        var colorBtnBorder = AuditTheme.BorderStrong;               // 按钮边框灰
+        var colorBottomBg = AuditTheme.SurfaceMuted;                // 底部按钮区浅灰
+        var colorGridFixedBg = AuditTheme.SurfaceMuted;             // 表头浅灰
+        var colorGridAltBg = AuditTheme.SurfaceMuted;               // 隔行浅灰
 
         // ---- 顶部标题栏（深蓝背景 + 白色标题 + 右侧状态筛选） ----
         var pnlHeader = new Panel
@@ -681,13 +681,13 @@ public class frmCrossProjectDataRef : Form
         this._grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
         this._grid.Styles.Fixed.Border.Style = BorderStyleEnum.Flat;
         this._grid.Styles.Fixed.Border.Width = 1;
-        this._grid.Styles.Fixed.Border.Color = Color.FromArgb(220, 223, 230);
+        this._grid.Styles.Fixed.Border.Color = AuditTheme.Border;
         this._grid.Styles.Alternate.BackColor = colorGridAltBg;
         this._grid.Styles.EmptyArea.BackColor = Color.White;
-        this._grid.Styles.Highlight.BackColor = Color.FromArgb(0, 120, 215);
+        this._grid.Styles.Highlight.BackColor = AuditTheme.Brand;
         this._grid.Styles.Highlight.ForeColor = Color.White;
-        this._grid.Styles.Focus.BackColor = Color.FromArgb(200, 230, 255);
-        this._grid.Styles.Focus.ForeColor = Color.Black;
+        this._grid.Styles.Focus.BackColor = AuditTheme.BrandSubtle;
+        this._grid.Styles.Focus.ForeColor = AuditTheme.Text;
         this._grid.AfterEdit += _grid_AfterEdit;
 
         // 网格容器（带 Padding 让网格不贴边）
@@ -1131,15 +1131,15 @@ internal class frmCrossProjectDataRefEditDialog : Form
         this._btnOk = new C1Button();
         this._btnCancel = new C1Button();
 
-        var lblName = new Label { Text = "引用名称：", Location = new Point(15, 19), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(15, 60), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(15, 101), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(15, 143), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(15, 184), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(15, 225), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(15, 266), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(15, 308), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(15, 349), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblName = new Label { Text = "引用名称：", Location = new Point(15, 15), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(15, 56), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(15, 98), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(15, 139), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(15, 180), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(15, 221), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(15, 263), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(15, 304), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(15, 345), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
 
         //
         // _txtName
@@ -1187,7 +1187,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnSelectTable
         //
         this._btnSelectTable.Font = new Font("Noto Sans SC", 9f);
-        this._btnSelectTable.Location = new Point(478, 96);
+        this._btnSelectTable.Location = new Point(478, 98);
         this._btnSelectTable.Name = "_btnSelectTable";
         this._btnSelectTable.Size = new Size(113, 33);
         this._btnSelectTable.TabIndex = 13;

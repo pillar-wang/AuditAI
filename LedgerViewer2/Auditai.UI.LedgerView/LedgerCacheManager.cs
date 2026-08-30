@@ -86,12 +86,17 @@ public class LedgerCacheManager
 			{
 				return _cacheTrialBalanceSheet2.Item4;
 			}
-			DateTime endDate = _cacheTrialBalanceSheet1.Item1.GetEndDate();
-			if (_cacheTrialBalanceSheet2 != null && _cacheTrialBalanceSheet1 != null && _cacheTrialBalanceSheet2.Item1 == _cacheTrialBalanceSheet1.Item1 && start.Equals(_cacheTrialBalanceSheet1.Item1.StartDate) && end.Equals(endDate))
+			// 修复：原实现在判空之前先解引用 _cacheTrialBalanceSheet1.Item1（第 89 行），
+			// 数据变更后 _cacheTrialBalanceSheet1 会被置 null，此处直接 NRE。判空提前。
+			if (_cacheTrialBalanceSheet1 != null && _cacheTrialBalanceSheet2 != null && _cacheTrialBalanceSheet2.Item1 == _cacheTrialBalanceSheet1.Item1)
 			{
-				_cacheTrialBalanceSheet2 = Tuple.Create(ledger, start, end, _cacheTrialBalanceSheet1.Item2);
-				_cacheTrialBalanceSheet2Valid = true;
-				return _cacheTrialBalanceSheet2.Item4;
+				DateTime endDate = _cacheTrialBalanceSheet1.Item1.GetEndDate();
+				if (start.Equals(_cacheTrialBalanceSheet1.Item1.StartDate) && end.Equals(endDate))
+				{
+					_cacheTrialBalanceSheet2 = Tuple.Create(ledger, start, end, _cacheTrialBalanceSheet1.Item2);
+					_cacheTrialBalanceSheet2Valid = true;
+					return _cacheTrialBalanceSheet2.Item4;
+				}
 			}
 		}
 		TrialBalanceSheet trialBalanceSheet = ledger.GetTrialBalanceSheet(start, end);

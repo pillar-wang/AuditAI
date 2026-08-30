@@ -1148,6 +1148,9 @@ public class frmTableCollect2 : C1RibbonForm
 		comboAuxiliaryTree.dropDown.KeyDown += ComboAuxiliaryTree_KeyDown;
 		checkBoxOnlyMyMark.Visible = false;
 		checkBoxNotFilterAccount.Visible = false;
+		// 修复：默认模式为科目余额表（Balance），辅助核算标签/下拉框须隐藏，
+		// 否则初始显示时与"全部科目"复选框(x373)完全重叠（事件未触发前互斥可见性不生效）
+		SetVisibleAuxiliary(visble: false);
 	}
 
 	private void ComboAuxiliaryTree_KeyDown(object sender, KeyEventArgs e)
@@ -5426,7 +5429,9 @@ public class frmTableCollect2 : C1RibbonForm
 		base.Controls.Add(this.ctnAll);
 		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-		this.MinimumSize = new System.Drawing.Size(672, 309);
+		// 修复：原 MinimumSize(672,309) 下，凭证表模式的行2复选框(最右 899)越界不可见，
+		// 且条件面板(19.6% 比例≈60px)高度不足裁剪行2(y47~69)。提高最小尺寸保证完整显示。
+		this.MinimumSize = new System.Drawing.Size(920, 420);
 		base.Name = "frmTableCollect2";
 		base.ShowInTaskbar = false;
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

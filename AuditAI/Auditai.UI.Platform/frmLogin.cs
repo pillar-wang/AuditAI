@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -43,36 +43,36 @@ public class frmLogin : Form
 
 	private Auditai.Model.User _loginedUser;
 
-	#region === 设计令牌（小清新浅蓝风格，全局统一） ===
+	#region === 设计令牌（Google Blue 风格，全局统一） ===
 
-	/// <summary>主色（主题 LineColor，与 Theme.LineColor 同步 = 74,144,217）</summary>
-	private static Color Primary = Color.FromArgb(74, 144, 217);
+	/// <summary>主色（Google Blue #1a73e8）</summary>
+	private static Color Primary = Color.FromArgb(26, 115, 232);
 
-	/// <summary>主色-按下态（暗一档）</summary>
-	private static Color PrimaryDark = Color.FromArgb(53, 123, 189);
+	/// <summary>主色-按下态（暗一档 #1557b0）</summary>
+	private static Color PrimaryDark = Color.FromArgb(21, 87, 176);
 
-	/// <summary>主色-悬停态（亮一档）</summary>
-	private static Color PrimaryLight = Color.FromArgb(90, 160, 230);
+	/// <summary>主色-悬停态（亮一档 #1765cc）</summary>
+	private static Color PrimaryLight = Color.FromArgb(23, 101, 204);
 
-	/// <summary>默认灰蓝边框色（未聚焦输入框 = 208,215,222）</summary>
-	private static Color LineColorDefault = Color.FromArgb(208, 215, 222);
+	/// <summary>默认边框色（未聚焦输入框 #e2e8f0）</summary>
+	private static Color LineColorDefault = Color.FromArgb(226, 232, 240);
 
 	/// <summary>浅灰边框（鼠标离开后）</summary>
-	private static Color LineColorLightGray = Color.LightGray;
+	private static Color LineColorLightGray = Color.FromArgb(203, 213, 225);
 
-	/// <summary>Surface-0：窗体背景</summary>
-	private static Color Surface0 = Color.FromArgb(245, 249, 252);
+	/// <summary>Surface-0：窗体背景 #f8fafc</summary>
+	private static Color Surface0 = Color.FromArgb(248, 250, 252);
 
 	/// <summary>Surface-1：卡片/面板/输入框白底</summary>
 	private static Color Surface1 = Color.FromArgb(255, 255, 255);
 
-	/// <summary>主文字色（深靛蓝灰 30,41,59，对比度 ~15.8:1 on 白色）</summary>
-	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
+	/// <summary>主文字色（#0f172a，对比度 ~16.3:1 on 白色）</summary>
+	private static Color TextPrimary = Color.FromArgb(15, 23, 42);
 
-	/// <summary>次文字色（标签/占位符 71,85,105，对比度 6.2:1）</summary>
-	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
+	/// <summary>次文字色（标签/占位符 #334155，对比度 ~8.6:1）</summary>
+	private static Color TextSecondary = Color.FromArgb(51, 65, 85);
 
-	/// <summary>占位符/链接普通态文字色（之前 140,140,140 对比度 4.0:1，现在 100,116,139 对比度 4.7:1 满足 WCAG AA）</summary>
+	/// <summary>占位符/链接普通态文字色（#64748b 对比度 ~4.7:1 满足 WCAG AA）</summary>
 	private static Color TextPlaceholder = Color.FromArgb(100, 116, 139);
 
 	#endregion
@@ -252,8 +252,10 @@ public class frmLogin : Form
 			_tooltipPleaseInputUserName = "请输入用户名";
 		}
 		InitPlatformStyle();
-		// 小清新浅蓝：应用统一的高对比度文字/边框/背景色，覆盖 InitializeComponent 中低对比度设置
+		// Google Blue：应用统一的高对比度文字/边框/背景色，覆盖 InitializeComponent 中低对比度设置
 		ApplyControlStyles();
+		// Google 风格布局精修：统一按钮/输入框尺寸、圆角、间距
+		ApplyGoogleLayout();
 		// 小清新：替换为高清软件图标
 		try
 		{
@@ -301,7 +303,7 @@ public class frmLogin : Form
 	}
 
 	/// <summary>
-	/// 遍历窗体控件，应用小清新浅蓝令牌颜色（高对比度 ForeColor/BackColor/BorderColor）。
+	/// 遍历窗体控件，应用Google Blue令牌颜色（高对比度 ForeColor/BackColor/BorderColor）。
 	/// 覆盖 InitializeComponent 中旧的设计颜色（如 (51,51,51) / (80,80,80) / (208,215,222) 等硬编码），
 	/// 保证整个登录窗口的色板、字体大小、边框状态与其他窗口（frmFindPwd / frmRegister / MessageShowBox）
 	/// 保持严格一致，且满足 WCAG AA 4.5:1 可读性要求。
@@ -432,6 +434,124 @@ public class frmLogin : Form
 		{
 			lblVersion.ForeColor = TextSecondary;
 			lblVersion.Font = new Font("Noto Sans SC", 9f);
+		}
+	}
+
+	/// <summary>
+	/// Google 风格布局精修
+	/// 统一按钮/输入框高度、圆角、字号，与 MessageShowBox / UpdateForm 等弹窗对齐
+	/// 
+	/// 注：仅统一尺寸规范，不改变控件位置（避免遮挡）
+	/// </summary>
+	private void ApplyGoogleLayout()
+	{
+		const int InputHeight = AuditTheme.InputHeight;       // 输入框高度 40px
+		const int ButtonHeight = AuditTheme.ButtonHeight;     // 主按钮高度 40px
+		const int ButtonRadius = AuditTheme.ButtonRadius;     // 按钮圆角 8px
+		const int CardRadius = AuditTheme.CardRadius;         // 卡片圆角 12px
+
+		// 重新应用窗体圆角
+		ApplyRoundedRegion(CardRadius);
+
+		// === 输入框容器：统一高度为 40px ===
+		if (ctnUserName != null && pnlUserName != null)
+		{
+			// 保持原宽度，只改高度
+			ctnUserName.Height = InputHeight + 6;
+			pnlUserName.Height = InputHeight;
+			// 输入框高度与容器对齐（原设计器高度 46 在 40 高面板中上下各溢出 3px）
+			txtUserName.Height = InputHeight;
+			txtPhoneNumber.Height = InputHeight;
+			// 内部输入框和图标垂直居中
+			int txtY = (InputHeight - txtUserName.Height) / 2;
+			int iconY = (InputHeight - picUserName.Height) / 2;
+			txtUserName.Top = txtY;
+			txtPhoneNumber.Top = txtY;
+			picUserName.Top = iconY;
+			picturePhone.Top = iconY;
+			// 字体统一
+			txtUserName.Font = AuditTheme.FontBody;
+			txtPhoneNumber.Font = AuditTheme.FontBody;
+		}
+
+		if (ctnPassword != null && pnlPassword != null)
+		{
+			ctnPassword.Height = InputHeight + 6;
+			pnlPassword.Height = InputHeight;
+			// 输入框高度与容器对齐（原设计器高度 46 在 40 高面板中上下各溢出 3px）
+			txtPassword.Height = InputHeight;
+			txtValidateCode.Height = InputHeight;
+			// 内部输入框和图标垂直居中
+			int txtY = (InputHeight - txtPassword.Height) / 2;
+			int iconY = (InputHeight - picPassword.Height) / 2;
+			txtPassword.Top = txtY;
+			txtValidateCode.Top = txtY;
+			picPassword.Top = iconY;
+			// 字体统一
+			txtPassword.Font = AuditTheme.FontBody;
+			txtValidateCode.Font = AuditTheme.FontBody;
+			// 验证码按钮统一高度
+			if (btnSendCode != null)
+			{
+				btnSendCode.Height = InputHeight - 6;
+				btnSendCode.Top = 3;
+				btnSendCode.Font = AuditTheme.FontBodyBold;
+				ApplyRoundedButton(btnSendCode, ButtonRadius);
+			}
+		}
+
+		// === 登录按钮：统一高度 40px + 圆角 8px ===
+		if (btnLogin != null)
+		{
+			btnLogin.Height = ButtonHeight;
+			btnLogin.Font = AuditTheme.FontBodyBold;
+			ApplyRoundedButton(btnLogin, ButtonRadius);
+		}
+
+		// === 关闭按钮：统一为小圆角 ===
+		if (btnClose != null)
+		{
+			ApplyRoundedButton(btnClose, 6);
+		}
+
+		// === 标题字号统一 ===
+		if (lblWelcomeTitle != null)
+		{
+			lblWelcomeTitle.Font = AuditTheme.FontDisplay; // 14pt Bold
+			lblWelcomeTitle.ForeColor = AuditTheme.Text;
+		}
+
+		// === 产品名称 ===
+		if (lblProductName != null)
+		{
+			lblProductName.Font = AuditTheme.FontTitle; // 12pt Bold
+		}
+
+		// === 辅助文字 ===
+		if (lblVersion != null)
+		{
+			lblVersion.Font = AuditTheme.FontCaption; // 8.5pt
+			lblVersion.ForeColor = AuditTheme.TextMuted;
+		}
+
+		// === 记住密码/链接文字 ===
+		if (RememberPwd != null)
+		{
+			RememberPwd.Font = AuditTheme.FontBody;
+			RememberPwd.ForeColor = AuditTheme.TextSecondary;
+		}
+
+		// === 底部链接文字优化（忘记密码 / 立即注册） ===
+		// 字号 9.5pt → 9pt，字重 Regular，颜色用 Google 蓝，避免"扎眼"感
+		LinkLabel[] links = { linkForgetPwd, linkRegister };
+		foreach (var link in links)
+		{
+			if (link == null) continue;
+			link.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+			link.LinkColor = AuditTheme.Brand;       // Google 蓝
+			link.ActiveLinkColor = AuditTheme.BrandActive; // 点击时深蓝
+			link.VisitedLinkColor = AuditTheme.Brand;    // 访问后也是品牌蓝
+			link.LinkBehavior = LinkBehavior.HoverUnderline; // 悬停才显示下划线
 		}
 	}
 
@@ -591,7 +711,7 @@ public class frmLogin : Form
 
 	private void InitColor()
 	{
-		// 使用小清新浅蓝设计令牌（Primary = 74,144,217，和 Theme.LineColor / frmFindPwd / frmRegister 保持一致）
+		// 使用Google Blue设计令牌（Primary = 74,144,217，和 Theme.LineColor / frmFindPwd / frmRegister 保持一致）
 		_auditaiMainColor = Primary;
 		_auditaiMainColorButton = Primary;
 		btnLogin.BackColor = _auditaiMainColorButton;
@@ -872,13 +992,12 @@ public class frmLogin : Form
 			bool isLoginByPhoneNumber = false;
 			string loginPhoneNumber = string.Empty;
 			SwitchStatusTo(Status.Logining);
-			ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+			// 与登录后（如项目管理窗口）的加载框统一使用 ProgressForm2 样式
+			ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+			progressRuntimeData.NextStep("正在登录，请稍候...");
+			ProgressForm2 progressForm = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.1f));
+			progressForm.ShowDialog(progressRuntimeData, async delegate
 			{
-				progress.Report(new ProgressInfo
-				{
-					MainCaption = "正在登录，请稍候...",
-					MainProgress = 100
-				});
 				if (_loginType == LoginType.LoginBySMS)
 				{
 					string text = txtPhoneNumber.Text.Trim();
@@ -893,7 +1012,7 @@ public class frmLogin : Form
 					}
 					loginPhoneNumber = text;
 					Task<Tuple<UserToken, Auditai.DTO.User>> task = WebApiClient.AccountLoginBySMS(text, text2);
-					return await (await task.ContinueWith(async delegate(Task<Tuple<UserToken, Auditai.DTO.User>> t)
+					await (await task.ContinueWith(async delegate(Task<Tuple<UserToken, Auditai.DTO.User>> t)
 					{
 						Tuple<UserToken, Auditai.DTO.User> result = await t;
 						if (result == null || result.Item2 == null)
@@ -916,10 +1035,20 @@ public class frmLogin : Form
 						return (object)null;
 					}));
 				}
-				string userName = txtUserName.Text;
+				string userName = txtUserName.Text.Trim();
+				// 防御：用户名/手机号为空或仍处于占位符状态时禁止提交，
+				// 避免把"请输入用户名或手机号"占位文案当作真实账号发送给服务器。
+				if (string.IsNullOrEmpty(userName) || userName == _tooltipPleaseInputUserName)
+				{
+					throw new NormalException("用户名或手机号不允许为空！");
+				}
+				if (string.IsNullOrEmpty(_inputPassword))
+				{
+					throw new NormalException("密码不允许为空！");
+				}
 				string inputPassword = _inputPassword;
 				Task<Tuple<UserToken, Auditai.DTO.User>> task2 = WebApiClient.AccountLogin(userName, inputPassword);
-				return await (await task2.ContinueWith(async delegate(Task<Tuple<UserToken, Auditai.DTO.User>> t)
+				await (await task2.ContinueWith(async delegate(Task<Tuple<UserToken, Auditai.DTO.User>> t)
 				{
 					Tuple<UserToken, Auditai.DTO.User> result = await t;
 					if (result == null || result.Item2 == null)
@@ -944,8 +1073,6 @@ public class frmLogin : Form
 					return (object)null;
 				}));
 			});
-			progressForm.ShowDialog();
-			await progressForm.Task;
 			_loginedUser.CreateProfileFolderIfNotExist();
 			if (TokenTimer.LoginInfo != null && TokenTimer.LoginInfo.LoginMode == LoginMode.SMS)
 			{
@@ -987,10 +1114,16 @@ public class frmLogin : Form
 		}
 		catch (HttpRequestException ex3)
 		{
-			string msg = (ex3.InnerException is TimeoutException)
-				? "连接服务器超时，请检查网络连接或联系管理员。"
-				: "无法连接到服务器，请检查网络连接或确认服务器是否正常运行。\r\n" +
-				  "如需联系管理员，请致电：400-690-6500。";
+			string serverUrl = WebApiClient.BaseAddress?.ToString() ?? "未知";
+			string msg;
+			if (ex3.InnerException is TimeoutException)
+			{
+				msg = $"连接服务器超时，请检查网络连接或联系管理员。\r\n\r\n服务器地址：{serverUrl}\r\n错误详情：请求超时（30秒无响应）";
+			}
+			else
+			{
+				msg = $"无法连接到服务器，请检查网络连接或确认服务器是否正常运行。\r\n\r\n服务器地址：{serverUrl}\r\n错误详情：{ex3.Message}\r\n\r\n建议操作：\r\n1. 检查电脑网络连接是否正常\r\n2. 如果在公司内网，请确认是否需要配置代理\r\n3. 联系管理员确认服务器 {serverUrl} 是否正常运行";
+			}
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, msg);
 			SwitchStatusTo(Status.Normal);
 		}
@@ -1085,7 +1218,13 @@ public class frmLogin : Form
 			};
 			TokenTimer.LoginInfo = loginInfo;
 			SaveLogin(frmRegister2.UserName, frmRegister2.Password, string.Empty);
-			await WebApiClient.AccountLogin(frmRegister2.UserName, frmRegister2.Password);
+			var autoLoginResult = await WebApiClient.AccountLogin(frmRegister2.UserName, frmRegister2.Password);
+			// 修复：注册后自动登录的返回值未判空/未校验，若登录失败仍会继续进入
+			// GetAndOpenTeam 流程，产生"看似成功实则未登录"的假象。与主登录逻辑一致校验。
+			if (autoLoginResult == null || autoLoginResult.Item2 == null)
+			{
+				throw new ServerException { ExceptionMessage = "登录失败：服务器返回无效数据", ExceptionType = "NullResponse" };
+			}
 			if (await GetAndOpenTeam())
 			{
 				base.DialogResult = DialogResult.OK;
@@ -1136,6 +1275,48 @@ public class frmLogin : Form
 	private void btnClose_Click(object sender, EventArgs e)
 	{
 		Close();
+	}
+
+	protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+	{
+		if (keyData == (Keys.Control | Keys.D))
+		{
+			PerformServerDiagnostics();
+			return true;
+		}
+		return base.ProcessCmdKey(ref msg, keyData);
+	}
+
+	private void PerformServerDiagnostics()
+	{
+		string serverUrl = WebApiClient.BaseAddress?.ToString() ?? "未配置";
+		// 与登录后的加载框统一使用 ProgressForm2 样式；诊断结果在加载框关闭后弹出
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		progressRuntimeData.UpdateMessage("正在诊断服务器连接...");
+		ProgressForm2 form = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.1f));
+		bool failed = false;
+		bool reachable = false;
+		string resultMsg = null;
+		form.ShowDialog(progressRuntimeData, async delegate
+		{
+			try
+			{
+				using (var client = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(10) })
+				{
+					var response = await client.GetAsync(serverUrl + "User/UserNameExists?userName=diagnostics");
+					reachable = (int)response.StatusCode < 500;
+					resultMsg = reachable
+						? $"服务器连接正常！\r\n\r\n服务器地址：{serverUrl}\r\n响应状态：{(int)response.StatusCode} {response.StatusCode}\r\n您现在可以尝试登录。"
+						: $"服务器连接异常！\r\n\r\n服务器地址：{serverUrl}\r\n响应状态：{(int)response.StatusCode} {response.StatusCode}\r\n服务器可能存在问题，请联系管理员。";
+				}
+			}
+			catch (Exception ex)
+			{
+				failed = true;
+				resultMsg = $"无法连接到服务器！\r\n\r\n服务器地址：{serverUrl}\r\n错误详情：{ex.Message}\r\n\r\n建议操作：\r\n1. 检查电脑网络连接\r\n2. 如果使用公司网络，确认代理设置\r\n3. 联系管理员确认服务器状态";
+			}
+		});
+		Auditai.UI.Controls.MessageBox.Show(failed ? MessageBoxIcon.Warning : (reachable ? MessageBoxIcon.Information : MessageBoxIcon.Warning), resultMsg);
 	}
 
 	[DllImport("user32.dll")]
@@ -1516,11 +1697,13 @@ public class frmLogin : Form
 		this.pnlUserName.Controls.Add(this.picUserName);
 		this.pnlUserName.Controls.Add(this.txtUserName);
 		// 字号统一：原 42 只能容纳 9f 字体；加大到 48 为 10.5f 字体留足垂直空间（≥ 44 触控目标）
-		this.pnlUserName.Height = 48;
+		// 修复：面板高度 60 超出外层 ctnUserName 容器（高 58）+ Location.y=2，
+		// 底部实际溢出 ~4px（白色底/边框被裁剪）。统一为 54，内部文本框(46)居中留白且装得进容器。
+		this.pnlUserName.Height = 54;
 		this.pnlUserName.Location = new System.Drawing.Point(2, 2);
 		this.pnlUserName.Name = "pnlUserName";
 		// 紧凑化：内部面板 447→417 宽
-		this.pnlUserName.Size = new System.Drawing.Size(417, 60);
+		this.pnlUserName.Size = new System.Drawing.Size(417, 54);
 		this.pnlUserName.TabIndex = 0;
 		this.pnlUserName.Click += new System.EventHandler(pnlUserName_Click);
 		this.picturePhone.BackgroundImage = Auditai.UI.Platform.Properties.Resources.phoneLogin;
@@ -1585,11 +1768,12 @@ public class frmLogin : Form
 		this.pnlPassword.Controls.Add(this.picPassword);
 		this.pnlPassword.Controls.Add(this.txtPassword);
 		// 字号统一：面板高度 42→48，为 10.5f 字体留足垂直空间
-		this.pnlPassword.Height = 48;
+		// 修复：同 pnlUserName，高度 60 超出外层 ctnPassword 容器（58）+ Location.y=2，统一为 54。
+		this.pnlPassword.Height = 54;
 		this.pnlPassword.Location = new System.Drawing.Point(2, 2);
 		this.pnlPassword.Name = "pnlPassword";
 		// 紧凑化：内部面板 447→417 宽
-		this.pnlPassword.Size = new System.Drawing.Size(417, 60);
+		this.pnlPassword.Size = new System.Drawing.Size(417, 54);
 		this.pnlPassword.TabIndex = 0;
 		this.pnlPassword.Click += new System.EventHandler(pnlPassword_Click);
 		this.txtValidateCode.AutoSize = false;

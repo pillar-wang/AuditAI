@@ -1701,6 +1701,11 @@ public class VoucherMarkedEditor : ISetTheme
 				row["Credit"] = (voucher.IsDebit ? 0m : voucher.Amount);
 				num2 += (voucher.IsDebit ? voucher.Amount : 0m);
 				num3 += (voucher.IsDebit ? 0m : voucher.Amount);
+				if (voucher.VoucherMark)
+				{
+					row.StyleNew.BackColor = Common.MarkBackColor;
+					row.StyleNew.ForeColor = Common.MarkForeColor;
+				}
 			}
 			C1.Win.C1FlexGrid.Row row2 = grid.Rows.Add();
 			row2["Digest"] = "合计";

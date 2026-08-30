@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -56,10 +56,11 @@ public class GaugeForm<T> : C1RibbonForm
 		}
 	}
 
-	#region 按钮尺寸规范
+	#region 按钮尺寸规范（与 MessageShowBox 提示框统一：110×40 圆角按钮，距右 50）
 	private const int ButtonWidth = 110;
-	private const int ButtonHeight = 34;
+	private const int ButtonHeight = 40;
 	private const int ButtonRightMargin = 50;
+	private const int ButtonRadius = 8;
 	#endregion
 
 	public GaugeForm(ProgressForm<T> owner)
@@ -84,21 +85,146 @@ public class GaugeForm<T> : C1RibbonForm
 		{
 			Minimum = 0,
 			Maximum = 100,
-			Dock = DockStyle.Bottom,
+			// 进度条居中放置（左右 30 边距、加粗到 16px），几乎占满窗体宽度，更醒目
+			Location = new Point(30, 30),
+			Size = new Size(520 - 30 * 2, 16),
 			ForeColor = Theme.SelectedAuditaiTheme.ThemeContext.ProgressBarColor
 		};
 		pnlGauge.Controls.Add(_progBar);
 		pnlHeader.MouseDown += Form1_MouseDown;
 		pnlHeader.MouseMove += Form1_MouseMove;
 		pnlHeader.MouseUp += Form1_MouseUp;
+		// 顶部主色光带（与 MessageShowBox 提示框统一，替代原先的 DarkGray 直角边框）
 		pnlHeader.Paint += delegate(object s, PaintEventArgs e)
 		{
-			e.Graphics.DrawRectangle(new Pen(Color.DarkGray, 1f), new Rectangle(0, 0, base.Width - 1, base.Height - 1));
+			var ctx = Theme.SelectedAuditaiTheme?.ThemeContext;
+			if (ctx == null) return;
+			Rectangle topBar = new Rectangle(0, 0, pnlHeader.Width, 3);
+			using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
+				topBar, ControlPaint.Light(ctx.ProgressBarColor), ctx.ProgressBarColor,
+				System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+			{
+				e.Graphics.FillRectangle(topBrush, topBar);
+			}
 		};
-		pnlGauge.Paint += delegate(object s, PaintEventArgs e)
+		// Google 风格精修
+		ApplyGoogleStyle();
+	}
+
+	/// <summary>
+	/// Google 风格精修
+	/// 统一字体、边框色、圆角，与当前主题设计语言对齐
+	/// </summary>
+	private void ApplyGoogleStyle()
+	{
+		var theme = Theme.SelectedAuditaiTheme;
+		// 跟随当前主题：主题在场即套用主题配色/字体/圆角，不绑定特定主题名
+		if (theme == null) return;
+
+		var ctx = theme.ThemeContext;
+
+		// === 字体统一（跟随主题主色，回退旧硬编码色） ===
+		lblMain.Font = CombinedFont(12f);
+		lblMain.ForeColor = ctx.DarkColor;
+
+		// === 背景色 ===
+		c1SplitContainer1.BackColor = ctx.BackColor;
+		pnlHeader.BackColor = ctx.BackColor;
+		pnlGauge.BackColor = ctx.BackColor;
+
+		// === 进度条颜色 ===
+		_progBar.ForeColor = ctx.ProgressBarColor;
+
+		// === 文字区域避让取消按钮（按钮 Left=360，留 14px 间距，防止长文字遮挡按钮） ===
+		int labelWidth = btnCancel != null && btnCancel.Visible
+			? btnCancel.Left - lblMain.Left - 14
+			: 370;
+		lblMain.MaximumSize = new Size(labelWidth, 62);
+		lblMain.Size = new Size(labelWidth, 62);
+
+		// === 取消按钮（对齐 MessageShowBox 次按钮：白底灰字 + 浅蓝边框 + 8px 圆角） ===
+		if (btnCancel != null)
 		{
-			e.Graphics.DrawRectangle(new Pen(Color.DarkGray, 1f), new Rectangle(0, 0, base.Width - 1, base.Height - 1));
-		};
+			btnCancel.Font = CombinedFont(9.5f);
+			btnCancel.FlatStyle = FlatStyle.Flat;
+			btnCancel.BackColor = Color.White;
+			btnCancel.ForeColor = ctx.DarkColor;
+			btnCancel.FlatAppearance.BorderColor = ctx.LineColor;
+			btnCancel.FlatAppearance.BorderSize = 1;
+			btnCancel.FlatAppearance.MouseDownBackColor = Color.FromArgb(240, 247, 252);
+			btnCancel.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 249, 252);
+			using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+			{
+				int w = btnCancel.Width, h = btnCancel.Height, r = ButtonRadius * 2;
+				path.AddArc(0, 0, r, r, 180, 90);
+				path.AddArc(w - r, 0, r, r, 270, 90);
+				path.AddArc(w - r, h - r, r, r, 0, 90);
+				path.AddArc(0, h - r, r, r, 90, 90);
+				path.CloseFigure();
+				btnCancel.Region = new Region(path);
+			}
+		}
+
+		// === 圆角（12px） ===
+		ApplyRoundedRegion(12);
+	}
+
+	/// <summary>
+	/// 优先使用系统已安装的 Noto Sans SC，缺失时回退到原字体族
+	/// </summary>
+	private static Font CombinedFont(float size, bool bold = false)
+	{
+		var style = bold ? FontStyle.Bold : FontStyle.Regular;
+		try
+		{
+			using var f = new Font("Noto Sans SC", size, style);
+			return new Font(f.FontFamily, size, style);
+		}
+		catch
+		{
+			return new Font("微软雅黑", size, style);
+		}
+	}
+
+	/// <summary>
+	/// 给窗体应用圆角 Region
+	/// </summary>
+	private void ApplyRoundedRegion(int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(base.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(base.Width - radius * 2, base.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, base.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			base.Region = new Region(path);
+		}
+	}
+
+	/// <summary>
+	/// 按面板实际尺寸布局进度条（铺满 + 垂直居中）。
+	/// AutoScale 缩放只作用于设计器添加的控件，运行时创建的进度条不参与缩放，
+	/// 高 DPI/大字体环境下必须按缩放后的面板实际宽高重新计算。
+	/// </summary>
+	private void LayoutProgressBar()
+	{
+		int margin = pnlGauge.Width * 30 / 520;   // 左右边距按比例（设计值 30/520）
+		int barH = 12;                            // 高度固定细条，不随 DPI 缩放膨胀
+		if (margin < 15) margin = 15;
+		_progBar.Size = new Size(pnlGauge.Width - margin * 2, barH);
+		_progBar.Location = new Point(margin, (pnlGauge.Height - barH) / 2);
+	}
+
+	/// <summary>
+	/// 窗体显示后重新应用圆角：C1RibbonForm 创建句柄时会重置 Region，
+	/// 构造函数里设置的圆角会失效，必须在 Shown 后补一次
+	/// </summary>
+	protected override void OnShown(EventArgs e)
+	{
+		base.OnShown(e);
+		ApplyRoundedRegion(12);
+		LayoutProgressBar();
 	}
 
 	public void UpdatePaint()
@@ -310,7 +436,7 @@ public class GaugeForm<T> : C1RibbonForm
 		base.SuspendLayout();
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
 		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.btnCancel.Location = new System.Drawing.Point(520 - ButtonRightMargin - ButtonWidth, 51);
+		this.btnCancel.Location = new System.Drawing.Point(520 - ButtonRightMargin - ButtonWidth, 48);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 3;

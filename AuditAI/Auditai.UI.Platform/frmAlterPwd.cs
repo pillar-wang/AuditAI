@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -16,7 +16,8 @@ namespace Auditai.UI.Platform;
 
 public class frmAlterPwd : C1RibbonForm
 {
-	private readonly Color _auditaiBlue = Color.FromArgb(0, 195, 245);
+	// Google Blue 主色（用于输入框聚焦边框等）
+	private readonly Color _auditaiBlue = AuditTheme.Brand;
 
 	private const int TIMEDOWNTOTAL = 120;
 
@@ -86,12 +87,81 @@ public class frmAlterPwd : C1RibbonForm
 
 	private C1TextBoxEx txtPhone;
 
+	/// <summary>给窗体应用圆角区域（统一样式调整，参考 frmFindPwd 实现）</summary>
+	private void ApplyRoundedRegion(int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(base.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(base.Width - radius * 2, base.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, base.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			base.Region = new System.Drawing.Region(path);
+		}
+	}
+
+	/// <summary>给按钮应用圆角区域（统一样式调整）</summary>
+	private void ApplyRoundedButton(Control btn, int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(btn.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(btn.Width - radius * 2, btn.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, btn.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			btn.Region = new System.Drawing.Region(path);
+		}
+	}
+
+	/// <summary>
+	/// 统一样式调整：重新应用主/次按钮配色。
+	/// C1Button 的皮肤(VisualStyle)在控件初始化完成时会覆盖设计时 BackColor（实测被刷成皮肤灰），
+	/// 必须在 InitializeComponent 之后重设一次。
+	/// </summary>
+	private void RefreshButtonStyles()
+	{
+		// 主按钮：Brand 蓝底白字
+		btnCertain.BackColor = AuditTheme.Brand;
+		btnCertain.ForeColor = Color.White;
+		btnCertain.FlatStyle = FlatStyle.Flat;
+		btnCertain.FlatAppearance.BorderSize = 0;
+		btnCertain.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		btnCertain.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		// 次按钮：白底灰字 + 浅蓝边框
+		btnCancel.BackColor = Color.White;
+		btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
+		btnCancel.FlatStyle = FlatStyle.Flat;
+		btnCancel.FlatAppearance.BorderSize = 1;
+		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnGetValidateCode.BackColor = Color.White;
+		btnGetValidateCode.ForeColor = Color.FromArgb(30, 41, 59);
+		btnGetValidateCode.FlatStyle = FlatStyle.Flat;
+		btnGetValidateCode.FlatAppearance.BorderSize = 1;
+		btnGetValidateCode.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+	}
+
+	/// <summary>窗体显示后重新应用圆角：C1RibbonForm 创建句柄时会重置 Region，构造时设置的圆角会失效</summary>
+	protected override void OnShown(EventArgs e)
+	{
+		base.OnShown(e);
+		ApplyRoundedRegion(AuditTheme.CardRadius);
+	}
+
 	public frmAlterPwd()
 	{
 		InitializeComponent();
 
+		// 统一样式调整：窗体 12px 圆角 + 按钮 8px 圆角，须在布局/尺寸确定后应用
+		ApplyRoundedRegion(AuditTheme.CardRadius);
+		ApplyRoundedButton(btnCertain, AuditTheme.ButtonRadius);
+		ApplyRoundedButton(btnCancel, AuditTheme.ButtonRadius);
+		ApplyRoundedButton(btnGetValidateCode, AuditTheme.ButtonRadius);
 
 		Initialize();
+		// 统一样式调整：C1Button 皮肤会覆盖设计时配色，构造末尾重设主/次按钮样式
+		RefreshButtonStyles();
 	}
 
 	public new DialogResult ShowDialog()
@@ -116,7 +186,8 @@ public class frmAlterPwd : C1RibbonForm
 				};
 				tb.MouseLeave += delegate
 				{
-					tb.BorderColor = Color.LightGray;
+					// 统一样式调整：hover 离开边框改用主题令牌，替代硬编码 LightGray
+					tb.BorderColor = AuditTheme.BorderStrong;
 				};
 			}
 		}
@@ -351,6 +422,38 @@ public class frmAlterPwd : C1RibbonForm
 	{
 	}
 
+	// 统一样式调整：浅蓝渐变背景 + 顶部 3px 主色光带（参考 frmFindPwd_Paint）
+	private void frmAlterPwd_Paint(object sender, PaintEventArgs e)
+	{
+		var g = e.Graphics;
+		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+		Rectangle bgRect = new Rectangle(0, 0, base.Width, base.Height);
+		// 垂直渐变：浅天蓝 → 浅灰白
+		using (var bgBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
+			bgRect, Color.FromArgb(227, 240, 255), Color.FromArgb(245, 248, 250),
+			System.Drawing.Drawing2D.LinearGradientMode.Vertical))
+		{
+			g.FillRectangle(bgBrush, bgRect);
+		}
+		// 第二层对角半透明渐变增强
+		using (var bgBrush2 = new System.Drawing.Drawing2D.LinearGradientBrush(
+			new Point(base.Width, 0),
+			new Point(0, base.Height),
+			Color.FromArgb(150, 220, 235, 255),
+			Color.FromArgb(150, 240, 248, 255)))
+		{
+			g.FillRectangle(bgBrush2, bgRect);
+		}
+		// 顶部 3px 主色光带（水平渐变）
+		Rectangle topBar = new Rectangle(0, 0, base.Width, 3);
+		using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
+			topBar, Color.FromArgb(90, 160, 230), Color.FromArgb(74, 144, 226),
+			System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+		{
+			g.FillRectangle(topBrush, topBar);
+		}
+	}
+
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing && components != null)
@@ -451,15 +554,21 @@ public class frmAlterPwd : C1RibbonForm
 		this.txtVerification.Tag = null;
 		this.txtVerification.TextDetached = true;
 		this.txtVerification.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
+		// 统一样式调整：主按钮 = Brand 蓝底白字 + Flat 无边框
+		this.btnCertain.BackColor = AuditTheme.Brand;
+		this.btnCertain.ForeColor = System.Drawing.Color.White;
 		this.btnCertain.FlatAppearance.BorderSize = 0;
+		this.btnCertain.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		this.btnCertain.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
 		this.btnCertain.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 统一样式调整：主按钮高度统一 40
 		this.btnCertain.Location = new System.Drawing.Point(81, 410);
 		this.btnCertain.Name = "btnCertain";
-		this.btnCertain.Size = new System.Drawing.Size(130, 43);
+		this.btnCertain.Size = new System.Drawing.Size(130, 40);
 		this.btnCertain.TabIndex = 5;
 		this.btnCertain.Text = "确定";
-		this.btnCertain.UseVisualStyleBackColor = true;
+		this.btnCertain.UseVisualStyleBackColor = false;
 		this.btnCertain.Click += new System.EventHandler(btnCertain_Click);
 		this.warnNewPassword.AutoSize = true;
 		this.warnNewPassword.BackColor = System.Drawing.Color.Transparent;
@@ -504,7 +613,7 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPassword1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPassword1.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword1.ForeColor = System.Drawing.Color.Black;
-		this.lblPassword1.Location = new System.Drawing.Point(31, 313);
+		this.lblPassword1.Location = new System.Drawing.Point(31, 304);
 		this.lblPassword1.Name = "lblPassword1";
 		this.lblPassword1.Size = new System.Drawing.Size(88, 22);
 		this.lblPassword1.TabIndex = 19;
@@ -528,7 +637,11 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblPassword2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblPassword2.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblPassword2.ForeColor = System.Drawing.Color.Black;
-		this.lblPassword2.Location = new System.Drawing.Point(47, 181);
+		// 修复：此"新密码"标签原误置于 y181，与上方的"短信验证码"标签( y164–186,
+		// AutoSize) 重叠约 6px，两者文本相互碰撞。将其移到"新密码"输入框 txtNewPassword
+		// (y226) 行同高对齐（y=输入y+8 居中，与 lblPassword/txtPassword 的对齐规则一致），
+		// 既消除碰撞，也补回了新密码输入项原本缺失的标签。
+		this.lblPassword2.Location = new System.Drawing.Point(46, 234);
 		this.lblPassword2.Name = "lblPassword2";
 		this.lblPassword2.Size = new System.Drawing.Size(57, 22);
 		this.lblPassword2.TabIndex = 27;
@@ -539,7 +652,7 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar1.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar1.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar1.Location = new System.Drawing.Point(31, 36);
+		this.lblMustInputStar1.Location = new System.Drawing.Point(31, 26);
 		this.lblMustInputStar1.Name = "lblMustInputStar1";
 		this.lblMustInputStar1.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar1.TabIndex = 34;
@@ -550,7 +663,8 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar2.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar2.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar2.Location = new System.Drawing.Point(47, 238);
+		// 修复：星号原 x=47 落在"新密码"标签(x=46)右侧且 Y 下探与其重叠，统一为标签左侧 15px（与星号1/3 规则一致）
+		this.lblMustInputStar2.Location = new System.Drawing.Point(31, 226);
 		this.lblMustInputStar2.Name = "lblMustInputStar2";
 		this.lblMustInputStar2.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar2.TabIndex = 35;
@@ -561,33 +675,43 @@ public class frmAlterPwd : C1RibbonForm
 		this.lblMustInputStar3.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar3.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar3.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar3.Location = new System.Drawing.Point(16, 317);
+		this.lblMustInputStar3.Location = new System.Drawing.Point(16, 304);
 		this.lblMustInputStar3.Name = "lblMustInputStar3";
 		this.lblMustInputStar3.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar3.TabIndex = 36;
 		this.lblMustInputStar3.Tag = null;
 		this.lblMustInputStar3.Text = "*";
 		this.lblMustInputStar3.TextDetached = true;
-		this.btnCancel.FlatAppearance.BorderSize = 0;
+		// 统一样式调整：次按钮 = 白底 + 深灰字 + 浅蓝边框
+		this.btnCancel.BackColor = System.Drawing.Color.White;
+		this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
+		this.btnCancel.FlatAppearance.BorderSize = 1;
+		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		// 统一样式调整：次按钮高度统一 40
 		this.btnCancel.Location = new System.Drawing.Point(263, 410);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(130, 43);
+		this.btnCancel.Size = new System.Drawing.Size(130, 40);
 		this.btnCancel.TabIndex = 6;
 		this.btnCancel.Text = "取消";
-		this.btnCancel.UseVisualStyleBackColor = true;
+		this.btnCancel.UseVisualStyleBackColor = false;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
-		this.btnGetValidateCode.FlatAppearance.BorderSize = 0;
+		// 统一样式调整：次按钮 = 白底 + 深灰字 + 浅蓝边框
+		this.btnGetValidateCode.BackColor = System.Drawing.Color.White;
+		this.btnGetValidateCode.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
+		this.btnGetValidateCode.FlatAppearance.BorderSize = 1;
+		this.btnGetValidateCode.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
 		this.btnGetValidateCode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnGetValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnGetValidateCode.Format = "(0s)";
+		// 统一样式调整：次按钮高度统一 40
 		this.btnGetValidateCode.Location = new System.Drawing.Point(326, 156);
 		this.btnGetValidateCode.Name = "btnGetValidateCode";
-		this.btnGetValidateCode.Size = new System.Drawing.Size(99, 42);
+		this.btnGetValidateCode.Size = new System.Drawing.Size(99, 40);
 		this.btnGetValidateCode.TabIndex = 4;
 		this.btnGetValidateCode.Text = "获取验证码";
-		this.btnGetValidateCode.UseVisualStyleBackColor = true;
+		this.btnGetValidateCode.UseVisualStyleBackColor = false;
 		this.btnGetValidateCode.Click += new System.EventHandler(btnGetValidateCode_Click);
 		this.lblPhone.AutoSize = true;
 		this.lblPhone.BackColor = System.Drawing.Color.Transparent;
@@ -638,7 +762,8 @@ public class frmAlterPwd : C1RibbonForm
 		base.Controls.Add(this.txtNewPassword2);
 		base.Controls.Add(this.txtNewPassword);
 		base.Controls.Add(this.txtPassword);
-		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+		// 统一样式调整：无边框窗体（配合圆角 Region + 渐变背景 + MouseDown 拖拽）
+		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;
 		base.Name = "frmAlterPwd";
@@ -649,6 +774,8 @@ public class frmAlterPwd : C1RibbonForm
 		base.FormClosing += new System.Windows.Forms.FormClosingEventHandler(frmAlterPwd_FormClosing);
 		base.Load += new System.EventHandler(frmAlterPwd_Load);
 		base.MouseDown += new System.Windows.Forms.MouseEventHandler(frmAlterPwd_MouseDown);
+		// 统一样式调整：渐变背景 + 顶部光带绘制
+		base.Paint += new System.Windows.Forms.PaintEventHandler(frmAlterPwd_Paint);
 		((System.ComponentModel.ISupportInitialize)this.txtPassword).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.txtNewPassword).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.txtNewPassword2).EndInit();

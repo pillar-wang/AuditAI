@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -450,7 +450,9 @@ public class ImageEditor
 			}
 			else
 			{
-				_pb.ZoomFactor -= 0.05f;
+				// 修复：原实现无下限钳制，反复缩小可使 ZoomFactor 变为负数，
+				// 负缩放导致 PictureBox 渲染异常/崩溃。限制最小 0.05。
+				_pb.ZoomFactor = Math.Max(0.05f, _pb.ZoomFactor - 0.05f);
 				Image.UpdateZoomFactor(_pb.ZoomFactor);
 			}
 			RefreshImageCenter();
@@ -542,7 +544,8 @@ public class ImageEditor
 
 	private void CmdZoomOut_Click(object sender, ClickEventArgs e)
 	{
-		_pb.ZoomFactor -= 0.05f;
+		// 修复：与滚轮缩放一致，钳制最小 0.05，避免负缩放。
+		_pb.ZoomFactor = Math.Max(0.05f, _pb.ZoomFactor - 0.05f);
 		Image.UpdateZoomFactor(_pb.ZoomFactor);
 		RefreshImageCenter();
 	}
@@ -560,6 +563,9 @@ public class ImageEditor
 
 	private bool ShouldShowContextMenu()
 	{
+		// 修复：ImageAnimator.CanAnimate(null) 抛 ArgumentNullException，
+		// 未加载图片时对空图片区右键即崩溃。
+		if (_pb.Image == null) return true;
 		return !ImageAnimator.CanAnimate(_pb.Image);
 	}
 

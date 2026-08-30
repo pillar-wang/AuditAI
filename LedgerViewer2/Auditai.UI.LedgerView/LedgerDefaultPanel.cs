@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -1075,7 +1075,7 @@ public class LedgerDefaultPanel : ISetTheme
 		{
 			Text = title,
 			HorizontalSize = 20,
-			VerticalSize = 2,
+			VerticalSize = 3,
 			Template = _titleTemplate,
 			BackColor = Color.Transparent,
 			Tag = new TileInfo
@@ -1124,33 +1124,33 @@ public class LedgerDefaultPanel : ISetTheme
 	{
 		Template template = new Template();
 		template.Description = "Win32";
-		// 关闭按钮面板（顶部，子元素右上对齐）- 加大热区，便于点击
+		// 关闭按钮面板（顶部，子元素右上对齐）- 预留独立高度，避免被图标面板遮挡
 		PanelElement panelElement = new PanelElement();
 		panelElement.Dock = DockStyle.Top;
-		panelElement.FixedHeight = 18;
+		panelElement.FixedHeight = 24;
 		panelElement.AlignmentOfContents = ContentAlignment.TopRight;
 		ImageElement imageElement = new ImageElement();
 		imageElement.ColumnIndex = 30;
 		imageElement.FixedWidth = 20;
-		imageElement.FixedHeight = 18;
+		imageElement.FixedHeight = 20;
 		imageElement.ImageSelector = ImageSelector.Image2;
-		imageElement.Margin = new Padding(0, 0, 2, 0);
+		imageElement.Margin = new Padding(0, 0, 3, 0);
 		panelElement.Children.Add(imageElement);
-		// 主图标面板（顶部，子元素居中）- 32×32px 图标，压缩垂直方向冗余
+		// 主图标面板（顶部，子元素居中）- 扩大图标区域，确保文件夹图标完整显示
 		PanelElement panelElement2 = new PanelElement();
 		panelElement2.Dock = DockStyle.Top;
-		panelElement2.FixedHeight = 38;
+		panelElement2.FixedHeight = 56;
 		panelElement2.AlignmentOfContents = ContentAlignment.MiddleCenter;
 		ImageElement imageElement2 = new ImageElement();
-		imageElement2.FixedHeight = 32;
-		imageElement2.FixedWidth = 32;
+		imageElement2.FixedHeight = 48;
+		imageElement2.FixedWidth = 48;
 		imageElement2.ImageSelector = ImageSelector.Image1;
-		imageElement2.Margin = new Padding(0, 6, 0, 0);
+		imageElement2.Margin = new Padding(0, 4, 0, 4);
 		panelElement2.Children.Add(imageElement2);
-		// 文字面板（填充剩余空间，子元素顶部居中）- 进一步压缩
+		// 文字面板（填充剩余空间，子元素顶部居中）- 增加文字区域高度
 		PanelElement panelElement3 = new PanelElement();
 		panelElement3.Dock = DockStyle.Fill;
-		panelElement3.FixedHeight = 40;
+		panelElement3.FixedHeight = 44;
 		panelElement3.AlignmentOfContents = ContentAlignment.TopCenter;
 		panelElement3.Padding = new Padding(4, 4, 4, 4);
 		TextElement textElement = new TextElement();
@@ -1182,12 +1182,12 @@ public class LedgerDefaultPanel : ISetTheme
 		textElement.ForeColor = Color.FromArgb(0, 73, 92);
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
 		textElement.Font = titleFont;
-		textElement.Margin = new Padding(0, 0, 0, 6);
+		textElement.Margin = new Padding(0, 8, 0, 6);
 		textElement.SingleLine = true;
 		textElement.FontUnderline = ThreeStateBoolean.True;
 		panelElement.Children.Add(textElement);
 		panelElement.Dock = DockStyle.Fill;
-		panelElement.Padding = new Padding(8, 0, 8, 8);
+		panelElement.Padding = new Padding(8, 8, 8, 8);
 		template.Elements.Add(panelElement);
 		template.Enabled = false;
 		template.Name = "subgroupTemplate";
@@ -1263,7 +1263,7 @@ public class LedgerDefaultPanel : ISetTheme
 		int y = point.Y;
 		int num3 = x - num;
 		int num4 = y - num2;
-		Rectangle rectangle = new Rectangle(tile.Width - 3 - 16, 3, 16, 16);
+		Rectangle rectangle = new Rectangle(tile.Width - 3 - 20, 2, 22, 20);
 		return num3 > rectangle.X && num3 < rectangle.X + rectangle.Width && num4 > rectangle.Y && num4 < rectangle.Y + rectangle.Height;
 	}
 

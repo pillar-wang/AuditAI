@@ -124,6 +124,12 @@ public class Cell
 
 	private const int MAX_CELL_VALUE_LENGTH = 10000;
 
+	// 修复：原静态 HashSet/int 为跨线程共享的可变状态，多线程并发更新不同表格时会互相污染
+	// （误判循环引用、深度计数错乱、错误清理触发器）。通过 EnterStack 入口的 lock 串行化
+	// 公式计算链路，保证同一时刻只有一个线程进入该状态区，既消除并发污染又避免 ThreadStatic
+	// 在 await 跨线程时丢失状态的问题。
+	internal static readonly object FormulaStackLock = new object();
+
 	internal static HashSet<Id64> _circularRefDetector = new HashSet<Id64>();
 
 	private static HashSet<FormulaTrigger> _invalids = new HashSet<FormulaTrigger>();
@@ -823,51 +829,74 @@ public class Cell
 		{
 			value = (double)num;
 		}
-		if (Value.Equals(value))
+		if (object.Equals(Value, value))
 		{
 			return false;
 		}
 		if (_Table.EnableFormulaTrigger)
 		{
-			if (_circularRefDetector.Contains(Id))
+			// 修复：用锁串行化公式计算链路，避免多线程并发更新不同表格时共享的
+			// 循环检测集合/深度计数器/失效触发器集合互相污染。Monitor 可重入，
+			// 同一线程内嵌套的 UpdateValue 调用不会死锁。
+			lock (FormulaStackLock)
 			{
-				return false;
-			}
-			EnterStack();
-		}
-		NeedSave = true;
-		Value = value;
-		if (Status == SyncStatus.Synced)
-		{
-			Dirty.IsValueDirty = true;
-		}
-		if (_Table.EnableFormulaTrigger)
-		{
-			if (_Table._isBatchUpdating)
-			{
-				_Table._batchUpdatingCells.Add(this);
-			}
-			else
-			{
-				foreach (FormulaTrigger formulaTrigger in _Table._formulaTriggers)
+				if (_circularRefDetector.Contains(Id))
 				{
-					try
-					{
-						formulaTrigger.Execute(new Cell[1] { this });
-					}
-					catch (FormulaBadReferenceException)
-					{
-						_invalids.Add(formulaTrigger);
-					}
+					return false;
 				}
-				_Table.EvalControlFormula();
+				EnterStack();
+				try
+				{
+					NeedSave = true;
+					Value = value;
+					if (Status == SyncStatus.Synced)
+					{
+						Dirty.IsValueDirty = true;
+					}
+					if (_Table._isBatchUpdating)
+					{
+						_Table._batchUpdatingCells.Add(this);
+					}
+					else
+					{
+						foreach (FormulaTrigger formulaTrigger in _Table._formulaTriggers)
+						{
+							try
+							{
+								formulaTrigger.Execute(new Cell[1] { this });
+							}
+							catch (FormulaBadReferenceException)
+							{
+								_invalids.Add(formulaTrigger);
+							}
+						}
+						_Table.EvalControlFormula();
+					}
+					_Table.NeedSave = true;
+					_Table.Ticket.IsCacheExpired = true;
+					LeaveStack();
+				}
+				catch
+				{
+					// 修复：任何异常都确保栈状态复位，避免深度计数/循环检测集合残留
+					// 导致后续公式计算被误判。
+					_updateValueDepth = 0;
+					_circularRefDetector.Clear();
+					_invalids.Clear();
+					throw;
+				}
 			}
 		}
-		_Table.NeedSave = true;
-		_Table.Ticket.IsCacheExpired = true;
-		if (_Table.EnableFormulaTrigger)
+		else
 		{
-			LeaveStack();
+			NeedSave = true;
+			Value = value;
+			if (Status == SyncStatus.Synced)
+			{
+				Dirty.IsValueDirty = true;
+			}
+			_Table.NeedSave = true;
+			_Table.Ticket.IsCacheExpired = true;
 		}
 		UpdateValueSuccessFlag = true;
 		return true;

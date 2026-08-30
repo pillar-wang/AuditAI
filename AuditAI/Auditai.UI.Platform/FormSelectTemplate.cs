@@ -75,13 +75,15 @@ public class FormSelectTemplate
 		_form.Controls.Add(_tileControl);
 		_szSearch = new C1Sizer
 		{
+			Dock = DockStyle.Top,
+			Height = 40,
 			SplitterWidth = 0,
 			Padding = Padding.Empty
 		};
 		_szSearch.Grid.Rows.Count = 1;
 		_szSearch.Grid.Columns.Count = 2;
-		_szSearch.Grid.Columns.SetSizes(new int[2] { 1, 1 });
-		_szSearch.Grid.Columns.SetFixed(default(int));
+		_szSearch.Grid.Columns.SetSizes(new int[2] { 36, 1 });
+		_szSearch.Grid.Columns.SetFixed(0);
 		_ckbSearch = new C1CheckBox
 		{
 			BackColor = Color.Transparent,
@@ -94,6 +96,7 @@ public class FormSelectTemplate
 		_szSearch.AddControl(_ckbSearch, 0, 0);
 		_txbSearch = new C1TextBox();
 		_szSearch.AddControl(_txbSearch, 0, 1);
+		_form.Controls.Add(_szSearch);
 	}
 
 	public DialogResult ShowDialog()

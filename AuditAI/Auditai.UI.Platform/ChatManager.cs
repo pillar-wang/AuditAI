@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -53,8 +53,10 @@ public static class ChatManager
 		{
 			MemberManager instance = MemberManager.GetInstance();
 			Member member = instance.GetMember(Auditai.Model.User.Current.Id.ToString());
+			// 修复：原实现 member 判空后仍直接访问 member.Name/member.Image，
+			// 当前用户尚未加入 MemberManager 时 member 为 null 直接 NRE。
 			member?.SetPicture(bitmap);
-			if (ChatForm.IsValueCreated)
+			if (ChatForm.IsValueCreated && member != null)
 			{
 				ChatForm.Value.UpdatePersonalInfo(member.Name, member.Image);
 			}

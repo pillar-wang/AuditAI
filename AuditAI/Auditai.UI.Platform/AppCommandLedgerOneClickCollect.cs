@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,9 +23,9 @@ public class AppCommandLedgerOneClickCollect : AppCommandButton
 			}
 			else if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, "一键批量生成底稿需要一定时间，确定要执行该操作吗？", MessageBoxButtons.YesNo, "确认对话框") == DialogResult.Yes)
 			{
-				Program.MainForm.SwitchMainView();
 				await Program.MainForm.OneClickCollect();
-				Program.MainForm.SwitchFinanceView();
+				// 批量填充完成后把主窗口带到前台，方便查看底稿结果
+				Program.MainForm.View.Activate();
 			}
 		}
 	};

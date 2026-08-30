@@ -1,6 +1,7 @@
-﻿﻿﻿﻿using System.Collections.Generic;
+﻿﻿﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System;
 using C1.Win.C1Command;
 using C1.Win.C1FlexGrid;
 using C1.Win.C1SplitContainer;
@@ -23,6 +24,12 @@ public static class Theme
 	private static bool _isAdapted;
 
 	private static Bitmap _adaptImage;
+
+	/// <summary>
+	/// 主题精修回调：C1Theme 应用后调用，用于叠加自定义样式
+	/// 各平台可注册自己的精修逻辑（如 Google Blue 风格的按钮/输入框统一）
+	/// </summary>
+	public static Action<Control> ThemeRefineAction { get; set; }
 
 	public static List<AuditaiTheme> ThemePool { get; set; }
 
@@ -350,6 +357,22 @@ public static class Theme
 			FormulaEditorBorderColor = Color.FromArgb(168, 200, 232),
 			ProgressBarColor = Color.FromArgb(74, 144, 217)
 		});
+		// Google 蓝 — Material / Google Workspace 风格
+		// 以小清新浅蓝的 C1 主题为基底，ThemeContext 替换为 Google Blue 配色
+		RegisterTheme(Auditai.ThemeResource.Properties.Resource1.auditai_FreshLightBlue, "auditai_GoogleBlue", "Google 蓝", ThemeEnum.Typical, new ThemeContext
+		{
+			GradientColor = Color.FromArgb(232, 240, 254),      // #e8f0fe 品牌淡蓝
+			TileColor = Color.FromArgb(255, 26, 115, 232),      // #1a73e8 Google 蓝（带 Alpha=255）
+			LargeImage = null,
+			SmallImage = null,
+			BackColor = Color.FromArgb(248, 250, 252),          // #f8fafc 表面淡灰
+			LineColor = Color.FromArgb(26, 115, 232),           // #1a73e8 品牌蓝
+			DarkColor = Color.FromArgb(21, 87, 176),            // #1557b0 深蓝
+			BulletColor = Color.FromArgb(255, 26, 115, 232),    // #1a73e8 品牌蓝
+			RibbonTabBorder = Color.FromArgb(226, 232, 240),    // #e2e8f0 边框色
+			FormulaEditorBorderColor = Color.FromArgb(203, 213, 225), // #cbd5e1 深边框
+			ProgressBarColor = Color.FromArgb(26, 115, 232)     // #1a73e8 品牌蓝
+		});
 	}
 
 	public static void SelectedThemeById(string themeId)
@@ -368,6 +391,8 @@ public static class Theme
 	{
 		C1ThemeController.ApplyThemeToControlTree(form, SelectedAuditaiTheme.GetC1Theme());
 		RestoreToolBarButtonLook(form);
+		// 调用注册的主题精修回调（各平台自定义样式叠加）
+		ThemeRefineAction?.Invoke(form);
 	}
 
 	private static void RestoreToolBarButtonLook(Control parent)

@@ -153,11 +153,20 @@ public struct DataFormat
 
 	internal static DataFormat? Parse(string s)
 	{
-		if (s == null)
+		if (string.IsNullOrWhiteSpace(s))
 		{
 			return null;
 		}
-		return JsonConvert.DeserializeObject<DataFormat>(s);
+		// 修复：原实现仅判 null，空串/非法 JSON 时 JsonConvert.DeserializeObject 抛
+		// JsonReaderException 未捕获，波及表加载与同步。非法数据返回 null 兜底。
+		try
+		{
+			return JsonConvert.DeserializeObject<DataFormat>(s);
+		}
+		catch (Exception)
+		{
+			return null;
+		}
 	}
 
 	public override bool Equals(object obj)

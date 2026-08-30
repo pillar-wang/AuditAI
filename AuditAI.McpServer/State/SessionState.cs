@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Auditai.Model;
@@ -47,6 +47,9 @@ namespace AuditAI.McpServer.State
         {
             CurrentProject = project;
             CurrentProjectPath = path;
+            // 修复：统一在此处同步模型层静态 Project.Current，避免各服务分散写入、
+            // 关闭项目后残留陈旧引用造成跨会话串扰。
+            Project.Current = project;
             // 切换项目时重置上下文
             CurrentDocumentNodeId = null;
             CurrentTableNodeId = null;
@@ -71,6 +74,8 @@ namespace AuditAI.McpServer.State
             CurrentDocumentNodeId = null;
             CurrentTableNodeId = null;
             CurrentLedgerFilePath = null;
+            // 修复：同步复位模型层静态 Project.Current，防止关闭后仍指向已关闭项目。
+            Project.Current = null;
         }
 
         /// <summary>

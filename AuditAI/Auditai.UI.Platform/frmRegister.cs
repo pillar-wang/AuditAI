@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -24,43 +24,43 @@ public class frmRegister : Form
 		Registing
 	}
 
-	#region === 设计令牌（小清新浅蓝风格，与登录/找回密码窗口统一） ===
+	#region === 设计令牌（Google Blue 风格，与登录/找回密码窗口统一） ===
 
-	/// <summary>主色（主题 LineColor = 74,144,217），用于按钮/链接/下划线/聚焦边框</summary>
-	private static Color Primary = Color.FromArgb(74, 144, 217);
+	/// <summary>主色（Google Blue #1a73e8），用于按钮/链接/下划线/聚焦边框</summary>
+	private static Color Primary = Color.FromArgb(26, 115, 232);
 
 	/// <summary>主色-按下态（暗一档，FlatAppearance.MouseDown）</summary>
-	private static Color PrimaryDark = Color.FromArgb(53, 123, 189);
+	private static Color PrimaryDark = Color.FromArgb(21, 87, 176);
 
 	/// <summary>主色-悬停态（亮一档，FlatAppearance.MouseOver）</summary>
-	private static Color PrimaryLight = Color.FromArgb(90, 160, 230);
+	private static Color PrimaryLight = Color.FromArgb(23, 101, 204);
 
-	/// <summary>边框/分隔线色：默认灰蓝（未聚焦的输入框边框，对比度 3.2:1）</summary>
-	private static Color LineColorDefault = Color.FromArgb(208, 215, 222);
+	/// <summary>边框/分隔线色：默认灰（未聚焦的输入框边框 #e2e8f0）</summary>
+	private static Color LineColorDefault = Color.FromArgb(226, 232, 240);
 
-	/// <summary>输入框-验证通过态：成功绿边框（对比度 3.0:1 满足 UI 组件 WCAG 3:1）</summary>
-	private static Color LineColorSuccess = Color.FromArgb(94, 170, 94);
+	/// <summary>输入框-验证通过态：成功绿边框</summary>
+	private static Color LineColorSuccess = Color.FromArgb(22, 163, 74);
 
-	/// <summary>输入框-错误态：红色边框（对比度 4.4:1 接近 AA）</summary>
-	private static Color LineColorError = Color.FromArgb(220, 53, 69);
+	/// <summary>输入框-错误态：红色边框</summary>
+	private static Color LineColorError = Color.FromArgb(220, 38, 38);
 
-	/// <summary>Surface-0：窗体背景</summary>
-	private static Color Surface0 = Color.FromArgb(245, 249, 252);
+	/// <summary>Surface-0：窗体背景 #f8fafc</summary>
+	private static Color Surface0 = Color.FromArgb(248, 250, 252);
 
 	/// <summary>Surface-1：卡片/面板/输入框背景（纯白）</summary>
 	private static Color Surface1 = Color.FromArgb(255, 255, 255);
 
-	/// <summary>主文字色（深靛蓝灰，WCAG ~15.8:1 on white）</summary>
-	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
+	/// <summary>主文字色（#0f172a，WCAG ~16.3:1 on white）</summary>
+	private static Color TextPrimary = Color.FromArgb(15, 23, 42);
 
-	/// <summary>次文字色（标签/占位符，对比度 ~6.2:1 满足 WCAG AA）</summary>
-	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
+	/// <summary>次文字色（标签/占位符，对比度 ~8.6:1 满足 WCAG AA）</summary>
+	private static Color TextSecondary = Color.FromArgb(51, 65, 85);
 
 	/// <summary>警告/提示次文字色（验证成功时显示，对比度 ~4.7:1 满足 WCAG AA）</summary>
 	private static Color TextMuted = Color.FromArgb(100, 116, 139);
 
-	/// <summary>星号必填项：错误红文字色（对比度 4.4:1）</summary>
-	private static Color TextError = Color.FromArgb(220, 53, 69);
+	/// <summary>星号必填项：错误红文字色</summary>
+	private static Color TextError = Color.FromArgb(220, 38, 38);
 
 	#endregion
 
@@ -210,10 +210,14 @@ public class frmRegister : Form
 		base.Shown += FrmRegister_Shown;
 		Initialize(thirdLogin);
 		dockverify.SelectedTab = tabSMS;
-		ApplyRoundedRegion(12);
-		ApplyRoundedButton(btnRegister, 9);
-		ApplyRoundedButton(btnGetValidateCode, 9);
-		ApplyRoundedButton(btnClose, 9);
+		ApplyRoundedRegion(AuditTheme.CardRadius);
+		ApplyRoundedButton(btnClose, 6);
+		// Google 风格布局精修：统一按钮/输入框尺寸
+		ApplyGoogleLayout();
+		// 圆角 Region 必须在最终尺寸确定后再应用（与 frmFindPwd 相同的时序修复），
+		// 否则按钮被 ApplyGoogleLayout 缩小后底部圆弧错位、下边缘两角被裁掉一块
+		ApplyRoundedButton(btnRegister, AuditTheme.ButtonRadius);
+		ApplyRoundedButton(btnGetValidateCode, AuditTheme.ButtonRadius);
 	}
 
 	private void FrmRegister_Shown(object sender, EventArgs e)
@@ -250,7 +254,7 @@ public class frmRegister : Form
 	{
 		InitPlatformStyle();
 		BackgroundImage = null;
-		// 小清新浅蓝：应用统一的高对比度文字/边框/背景色，避免主题覆盖为低对比度组合
+		// Google Blue：应用统一的高对比度文字/边框/背景色，避免主题覆盖为低对比度组合
 		ApplyControlStyles();
 		VerifyImg.Cursor = Cursors.Hand;
 		dockverify.SelectedTab = tabImage;
@@ -271,7 +275,7 @@ public class frmRegister : Form
 	}
 
 	/// <summary>
-	/// 遍历窗体控件，应用小清新浅蓝令牌颜色（高对比度 ForeColor/BackColor/BorderColor）。
+	/// 遍历窗体控件，应用Google Blue令牌颜色（高对比度 ForeColor/BackColor/BorderColor）。
 	/// 同 MessageShowBox.EnsureStylesCorrect 思路：防止 C1Theme 或其他机制把文字覆盖成
 	/// 浅灰等低对比度组合，保证 WCAG AA 可读性。
 	/// </summary>
@@ -390,6 +394,61 @@ public class frmRegister : Form
 		btnGetValidateCode.BackColor = Primary;
 		btnGetValidateCode.FlatAppearance.MouseDownBackColor = PrimaryDark;
 		btnGetValidateCode.FlatAppearance.MouseOverBackColor = PrimaryLight;
+	}
+
+	/// <summary>
+	/// Google 风格布局精修
+	/// 统一输入框和按钮的高度/字号，与登录/找回密码窗体视觉对齐
+	/// 注：注册窗体布局较复杂（含 Tab 切换、图形验证码），仅统一尺寸规范，不重排位置
+	/// </summary>
+	private void ApplyGoogleLayout()
+	{
+		// === 所有输入框统一高度 ===
+		var inputs = new C1TextBoxEx[]
+		{
+			txtUserName, txtPassword, txtPassword2, txtName,
+			txtEmail, txtCompany, txtPhone, txtVerification, txtValidateCode
+		};
+		foreach (var txt in inputs)
+		{
+			if (txt == null) continue;
+			txt.Size = new Size(txt.Width, AuditTheme.InputHeight);
+			txt.Font = AuditTheme.FontBody;
+		}
+
+		// === 主按钮统一高度 ===
+		if (btnRegister != null)
+		{
+			btnRegister.Size = new Size(btnRegister.Width, AuditTheme.ButtonHeight);
+			btnRegister.Font = AuditTheme.FontBodyBold;
+		}
+
+		// === 获取验证码按钮统一高度 ===
+		if (btnGetValidateCode != null)
+		{
+			btnGetValidateCode.Size = new Size(btnGetValidateCode.Width, AuditTheme.InputHeight - 4);
+			btnGetValidateCode.Font = AuditTheme.FontBody;
+		}
+
+		// === 标题字号 ===
+		if (lblRegister != null)
+		{
+			lblRegister.Font = AuditTheme.FontDisplay;
+			lblRegister.ForeColor = AuditTheme.Text;
+		}
+
+		// === 标签字号 ===
+		var labels = new C1Label[]
+		{
+			lblUserName, lblPassword, lblPassword2, lblName,
+			lblEmail, lblCompany, lblPhone, lblVerification
+		};
+		foreach (var lbl in labels)
+		{
+			if (lbl == null) continue;
+			lbl.Font = AuditTheme.FontBody;
+			lbl.ForeColor = AuditTheme.TextSecondary;
+		}
 	}
 
 	private void InitPlatform_Audit()

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
@@ -313,7 +313,9 @@ public class ProgressForm2 : C1RibbonForm
 		{
 			Minimum = 0,
 			Maximum = 100,
-			Dock = DockStyle.Bottom,
+			// 进度条居中放置（左右 30 边距、加粗到 16px），几乎占满窗体宽度，更醒目
+			Location = new Point(30, 46),
+			Size = new Size(520 - 30 * 2, 16),
 			ForeColor = Theme.SelectedAuditaiTheme.ThemeContext.ProgressBarColor
 		};
 		pnlGauge.Controls.Add(_progBar);
@@ -323,26 +325,132 @@ public class ProgressForm2 : C1RibbonForm
 		};
 		_progressValueLabel.Text = "";
 		_progressValueLabel.Dock = DockStyle.None;
-		_progressValueLabel.TextAlign = ContentAlignment.BottomCenter;
+		_progressValueLabel.TextAlign = ContentAlignment.MiddleCenter;
 		_progressValueLabel.Width = 195;
-		_progressValueLabel.Height = 52;
-		_progressValueLabel.Font = new Font(lblMain.Font.FontFamily, 9f);
+		_progressValueLabel.Height = 22;
+		_progressValueLabel.Font = new Font(lblMain.Font.FontFamily, 10.5f, FontStyle.Bold);
 		_progressValueLabel.TextColor = Color.Black;
 		pnlGauge.Controls.Add(_progressValueLabel);
-		_progressValueLabel.Location = new Point((pnlGauge.Width - _progressValueLabel.Width) / 2, pnlGauge.Height - _progBar.Height);
+		// 百分比标签在进度条正上方居中（原先沉底被裁剪）
+		_progressValueLabel.Location = new Point((pnlGauge.Width - _progressValueLabel.Width) / 2, 16);
 		pnlHeader.MouseDown += Form1_MouseDown;
 		pnlHeader.MouseMove += Form1_MouseMove;
 		pnlHeader.MouseUp += Form1_MouseUp;
 		_progressValueUpdateTimer.Tick += ProgressValueUpdateTimer_Tick;
+		// 顶部主色光带（与 MessageShowBox 提示框统一，替代原先的 DarkGray 直角边框）
 		pnlHeader.Paint += delegate(object s, PaintEventArgs e)
 		{
-			e.Graphics.DrawRectangle(new Pen(Color.DarkGray, 1f), new Rectangle(0, 0, base.Width - 1, base.Height - 1));
-		};
-		pnlGauge.Paint += delegate(object s, PaintEventArgs e)
-		{
-			e.Graphics.DrawRectangle(new Pen(Color.DarkGray, 1f), new Rectangle(0, 0, base.Width - 1, base.Height - 1));
+			var ctx = Theme.SelectedAuditaiTheme?.ThemeContext;
+			if (ctx == null) return;
+			Rectangle topBar = new Rectangle(0, 0, pnlHeader.Width, 3);
+			using (var topBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
+				topBar, ControlPaint.Light(ctx.ProgressBarColor), ctx.ProgressBarColor,
+				System.Drawing.Drawing2D.LinearGradientMode.Horizontal))
+			{
+				e.Graphics.FillRectangle(topBrush, topBar);
+			}
 		};
 		base.Shown += ProgressForm2_Shown;
+		// Google 风格精修
+		ApplyGoogleStyle();
+	}
+
+	/// <summary>
+	/// Google 风格精修
+	/// 统一字体、边框色、圆角，与当前主题设计语言对齐
+	/// </summary>
+	private void ApplyGoogleStyle()
+	{
+		var theme = Theme.SelectedAuditaiTheme;
+		// 跟随当前主题：主题在场即套用主题配色/字体/圆角，不绑定特定主题名
+		if (theme == null) return;
+
+		var ctx = theme.ThemeContext;
+
+		// === 字体统一（跟随主题主色） ===
+		lblMain.Font = CombinedFont(12f);
+		lblMain.ForeColor = ctx.DarkColor;
+		if (_progressValueLabel != null)
+		{
+			_progressValueLabel.Font = CombinedFont(10.5f, bold: true);
+		}
+
+		// === 背景色 ===
+		c1SplitContainer1.BackColor = ctx.BackColor;
+		pnlHeader.BackColor = ctx.BackColor;
+		pnlGauge.BackColor = ctx.BackColor;
+
+		// === 进度条颜色 ===
+		_progBar.ForeColor = ctx.ProgressBarColor;
+		if (_progressValueLabel != null)
+		{
+			_progressValueLabel.TextColor = ctx.ProgressBarColor;
+		}
+
+		// === 圆角（12px，Google 风格卡片圆角） ===
+		ApplyRoundedRegion(12);
+	}
+
+	/// <summary>
+	/// 优先使用系统已安装的 Noto Sans SC，缺失时回退到原字体族
+	/// </summary>
+	private static Font CombinedFont(float size, bool bold = false)
+	{
+		var style = bold ? FontStyle.Bold : FontStyle.Regular;
+		try
+		{
+			using var f = new Font("Noto Sans SC", size, style);
+			return new Font(f.FontFamily, size, style);
+		}
+		catch
+		{
+			return new Font("微软雅黑", size, style);
+		}
+	}
+
+	/// <summary>
+	/// 给窗体应用圆角 Region
+	/// </summary>
+	private void ApplyRoundedRegion(int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(base.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(base.Width - radius * 2, base.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, base.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			base.Region = new Region(path);
+		}
+	}
+
+	/// <summary>
+	/// 按面板实际尺寸布局进度条与百分比标签（铺满 + 居中）。
+	/// AutoScale 缩放只作用于设计器添加的控件，运行时创建的进度条/标签不参与缩放，
+	/// 高 DPI/大字体环境下必须按缩放后的面板实际宽高重新计算。
+	/// </summary>
+	private void LayoutProgressBar()
+	{
+		int margin = pnlGauge.Width * 30 / 520;   // 左右边距按比例（设计值 30/520）
+		int barH = 12;                            // 高度固定细条，不随 DPI 缩放膨胀
+		if (margin < 15) margin = 15;
+		_progBar.Size = new Size(pnlGauge.Width - margin * 2, barH);
+		_progBar.Location = new Point(margin, pnlGauge.Height - barH - 14);
+		// 百分比标签紧跟进度条上方居中
+		_progressValueLabel.Location = new Point(
+			(pnlGauge.Width - _progressValueLabel.Width) / 2,
+			_progBar.Top - _progressValueLabel.Height - 4);
+	}
+
+	/// <summary>
+	/// 窗体显示后重新应用圆角：C1RibbonForm 创建句柄时会重置 Region，
+	/// 构造函数里设置的圆角会失效，必须在 Shown 后补一次
+	/// </summary>
+	protected override void OnShown(EventArgs e)
+	{
+		base.OnShown(e);
+		ApplyRoundedRegion(12);
+		LayoutProgressBar();
 	}
 
 	private void ProgressForm2_Shown(object sender, EventArgs e)
@@ -725,9 +833,10 @@ public class ProgressForm2 : C1RibbonForm
 		this.lblMain.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblMain.ForeColor = System.Drawing.Color.Black;
 		this.lblMain.Location = new System.Drawing.Point(100, 39);
-		this.lblMain.MaximumSize = new System.Drawing.Size(488, 62);
+		// 宽度修正：从 X=100 起，右侧留 50 边距 → 最大 370（原先 488 会超出 520 宽的窗体导致文字溢出裁剪）
+		this.lblMain.MaximumSize = new System.Drawing.Size(370, 62);
 		this.lblMain.Name = "lblMain";
-		this.lblMain.Size = new System.Drawing.Size(384, 62);
+		this.lblMain.Size = new System.Drawing.Size(370, 62);
 		this.lblMain.TabIndex = 0;
 		this.lblMain.Tag = null;
 		this.lblMain.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;

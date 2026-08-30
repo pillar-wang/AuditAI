@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -42,21 +42,53 @@ public class MessageShowBox : Form
     private C1Label lblNotice;     // 短消息文字
     private C1TextBoxEx txtNotice; // 长消息滚动框
 
-    #region === 设计令牌（小清新浅蓝风格，与 frmFindPwd 对齐） ===
+    #region === 设计令牌（根据当前主题动态切换，支持 Google Blue） ===
 
-    /// <summary>主色（74,144,217）用于主按钮/聚焦/下划线</summary>
-    private static readonly Color Primary = Color.FromArgb(74, 144, 217);
+    /// <summary>主色：用于主按钮/聚焦/下划线/标题栏光带</summary>
+    private Color Primary;
     /// <summary>主色按下态（暗一档）</summary>
-    private static readonly Color PrimaryDark = Color.FromArgb(53, 123, 189);
+    private Color PrimaryDark;
     /// <summary>主色悬停态（亮一档）</summary>
-    private static readonly Color PrimaryLight = Color.FromArgb(90, 160, 230);
-    /// <summary>边框/分隔线色（默认灰蓝）</summary>
-    private static readonly Color LineColorDefault = Color.FromArgb(208, 215, 222);
+    private Color PrimaryLight;
+    /// <summary>边框/分隔线色</summary>
+    private Color LineColorDefault;
 
-    /// <summary>主文字色（深靛蓝灰，WCAG 15.8:1 on white）</summary>
-    private static readonly Color TextPrimary = Color.FromArgb(30, 41, 59);
-    /// <summary>次文字色（标签/占位，WCAG 6.2:1）</summary>
-    private static readonly Color TextSecondary = Color.FromArgb(71, 85, 105);
+    /// <summary>主文字色</summary>
+    private Color TextPrimary;
+    /// <summary>次文字色（标签/占位）</summary>
+    private Color TextSecondary;
+
+    /// <summary>
+    /// 根据当前主题加载颜色令牌
+    /// Google 蓝主题走 Google Blue 色板，其他主题走默认小清新浅蓝
+    /// 
+    /// 注意：必须在实例构造时调用，不能用静态构造——
+    /// 静态构造只执行一次，如果那时主题还没切到 Google Blue，之后就不会变了。
+    /// </summary>
+    private void LoadThemeColors()
+    {
+        var theme = Theme.SelectedAuditaiTheme;
+        if (theme != null && theme.Name == "auditai_GoogleBlue")
+        {
+            // Google Blue 色板
+            Primary = Color.FromArgb(26, 115, 232);       // #1a73e8
+            PrimaryDark = Color.FromArgb(21, 87, 176);    // #1557b0
+            PrimaryLight = Color.FromArgb(23, 101, 204);  // #1765cc
+            LineColorDefault = Color.FromArgb(226, 232, 240); // #e2e8f0
+            TextPrimary = Color.FromArgb(15, 23, 42);     // #0f172a
+            TextSecondary = Color.FromArgb(51, 65, 85);   // #334155
+        }
+        else
+        {
+            // 默认：小清新浅蓝（兼容原有主题）
+            Primary = Color.FromArgb(74, 144, 217);
+            PrimaryDark = Color.FromArgb(53, 123, 189);
+            PrimaryLight = Color.FromArgb(90, 160, 230);
+            LineColorDefault = Color.FromArgb(208, 215, 222);
+            TextPrimary = Color.FromArgb(30, 41, 59);
+            TextSecondary = Color.FromArgb(71, 85, 105);
+        }
+    }
 
     /// <summary>标题栏高度（含顶部 3px 光带，拖拽区）</summary>
     private const int TitleBarHeight = 40;
@@ -109,6 +141,8 @@ public class MessageShowBox : Form
 
     public MessageShowBox(MessageBoxButtons buttonType, MessageBoxIcon boxIcon)
     {
+        // 先加载主题颜色（必须在 InitializeComponent 之前，因为 InitializeComponent 里会用到这些颜色）
+        LoadThemeColors();
         InitializeComponent();
         base.StartPosition = FormStartPosition.CenterScreen;
         base.TopMost = true;
@@ -298,14 +332,16 @@ public class MessageShowBox : Form
             Text = text,
             Width = ButtonWidth,
             Height = ButtonHeight,
-            Font = new Font("Noto Sans SC", 10.5f, FontStyle.Regular),
+            Font = isPrimary
+                ? new Font("Noto Sans SC", 9.5f, FontStyle.Bold)
+                : new Font("Noto Sans SC", 9.5f, FontStyle.Regular),
             Anchor = AnchorStyles.None,
             FlatStyle = FlatStyle.Flat
         };
         btn.FlatAppearance.BorderSize = 0;
         if (isPrimary)
         {
-            // 主按钮：Primary 浅蓝填充 + 白字（与 frmFindPwd.btnFindPwd 风格统一）
+            // 主按钮：Primary 蓝填充 + 白字（Google 风格，与登录/注册/找回密码统一）
             btn.BackColor = Primary;
             btn.ForeColor = Color.White;
             btn.FlatAppearance.MouseDownBackColor = PrimaryDark;
@@ -313,7 +349,7 @@ public class MessageShowBox : Form
         }
         else
         {
-            // 次按钮：白底灰字 + 浅灰蓝边框，视觉低调
+            // 次按钮：白底灰字 + 浅灰边框，视觉低调
             btn.BackColor = Color.White;
             btn.ForeColor = TextPrimary;
             btn.FlatAppearance.BorderColor = LineColorDefault;
@@ -620,7 +656,7 @@ public class MessageShowBox : Form
         this.lblNotice.BackColor = System.Drawing.Color.White;
         this.lblNotice.ForeColor = TextPrimary;
         this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
-        this.lblNotice.Font = new System.Drawing.Font("Noto Sans SC", 10.5f,
+        this.lblNotice.Font = new System.Drawing.Font("Noto Sans SC", 10f,
             System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
         this.lblNotice.Name = "lblNotice";
         this.lblNotice.TabIndex = 1;

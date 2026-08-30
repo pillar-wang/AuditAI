@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -90,6 +90,20 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     private int _currentStep = 1;
     private const int TOTAL_STEPS = 4;
 
+    /// <summary>给按钮应用圆角区域（与 frmFindPwd 保持一致的统一设计语言）</summary>
+    private void ApplyRoundedButton(Control btn, int radius)
+    {
+        using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+        {
+            path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+            path.AddArc(btn.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+            path.AddArc(btn.Width - radius * 2, btn.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(0, btn.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+            btn.Region = new System.Drawing.Region(path);
+        }
+    }
+
     public frmCrossProjectRefConfigWizard(Auditai.Model.Project currentProject, Id64 targetTableId, CrossProjectDataRef editingRef = null)
     {
         _currentProject = currentProject ?? throw new ArgumentNullException(nameof(currentProject));
@@ -103,11 +117,33 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             _selectedTargetTableName = targetTableNode.TreeNode.Number + " " + targetTableNode.TreeNode.Name;
 
         InitializeComponent();
+        // 统一设计语言：按钮最终尺寸确定后再应用 8px 圆角 Region
+        ApplyRoundedButton(_btnPrev, 8);
+        ApplyRoundedButton(_btnNext, 8);
+        ApplyRoundedButton(_btnFinish, 8);
+        ApplyRoundedButton(_btnCancel, 8);
+        // 统一设计语言：C1Button 皮肤会覆盖设计时配色，构造末尾重设主/次按钮样式
+        RefreshButtonStyles();
         this.Load += async (s, e) =>
         {
             await LoadProjectsAsync();
             if (!IsDisposed) ShowStep(1);
         };
+    }
+
+    /// <summary>统一设计语言：重新应用主/次按钮配色（防止 C1Button 皮肤/主题覆盖）</summary>
+    private void RefreshButtonStyles()
+    {
+        // 主按钮：Brand 蓝底白字
+        _btnNext.BackColor = AuditTheme.Brand;
+        _btnNext.ForeColor = Color.White;
+        _btnFinish.BackColor = AuditTheme.Brand;
+        _btnFinish.ForeColor = Color.White;
+        // 次按钮：白底灰字 + 浅灰边框
+        _btnPrev.BackColor = Color.White;
+        _btnPrev.ForeColor = Color.FromArgb(30, 41, 59);
+        _btnCancel.BackColor = Color.White;
+        _btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
     }
 
     private void InitializeComponent()
@@ -119,7 +155,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         this.MinimumSize = new Size(1050, 730);
 
         // 顶部步骤指示器
-        _pnlStepIndicator = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.FromArgb(240, 240, 240) };
+        _pnlStepIndicator = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = AuditTheme.SurfaceMuted };
         _lblSteps = new Label[TOTAL_STEPS];
         string[] stepNames = { "选择项目", "选择表格", "填充区域", "数据源范围" };
         for (int i = 0; i < TOTAL_STEPS; i++)
@@ -131,15 +167,16 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 Size = new Size(140, 52),
                 Location = new Point(30 + i * 165, 9),
                 Font = _fontStatus,
-                BackColor = Color.LightGray,
-                ForeColor = Color.White
+                // 统一设计语言：未选中步骤块由 LightGray 改为浅灰蓝表面色，文字改为中灰蓝
+                BackColor = Color.FromArgb(241, 245, 249),
+                ForeColor = Color.FromArgb(71, 85, 105)
             };
             _pnlStepIndicator.Controls.Add(_lblSteps[i]);
         }
         this.Controls.Add(_pnlStepIndicator);
 
         // 步骤指示器与内容区之间的分隔线
-        var _pnlSeparator = new Panel { Dock = DockStyle.Top, Height = 2, BackColor = Color.FromArgb(200, 200, 200) };
+        var _pnlSeparator = new Panel { Dock = DockStyle.Top, Height = 2, BackColor = AuditTheme.BorderStrong };
         this.Controls.Add(_pnlSeparator);
 
         // 主内容区
@@ -147,10 +184,29 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         this.Controls.Add(_pnlContent);
 
         // 底部按钮区（参照"采账填充"风格）
-        _pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 50, BackColor = Color.FromArgb(240, 240, 240) };
-        _btnPrev = new C1Button { Text = "上一步", Location = new Point(10, 10), Size = new Size(90, 30) };
+        _pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 50, BackColor = AuditTheme.SurfaceMuted };
+        // 统一设计语言：按钮统一 110×40（面板高 50 内 Y=5 居中），间距 10 重排
+        // 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框）
+        _btnPrev = new C1Button { Text = "上一步", Location = new Point(10, 5), Size = new Size(110, 40) };
+        _btnPrev.FlatStyle = FlatStyle.Flat;
+        _btnPrev.FlatAppearance.BorderSize = 1;
+        _btnPrev.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+        _btnPrev.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
+        _btnPrev.ForeColor = Color.FromArgb(30, 41, 59);
+        _btnPrev.BackColor = Color.White;
+        _btnPrev.UseVisualStyleBackColor = false;
+        _btnPrev.Font = new Font("Noto Sans SC", 9.5f);
         _btnPrev.Click += (s, e) => ShowStep(_currentStep - 1);
-        _btnNext = new C1Button { Text = "下一步", Location = new Point(110, 10), Size = new Size(90, 30) };
+        // 统一设计语言：主按钮（品牌蓝底白字、无边框）
+        _btnNext = new C1Button { Text = "下一步", Location = new Point(130, 5), Size = new Size(110, 40) };
+        _btnNext.FlatStyle = FlatStyle.Flat;
+        _btnNext.FlatAppearance.BorderSize = 0;
+        _btnNext.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+        _btnNext.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+        _btnNext.ForeColor = Color.White;
+        _btnNext.BackColor = AuditTheme.Brand;
+        _btnNext.UseVisualStyleBackColor = false;
+        _btnNext.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
         _btnNext.Click += (s, e) =>
         {
             // Step3/Step4 需要先验证选择再进入下一步
@@ -161,9 +217,27 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             }
             ShowStep(_currentStep + 1);
         };
-        _btnFinish = new C1Button { Text = "完成", Location = new Point(210, 10), Size = new Size(90, 30), Visible = false };
+        // 统一设计语言：主按钮（品牌蓝底白字、无边框）
+        _btnFinish = new C1Button { Text = "完成", Location = new Point(250, 5), Size = new Size(110, 40), Visible = false };
+        _btnFinish.FlatStyle = FlatStyle.Flat;
+        _btnFinish.FlatAppearance.BorderSize = 0;
+        _btnFinish.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+        _btnFinish.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+        _btnFinish.ForeColor = Color.White;
+        _btnFinish.BackColor = AuditTheme.Brand;
+        _btnFinish.UseVisualStyleBackColor = false;
+        _btnFinish.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
         _btnFinish.Click += BtnFinish_Click;
-        _btnCancel = new C1Button { Text = "取消", Location = new Point(310, 10), Size = new Size(90, 30), DialogResult = DialogResult.Cancel };
+        // 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框）
+        _btnCancel = new C1Button { Text = "取消", Location = new Point(370, 5), Size = new Size(110, 40), DialogResult = DialogResult.Cancel };
+        _btnCancel.FlatStyle = FlatStyle.Flat;
+        _btnCancel.FlatAppearance.BorderSize = 1;
+        _btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+        _btnCancel.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
+        _btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
+        _btnCancel.BackColor = Color.White;
+        _btnCancel.UseVisualStyleBackColor = false;
+        _btnCancel.Font = new Font("Noto Sans SC", 9.5f);
 
         _pnlButtons.Controls.AddRange(new Control[] { _btnPrev, _btnNext, _btnFinish, _btnCancel });
         this.Controls.Add(_pnlButtons);
@@ -188,8 +262,9 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         // 更新步骤指示器
         for (int i = 0; i < TOTAL_STEPS; i++)
         {
-            _lblSteps[i].BackColor = i + 1 == _currentStep ? Color.FromArgb(0, 120, 215) :
-                                     i + 1 < _currentStep ? Color.FromArgb(0, 180, 80) : Color.LightGray;
+            // 统一设计语言：未选中步骤块同步为浅灰蓝表面色（与初始创建处一致），选中/已完成逻辑保持不变
+            _lblSteps[i].BackColor = i + 1 == _currentStep ? AuditTheme.Brand :
+                                     i + 1 < _currentStep ? AuditTheme.SuccessText : Color.FromArgb(241, 245, 249);
         }
 
         _btnPrev.Visible = _currentStep > 1;
@@ -562,26 +637,26 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             pnlMode.Controls.AddRange(new Control[] { lblModeHint, rbCell, rbColumn, rbArea, rbFormula });
 
             // ---- 状态提示 ----
-            var pnlStatus = new Panel { Dock = DockStyle.Top, Height = 28, BackColor = Color.FromArgb(245, 245, 245) };
+            var pnlStatus = new Panel { Dock = DockStyle.Top, Height = 28, BackColor = AuditTheme.SurfaceMuted };
             var lblStatus = new Label
             {
                 Text = "在下方表格中拖拽或 Shift+点击 选择目标位置",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 0, 0, 0),
-                ForeColor = Color.FromArgb(100, 100, 100)
+                ForeColor = AuditTheme.TextMuted
             };
             pnlStatus.Controls.Add(lblStatus);
 
             // ---- 目标表网格（用 LightweightTableEditor，模仿 TableEditor 风格） ----
-            var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 243, 252) };
+            var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = AuditTheme.SurfaceMuted };
             var gridTarget = new LightweightTableEditor
             {
                 Dock = DockStyle.Fill,
-                HighlightColor = Color.FromArgb(0, 120, 215),  // 蓝色高亮（目标表）
-                FocusColor = Color.FromArgb(200, 230, 255),
-                BackColor = Color.FromArgb(245, 250, 255),      // 浅蓝背景
-                CellBackColor = Color.FromArgb(245, 250, 255)   // 浅蓝单元格底色
+                HighlightColor = AuditTheme.Brand,  // 蓝色高亮（目标表）
+                FocusColor = AuditTheme.BrandSubtle,
+                BackColor = AuditTheme.SurfaceMuted,      // 浅蓝背景
+                CellBackColor = AuditTheme.SurfaceMuted   // 浅蓝单元格底色
             };
             LoadTargetTableStructure(gridTarget);
             pnlGrid.Controls.Add(gridTarget);
@@ -610,7 +685,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                         lblStatus.Text = "点击选择公式结果填入的目标列";
                         break;
                 }
-                lblStatus.ForeColor = Color.FromArgb(100, 100, 100);
+                lblStatus.ForeColor = AuditTheme.TextMuted;
             };
             rbCell.CheckedChanged += (s, e) => { if (rbCell.Checked) switchMode(RefMode.CellRef); };
             rbColumn.CheckedChanged += (s, e) => { if (rbColumn.Checked) switchMode(RefMode.ColumnRef); };
@@ -686,7 +761,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                             lblStatus.Text = $"已选目标区域：{FormatRange(args.StartRow, args.StartCol, args.EndRow, args.EndCol)}（{args.EndCol - args.StartCol + 1}列×{args.EndRow - args.StartRow + 1}行）";
                         break;
                 }
-                lblStatus.ForeColor = Color.FromArgb(0, 120, 215);
+                lblStatus.ForeColor = AuditTheme.Brand;
             };
 
             // ---- 验证 ----
@@ -720,14 +795,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             var lbl = new Label { Text = "选择数据源范围", Font = _fontStepTitle, Dock = DockStyle.Top, Height = 35, TextAlign = ContentAlignment.BottomLeft, Padding = new Padding(5, 0, 0, 5) };
 
             // ---- 状态提示 ----
-            var pnlStatus = new Panel { Dock = DockStyle.Top, Height = 28, BackColor = Color.FromArgb(245, 245, 245) };
+            var pnlStatus = new Panel { Dock = DockStyle.Top, Height = 28, BackColor = AuditTheme.SurfaceMuted };
             var lblStatus = new Label
             {
                 Text = _selectedRefMode == RefMode.FormulaCompute ? "勾选参与运算的来源列，并输入公式" : "在下方表格中点击选择数据源范围",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(10, 0, 0, 0),
-                ForeColor = Color.FromArgb(100, 100, 100)
+                ForeColor = AuditTheme.TextMuted
             };
             pnlStatus.Controls.Add(lblStatus);
 
@@ -743,14 +818,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 pnlFormula.Controls.AddRange(new Control[] { lblColHint, chkListCols, lblExpr, txtExpr, lblHint });
 
                 // ---- 来源表预览（用 LightweightTableEditor，只读） ----
-                var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 245, 238) };
+                var pnlGrid = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = AuditTheme.SuccessSubtle };
                 var gridSource = new LightweightTableEditor
                 {
                     Dock = DockStyle.Fill,
-                    HighlightColor = Color.FromArgb(0, 120, 60),
-                    FocusColor = Color.FromArgb(200, 255, 200),
-                    BackColor = Color.FromArgb(245, 252, 248),      // 浅绿背景
-                    CellBackColor = Color.FromArgb(245, 252, 248)   // 浅绿单元格底色
+                    HighlightColor = AuditTheme.SuccessText,
+                    FocusColor = AuditTheme.SuccessSubtle,
+                    BackColor = AuditTheme.SuccessSubtle,      // 浅绿背景
+                    CellBackColor = AuditTheme.SuccessSubtle   // 浅绿单元格底色
                 };
                 LoadSourceTableData(gridSource);
                 pnlGrid.Controls.Add(gridSource);
@@ -783,12 +858,12 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                         if (_formulaCheckedIndices.Count > 0)
                         {
                             lblStatus.Text = $"已选 {_formulaCheckedIndices.Count} 列：{string.Join(", ", _formulaCheckedNames)}";
-                            lblStatus.ForeColor = Color.FromArgb(0, 120, 215);
+                            lblStatus.ForeColor = AuditTheme.Brand;
                         }
                         else
                         {
                             lblStatus.Text = "请勾选参与运算的来源列";
-                            lblStatus.ForeColor = Color.FromArgb(100, 100, 100);
+                            lblStatus.ForeColor = AuditTheme.TextMuted;
                         }
                     }));
                 };
@@ -797,7 +872,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 if (_formulaCheckedIndices.Count > 0)
                 {
                     lblStatus.Text = $"已选 {_formulaCheckedIndices.Count} 列：{string.Join(", ", _formulaCheckedNames)}";
-                    lblStatus.ForeColor = Color.FromArgb(0, 120, 215);
+                    lblStatus.ForeColor = AuditTheme.Brand;
                 }
 
                 // 验证
@@ -836,14 +911,14 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
             }
 
             // ---- 非公式模式：来源表用 LightweightTableEditor 原生选择 ----
-            var pnlGrid2 = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = Color.FromArgb(235, 245, 238) };
+            var pnlGrid2 = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 2, 0, 0), BackColor = AuditTheme.SuccessSubtle };
             var gridSource2 = new LightweightTableEditor
             {
                 Dock = DockStyle.Fill,
-                HighlightColor = Color.FromArgb(0, 120, 60),   // 绿色高亮（来源表）
-                FocusColor = Color.FromArgb(200, 255, 200),
-                BackColor = Color.FromArgb(245, 252, 248),      // 浅绿背景
-                CellBackColor = Color.FromArgb(245, 252, 248)   // 浅绿单元格底色
+                HighlightColor = AuditTheme.SuccessText,   // 绿色高亮（来源表）
+                FocusColor = AuditTheme.SuccessSubtle,
+                BackColor = AuditTheme.SuccessSubtle,      // 浅绿背景
+                CellBackColor = AuditTheme.SuccessSubtle   // 浅绿单元格底色
             };
             LoadSourceTableData(gridSource2);
             pnlGrid2.Controls.Add(gridSource2);
@@ -898,7 +973,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                             if (srcRows == tgtRows && srcCols == tgtCols)
                             {
                                 lblStatus.Text = $"已选来源区域：{srcRange}（{srcCols}列×{srcRows}行）✓ 与目标区域 {tgtRange} 尺寸一致";
-                                lblStatus.ForeColor = Color.FromArgb(0, 120, 60);  // 绿色：匹配
+                                lblStatus.ForeColor = AuditTheme.SuccessText;  // 绿色：匹配
                             }
                             else
                             {
@@ -912,7 +987,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 if (_selectedRefMode != RefMode.AreaRef ||
                     (args.StartRow == args.EndRow && args.StartCol == args.EndCol))
                 {
-                    lblStatus.ForeColor = Color.FromArgb(0, 120, 215);
+                    lblStatus.ForeColor = AuditTheme.Brand;
                 }
             };
 
@@ -988,8 +1063,9 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                                              $"• 行数多余：仅填充前 {Math.Min(tgtRows, srcRows)} 行\r\n\r\n" +
                                              $"是否继续？";
 
-                                var result = System.Windows.Forms.MessageBox.Show(msg, "区域尺寸不匹配",
-                                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                                // 统一设计语言：改用项目统一弹窗（参数顺序为 icon, text, buttons, title，与 WinForms 原生不同）
+                                var result = Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, msg,
+                                    MessageBoxButtons.YesNo, "区域尺寸不匹配");
                                 if (result != DialogResult.Yes)
                                 {
                                     return false;

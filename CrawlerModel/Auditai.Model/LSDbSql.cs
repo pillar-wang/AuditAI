@@ -195,7 +195,16 @@ public class LSDbSql : LSDb
 
 	public override bool TableExists(string tableName)
 	{
-		return ExecuteScalar<bool>("IF EXISTS (SELECT 1 FROM [" + Database + "].INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='" + tableName + "') SELECT 1 ELSE SELECT 0");
+		// 修复：原实现将 Database/tableName 直接拼入 SQL，Database 为 null 或含 ] 时生成非法 SQL/注入面。
+		// 改为参数化查询。
+		using SqlConnection sqlConnection = new SqlConnection(_csBuilder.ConnectionString);
+		sqlConnection.Open();
+		using SqlCommand cmd = new SqlCommand(
+			"IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_CATALOG=@db AND TABLE_NAME=@tbl) SELECT 1 ELSE SELECT 0",
+			sqlConnection);
+		cmd.Parameters.Add(new SqlParameter("@db", (object)Database ?? DBNull.Value));
+		cmd.Parameters.Add(new SqlParameter("@tbl", tableName));
+		return Convert.ToInt32(cmd.ExecuteScalar()) == 1;
 	}
 
 	public override int ExecuteNonQueryTransaction(IEnumerable<string> commands)
@@ -204,19 +213,21 @@ public class LSDbSql : LSDb
 		using SqlConnection sqlConnection = new SqlConnection(_csBuilder.ConnectionString);
 		sqlConnection.Open();
 		using SqlTransaction sqlTransaction = sqlConnection.BeginTransaction();
-		foreach (string command in commands)
+		try
 		{
-			using SqlCommand sqlCommand = new SqlCommand(command, sqlConnection, sqlTransaction);
-			try
+			foreach (string command in commands)
 			{
+				using SqlCommand sqlCommand = new SqlCommand(command, sqlConnection, sqlTransaction);
 				num += sqlCommand.ExecuteNonQuery();
-				sqlTransaction.Commit();
 			}
-			catch (SqlException)
-			{
-				sqlTransaction.Rollback();
-				throw;
-			}
+			sqlTransaction.Commit();
+		}
+		catch (SqlException)
+		{
+			// 修复：原实现在循环内每条命令后 Commit，下一条命令仍绑定已提交事务
+			// 会抛 InvalidOperationException（“此 SqlTransaction 已完成”）。改为循环外统一 Commit。
+			sqlTransaction.Rollback();
+			throw;
 		}
 		return num;
 	}
@@ -224,18 +235,18 @@ public class LSDbSql : LSDb
 	public override bool InsertOne(string tableName, IEnumerable<object> @params)
 	{
 		int num = @params.Count();
+		if (num <= 0)
+		{
+			return false;
+		}
 		using SqlConnection sqlConnection = new SqlConnection(_csBuilder.ConnectionString);
 		sqlConnection.Open();
-		using SqlCommand sqlCommand = new SqlCommand(string.Concat("INSERT INTO ", tableName, " VALUES (", string.Concat(Enumerable.Repeat("?,", num - 1).ToArray()), "?)"), sqlConnection);
-		SqlParameter[] array = new SqlParameter[num - 1 + 1];
-		for (int i = 0; i <= num - 1; i++)
+		// 修复：SqlClient 不支持 "?" 占位符，原 SQL 会下发字面 "?" 导致语法错误（被 catch 吞掉后返回 false）。
+		// 改用 @p0,@p1,... 命名参数。
+		using SqlCommand sqlCommand = new SqlCommand(BuildInsertSql(tableName, num), sqlConnection);
+		for (int i = 0; i < num; i++)
 		{
-			array[i] = new SqlParameter();
-			sqlCommand.Parameters.Add(array[i]);
-		}
-		for (int j = 0; j <= num - 1; j++)
-		{
-			array[j].Value = @params.ElementAt(j);
+			sqlCommand.Parameters.Add(new SqlParameter("@p" + i, @params.ElementAt(i)));
 		}
 		try
 		{
@@ -258,25 +269,34 @@ public class LSDbSql : LSDb
 		using SqlConnection sqlConnection = new SqlConnection(_csBuilder.ConnectionString);
 		sqlConnection.Open();
 		using SqlTransaction sqlTransaction = sqlConnection.BeginTransaction();
-		using (SqlCommand sqlCommand = new SqlCommand(string.Concat("INSERT INTO ", tableName, " VALUES (", string.Concat(Enumerable.Repeat("?,", num - 1).ToArray()), "?)"), sqlConnection))
+		// 修复：SqlClient 不支持 "?" 占位符，改用 @p0,@p1,... 命名参数。
+		using (SqlCommand sqlCommand = new SqlCommand(BuildInsertSql(tableName, num), sqlConnection, sqlTransaction))
 		{
-			SqlParameter[] array = new SqlParameter[num - 1 + 1];
-			for (int i = 0; i <= num - 1; i++)
-			{
-				array[i] = new SqlParameter();
-				sqlCommand.Parameters.Add(array[i]);
-			}
 			foreach (IEnumerable<object> param in @params)
 			{
-				for (int j = 0; j <= num - 1; j++)
+				sqlCommand.Parameters.Clear();
+				for (int j = 0; j < num; j++)
 				{
-					array[j].Value = param.ElementAt(j);
+					sqlCommand.Parameters.Add(new SqlParameter("@p" + j, param.ElementAt(j)));
 				}
 				sqlCommand.ExecuteNonQuery();
 			}
 		}
 		sqlTransaction.Commit();
 		return true;
+	}
+
+	private static string BuildInsertSql(string tableName, int count)
+	{
+		var sb = new System.Text.StringBuilder("INSERT INTO ");
+		sb.Append(tableName).Append(" VALUES (");
+		for (int i = 0; i < count; i++)
+		{
+			if (i > 0) sb.Append(',');
+			sb.Append("@p").Append(i);
+		}
+		sb.Append(')');
+		return sb.ToString();
 	}
 
 	public override DataTable ExecuteProcedure(string procedure, Dictionary<string, object> @params)

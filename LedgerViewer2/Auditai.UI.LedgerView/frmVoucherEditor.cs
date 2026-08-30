@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -638,7 +638,6 @@ public class frmVoucherEditor : C1RibbonForm
 			}
 			int num2 = ((Ledger.Vouchers.Count != 0) ? Ledger.Vouchers.Max((Voucher v) => v.Id) : 0);
 			List<Voucher> list = new List<Voucher>();
-			Dictionary<string, Account> dictionary = Ledger.Accounts.ToDictionary((Account a) => a.Code, (Account a) => a);
 			for (int j = grdVoucher.Rows.Fixed; j < grdVoucher.Rows.Count; j++)
 			{
 				C1.Win.C1FlexGrid.Row row = grdVoucher.Rows[j];

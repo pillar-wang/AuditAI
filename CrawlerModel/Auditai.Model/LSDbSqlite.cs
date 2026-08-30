@@ -63,7 +63,13 @@ public class LSDbSqlite : LSDb
 		using SQLiteConnection connection = new SQLiteConnection(_csBuilder.ConnectionString).OpenAndReturn();
 		using SQLiteCommand sQLiteCommand = new SQLiteCommand(command, connection);
 		object value = sQLiteCommand.ExecuteScalar();
-		return Convert.IsDBNull(value) ? default(T) : ((T)Convert.ChangeType(value, typeof(T)));
+		// 修复：SQL 无返回行时 ExecuteScalar 返回 null，Convert.IsDBNull(null) 为 false，
+		// 原 Convert.ChangeType(null, typeof(T)) 对值类型（如 bool）抛 InvalidCastException。
+		if (value == null || Convert.IsDBNull(value))
+		{
+			return default(T);
+		}
+		return (T)Convert.ChangeType(value, typeof(T));
 	}
 
 	public override int ExecuteNonQuery(string command)
@@ -98,7 +104,12 @@ public class LSDbSqlite : LSDb
 
 	public override bool TableExists(string tableName)
 	{
-		return ExecuteScalar<bool>("SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='" + tableName + "'");
+		// 修复：原实现将表名直接拼入单引号 SQL，含单引号表名会报错/注入。改为参数化。
+		using SQLiteConnection connection = new SQLiteConnection(_csBuilder.ConnectionString).OpenAndReturn();
+		using SQLiteCommand cmd = new SQLiteCommand("SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name=@name", connection);
+		cmd.Parameters.Add(new SQLiteParameter("@name", tableName));
+		long count = (long)cmd.ExecuteScalar();
+		return count > 0;
 	}
 
 	public override bool Insert(string tableName, IEnumerable<IEnumerable<object>> @params)
@@ -158,19 +169,23 @@ public class LSDbSqlite : LSDb
 		int num = 0;
 		using SQLiteConnection sQLiteConnection = new SQLiteConnection(_csBuilder.ConnectionString).OpenAndReturn();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		foreach (string command in commands)
+		try
 		{
-			using SQLiteCommand sQLiteCommand = new SQLiteCommand(command, sQLiteConnection, sQLiteTransaction);
-			try
+			foreach (string command in commands)
 			{
+				using SQLiteCommand sQLiteCommand = new SQLiteCommand(command, sQLiteConnection, sQLiteTransaction);
 				num += sQLiteCommand.ExecuteNonQuery();
 			}
-			catch (SQLiteException)
-			{
-				sQLiteTransaction.Rollback();
-			}
+			sQLiteTransaction.Commit();
 		}
-		sQLiteTransaction.Commit();
+		catch (SQLiteException)
+		{
+			// 修复：原实现在循环内 catch 中 Rollback，循环结束后仍无条件 Commit，
+			// 对已回滚事务再次 Commit 抛 InvalidOperationException；且回滚后循环继续执行后续命令。
+			// 改为：任一命令失败即回滚并中止，与其它 LSDb 实现语义一致。
+			sQLiteTransaction.Rollback();
+			throw;
+		}
 		return num;
 	}
 

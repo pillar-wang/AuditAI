@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using Dapper;
 
@@ -17,8 +17,12 @@ public class TableDAL
 	public TableDAL(string fileName)
 	{
 		connectionStringBuilder.JournalMode = SQLiteJournalModeEnum.Wal;
-		connectionStringBuilder.SyncMode = SynchronizationModes.Off;
+		// 修复：与 ProjectDAL 保持一致。Off 模式不调用 fsync，进程异常终止时未刷写数据
+		// 丢失且 -wal 可能损坏导致整库不可读；Normal 在关键检查点刷盘，兼顾性能与安全。
+		connectionStringBuilder.SyncMode = SynchronizationModes.Normal;
 		connectionStringBuilder.DataSource = fileName;
+		// M4: 与 ProjectDAL 保持一致，busy_timeout 15 秒，降低并发锁冲突导致的 SQLITE_BUSY 异常
+		connectionStringBuilder.BusyTimeout = 15000;
 		SetPragma();
 		CreateConfig();
 	}
@@ -44,7 +48,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Table`(`Id`,`Title`,`PageSetup`,`Note`,`Dirty`,`HeaderHeights`,`DefaultStyleId`,`ConsolidateSettings`,`BorderStyle`,`FrozenCols`,`HeaderMode`,`CollectSource`,`Locker`,`FilterInfo`,`Foot`,`RowOwnerExclusive`,`RowOwnerLoad`,`RowOwnerLoadShare`,`Ticket`,`ControlFormula`) VALUES(@Id,@Title,@PageSetup,'',@Dirty,@HeaderHeights,@DefaultStyleId,@ConsolidateSettings,@BorderStyle,@FrozenCols,@HeaderMode,@CollectSource,@Locker,@FilterInfo,@Foot,@RowOwnerExclusive,@RowOwnerLoad,@RowOwnerLoadShare,@Ticket,@ControlFormula)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Table`(`Id`,`Title`,`PageSetup`,`Note`,`Dirty`,`HeaderHeights`,`DefaultStyleId`,`ConsolidateSettings`,`BorderStyle`,`FrozenCols`,`HeaderMode`,`CollectSource`,`Locker`,`FilterInfo`,`Foot`,`RowOwnerExclusive`,`RowOwnerLoad`,`RowOwnerLoadShare`,`Ticket`,`ControlFormula`) VALUES(@Id,@Title,@PageSetup,'',@Dirty,@HeaderHeights,@DefaultStyleId,@ConsolidateSettings,@BorderStyle,@FrozenCols,@HeaderMode,@CollectSource,@Locker,@FilterInfo,@Foot,@RowOwnerExclusive,@RowOwnerLoad,@RowOwnerLoadShare,@Ticket,@ControlFormula)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -52,7 +56,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Column`(`Id`,`TableId`,`Index`,`Caption`,`CaptionStyle`,`Width`,`Visible`,`Dirty`,`Status`,`ConsolidateAttribs`,`SubtotalAttribs`,`Formula`,`ServerIndex`,`StyleId`,`Permissions`,`CaptionFormula`,`CrossAttributes`) VALUES(@Id,@TableId,@Index,@Caption,@CaptionStyle,@Width,@Visible,@Dirty,@Status,@ConsolidateAttribs,@SubtotalAttribs,@Formula,@ServerIndex,@StyleId,@Permissions,@CaptionFormula,@CrossAttributes)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Column`(`Id`,`TableId`,`Index`,`Caption`,`CaptionStyle`,`Width`,`Visible`,`Dirty`,`Status`,`ConsolidateAttribs`,`SubtotalAttribs`,`Formula`,`ServerIndex`,`StyleId`,`Permissions`,`CaptionFormula`,`CrossAttributes`) VALUES(@Id,@TableId,@Index,@Caption,@CaptionStyle,@Width,@Visible,@Dirty,@Status,@ConsolidateAttribs,@SubtotalAttribs,@Formula,@ServerIndex,@StyleId,@Permissions,@CaptionFormula,@CrossAttributes)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -60,7 +64,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Row`(`Id`,`TableId`,`Index`,`Height`,`Visible`,`Locked`,`Dirty`,`Status`,`ServerIndex`,`Role`,`Permissions`,`Creator`) VALUES(@Id,@TableId,@Index,@Height,@Visible,@Locked,@Dirty,@Status,@ServerIndex,@Role,@Permissions,@Creator)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Row`(`Id`,`TableId`,`Index`,`Height`,`Visible`,`Locked`,`Dirty`,`Status`,`ServerIndex`,`Role`,`Permissions`,`Creator`) VALUES(@Id,@TableId,@Index,@Height,@Visible,@Locked,@Dirty,@Status,@ServerIndex,@Role,@Permissions,@Creator)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -68,7 +72,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Cell`(`Id`,`RowId`,`ColumnId`,`Value`,`Dirty`,`Status`,`Formula`,`StyleId`,`CollectSource`,`HeaderFormula`) VALUES(@Id,@RowId,@ColumnId,@Value,@Dirty,@Status,@Formula,@StyleId,@CollectSource,@HeaderFormula)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Cell`(`Id`,`RowId`,`ColumnId`,`Value`,`Dirty`,`Status`,`Formula`,`StyleId`,`CollectSource`,`HeaderFormula`) VALUES(@Id,@RowId,@ColumnId,@Value,@Dirty,@Status,@Formula,@StyleId,@CollectSource,@HeaderFormula)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -76,7 +80,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `Merge`(`Id`,`TableId`,`TopLeft`,`BottomRight`,`Status`) VALUES(@Id,@TableId,@TopLeft,@BottomRight,@Status)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `Merge`(`Id`,`TableId`,`TopLeft`,`BottomRight`,`Status`) VALUES(@Id,@TableId,@TopLeft,@BottomRight,@Status)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -84,14 +88,14 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `CellProp`(`TableId`,`CellId`,`Dirty`,`Status`,`Attachments`) VALUES(@TableId,@CellId,@Dirty,@Status,@Attachments)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `CellProp`(`TableId`,`CellId`,`Dirty`,`Status`,`Attachments`) VALUES(@TableId,@CellId,@Dirty,@Status,@Attachments)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
 	public IEnumerable<CellProp> GetCellProps()
 	{
 		using SQLiteConnection cnn = GetConnection();
-		return cnn.Query<CellProp>("SELECT 'TableId',`CellId`,`Dirty`,`Status`,`Attachments` FROM `CellProp`");
+		return cnn.Query<CellProp>("SELECT `TableId`,`CellId`,`Dirty`,`Status`,`Attachments` FROM `CellProp`");
 	}
 
 	public Table GetTable()
@@ -115,7 +119,7 @@ public class TableDAL
 	public IEnumerable<Cell> GetCells()
 	{
 		using SQLiteConnection cnn = GetConnection();
-		return cnn.Query<Cell>("SELECT c.`Id`,c.`RowId`,c.`ColumnId`,c.`Value`,c.`Dirty`,c.`Status`,c.`Formula`,c.`StyleId`,c.`CollectSource`,c.`HeaderFormula`\r\nFROM `Cell` AS c\r\nJOIN `Row` AS r ON c.`RowId`= r.`Id`\r\nJOIN `Column` AS l ON c.`ColumnId`= l.`Id`\r\nORDER BY r.`Index`, l.`Index`");
+		return cnn.Query<Cell>("SELECT c.`Id`,c.`RowId`,c.`ColumnId`,c.`Value`,c.`Dirty`,c.`Status`,c.`Formula`,c.`StyleId`,c.`CollectSource`,c.`HeaderFormula`\r\nFROM `Cell` AS c\r\nJOIN `Row` AS r ON c.`RowId`= r.`Id`\r\nJOIN `Column` AS l ON c.`ColumnId`= l.`Id`\r\nWHERE c.`Status` < 2\r\nORDER BY r.`Index`, l.`Index`");
 	}
 
 	public IEnumerable<Merge> GetMerges()
@@ -134,7 +138,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `CellStyle`(`Id`,`TableId`,`FontSize`,`ForeColor`,`BackColor`,`FontFamily`,`Status`,`Margin`,`Align`,`Bold`,`Italic`,`Underline`,`DataType`,`Format`,`Locked`,`DefaultValue`,`Comment`) VALUES(@Id,@TableId,@FontSize,@ForeColor,@BackColor,@FontFamily,@Status,@Margin,@Align,@Bold,@Italic,@Underline,@DataType,@Format,@Locked,@DefaultValue,@Comment)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `CellStyle`(`Id`,`TableId`,`FontSize`,`ForeColor`,`BackColor`,`FontFamily`,`Status`,`Margin`,`Align`,`Bold`,`Italic`,`Underline`,`DataType`,`Format`,`Locked`,`DefaultValue`,`Comment`) VALUES(@Id,@TableId,@FontSize,@ForeColor,@BackColor,@FontFamily,@Status,@Margin,@Align,@Bold,@Italic,@Underline,@DataType,@Format,@Locked,@DefaultValue,@Comment)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 
@@ -142,7 +146,7 @@ public class TableDAL
 	{
 		using SQLiteConnection sQLiteConnection = GetConnection();
 		using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-		sQLiteConnection.Execute("INSERT INTO `ValidationFormula`(`Id`,`LeftExpr`,`Operator`,`RightExpr`,`Note`,`Status`,`Dirty`,`TableId`) VALUES(@Id,@LeftExpr,@Operator,@RightExpr,@Note,@Status,@Dirty,@TableId)", dto, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT OR REPLACE INTO `ValidationFormula`(`Id`,`LeftExpr`,`Operator`,`RightExpr`,`Note`,`Status`,`Dirty`,`TableId`) VALUES(@Id,@LeftExpr,@Operator,@RightExpr,@Note,@Status,@Dirty,@TableId)", dto, sQLiteTransaction);
 		sQLiteTransaction.Commit();
 	}
 

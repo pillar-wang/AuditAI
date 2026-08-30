@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -4481,7 +4481,11 @@ public class DocumentEditor : UserControl
 	{
 		try
 		{
-			if (IsDocumentLocked()) return;
+			if (IsDocumentLocked())
+			{
+				Auditai.UI.Controls.LogWriter.Info("[RefreshAllTables] 文档处于锁定/无写权限状态，全表刷新被跳过");
+				return;
+			}
 
 			int savedStart = _textControl.Selection.Start;
 			int savedLength = _textControl.Selection.Length;
@@ -4502,7 +4506,23 @@ public class DocumentEditor : UserControl
 					return GetRefTable(txTable, out _, out var refTable) && refTable != null;
 				}).ToList();
 
-				if (refTables.Count == 0) return;
+				// 整批失败可见化：没有任何表格能解析到源表时，不再静默跳过，
+				// 而是记录诊断信息并明确提示，方便定位书签/源表解析问题（源表开不开与此无关）。
+				if (refTables.Count == 0)
+				{
+					var doc = Document as Auditai.Model.Document;
+					int populated = tables.Count(t => t != null && t.Cells.Count > 0);
+					Auditai.UI.Controls.LogWriter.Info(
+						$"[RefreshAllTables] 未能解析任何引用表格。表格总数={count}, 有内容表格={populated}, " +
+						$"CurrentProject={(Program.MainForm.CurrentProject?.Name ?? "(null)")}, " +
+						$"doc.MergeTable={doc?.MergeTable}, 书签缓存条数={_bookmarkTableIdCache.Count}, _dicPara条数={_dicPara.Count}");
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Exclamation,
+						"未找到可刷新的引用表格（共 " + populated + " 张有内容的表格，均无法解析其来源表）。\n" +
+						"可能原因：书签中的来源表ID缺失、源表已被删除，或当前项目未加载到该表。\n" +
+						"建议：确认源表存在后，重新插入这些表格的引用，再执行刷新。",
+						MessageBoxButtons.OK, "", false);
+					return;
+				}
 
 				Auditai.UI.Controls.Util.ProcessItemsWithProgress(
 					_textControl,
@@ -4532,7 +4552,11 @@ public class DocumentEditor : UserControl
 	{
 		try
 		{
-			if (IsDocumentLocked()) return;
+			if (IsDocumentLocked())
+			{
+				Auditai.UI.Controls.LogWriter.Info("[RefreshAllFields] 文档处于锁定/无写权限状态，全域刷新被跳过");
+				return;
+			}
 
 			int savedStart = _textControl.Selection.Start;
 			int savedLength = _textControl.Selection.Length;
@@ -4608,7 +4632,11 @@ public class DocumentEditor : UserControl
 	{
 		try
 		{
-			if (IsDocumentLocked()) return;
+			if (IsDocumentLocked())
+			{
+				Auditai.UI.Controls.LogWriter.Info("[RefreshDocumentAll] 文档处于锁定/无写权限状态，全文刷新被跳过");
+				return;
+			}
 
 			int savedStart = _textControl.Selection.Start;
 			int savedLength = _textControl.Selection.Length;
@@ -4630,6 +4658,13 @@ public class DocumentEditor : UserControl
 						if (txTable == null || txTable.Cells.Count == 0) return false;
 						return GetRefTable(txTable, out _, out var refTable) && refTable != null;
 					}).ToList();
+
+					// 全表刷新阶段未能解析任何表格时记录诊断，便于定位“整批不刷”的来源解析问题。
+					if (refTables.Count == 0)
+					{
+						Auditai.UI.Controls.LogWriter.Info(
+							$"[RefreshDocumentAll] 全表刷新阶段未解析到任何引用表格(表格总数={count})，仅执行公式域刷新。");
+					}
 
 					int total = refTables.Count;
 					for (int i = 0; i < total; i++)

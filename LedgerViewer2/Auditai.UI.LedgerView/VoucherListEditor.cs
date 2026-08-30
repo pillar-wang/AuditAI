@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -456,7 +456,7 @@ public class VoucherListEditor : ISetTheme
 		C1.Win.C1FlexGrid.CellStyle styleNew = _grid.BodyGetCell(e.Row, e.Col).StyleNew;
 		if (voucher.VoucherMark)
 		{
-			styleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
+			styleNew.BackColor = Common.MarkBackColor;
 			styleNew.ForeColor = Common.MarkForeColor;
 		}
 		else
@@ -607,7 +607,8 @@ public class VoucherListEditor : ISetTheme
 
 	private async void CmdModifyVoucher_Click(object sender, ClickEventArgs e)
 	{
-		if (_grid.Row >= _grid.Rows.Fixed)
+		// 修复：原直接用 _grid.BodyRow 索引 Vouchers 列表，筛选/刷新后 BodyRow 可能越界。
+		if (_grid.Row >= _grid.Rows.Fixed && _grid.BodyRow >= 0 && _grid.BodyRow < Vouchers.Count)
 		{
 			Voucher voucher = Vouchers[_grid.BodyRow];
 			await _owner.ModifyVoucher(voucher);

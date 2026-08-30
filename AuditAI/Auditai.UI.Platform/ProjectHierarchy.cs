@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -31,6 +31,14 @@ public class ProjectHierarchy
     // 修复 BUG: 树节点左侧展开/折叠按钮区域点击不应触发节点选中导航
     // 在 BeforeMouseDown 中检测并标记，在 MouseClick 中据此阻止 TreeNodeSelected 事件
     private bool _isTreeButtonAreaClicked;
+
+    // 修复 BUG: 双击节点时 MouseClick 会触发 2 次、MouseDoubleClick 再触发 1 次
+    // TreeNodeSelected，导致重复异步导航产生竞态（表格重复打开/误切视图）。通过
+    // 时间差+同行检测，将双击压缩为仅第一击导航一次，其余击跳过。双击相对"打开"的
+    // 额外动作（如展开下级文件夹）在 MouseDoubleClick 中单独处理。
+    private const long DoubleClickSlopTicks = 400L * TimeSpan.TicksPerMillisecond;
+    private long _lastClickNavTicks = -1;
+    private int _lastClickNavRow = -1;
 
     // 分组右键菜单命令
     private C1Command cmdMoveUpGroup = new C1Command();
@@ -1392,6 +1400,108 @@ public class ProjectHierarchy
         _grid.Invalidate();
     }
 
+    /// <summary>
+    /// 应用 Google Blue 主题精修
+    /// 在 C1Theme 基础上叠加导航树特有的样式调整
+    /// </summary>
+    public void SetTheme()
+    {
+        var theme = Theme.SelectedAuditaiTheme;
+        if (theme == null || theme.Name != "auditai_GoogleBlue")
+        {
+            return;
+        }
+
+        // === 字体与行高 ===
+        _grid.Font = AuditTheme.FontBody;
+        _grid.Rows.DefaultSize = 28;
+
+        // === 基础样式 ===
+        // 正常行：白底深字
+        _grid.Styles.Normal.ForeColor = AuditTheme.Text;
+        _grid.Styles.Normal.BackColor = AuditTheme.Surface;
+        _grid.Styles.Normal.TextAlign = TextAlignEnum.LeftCenter;
+
+        // 选中行：淡蓝背景 + 深色文字（Google 风格不做全蓝填充）
+        _grid.Styles.Highlight.BackColor = AuditTheme.BrandSubtle;
+        _grid.Styles.Highlight.ForeColor = AuditTheme.Text;
+        _grid.Styles.Highlight.Font = AuditTheme.FontBodyBold;
+
+        // 焦点单元格：与选中行一致（去掉焦点框的割裂感）
+        _grid.Styles.Focus.BackColor = AuditTheme.BrandSubtle;
+        _grid.Styles.Focus.ForeColor = AuditTheme.Text;
+        _grid.Styles.Focus.Font = AuditTheme.FontBodyBold;
+
+        // === 树形结构样式 ===
+        // 缩进量（16px，4px 网格的 4 倍）
+        _grid.Tree.Indent = 16;
+
+        // 树线样式：细灰线（Google 风格简洁、低调）
+        _grid.Tree.Style = TreeStyleFlags.Simple;
+        _grid.Tree.LineColor = AuditTheme.Border;
+
+        // === 网格线与边框 ===
+        _grid.Cols[0].StyleDisplay.Border.Color = AuditTheme.Border;
+        _grid.Cols[0].StyleDisplay.Border.Direction = BorderDirEnum.Horizontal;
+
+        // 去掉选中时的虚线焦点框（Google 风格不用虚线框）
+        _grid.FocusRect = FocusRectEnum.None;
+
+        // 选中整行模式（更现代的选中方式）
+        _grid.SelectionMode = SelectionModeEnum.Row;
+
+        // 行高微调：叶子节点和组节点统一 28px
+        _grid.Rows.DefaultSize = 28;
+
+        // === C1OutBar 外层样式 ===
+        if (View is C1OutBarEx outBar)
+        {
+            // C1OutBar 背景色
+            outBar.BackColor = AuditTheme.Surface;
+            outBar.ForeColor = AuditTheme.Text;
+
+            // 页面标题样式（分组标题栏）
+            foreach (C1OutPage page in outBar.Pages)
+            {
+                page.BackColor = AuditTheme.Surface;
+                page.ForeColor = AuditTheme.Text;
+            }
+        }
+
+        // 注册自绘事件，实现选中行左侧蓝色指示条
+        _grid.DrawMode = DrawModeEnum.OwnerDraw;
+        _grid.OwnerDrawCell -= Grid_OwnerDrawCell;
+        _grid.OwnerDrawCell += Grid_OwnerDrawCell;
+    }
+
+    /// <summary>
+    /// 导航树自绘：实现 Google 风格的选中行左侧蓝色指示条
+    /// </summary>
+    private void Grid_OwnerDrawCell(object sender, OwnerDrawCellEventArgs e)
+    {
+        // 只处理普通行（非固定行）
+        if (e.Row < _grid.Rows.Fixed) return;
+
+        // 判断是否为选中行
+        bool isSelected = _grid.Selection.Contains(e.Row, e.Col);
+        bool isHot = _grid.MouseRow == e.Row && _grid.MouseCol == e.Col;
+
+        // 先让 C1 画默认内容
+        e.DrawCell(DrawCellFlags.Background | DrawCellFlags.Border | DrawCellFlags.Content);
+
+        // 选中行：左侧画 3px 蓝色指示条
+        if (isSelected)
+        {
+            using (var brush = new SolidBrush(AuditTheme.Brand))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds.X, e.Bounds.Y, 3, e.Bounds.Height);
+            }
+        }
+
+        // 告诉 C1 我们已经画完了
+        e.Handled = true;
+    }
+
     public bool HasWritePermission()
     {
         var sn = SelectedNode as TreeNodeBase;
@@ -1575,10 +1685,12 @@ public class ProjectHierarchy
         if (!row.IsNode)
             return false;
 
-        // 获取单元格矩形，树按钮区域约占单元格左侧 20 像素
+        // 获取单元格矩形，树按钮（折叠箭头+节点图标）区域约占单元格左侧若干像素。
+        // 取 32px：除覆盖折叠箭头本身外，也覆盖箭头右侧一小段——这里点击本意是折叠/展开，
+        // 若判定窗口过窄会被当作普通节点导航触发误切换。
         Rectangle cellRect = _grid.GetCellRect(hitTestInfo.Row, hitTestInfo.Column);
-        int treeButtonAreaWidth = 24;
-        return (x - cellRect.Left) < treeButtonAreaWidth;
+        const int treeButtonAreaWidth = 32;
+        return (x - cellRect.Left) < treeButtonAreaWidth && (x - cellRect.Left) >= 0;
     }
 
     /// <summary>
@@ -1599,7 +1711,9 @@ public class ProjectHierarchy
 
     private void _grid_MouseClick(object sender, MouseEventArgs e)
     {
-        HitTestInfo hitTestInfo = _grid.HitTest();
+        // 使用事件坐标命中，避免无参 HitTest()（取内部当前鼠标位置）在滚动/布局后与事件坐标错位，
+        // 导致点折叠箭头附近误命中其他位置节点而触发导航。
+        HitTestInfo hitTestInfo = _grid.HitTest(e.X, e.Y);
         if (hitTestInfo.Type == HitTestTypeEnum.Cell)
         {
             C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];
@@ -1628,9 +1742,20 @@ public class ProjectHierarchy
                     // 点击树按钮区域时不更新选中状态，防止触发选中导航事件
                     if (!isTreeButtonClick)
                     {
-                        SelectedNode = tnb;
-                        UpdateCurrentGroupModel(tnb.Group);
-                        TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                        // 双击去重：仅第一击触发导航。同一行在很短时间内再次点击
+                        // （双击的第二击）跳过，交给 MouseDoubleClick 统一"打开"，
+                        // 避免 3 次异步导航竞态导致表格重复打开或误切视图。
+                        long nowTicks = System.DateTime.Now.Ticks;
+                        bool isSecondClickOfDoubleClick = _lastClickNavRow == hitTestInfo.Row
+                            && nowTicks - _lastClickNavTicks <= DoubleClickSlopTicks;
+                        _lastClickNavTicks = nowTicks;
+                        _lastClickNavRow = hitTestInfo.Row;
+                        if (!isSecondClickOfDoubleClick)
+                        {
+                            SelectedNode = tnb;
+                            UpdateCurrentGroupModel(tnb.Group);
+                            TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                        }
                     }
                 }
 
@@ -1701,20 +1826,23 @@ public class ProjectHierarchy
             C1.Win.C1FlexGrid.Row row = _grid.Rows[hitTestInfo.Row];
             if (row.IsNode)
             {
-                // 双击也需检查是否点击在树按钮区域，避免误触
+                // 双击也需检查是否点击在树按钮区域，该区域交给折叠逻辑处理
                 bool isTreeButtonClick = IsTreeButtonArea(e.X, e.Y);
                 if (!isTreeButtonClick)
                 {
                     Node node = row.Node;
-                    TreeNodeBase tnb = node.Key as TreeNodeBase;
-                    if (tnb != null)
+                    // 双击"打开"的额外动作：
+                    // - 文件夹节点：展开下级子项（第一击已触发选中，这里补充展开）
+                    // - 表格/文档/图片/PDF 节点：第一击已通过 TreeNodeSelected 打开，
+                    //   这里不再触发导航，避免 3 次异步导航竞态（重复打开/误切视图）。
+                    if (node.Key is TreeDirectoryNode)
                     {
-                        SelectedNode = tnb;
-                        TreeNodeSelected?.Invoke(this, EventArgs.Empty);
+                        node.Collapsed = false;
                     }
                 }
             }
         }
+        _lastClickNavTicks = System.DateTime.Now.Ticks;
     }
 
     #region Initialize 事件存根

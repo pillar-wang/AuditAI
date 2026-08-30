@@ -1,6 +1,7 @@
 ﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using C1.Framework;
 using C1.Win.C1Input;
@@ -38,7 +39,7 @@ public class UpdateForm : C1RibbonForm
 
 	private C1PictureBox imgBox;
 
-	#region === 设计令牌（小清新浅蓝风格） ===
+	#region === 设计令牌（默认小清新浅蓝，Google 蓝主题下自动切换） ===
 
 	/// <summary>内容区左右内边距</summary>
 	private const int ContentPaddingX = 24;
@@ -58,8 +59,11 @@ public class UpdateForm : C1RibbonForm
 	/// <summary>按钮宽度（增大以提升点击舒适度）</summary>
 	private const int ButtonWidth = 110;
 
-	/// <summary>按钮高度</summary>
-	private const int ButtonHeight = 36;
+	/// <summary>按钮高度（36→40 对齐统一按钮规格）</summary>
+	private const int ButtonHeight = 40;
+
+	/// <summary>按钮圆角半径（统一规范 8px）</summary>
+	private const int ButtonRadius = 8;
 
 	/// <summary>按钮右侧距面板右边缘的距离（避免按钮贴边）</summary>
 	private const int ButtonRightMargin = 50;
@@ -80,23 +84,71 @@ public class UpdateForm : C1RibbonForm
 		? Math.Min(Screen.PrimaryScreen.WorkingArea.Height - 80, 700)
 		: 700);
 
-	/// <summary>Surface-0：窗体最底层背景（小清新浅蓝主题背景色）</summary>
-	private static readonly Color Surface0 = Color.FromArgb(245, 249, 252);
+	/// <summary>Surface-0：窗体最底层背景</summary>
+	private Color Surface0;
 
 	/// <summary>Surface-1：内容卡片背景（纯白，形成层叠深度）</summary>
-	private static readonly Color Surface1 = Color.FromArgb(255, 255, 255);
+	private Color Surface1;
 
-	/// <summary>Surface-2：按钮面板背景（与 Surface0 接近但略浅）</summary>
-	private static readonly Color Surface2 = Color.FromArgb(240, 247, 252);
+	/// <summary>Surface-2：按钮面板背景</summary>
+	private Color Surface2;
 
-	/// <summary>边框/分隔线色（小清新浅蓝 LineColor）</summary>
-	private static readonly Color LineColor = Color.FromArgb(74, 144, 217);
+	/// <summary>边框/分隔线色（主题主色）</summary>
+	private Color LineColor;
 
 	/// <summary>主文字色（确保 WCAG 4.5:1 对比度）</summary>
-	private static readonly Color TextPrimary = Color.FromArgb(30, 41, 59);
+	private Color TextPrimary;
 
 	/// <summary>次要文字色</summary>
-	private static readonly Color TextSecondary = Color.FromArgb(71, 85, 105);
+	private Color TextSecondary;
+
+	/// <summary>主色按下态（暗一档）</summary>
+	private Color PrimaryDark;
+
+	/// <summary>主色悬停态（亮一档）</summary>
+	private Color PrimaryLight;
+
+	/// <summary>次按钮边框/分隔线色</summary>
+	private Color LineColorDefault;
+
+	/// <summary>
+	/// 根据当前主题加载颜色令牌
+	/// 
+	/// 注意：必须在实例构造时调用，不能用静态构造——
+	/// 静态构造只执行一次，如果那时主题还没切到 Google Blue，之后就不会变了。
+	/// </summary>
+	private void LoadThemeColors()
+	{
+		var theme = Theme.SelectedAuditaiTheme;
+		if (theme != null && theme.Name == "auditai_GoogleBlue")
+		{
+			// Google Blue 色板
+			Surface0 = Color.FromArgb(248, 250, 252);      // #f8fafc
+			Surface1 = Color.FromArgb(255, 255, 255);       // #ffffff
+			Surface2 = Color.FromArgb(241, 245, 249);       // #f1f5f9
+			LineColor = Color.FromArgb(26, 115, 232);       // #1a73e8
+			TextPrimary = Color.FromArgb(15, 23, 42);       // #0f172a
+			TextSecondary = Color.FromArgb(51, 65, 85);     // #334155
+			// 主按钮悬停/按下变体 + 次按钮边框色
+			PrimaryDark = Color.FromArgb(21, 87, 176);
+			PrimaryLight = Color.FromArgb(23, 101, 204);
+			LineColorDefault = Color.FromArgb(226, 232, 240);
+		}
+		else
+		{
+			// 默认：小清新浅蓝
+			Surface0 = Color.FromArgb(245, 249, 252);
+			Surface1 = Color.FromArgb(255, 255, 255);
+			Surface2 = Color.FromArgb(240, 247, 252);
+			LineColor = Color.FromArgb(74, 144, 217);
+			TextPrimary = Color.FromArgb(30, 41, 59);
+			TextSecondary = Color.FromArgb(71, 85, 105);
+			// 主按钮悬停/按下变体 + 次按钮边框色
+			PrimaryDark = Color.FromArgb(53, 123, 189);
+			PrimaryLight = Color.FromArgb(90, 160, 230);
+			LineColorDefault = Color.FromArgb(208, 215, 222);
+		}
+	}
 
 	#endregion
 
@@ -105,6 +157,8 @@ public class UpdateForm : C1RibbonForm
 
 	public UpdateForm()
 	{
+		// 先加载主题颜色（必须在 InitializeComponent 之前）
+		LoadThemeColors();
 		InitializeComponent();
 		base.Shown += UpdateForm_Shown;
 		Text = "版本更新";
@@ -112,6 +166,10 @@ public class UpdateForm : C1RibbonForm
 		base.FormBorderStyle = FormBorderStyle.FixedDialog;
 		// 初始化主题色（主题应用后会再次重设，防止被覆盖）
 		ApplyThemeColors();
+		// 统一按钮样式：确定=主按钮，取消/更新详情=次按钮，8px 圆角
+		ApplyButtonStyle(btnConfirm, isPrimary: true);
+		ApplyButtonStyle(btnCancel, isPrimary: false);
+		ApplyButtonStyle(btnDetail, isPrimary: false);
 		// 超长内容滚动用的 TextBox（仿 MessageShowBox）
 		_txtNoticeScroll = new C1TextBoxEx
 		{
@@ -124,7 +182,7 @@ public class UpdateForm : C1RibbonForm
 			ReadOnly = true,
 			ScrollBars = ScrollBars.Vertical,
 			Visible = false,
-			Font = new Font("微软雅黑", 10.5f),
+			Font = new Font("Noto Sans SC", 10.5f), // 字体统一 Noto Sans SC（字号不变）
 			Name = "txtNoticeScroll"
 		};
 		pnlContent.Controls.Add(_txtNoticeScroll);
@@ -156,16 +214,54 @@ public class UpdateForm : C1RibbonForm
 	}
 
 	/// <summary>
+	/// 统一按钮样式：确定=主按钮（蓝底白字无边框），取消/更新详情=次按钮（白底深灰字+浅灰边框），均 Flat + 8px 圆角 Region。
+	/// </summary>
+	private void ApplyButtonStyle(C1Button btn, bool isPrimary)
+	{
+		btn.FlatStyle = FlatStyle.Flat;
+		btn.Font = new Font("Noto Sans SC", 10.5f, FontStyle.Regular); // 字体统一 Noto Sans SC
+		if (isPrimary)
+		{
+			// 主按钮：LineColor 即主题主色 Primary，蓝填充 + 白字（悬停/按下深浅变体）
+			btn.BackColor = LineColor;
+			btn.ForeColor = Color.White;
+			btn.FlatAppearance.BorderSize = 0;
+			btn.FlatAppearance.MouseDownBackColor = PrimaryDark;
+			btn.FlatAppearance.MouseOverBackColor = PrimaryLight;
+		}
+		else
+		{
+			// 次按钮：白底深灰字 + 浅灰边框，视觉低调
+			btn.BackColor = Color.White;
+			btn.ForeColor = TextPrimary;
+			btn.FlatAppearance.BorderColor = LineColorDefault;
+			btn.FlatAppearance.BorderSize = 1;
+			btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(240, 247, 252);
+			btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 249, 252);
+		}
+		// 8px 圆角 Region（四角 AddArc，同 MessageShowBox）
+		using (var path = new GraphicsPath())
+		{
+			int r = ButtonRadius * 2;
+			path.AddArc(0, 0, r, r, 180, 90);
+			path.AddArc(btn.Width - r, 0, r, r, 270, 90);
+			path.AddArc(btn.Width - r, btn.Height - r, r, r, 0, 90);
+			path.AddArc(0, btn.Height - r, r, r, 90, 90);
+			path.CloseFigure();
+			btn.Region = new Region(path);
+		}
+	}
+
+	/// <summary>
 	/// 主题应用后强制重设样式，确保高对比度不被主题覆盖（同 MessageShowBox 模式）。
 	/// </summary>
 	private void EnsureStylesCorrect()
 	{
 		ApplyThemeColors();
-		foreach (C1Button btn in _buttons)
-		{
-			btn.ForeColor = TextPrimary;
-			btn.Font = new Font("微软雅黑", 10.5f, FontStyle.Regular);
-		}
+		// 统一重设主/次按钮样式，防止被 C1Theme 覆盖（主按钮保持白字）
+		ApplyButtonStyle(btnConfirm, isPrimary: true);
+		ApplyButtonStyle(btnCancel, isPrimary: false);
+		ApplyButtonStyle(btnDetail, isPrimary: false);
 		if (_txtNoticeScroll != null)
 		{
 			_txtNoticeScroll.BackColor = Surface1;
@@ -251,7 +347,7 @@ public class UpdateForm : C1RibbonForm
 	private bool ContentNeedsScroll()
 	{
 		string message = lblNotice.Text ?? "";
-		Font font = new Font("微软雅黑", 10.5f);
+		Font font = new Font("Noto Sans SC", 10.5f); // 字体统一 Noto Sans SC（字号不变）
 		const int dialogWidth = 680;
 		int contentTextWidth = dialogWidth - ImagePanelWidth - ContentPaddingX * 2;
 		int maxContentH = MaxDialogSize.Height - ButtonPanelHeight;
@@ -288,7 +384,7 @@ public class UpdateForm : C1RibbonForm
 	private void AutoSizeDialog()
 	{
 		string message = lblNotice.Text ?? "";
-		Font font = new Font("微软雅黑", 10.5f);
+		Font font = new Font("Noto Sans SC", 10.5f); // 字体统一 Noto Sans SC（字号不变）
 		const int dialogWidth = 680;
 		int contentTextWidth = dialogWidth - ImagePanelWidth - ContentPaddingX * 2;
 		int textH;
@@ -383,10 +479,11 @@ public class UpdateForm : C1RibbonForm
 
 	private void StandardView()
 	{
-		lblNotice.Font = new Font("微软雅黑", 10.5f);
-		btnDetail.Font = new Font("微软雅黑", 10.5f);
-		btnConfirm.Font = new Font("微软雅黑", 10.5f);
-		btnCancel.Font = new Font("微软雅黑", 10.5f);
+		// 字体统一 Noto Sans SC（字号不变）
+		lblNotice.Font = new Font("Noto Sans SC", 10.5f);
+		btnDetail.Font = new Font("Noto Sans SC", 10.5f);
+		btnConfirm.Font = new Font("Noto Sans SC", 10.5f);
+		btnCancel.Font = new Font("Noto Sans SC", 10.5f);
 		// C1SplitterPanel 内按钮使用显式 Location，必须 Anchor=None
 		btnDetail.Anchor = AnchorStyles.None;
 		btnConfirm.Anchor = AnchorStyles.None;
@@ -443,7 +540,7 @@ public class UpdateForm : C1RibbonForm
 		this.ctnAll.BorderColor = LineColor;
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnAll.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ctnAll.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.ctnAll.ForeColor = TextPrimary;
 		this.ctnAll.Location = new System.Drawing.Point(0, 0);
 		this.ctnAll.Name = "ctnAll";
@@ -472,38 +569,38 @@ public class UpdateForm : C1RibbonForm
 		this.pnlButtons.TabIndex = 1;
 		// === 按钮：Anchor=None（显式定位）+ 高对比度文字 + 统一尺寸 ===
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.btnCancel.ForeColor = TextPrimary;
-		this.btnCancel.Location = new System.Drawing.Point(547, (ButtonPanelHeight - 36) / 2);
+		this.btnCancel.Location = new System.Drawing.Point(547, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
-		this.btnCancel.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（ApplyButtonStyle 应用）
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnConfirm.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnConfirm.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.btnConfirm.ForeColor = TextPrimary;
-		this.btnConfirm.Location = new System.Drawing.Point(418, (ButtonPanelHeight - 36) / 2);
+		this.btnConfirm.Location = new System.Drawing.Point(418, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnConfirm.Name = "btnConfirm";
 		this.btnConfirm.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
-		this.btnConfirm.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（ApplyButtonStyle 应用）
 		this.btnDetail.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnDetail.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnDetail.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.btnDetail.ForeColor = TextPrimary;
-		this.btnDetail.Location = new System.Drawing.Point(290, (ButtonPanelHeight - 36) / 2);
+		this.btnDetail.Location = new System.Drawing.Point(290, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnDetail.Name = "btnDetail";
 		this.btnDetail.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnDetail.TabIndex = 0;
 		this.btnDetail.Text = "更新详情";
-		this.btnDetail.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（ApplyButtonStyle 应用）
 		this.btnDetail.Click += new System.EventHandler(btnDetail_Click);
 		// === 图标面板：Left 停靠，固定宽度，显式 Location/Size/SizeRatio ===
 		this.pnlImage.BackColor = Surface0;
 		this.pnlImage.Controls.Add(this.imgBox);
 		this.pnlImage.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Left;
-		this.pnlImage.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.pnlImage.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.pnlImage.Width = ImagePanelWidth;
 		this.pnlImage.Location = new System.Drawing.Point(0, 0);
 		this.pnlImage.Size = new System.Drawing.Size(ImagePanelWidth, 300 - ButtonPanelHeight);
@@ -533,7 +630,7 @@ public class UpdateForm : C1RibbonForm
 		this.lblNotice.ForeColor = TextPrimary;
 		this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblNotice.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.lblNotice.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblNotice.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.lblNotice.Location = new System.Drawing.Point(0, 0);
 		this.lblNotice.Name = "lblNotice";
 		// Padding 不在此处设置，避免 Theme 设置期间控件尺寸 < Padding 总和触发校验异常

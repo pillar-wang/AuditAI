@@ -111,6 +111,7 @@ public class frmBalanceEditor : C1RibbonForm
 		InitializeComponent();
 		base.WindowState = FormWindowState.Maximized;
 		base.StartPosition = FormStartPosition.CenterScreen;
+		grdBalance.BindAutoSizeColsFill(this);
 		this.modifyUserData = modifyUserData;
 		foreach (C1CommandLink commandLink in c1ToolBar1.CommandLinks)
 		{
@@ -838,7 +839,7 @@ public class frmBalanceEditor : C1RibbonForm
 				grdBalance.Tree.Style = TreeStyleFlags.Simple;
 			}
 			SetMinColumnWidths(grdBalance);
-			grdBalance.AutoSizeCols();
+			grdBalance.AutoSizeColsFill();
 			void AddChildren(Account account, Node parentNode)
 			{
 				Node node = ((parentNode != null) ? parentNode.AddNode(NodeTypeEnum.LastChild, account.Code) : grdBalance.Rows.AddNode(0));
@@ -945,7 +946,7 @@ public class frmBalanceEditor : C1RibbonForm
 				}
 			}
 		}
-		grdBalance.AutoSizeCols();
+		grdBalance.AutoSizeColsFill();
 		static void expandNodeTree(Node node)
 		{
 			while (node.Parent != null)

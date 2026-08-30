@@ -81,7 +81,9 @@ public class ParadoxFile : IDisposable
 			nextBlock = r.ReadUInt16();
 			blockNumber = r.ReadUInt16();
 			addDataSize = r.ReadInt16();
-			RecordCount = addDataSize / file.RecordSize + 1;
+			// 修复：RecordSize 为 0（畸形文件）时原实现除零。且 +1 使每块多读 1 条记录，
+			// 超出 addDataSize 范围产生"幻影记录"。钳制到至少 0。
+			RecordCount = (file.RecordSize > 0) ? (addDataSize / file.RecordSize) : 0;
 			data = r.ReadBytes(RecordCount * file.RecordSize);
 			recCache = new ParadoxRecord[data.Length];
 		}
@@ -317,7 +319,13 @@ public class ParadoxFile : IDisposable
 			}
 		}
 		byte[] array = binaryReader.ReadBytes((fileVersionID >= 12) ? 261 : 79);
-		TableName = Encoding.GetEncoding("gb2312").GetString(array, 0, Array.FindIndex(array, (byte b) => b == 0));
+		// 修复：Array.FindIndex 找不到 0 字节返回 -1，Encoding.GetString(..., 0, -1) 抛 ArgumentOutOfRangeException。
+		int endIndex = Array.FindIndex(array, (byte b) => b == 0);
+		if (endIndex < 0)
+		{
+			endIndex = array.Length;
+		}
+		TableName = Encoding.GetEncoding("gb2312").GetString(array, 0, endIndex);
 		if (FileType != 0 && FileType != ParadoxFileType.DbFileNotIndexed)
 		{
 			return;

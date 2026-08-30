@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
+using Auditai.Util;
 
 namespace Auditai.UI.Platform
 {
@@ -18,6 +19,17 @@ namespace Auditai.UI.Platform
     {
         private static readonly Lazy<NetworkMonitor> _instance =
             new Lazy<NetworkMonitor>(() => new NetworkMonitor());
+
+        /// <summary>
+        /// 健康检查专用 HttpClient（静态懒加载单例）。
+        /// handler 配置与 WebApiClient 一致（UseDefaultCredentials=true），
+        /// 避免企业代理要求认证时健康检查收到 407 被误判为离线。
+        /// </summary>
+        private static readonly Lazy<HttpClient> _healthClient = new Lazy<HttpClient>(() =>
+            new HttpClient(new HttpClientHandler { UseDefaultCredentials = true })
+            {
+                Timeout = TimeSpan.FromSeconds(5)
+            });
 
         public static NetworkMonitor Instance => _instance.Value;
 
@@ -74,16 +86,32 @@ namespace Auditai.UI.Platform
                 bool reachable = false;
                 try
                 {
-                    string baseUrl = ConfigurationManager.AppSettings["AppServer"];
+                    // 健康检查地址优先取 WebApiClient.BaseAddress（与业务请求同源），AppServer 配置次之，硬编码地址仅作最后回退
+                    string baseUrl = null;
+                    try
+                    {
+                        baseUrl = WebApiClient.BaseAddress?.ToString();
+                    }
+                    catch
+                    {
+                        // WebApiClient 类型初始化失败时回退到配置/硬编码地址
+                    }
+                    if (string.IsNullOrWhiteSpace(baseUrl))
+                    {
+                        baseUrl = ConfigurationManager.AppSettings["AppServer"];
+                    }
                     if (string.IsNullOrWhiteSpace(baseUrl))
                     {
                         baseUrl = "http://82.156.108.218:8957/api/";
                     }
+                    if (!baseUrl.EndsWith("/"))
+                    {
+                        baseUrl += "/";
+                    }
                     // 健康检查端点：复用现有的 UserNameExists 接口（不依赖鉴权）
                     string healthUrl = baseUrl + "User/UserNameExists?userName=healthcheck";
-                    using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
+                    using (var resp = await _healthClient.Value.GetAsync(healthUrl).ConfigureAwait(false))
                     {
-                        var resp = await client.GetAsync(healthUrl).ConfigureAwait(false);
                         // 2xx / 4xx 都说明服务器可达；仅 5xx 或异常视为不可达
                         reachable = (int)resp.StatusCode < 500;
                     }

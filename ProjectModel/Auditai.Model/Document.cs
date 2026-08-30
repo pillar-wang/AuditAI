@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -107,33 +107,48 @@ public class Document
 
 	public void Save(IProgress<ProgressInfo> progress = null, TaskProgressValueUpdater taskProgressValueUpdater = null)
 	{
+		// 修复：原实现无 try/catch/rollback，任一步 SaveXxx 抛异常时事务不提交也不回滚，
+		// 可能留下半提交状态（与 Table.Save 的保护级别不一致）。改为失败回滚并重新抛出。
 		Project.Dal.BeginTransaction();
-		progress?.Report(new ProgressInfo
+		bool committed = false;
+		try
 		{
-			MainCaption = "正在保存文档信息...",
-			MainProgress = 60
-		});
-		Project.Dal.SaveDocument(ToDto());
-		progress?.Report(new ProgressInfo
+			progress?.Report(new ProgressInfo
+			{
+				MainCaption = "正在保存文档信息...",
+				MainProgress = 60
+			});
+			Project.Dal.SaveDocument(ToDto());
+			progress?.Report(new ProgressInfo
+			{
+				MainCaption = "正在保存段落信息...",
+				MainProgress = 80
+			});
+			taskProgressValueUpdater?.UpdateProgress(10L, 100L);
+			Project.Dal.SaveParagraphs(Paragraphs.Select((Paragraph p) => p.ToDto()));
+			taskProgressValueUpdater?.UpdateProgress(60L, 100L);
+			Project.Dal.RemoveParagraphs(RemovedParagraphs);
+			taskProgressValueUpdater?.UpdateProgress(70L, 100L);
+			Project.Dal.DeleteParagraphs(ParagraphsToDelete);
+			taskProgressValueUpdater?.UpdateProgress(90L, 100L);
+			Project.Dal.Commit();
+			committed = true;
+			FromDuplicationButNotSaved = false;
+			ParagraphsToDelete.Clear();
+			progress?.Report(new ProgressInfo
+			{
+				MainProgress = 100
+			});
+			taskProgressValueUpdater?.UpdateProgress(100L, 100L);
+		}
+		catch
 		{
-			MainCaption = "正在保存段落信息...",
-			MainProgress = 80
-		});
-		taskProgressValueUpdater?.UpdateProgress(10L, 100L);
-		Project.Dal.SaveParagraphs(Paragraphs.Select((Paragraph p) => p.ToDto()));
-		taskProgressValueUpdater?.UpdateProgress(60L, 100L);
-		Project.Dal.RemoveParagraphs(RemovedParagraphs);
-		taskProgressValueUpdater?.UpdateProgress(70L, 100L);
-		Project.Dal.DeleteParagraphs(ParagraphsToDelete);
-		taskProgressValueUpdater?.UpdateProgress(90L, 100L);
-		Project.Dal.Commit();
-		FromDuplicationButNotSaved = false;
-		ParagraphsToDelete.Clear();
-		progress?.Report(new ProgressInfo
-		{
-			MainProgress = 100
-		});
-		taskProgressValueUpdater?.UpdateProgress(100L, 100L);
+			if (!committed)
+			{
+				try { Project.Dal.Rollback(); } catch { }
+			}
+			throw;
+		}
 		OnSaved();
 	}
 
@@ -180,6 +195,20 @@ public class Document
 			catch (Exception ex)
 			{
 				IsCorrupted = true;
+				// 修复：Debug.WriteLine 在 Release 构建中被编译器完全移除（[Conditional("DEBUG")]），
+				// 导致异常被彻底静默吞掉。改为写文件日志（与 Table.LoadAndReturn 一致），
+				// 确保 Release 构建也能捕获诊断信息。
+				try
+				{
+					string logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "leqiaudit_document_load_error.log");
+					string logContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] Document.LoadAndReturn EXCEPTION\r\n" +
+						$"  DocId={Id}, Name={TreeNode?.Name}, LocalExists={LocalExists}\r\n" +
+						$"  Exception: {ex.GetType().FullName}: {ex.Message}\r\n" +
+						$"  StackTrace:\r\n{ex.StackTrace}\r\n" +
+						new string('=', 80) + "\r\n";
+					System.IO.File.AppendAllText(logPath, logContent);
+				}
+				catch { }
 				System.Diagnostics.Debug.WriteLine($"[Document.LoadAndReturn] DocId={Id}, Name={TreeNode?.Name}, Error: {ex}");
 			}
 		}

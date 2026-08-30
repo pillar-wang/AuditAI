@@ -1,6 +1,8 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Dapper;
 using Newtonsoft.Json;
@@ -14,6 +16,12 @@ public class ProjectDAL : IDisposable
 	private int _transactionDepth;
 
 	private SQLiteTransaction _transaction;
+
+	// M2: 事务状态（_transaction/_transactionDepth/_transactionAborted）的读写锁保护
+	private readonly object _syncRoot = new object();
+
+	// M3: 嵌套事务中内层已回滚的标记，外层 Commit 时据此整体回滚并抛出
+	private bool _transactionAborted;
 
 	private bool _disposed;
 
@@ -51,6 +59,12 @@ public class ProjectDAL : IDisposable
 		// Normal 模式在关键检查点刷盘，兼顾性能与安全。
 		connectionStringBuilder.SyncMode = SynchronizationModes.Normal;
 		connectionStringBuilder.DataSource = fileName;
+		// 关键修复：设置 busy_timeout 为 15 秒。
+		// 默认为 0，SQLite 遇到锁立即返回 SQLITE_BUSY 错误（"database is locked"）。
+		// 在多连接并发场景（同步循环 + Saved 事件 AutoPush 并发访问同一 Dal）下会频繁失败。
+		// 设置后 SQLite 会在内部自动重试 15 秒，大幅降低并发锁冲突导致的异常与卡死。
+		// 通过连接字符串设置，确保 GetConnection() 创建的每个新连接都生效。
+		connectionStringBuilder.BusyTimeout = 15000;
 		SetPragma();
 		CreateConfig();
 		UpdateSchema();
@@ -74,22 +88,24 @@ public class ProjectDAL : IDisposable
 			// 在启动场景下一般返回 0；若非 0 再尝试一次 PASSIVE
 			if (result != 0)
 			{
-				try { cnn.Execute("PRAGMA wal_checkpoint(PASSIVE);"); } catch { }
+				try { cnn.Execute("PRAGMA wal_checkpoint(PASSIVE);"); } catch (Exception ex) { LogError("RecoverWalIfNeeded: PASSIVE checkpoint 失败", ex); }
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
 			// checkpoint 失败通常意味着 -wal 文件已损坏。
 			// 尝试禁用再启用 WAL，强制 SQLite 重建 -wal 文件。
+			LogError("RecoverWalIfNeeded: WAL checkpoint 失败，尝试重建 WAL", ex);
 			try
 			{
 				using SQLiteConnection cnn2 = GetConnection();
 				cnn2.Execute("PRAGMA journal_mode=DELETE;");
 				cnn2.Execute("PRAGMA journal_mode=WAL;");
 			}
-			catch
+			catch (Exception ex2)
 			{
 				// 若仍失败，记录但不抛出 —— 后续查询若失败会在业务层被捕获
+				LogError("RecoverWalIfNeeded: 重建 WAL 失败", ex2);
 			}
 		}
 	}
@@ -104,21 +120,25 @@ public class ProjectDAL : IDisposable
 		try
 		{
 			// 先回滚任何未提交的事务，避免悬挂
-			if (_transaction != null)
+			lock (_syncRoot)
 			{
-				try { _transaction.Rollback(); } catch { }
-				try { _transaction.Connection?.Close(); } catch { }
-				_transaction = null;
-				_transactionDepth = 0;
+				if (_transaction != null)
+				{
+					try { _transaction.Rollback(); } catch (Exception ex) { LogError("CheckpointAndClose: 回滚残留事务失败", ex); }
+					try { _transaction.Connection?.Close(); } catch (Exception ex2) { LogError("CheckpointAndClose: 关闭残留事务连接失败", ex2); }
+					_transaction = null;
+					_transactionDepth = 0;
+					_transactionAborted = false;
+				}
 			}
 			using SQLiteConnection cnn = GetConnection();
 			try
 			{
 				cnn.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
 			}
-			catch { /* checkpoint 失败不阻断退出 */ }
+			catch (Exception ex) { LogError("CheckpointAndClose: WAL checkpoint 失败", ex); /* checkpoint 失败不阻断退出 */ }
 		}
-		catch { /* 退出清理失败不应抛出 */ }
+		catch (Exception ex) { LogError("CheckpointAndClose: 退出清理失败", ex); /* 退出清理失败不应抛出 */ }
 	}
 
 	public void Dispose()
@@ -130,49 +150,189 @@ public class ProjectDAL : IDisposable
 
 	public void BeginTransaction()
 	{
-		if (_transactionDepth == 0)
+		lock (_syncRoot)
 		{
-			_transaction = GetConnection().BeginTransaction();
+			if (_transactionDepth == 0)
+			{
+				// M1: BeginTransaction 抛异常时释放已打开的连接，避免连接泄漏
+				var cnn = GetConnection();
+				try
+				{
+					_transaction = cnn.BeginTransaction();
+				}
+				catch
+				{
+					cnn.Dispose();
+					throw;
+				}
+				// M3: 新事务开始时重置中止标志
+				_transactionAborted = false;
+			}
+			_transactionDepth++;
 		}
-		_transactionDepth++;
 	}
 
 	public void Execute(string sql, object param = null)
 	{
-		if (_transactionDepth == 0)
+		bool useTransaction;
+		// M2: 事务状态读取在锁内完成，与 BeginTransaction/Commit/Rollback 状态互斥
+		lock (_syncRoot)
 		{
-			using (SQLiteConnection sQLiteConnection = GetConnection())
+			// 防御：当 _transaction 被并发清理或异常清理置为 null，
+			// 但 _transactionDepth 仍 > 0 时，原代码会直接访问 _transaction.Connection 抛 NRE。
+			// 这种状态损坏通常出现在 Save() 的 catch 块调用 Rollback 半途失败、
+			// 或多上下文（如 SignalR 事件 / UI 消息循环在 await 期间触发的并发 Dal 操作）中。
+			// 此处按非事务模式执行并重置深度计数器，保证不抛 NRE，数据仍能落盘。
+			if (_transactionDepth == 0 || _transaction == null)
 			{
-				using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
-				sQLiteTransaction.Connection.Execute(sql, param, sQLiteTransaction);
-				sQLiteTransaction.Commit();
+				if (_transactionDepth != 0)
+				{
+					_transactionDepth = 0;
+				}
+				useTransaction = false;
+			}
+			else
+			{
+				useTransaction = true;
+			}
+			if (useTransaction)
+			{
+				// 事务路径：在锁内执行，保证对共享事务的访问串行化
+				// （SQLiteConnection 非线程安全，且与 Commit/Rollback 并发会损坏事务状态）
+				_transaction.Connection.Execute(sql, param, _transaction);
 				return;
 			}
 		}
-		_transaction.Connection.Execute(sql, param, _transaction);
+		// 非事务路径：先在锁内读取状态快照，再在锁外执行 SQL，避免长时间持锁
+		using (SQLiteConnection sQLiteConnection = GetConnection())
+		{
+			using SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
+			sQLiteTransaction.Connection.Execute(sql, param, sQLiteTransaction);
+			sQLiteTransaction.Commit();
+		}
 	}
 
 	public void Commit()
 	{
-		_transactionDepth--;
-		if (_transactionDepth == 0)
+		lock (_syncRoot)
 		{
-			SQLiteConnection connection = _transaction.Connection;
-			_transaction.Commit();
-			connection.Close();
-			_transaction = null;
+			// 防御：没有活动事务（深度已为 0 或 _transaction 已被清理）时直接返回，
+			// 避免深度计数器越界减为负数，也避免访问 _transaction.Connection 抛 NRE。
+			if (_transactionDepth <= 0 || _transaction == null)
+			{
+				_transactionDepth = 0;
+				_transaction = null;
+				return;
+			}
+			// M3: 内层事务已回滚时，外层事务不能提交——
+			// 执行整体回滚并抛出异常，避免"半回滚"的数据被静默提交
+			if (_transactionAborted)
+			{
+				try
+				{
+					_transaction.Rollback();
+				}
+				finally
+				{
+					try { _transaction.Connection?.Close(); } catch { }
+					_transaction = null;
+					_transactionDepth = 0;
+					_transactionAborted = false;
+				}
+				throw new InvalidOperationException("内层事务已回滚，外层事务不能提交");
+			}
+			_transactionDepth--;
+			if (_transactionDepth == 0)
+			{
+				try
+				{
+					_transaction.Commit();
+				}
+				finally
+				{
+					// 即使 Commit 抛异常（如 SQLite 锁错误），也要重置状态并关闭连接，
+					// 避免悬挂事务导致后续 Execute 走错路径（depth=0 但 _transaction 非 null）。
+					try { _transaction.Connection?.Close(); } catch { }
+					_transaction = null;
+				}
+			}
 		}
 	}
 
 	public void Rollback()
 	{
-		_transactionDepth--;
-		if (_transactionDepth == 0)
+		lock (_syncRoot)
 		{
-			SQLiteConnection connection = _transaction.Connection;
-			_transaction.Rollback();
-			connection.Close();
-			_transaction = null;
+			// 防御：没有活动事务时直接返回，避免深度计数器越界减为负数。
+			// 这在 Save() 的 catch 块中很关键：如果异常发生在 BeginTransaction 之前
+			// （如 TreeNode/Project 空值检查、ThrowIfMaxSizeExceeded 等），
+			// 此时 depth 仍为 0，原代码会把 depth 减到 -1，后续 Save 调用的状态全部错乱。
+			if (_transactionDepth <= 0 || _transaction == null)
+			{
+				_transactionDepth = 0;
+				_transaction = null;
+				return;
+			}
+			_transactionDepth--;
+			if (_transactionDepth == 0)
+			{
+				try
+				{
+					_transaction.Rollback();
+				}
+				finally
+				{
+					try { _transaction.Connection?.Close(); } catch { }
+					_transaction = null;
+				}
+				// M3: 回滚到最外层（depth==0）时重置中止标志
+				_transactionAborted = false;
+			}
+			else
+			{
+				// M3: 嵌套回滚（depth>1）不产生实际 SQL（底层事务仍存活），仅标记中止，
+				// 由最外层 Commit 检测该标志后执行整体回滚并抛出异常
+				_transactionAborted = true;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 在事务中执行一段写操作（H1）：任何异常都会回滚事务后原样抛出，
+	/// 避免 Execute 中途抛异常后事务悬挂、部分数据静默丢失。
+	/// </summary>
+	private void RunInTransaction(Action action)
+	{
+		BeginTransaction();
+		try
+		{
+			action();
+			Commit();
+		}
+		catch
+		{
+			// 回滚失败（如事务已被 SQLite 自动终止）不能吞掉原始异常，保证调用方看到真正原因
+			try { Rollback(); } catch { }
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// 将 DAL 底层异常最小化记录到库文件同目录的 dal_error.log（M6），
+	/// 日志本身用 try-catch 包裹，避免产生二次异常影响主流程。
+	/// </summary>
+	private void LogError(string context, Exception ex)
+	{
+		try
+		{
+			string message = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {context}: {ex}";
+			Debug.WriteLine(message);
+			string logFile = Path.Combine(Path.GetDirectoryName(connectionStringBuilder.DataSource) ?? string.Empty, "dal_error.log");
+			File.AppendAllText(logFile, message + Environment.NewLine);
+		}
+		catch
+		{
+			// 日志写入失败时静默忽略，不影响主流程
 		}
 	}
 
@@ -201,6 +361,30 @@ public class ProjectDAL : IDisposable
 		{
 			num = 1;
 		}
+		// H2: 迁移主体包在显式事务中（SQLite 支持 DDL 事务），任一步骤失败整体回滚，
+		// 避免旧实现中途异常留下"半迁移"状态（user_version 未更新但部分结构已变更），
+		// 导致下次打开重复执行 ALTER 时抛"duplicate column name"错误。
+		// user_version 在事务内写入，仅在成功提交后生效，确保只在成功后写。
+		SQLiteTransaction schemaTransaction = sQLiteConnection.BeginTransaction();
+		try
+		{
+			num = MigrateSchema(sQLiteConnection, schemaTransaction, num);
+			sQLiteConnection.Execute($"PRAGMA user_version={num}", schemaTransaction);
+			schemaTransaction.Commit();
+		}
+		catch
+		{
+			try { schemaTransaction.Rollback(); } catch { }
+			throw;
+		}
+	}
+
+	/// <summary>
+	/// 依次执行各版本的 Schema 迁移步骤，返回最终版本号。
+	/// 调用方已开启事务，全部步骤要么一起提交、要么一起回滚。
+	/// </summary>
+	private int MigrateSchema(SQLiteConnection sQLiteConnection, SQLiteTransaction schemaTransaction, int num)
+	{
 		if (num == 1)
 		{
 			num = 2;
@@ -297,6 +481,8 @@ public class ProjectDAL : IDisposable
 		{
 			num = 20;
 			sQLiteConnection.Execute("CREATE TABLE IF NOT EXISTS `CellStyle_temp`(\r\n`Id` INTEGER PRIMARY KEY,\r\n`TableId` INTEGER NOT NULL,\r\n`FontFamily` TEXT,\r\n`FontSize` REAL,\r\n`ForeColor` INTEGER,\r\n`BackColor` INTEGER,\r\n`Align` INTEGER,\r\n`Margin` INTEGER,\r\n`Bold` INTEGER,\r\n`Italic` INTEGER,\r\n`Underline` INTEGER,\r\n`DataType` INTEGER,\r\n`Format` TEXT,\r\n`Status` INTEGER NOT NULL,\r\n`Locked` INTEGER,\r\n`DefaultValue` TEXT,\r\n`Comment` TEXT);");
+			// H2: 可重入保证——上次迁移若在重建中途失败可能残留旧数据，先清空再拷贝
+			sQLiteConnection.Execute("DELETE FROM `CellStyle_temp`");
 			sQLiteConnection.Execute("INSERT INTO `CellStyle_temp` SELECT * FROM `CellStyle`");
 			sQLiteConnection.Execute("DROP TABLE `CellStyle`");
 			sQLiteConnection.Execute("ALTER TABLE `CellStyle_temp` RENAME TO `CellStyle`");
@@ -351,9 +537,9 @@ public class ProjectDAL : IDisposable
 		if (num == 28)
 		{
 			num = 29;
-			sQLiteConnection.Execute("CREATE INDEX `idx_Cell_RowId` ON `Cell` (`RowId`)");
-			sQLiteConnection.Execute("CREATE INDEX `idx_Row_TableId` ON `Row` (`TableId`)");
-			sQLiteConnection.Execute("CREATE INDEX `idx_Column_TableId` ON `Column` (`TableId`)");
+			sQLiteConnection.Execute("CREATE INDEX IF NOT EXISTS `idx_Cell_RowId` ON `Cell` (`RowId`)");
+			sQLiteConnection.Execute("CREATE INDEX IF NOT EXISTS `idx_Row_TableId` ON `Row` (`TableId`)");
+			sQLiteConnection.Execute("CREATE INDEX IF NOT EXISTS `idx_Column_TableId` ON `Column` (`TableId`)");
 		}
 		if (num == 29)
 		{
@@ -411,7 +597,8 @@ public class ProjectDAL : IDisposable
 			sQLiteConnection.Execute("ALTER TABLE `TreeNode` ADD COLUMN `RowWrite` INTEGER NOT NULL DEFAULT 0");
 			sQLiteConnection.Execute("ALTER TABLE `TreeNode` ADD COLUMN `RowRead` INTEGER NOT NULL DEFAULT 0");
 			IEnumerable<object> enumerable = sQLiteConnection.Query("SELECT `Id`,`RowOwnerExclusive`,`RowOwnerLoad` FROM `Table`");
-			SQLiteTransaction sQLiteTransaction = sQLiteConnection.BeginTransaction();
+			// H2: 外层迁移事务已开启，同一连接不能嵌套 BeginTransaction，
+			// 这些更新直接并入整体迁移事务（原内层独立事务已移除）
 			foreach (dynamic item in enumerable)
 			{
 				sQLiteConnection.Execute("UPDATE `TreeNode` SET `RowWrite`=@RowOwnerExclusive,`RowRead`=@RowOwnerLoad WHERE `Id`=@Id", new
@@ -419,9 +606,8 @@ public class ProjectDAL : IDisposable
 					Id = (object)item.Id,
 					RowOwnerExclusive = (object)item.RowOwnerExclusive,
 					RowOwnerLoad = (object)item.RowOwnerLoad
-				}, sQLiteTransaction);
+				}, schemaTransaction);
 			}
-			sQLiteTransaction.Commit();
 		}
 		if (num == 40)
 		{
@@ -461,7 +647,7 @@ public class ProjectDAL : IDisposable
 			sQLiteConnection.Execute("ALTER TABLE `Project` ADD COLUMN `CustomFillConfig` TEXT");
 		}
 		catch { /* 列已存在则忽略 */ }
-		sQLiteConnection.Execute($"PRAGMA user_version={num}");
+		return num;
 	}
 
 	public Project GetProject()
@@ -488,22 +674,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveTreeGroups(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `TreeGroup` SET `Status`=2 WHERE `Id`= @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `TreeGroup` SET `Status`=2 WHERE `Id`= @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteTreeGroups(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `TreeGroup` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `TreeGroup` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public IEnumerable<Id64> GetLocalRemovedTreeGroups()
@@ -525,22 +713,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveTreeNodes(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `TreeNode` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `TreeNode` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteTreeNodes(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `TreeNode` WHERE `Id` =@id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `TreeNode` WHERE `Id` =@id", new { id });
+			}
+		});
 	}
 
 	public IEnumerable<Id64> GetLocalRemovedTreeNodes()
@@ -615,9 +805,10 @@ public class ProjectDAL : IDisposable
 
 	public void SaveCellProps(IEnumerable<CellProp> dto)
 	{
-		BeginTransaction();
-		Execute("INSERT OR REPLACE INTO `CellProp`(`TableId`,`CellId`,`Dirty`,`Status`,`Attachments`) VALUES(@TableId,@CellId,@Dirty,@Status,@Attachments)", dto);
-		Commit();
+		RunInTransaction(() =>
+		{
+			Execute("INSERT OR REPLACE INTO `CellProp`(`TableId`,`CellId`,`Dirty`,`Status`,`Attachments`) VALUES(@TableId,@CellId,@Dirty,@Status,@Attachments)", dto);
+		});
 	}
 
 	public IEnumerable<CellStyle> GetCellStyles(Id64 tableId)
@@ -646,10 +837,11 @@ public class ProjectDAL : IDisposable
 
 	public void SaveTable(Table dto)
 	{
-		BeginTransaction();
-		Execute("INSERT OR REPLACE INTO `Table`(`Id`,`Title`,`PageSetup`,`Note`,`Dirty`,`HeaderHeights`,`DefaultStyleId`,`ConsolidateSettings`,`BorderStyle`,`CustomBorderStyle`,`FrozenCols`,`HeaderMode`,`CollectSource`,`Locker`,`FilterInfo`,`Foot`,`RowOwnerExclusive`,`RowOwnerLoad`,`RowOwnerLoadShare`,`Ticket`,`ControlFormula`) VALUES(@Id,@Title,@PageSetup,'',@Dirty,@HeaderHeights,@DefaultStyleId,@ConsolidateSettings,@BorderStyle,@CustomBorderStyle,@FrozenCols,@HeaderMode,@CollectSource,@Locker,@FilterInfo,@Foot,@RowOwnerExclusive,@RowOwnerLoad,@RowOwnerLoadShare,@Ticket,@ControlFormula)", dto);
-		Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
-		Commit();
+		RunInTransaction(() =>
+		{
+			Execute("INSERT OR REPLACE INTO `Table`(`Id`,`Title`,`PageSetup`,`Note`,`Dirty`,`HeaderHeights`,`DefaultStyleId`,`ConsolidateSettings`,`BorderStyle`,`CustomBorderStyle`,`FrozenCols`,`HeaderMode`,`CollectSource`,`Locker`,`FilterInfo`,`Foot`,`RowOwnerExclusive`,`RowOwnerLoad`,`RowOwnerLoadShare`,`Ticket`,`ControlFormula`) VALUES(@Id,@Title,@PageSetup,'',@Dirty,@HeaderHeights,@DefaultStyleId,@ConsolidateSettings,@BorderStyle,@CustomBorderStyle,@FrozenCols,@HeaderMode,@CollectSource,@Locker,@FilterInfo,@Foot,@RowOwnerExclusive,@RowOwnerLoad,@RowOwnerLoadShare,@Ticket,@ControlFormula)", dto);
+			Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
+		});
 	}
 
 	public void SaveColumns(IEnumerable<Column> dto)
@@ -659,22 +851,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveColumns(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `Column` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `Column` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteColumns(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `Column` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `Column` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void SaveRows(IEnumerable<Row> dto)
@@ -684,22 +878,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveRows(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `Row` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `Row` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteRows(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `Row` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `Row` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void SaveCells(IEnumerable<Cell> dto)
@@ -709,42 +905,46 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveCells(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `Cell` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `Cell` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void RemoveMerges(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `Merge` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `Merge` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteCells(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `Cell` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `Cell` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteMerges(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `Merge` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `Merge` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void SaveCellStyles(IEnumerable<CellStyle> dto)
@@ -765,10 +965,11 @@ public class ProjectDAL : IDisposable
 
 	public void SaveDocument(Document dto)
 	{
-		BeginTransaction();
-		Execute("INSERT OR REPLACE INTO `Document`(`Id`,`Locker`,`SectPr`,`MergeTable`,`Dirty`) VALUES(@Id,@Locker,@SectPr,@MergeTable,@Dirty)", dto);
-		Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
-		Commit();
+		RunInTransaction(() =>
+		{
+			Execute("INSERT OR REPLACE INTO `Document`(`Id`,`Locker`,`SectPr`,`MergeTable`,`Dirty`) VALUES(@Id,@Locker,@SectPr,@MergeTable,@Dirty)", dto);
+			Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
+		});
 	}
 
 	public Image GetImage(Id64 id)
@@ -779,10 +980,11 @@ public class ProjectDAL : IDisposable
 
 	public void SaveImage(Image dto)
 	{
-		BeginTransaction();
-		Execute("INSERT OR REPLACE INTO `Image`(`Id`,`FileId`,`Dirty`,`CenterX`,`CenterY`,`ZoomFactor`,`PageSetup`,`RotateFlip`) VALUES(@Id,@FileId,@Dirty,@CenterX,@CenterY,@ZoomFactor,@PageSetup,@RotateFlip)", dto);
-		Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
-		Commit();
+		RunInTransaction(() =>
+		{
+			Execute("INSERT OR REPLACE INTO `Image`(`Id`,`FileId`,`Dirty`,`CenterX`,`CenterY`,`ZoomFactor`,`PageSetup`,`RotateFlip`) VALUES(@Id,@FileId,@Dirty,@CenterX,@CenterY,@ZoomFactor,@PageSetup,@RotateFlip)", dto);
+			Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
+		});
 	}
 
 	public Pdf GetPdf(Id64 id)
@@ -793,10 +995,11 @@ public class ProjectDAL : IDisposable
 
 	public void SavePdf(Pdf dto)
 	{
-		BeginTransaction();
-		Execute("INSERT OR REPLACE INTO `Pdf`(`Id`,`FileId`) VALUES(@Id,@FileId)", dto);
-		Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
-		Commit();
+		RunInTransaction(() =>
+		{
+			Execute("INSERT OR REPLACE INTO `Pdf`(`Id`,`FileId`) VALUES(@Id,@FileId)", dto);
+			Execute("UPDATE `TreeNode` SET `Version`=@Version WHERE `Id`=@Id", dto);
+		});
 	}
 
 	public IEnumerable<Paragraph> GetParagraphs(Id64 docId)
@@ -818,22 +1021,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveParagraphs(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `Paragraph` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `Paragraph` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteParagraphs(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `Paragraph` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `Paragraph` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public IEnumerable<DataReference> GetDataReferences()
@@ -855,22 +1060,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveDataReferences(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `DataReference` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `DataReference` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteDataReferences(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `DataReference` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `DataReference` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public IEnumerable<ValidationFormula> GetValidationFormulas()
@@ -892,22 +1099,24 @@ public class ProjectDAL : IDisposable
 
 	public void RemoveValidationFormulas(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `ValidationFormula` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `ValidationFormula` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteValidationFormulas(IEnumerable<Id64> ids)
 	{
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `ValidationFormula` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `ValidationFormula` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void EnsureFormatComplianceRuleTable()
@@ -939,23 +1148,25 @@ public class ProjectDAL : IDisposable
 	public void RemoveFormatComplianceRules(IEnumerable<Id64> ids)
 	{
 		EnsureFormatComplianceRuleTable();
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `FormatComplianceRule` SET `Status`=2 WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `FormatComplianceRule` SET `Status`=2 WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void DeleteFormatComplianceRules(IEnumerable<Id64> ids)
 	{
 		EnsureFormatComplianceRuleTable();
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `FormatComplianceRule` WHERE `Id` = @id", new { id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `FormatComplianceRule` WHERE `Id` = @id", new { id });
+			}
+		});
 	}
 
 	public void EnsureCrossDocumentValidationRuleTable()
@@ -987,29 +1198,32 @@ public class ProjectDAL : IDisposable
 	public void RemoveCrossDocumentValidationRules(IEnumerable<Id64> ids)
 	{
 		EnsureCrossDocumentValidationRuleTable();
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("UPDATE `CrossDocumentValidationRule` SET `Status`=2 WHERE `Id`=@Id", new { Id = id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("UPDATE `CrossDocumentValidationRule` SET `Status`=2 WHERE `Id`=@Id", new { Id = id });
+			}
+		});
 	}
 
 	public void DeleteCrossDocumentValidationRules(IEnumerable<Id64> ids)
 	{
 		EnsureCrossDocumentValidationRuleTable();
-		BeginTransaction();
-		foreach (Id64 id in ids)
+		RunInTransaction(() =>
 		{
-			Execute("DELETE FROM `CrossDocumentValidationRule` WHERE `Id`=@Id", new { Id = id });
-		}
-		Commit();
+			foreach (Id64 id in ids)
+			{
+				Execute("DELETE FROM `CrossDocumentValidationRule` WHERE `Id`=@Id", new { Id = id });
+			}
+		});
 	}
 
 	public object GetCellValueById(Id64 id)
 	{
 		using SQLiteConnection cnn = GetConnection();
-		return cnn.QueryFirstOrDefault<BinaryValue>("SELECT `Value` FROM `Cell` WHERE `Id`=@id", new { id }).Value;
+		BinaryValue? v = cnn.QueryFirstOrDefault<BinaryValue?>("SELECT `Value` FROM `Cell` WHERE `Id`=@id", new { id });
+		return v.HasValue ? v.Value.Value : null;
 	}
 
 	public IEnumerable<SnapshotInfo> GetSnapshots(Id64 nodeId)
@@ -1068,7 +1282,11 @@ public class ProjectDAL : IDisposable
 
 	public void DeleteTable(Id64 tableId)
 	{
-		using SQLiteConnection cnn = GetConnection();
-		cnn.Execute("delete from `cell` where `columnId` in (select `id` from `column` where `tableId`=@tableId);\r\ndelete from `column` where `tableId`=@tableId;\r\ndelete from `row` where `tableId`=@tableId;\r\ndelete from `merge` where `tableId`=@tableId;", new { tableId });
+		// M7: 多条 DELETE 包入事务保证原子性，并补充 CellProp 的级联清理
+		RunInTransaction(() =>
+		{
+			Execute("delete from `cell` where `columnId` in (select `id` from `column` where `tableId`=@tableId);\r\ndelete from `column` where `tableId`=@tableId;\r\ndelete from `row` where `tableId`=@tableId;\r\ndelete from `merge` where `tableId`=@tableId;", new { tableId });
+			Execute("DELETE FROM `CellProp` WHERE `TableId`=@tableId", new { tableId });
+		});
 	}
 }

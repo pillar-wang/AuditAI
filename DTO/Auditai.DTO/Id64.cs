@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using Newtonsoft.Json;
 
 namespace Auditai.DTO;
@@ -20,7 +20,9 @@ public struct Id64
 
 	public Id64(int upper, int lower)
 	{
-		_value = ((long)upper << 32) + lower;
+		// 修复：lower 应视为无符号 32 位拼接。原实现 (long)upper<<32 + lower 在
+		// lower 最高位为 1（负 int）时会得到错误的负数，导致高低位拼接错乱。
+		_value = ((long)upper << 32) | (uint)lower;
 	}
 
 	public bool IsZero()

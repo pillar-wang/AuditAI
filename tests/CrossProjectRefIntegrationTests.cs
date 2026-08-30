@@ -22,6 +22,9 @@ using System.Threading.Tasks;
 using Auditai.DTO;
 using Auditai.LocalDataStore;
 using Auditai.Model;
+// DTO 与 Model 均含 Project/User 类型，测试统一使用 Model 侧类型
+using Project = Auditai.Model.Project;
+using User = Auditai.Model.User;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -137,7 +140,10 @@ namespace CrossProjectRefIntegrationTests
                 UserName = "testuser"
             };
 
-            // 2) 通过反射设置 StorageRouter._isLocalMode = true
+            // 2) 设置字符串常量版本（DataReferenceManager.InitDic 依赖 StringConstBase.Current，与主程序入口保持一致）
+            StringConstBase.Current = StringConstEditions.Audit;
+
+            // 3) 通过反射设置 StorageRouter._isLocalMode = true
             //    （避免依赖 ConfigurationManager 和 app.config）
             var routerType = typeof(StorageRouter);
             var isLocalField = routerType.GetField("_isLocalMode",
@@ -152,7 +158,7 @@ namespace CrossProjectRefIntegrationTests
                 Console.WriteLine("警告: 未能找到 StorageRouter._isLocalMode 字段");
             }
 
-            // 3) 确保 _initialized 标记已设置，阻止后续重复初始化
+            // 4) 确保 _initialized 标记已设置，阻止后续重复初始化
             var initField = routerType.GetField("_initialized",
                 BindingFlags.Static | BindingFlags.NonPublic);
             if (initField != null)
@@ -190,13 +196,13 @@ namespace CrossProjectRefIntegrationTests
                         Id INTEGER PRIMARY KEY,
                         TableId INTEGER NOT NULL,
                         Caption TEXT,
-                        Index INTEGER NOT NULL DEFAULT 0,
+                        [Index] INTEGER NOT NULL DEFAULT 0,
                         Role INTEGER NOT NULL DEFAULT 0
                     );
                     CREATE TABLE IF NOT EXISTS [Row] (
                         Id INTEGER PRIMARY KEY,
                         TableId INTEGER NOT NULL,
-                        Index INTEGER NOT NULL DEFAULT 0,
+                        [Index] INTEGER NOT NULL DEFAULT 0,
                         Role INTEGER NOT NULL DEFAULT 0
                     );
                     CREATE TABLE IF NOT EXISTS [Cell] (
@@ -235,17 +241,17 @@ namespace CrossProjectRefIntegrationTests
             // 列
             _sourceCol1Id = new Id64(1000, 10);
             _sourceCol2Id = new Id64(1000, 11);
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, Index) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_sourceCol1Id.Value), ("@p2", _sourceTableId.Value), ("@p3", "金额_A"), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, Index) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_sourceCol2Id.Value), ("@p2", _sourceTableId.Value), ("@p3", "金额_B"), ("@p4", 1L));
 
             // 行（Role=0 表示 Normal）
             _sourceRow1Id = new Id64(1000, 20);
             _sourceRow2Id = new Id64(1000, 21);
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, Index, Role) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_sourceRow1Id.Value), ("@p2", _sourceTableId.Value), ("@p3", 0L), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, Index, Role) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_sourceRow2Id.Value), ("@p2", _sourceTableId.Value), ("@p3", 1L), ("@p4", 0L));
 
             // 单元格: Row1-Col1=100, Row1-Col2=200, Row2-Col1=300, Row2-Col2=400
@@ -275,17 +281,17 @@ namespace CrossProjectRefIntegrationTests
             // 列
             _targetCol1Id = new Id64(2000, 10);
             _targetCol2Id = new Id64(2000, 11);
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, Index) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_targetCol1Id.Value), ("@p2", _targetTableId.Value), ("@p3", "结果_A"), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, Index) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_targetCol2Id.Value), ("@p2", _targetTableId.Value), ("@p3", "结果_B"), ("@p4", 1L));
 
             // 行
             _targetRow1Id = new Id64(2000, 20);
             _targetRow2Id = new Id64(2000, 21);
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, Index, Role) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_targetRow1Id.Value), ("@p2", _targetTableId.Value), ("@p3", 0L), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, Index, Role) VALUES (@p, @p2, @p3, @p4)",
+            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
                 ("@p", (long)_targetRow2Id.Value), ("@p2", _targetTableId.Value), ("@p3", 1L), ("@p4", 0L));
 
             // 目标单元格（用于 CellRef）

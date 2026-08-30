@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -40,6 +40,7 @@ namespace AuditAI.McpServer.Services
         private const string HandshakeMessage = "{\"protocol\":\"json\",\"version\":1}\x1E";
         private static readonly TimeSpan PingInterval = TimeSpan.FromSeconds(15);
         private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan InvocationTimeout = TimeSpan.FromSeconds(15);
 
         private readonly string _serverBaseUrl;
         private readonly string _hubPath;       // 例如 "/ChatHub"
@@ -117,7 +118,13 @@ namespace AuditAI.McpServer.Services
             // 2. WebSocket 连接
             var wsUrl = BuildWebSocketUrl(connectionToken);
             _ws = new ClientWebSocket();
-            await _ws.ConnectAsync(new Uri(wsUrl), ct);
+            // 修复：原实现无超时，TCP 握手后服务端不响应时 WebSocket 连接可无限挂起，
+            // 卡死单线程 MCP 主循环。加连接总超时。
+            using (var connectCts = CancellationTokenSource.CreateLinkedTokenSource(ct))
+            {
+                connectCts.CancelAfter(ConnectTimeout);
+                await _ws.ConnectAsync(new Uri(wsUrl), connectCts.Token);
+            }
 
             // 3. 发送握手
             var handshakeBytes = Encoding.UTF8.GetBytes(HandshakeMessage);
@@ -164,7 +171,16 @@ namespace AuditAI.McpServer.Services
 
             await SendMessageAsync(msg);
 
-            // 等待 Completion（type=3）
+            // 修复：原实现 await tcs.Task 无任何超时，服务端不返回 Completion（或连接假死）时
+            // 会永久挂起，单线程 MCP 主循环被一次调用卡死，无法处理后续任何请求。
+            // 增加总超时，超时清理 pending 条目并抛明确错误。
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(InvocationTimeout));
+            if (completedTask != tcs.Task)
+            {
+                _pendingInvocations.TryRemove(invocationId, out _);
+                throw new TimeoutException("Hub 调用超时: " + methodName);
+            }
+
             var completion = await tcs.Task;
             var error = completion["error"]?.ToString();
             if (!string.IsNullOrEmpty(error))

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -24,6 +24,7 @@ using Auditai.UI.Controls;
 using Auditai.UI.Platform.Chat;
 using Auditai.UI.Platform.Properties;
 using Auditai.Util;
+using FileTransferModel;
 using Newtonsoft.Json.Linq;
 
 namespace Auditai.UI.Platform;
@@ -398,11 +399,35 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		ctnSend.SplitterWidth = 0;
 		c1DockingTab1.TabsSpacing = 10;
 		txtMessage.BorderStyle = BorderStyle.None;
-		C1Theme c1Theme = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetC1Theme();
-		string path = "BaseThemeProperties\\Styles\\Header\\Background";
-		Color color = c1Theme.GetColor(path, Color.FromArgb(241, 241, 241));
-		pnlChatTitle.BackColor = color;
-		pnlSendButton.BackColor = color;
+
+		var selectedTheme = Auditai.UI.Controls.Theme.SelectedAuditaiTheme;
+
+		if (selectedTheme.Name == "auditai_GoogleBlue")
+		{
+			// Google Blue 主题精修
+			pnlChatTitle.BackColor = AuditTheme.SurfaceMuted;
+			pnlSendButton.BackColor = AuditTheme.SurfaceMuted;
+			ctnAll.BackColor = AuditTheme.Border;
+			ctnChat.BackColor = AuditTheme.Surface;
+			ctnSend.BackColor = AuditTheme.SurfaceMuted;
+			pnlGroup.BackColor = AuditTheme.SurfaceMuted;
+			txtMessage.BackColor = AuditTheme.Surface;
+			txtMessage.ForeColor = AuditTheme.Text;
+			txtMessage.Font = AuditTheme.FontDefault;
+			lblSelfName.ForeColor = AuditTheme.TextSecondary;
+			lblchatName.ForeColor = AuditTheme.TextSecondary;
+			// 发送按钮
+			ThemeApplier.ApplyPrimaryButton(btnSend);
+		}
+		else
+		{
+			C1Theme c1Theme = selectedTheme.GetC1Theme();
+			string path = "BaseThemeProperties\\Styles\\Header\\Background";
+			Color color = c1Theme.GetColor(path, Color.FromArgb(241, 241, 241));
+			pnlChatTitle.BackColor = color;
+			pnlSendButton.BackColor = color;
+		}
+
 		foreach (KeyValuePair<string, IRecordEditor> item in recordEditorMap)
 		{
 			item.Value.SetTheme();
@@ -424,20 +449,101 @@ public class ChatForm : C1RibbonForm, ISetTheme
 
 	private async void btnSend_Click(object sender, EventArgs e)
 	{
-		await SendMessageImpl();
+		// 修复：原 async void 直接 await，SendMessageImpl 网络异常（SignalR 连接断开等）
+		// 会作为未处理异常直接崩掉整个程序。
+		try
+		{
+			await SendMessageImpl();
+		}
+		catch (Exception ex)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "发送消息失败: " + ex.Message);
+		}
 	}
 
-	private void CmdFile_Click(object sender, ClickEventArgs e)
+	private async void CmdFile_Click(object sender, ClickEventArgs e)
 	{
+		// 修复：原实现为空方法（死代码）。补充"发送文件"功能：
+		// 选择文件 → 构建文件信息 → 写入传输缓存 → 通过 SignalR 推送文件请求给当前选中成员。
+		try
+		{
+			MemTab memTab = CurrentSelectedMember();
+			if (memTab == null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择用户沟通");
+				return;
+			}
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			if (openFileDialog.ShowDialog() != DialogResult.OK)
+			{
+				return;
+			}
+			string file = openFileDialog.FileName;
+			if (!System.IO.File.Exists(file))
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "文件不存在！");
+				return;
+			}
+			FileTransferModel.FileInfo fileInfo = FileUtil.GetFileInfo(file);
+			NotifyMessage notifyMessage = new NotifyMessage
+			{
+				Kind = "sendfilerequest",
+				Bullet = true,
+				Value = Newtonsoft.Json.JsonConvert.SerializeObject(fileInfo),
+				Text = Auditai.Model.User.Current.Name + "向您发送来 " + Path.GetFileName(file)
+			};
+			FileTranferManager.GetInstance().FileCacheMap.Add(fileInfo.Id, new FileCache
+			{
+				SendUserId = Auditai.Model.User.Current.Id.ToString(),
+				RecieveUserId = memTab.Id.ToString(),
+				FileInfo = fileInfo,
+				LocalFile = file,
+				FileState = FileState.SendWaitAccept
+			});
+			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode)
+			{
+				await SignalRClient.SendToUser(memTab.Id.ToString(), notifyMessage.ToString());
+			}
+		}
+		catch (Exception ex)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "发送文件失败: " + ex.Message);
+		}
 	}
 
 	private async void CmdPush_Click(object sender, ClickEventArgs e)
 	{
-		await PushTreeNodeImpl();
+		// 修复：原 async void 直接 await，PushTreeNodeImpl 网络异常会崩程序。
+		try
+		{
+			await PushTreeNodeImpl();
+		}
+		catch (Exception ex)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "推送文件失败: " + ex.Message);
+		}
 	}
 
 	private void CmdHistory_Click(object sender, ClickEventArgs e)
 	{
+		// 修复：原实现为空方法（死代码）。补充"聊天记录"功能：加载当前成员的本地历史记录。
+		try
+		{
+			MemTab memTab = CurrentSelectedMember();
+			if (memTab == null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选择用户沟通");
+				return;
+			}
+			IRecordEditor editor = GetAndCreateRecordEditor(memTab.Id);
+			var records = recordPersistence.GetRecords(memTab.Id.ToString(), memTab.TempMostEarly);
+			editor.Insert(records.Cast<ChatRecord>());
+			editor.ScrollEnd();
+		}
+		catch (Exception ex)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "加载聊天记录失败: " + ex.Message);
+		}
 	}
 
 	private void CmdEmotion_Click(object sender, ClickEventArgs e)
@@ -526,11 +632,16 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		{
 			e.Cancel = true;
 			Hide();
-			if (base.Owner == null)
+			// Owner 判空：主窗体可能已释放或为 null，直接访问会 NRE/ObjectDisposedException
+			var owner = Program.MainForm?.View;
+			if (owner != null && !owner.IsDisposed)
 			{
-				base.Owner = Program.MainForm?.View;
+				if (base.Owner == null)
+				{
+					base.Owner = owner;
+				}
+				base.Owner.TopLevel = true;
 			}
-			base.Owner.TopLevel = true;
 		}
 	}
 
@@ -550,6 +661,8 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		cmdFile.Image = Resources.transFile;
 		cmdFile.Click += CmdFile_Click;
 		lnkFile.Command = cmdFile;
+		// 修复：原 lnkFile 创建并绑定命令后从未 Add 到工具栏，按钮不显示，CmdFile_Click 成死代码。
+		tlbSendToolbar.CommandLinks.Add(lnkFile);
 		cmdPush.Text = "推送在线云文件";
 		cmdPush.Image = Resources.transPush;
 		cmdPush.Click += CmdPush_Click;
@@ -559,6 +672,8 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		cmdHistory.Image = Resources.chatHistory;
 		cmdHistory.Click += CmdHistory_Click;
 		lnkHistory.Command = cmdHistory;
+		// 修复：原 lnkHistory 创建并绑定命令后从未 Add 到工具栏，按钮不显示，CmdHistory_Click 成死代码。
+		tlbSendToolbar.CommandLinks.Add(lnkHistory);
 		c1ToolBar1.CommandLinks.Clear();
 		cmdNotifySound.Checked = true;
 		cmdNotifySound.Text = "消息提示音";

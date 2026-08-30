@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -4069,6 +4069,9 @@ public class TableEditor : ISetTheme
 		}
 		bool isTableExistFillFormula = IsTableExistFillFormula();
 		Auditai.Model.Cell cell2 = Table[j, leftCol];
+		// 修复：当选择范围内第 i 行之后全是隐藏行时，j 会推进到 BodyRowsCount，
+		// Table[j, leftCol] 越界返回 null，原 cell2.Value 直接 NRE。
+		if (cell2 == null) return;
 		object value2 = cell2.Value;
 		bool flag;
 		DateTime dateTime2;
@@ -9134,6 +9137,12 @@ public class TableEditor : ISetTheme
 				MainForm.ImageProcess.SetImageStrategy(new DefaultImageStrategy());
 			}
 			MainForm.ImageProcess.ProcessImage();
+
+			// Google Blue 风格精修（在 C1Theme 基础上叠加）
+			if (selectedAuditaiTheme.Name == "auditai_GoogleBlue")
+			{
+				ThemeApplier.ApplyFlexGrid(_grid);
+			}
 		}
 		TitleEditor.SetTheme();
 		ValidationEditor.SetTheme();

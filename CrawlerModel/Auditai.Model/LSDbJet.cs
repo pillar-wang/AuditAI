@@ -101,7 +101,12 @@ public class LSDbJet : LSDb
 		oleDbConnection.Open();
 		using OleDbCommand oleDbCommand = new OleDbCommand(command, oleDbConnection);
 		object value = oleDbCommand.ExecuteScalar();
-		return Convert.IsDBNull(value) ? default(T) : ((T)Convert.ChangeType(value, typeof(T)));
+		// 修复：SQL 无返回行时 ExecuteScalar 返回 null，对值类型 ChangeType 抛 InvalidCastException。
+		if (value == null || Convert.IsDBNull(value))
+		{
+			return default(T);
+		}
+		return (T)Convert.ChangeType(value, typeof(T));
 	}
 
 	public override DataTable GetDataTable(string command)
@@ -145,18 +150,21 @@ public class LSDbJet : LSDb
 		using OleDbConnection oleDbConnection = new OleDbConnection(_csBuilder.ConnectionString);
 		oleDbConnection.Open();
 		using OleDbTransaction oleDbTransaction = oleDbConnection.BeginTransaction();
-		foreach (string command in commands)
+		try
 		{
-			using OleDbCommand oleDbCommand = new OleDbCommand(command, oleDbConnection, oleDbTransaction);
-			try
+			foreach (string command in commands)
 			{
+				using OleDbCommand oleDbCommand = new OleDbCommand(command, oleDbConnection, oleDbTransaction);
 				num += oleDbCommand.ExecuteNonQuery();
-				oleDbTransaction.Commit();
 			}
-			catch (OleDbException)
-			{
-				oleDbTransaction.Rollback();
-			}
+			oleDbTransaction.Commit();
+		}
+		catch (OleDbException)
+		{
+			// 修复：原实现在循环内每条命令后 Commit，下一条命令仍绑定已提交事务
+			// 抛 InvalidOperationException。改为循环外统一 Commit，失败统一 Rollback 并中止。
+			oleDbTransaction.Rollback();
+			throw;
 		}
 		return num;
 	}

@@ -205,6 +205,11 @@ public class PdfViewer
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
 		}
+		catch (IOException ex)
+		{
+			// 修复：原实现仅捕获 PdfException，文件被占用/IO 错误未捕获会向上抛崩溃。
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "打开 PDF 失败: " + ex.Message);
+		}
 	}
 
 	public void SetZoomFactor(int percent)
@@ -222,6 +227,12 @@ public class PdfViewer
 
 	public void Print(PrinterSettings ps)
 	{
+		// 修复：原 _pv.Document.CreatePrintDocument() 在未加载文档时 _pv.Document 为 null 直接 NRE。
+		if (_pv?.Document == null)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先打开 PDF 文档");
+			return;
+		}
 		using PrintDocument printDocument = _pv.Document.CreatePrintDocument();
 		if (ps != null)
 		{

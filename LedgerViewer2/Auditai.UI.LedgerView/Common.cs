@@ -14,9 +14,9 @@ namespace Auditai.UI.LedgerView;
 
 internal static class Common
 {
-	internal static readonly Color MarkBackColor = Color.Red;
+	internal static readonly Color MarkBackColor = Color.FromArgb(255, 224, 224);
 
-	internal static readonly Color MarkForeColor = Color.White;
+	internal static readonly Color MarkForeColor = Color.FromArgb(176, 23, 23);
 
 	private static TooltipBox _ttp = new TooltipBox
 	{

@@ -162,7 +162,15 @@ internal class ProjectBak
 	{
 		if (!closed && treeNode != null)
 		{
-			waiters.Add(treeNode, new AutoResetEvent(initialState: false));
+			// 修复：原 waiters.Add 在节点重复入队（如连续保存）时抛 ArgumentException 且无捕获。
+			if (waiters.ContainsKey(treeNode))
+			{
+				waiters[treeNode].Reset();
+			}
+			else
+			{
+				waiters.Add(treeNode, new AutoResetEvent(initialState: false));
+			}
 			taskQueue.Enqueue(treeNode);
 		}
 	}

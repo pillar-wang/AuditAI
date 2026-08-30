@@ -1,4 +1,4 @@
-using Auditai.Model;
+﻿using Auditai.Model;
 
 namespace Auditai.UI.Platform;
 

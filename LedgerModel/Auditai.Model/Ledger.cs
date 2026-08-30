@@ -784,6 +784,12 @@ public class Ledger
 		TrialBalanceSheet trialBalanceSheet = GetTrialBalanceSheet(StartDate, end);
 		ReceivableAgeSheet receivableAgeSheet = new ReceivableAgeSheet();
 		receivableAgeSheet.YearCount = Math.Min(6, GetYearDiff(StartDate.AddDays(-1.0), end));
+		// 修复：当 end 早于 StartDate 时 YearCount 可为 0 或负，
+		// 后续 Values[YearCount-1] 负索引抛 IndexOutOfRangeException，钳制到至少 1。
+		if (receivableAgeSheet.YearCount <= 0)
+		{
+			receivableAgeSheet.YearCount = 1;
+		}
 		foreach (KeyValuePair<Account, AccountBalance> item in trialBalanceSheet.End)
 		{
 			ReceivableAgeEntry receivableAgeEntry = new ReceivableAgeEntry();
@@ -837,6 +843,11 @@ public class Ledger
 			bool flag3 = ((item2.Amount >= 0m) ? item2.IsDebit : (!item2.IsDebit));
 			decimal num = Math.Abs(item2.Amount);
 			int num2 = Math.Min(6, GetYearDiff(item2.Day, end)) - 1;
+			// 修复：凭证日期晚于 end 或同日时 GetYearDiff 可能为 0，num2 为 -1，越界。
+			if (num2 < 0)
+			{
+				num2 = 0;
+			}
 			foreach (Account item3 in item2.Account.AncestorsAndSelf)
 			{
 				if (flag3 == receivableAgeSheet.Entries[item3].Value.IsDebit)
@@ -850,7 +861,12 @@ public class Ledger
 			}
 			foreach (AuxiliaryItem detail in item2.Details)
 			{
-				ReceivableAgeValue receivableAgeValue3 = receivableAgeSheet.Entries[item2.Account].Aux[detail];
+				// 修复：凭证辅助项若未出现在期初辅助余额（无期初余额的辅助项），
+				// Aux 字典中无此 key，原直接索引抛 KeyNotFoundException 账龄表崩溃。
+				if (!receivableAgeSheet.Entries[item2.Account].Aux.TryGetValue(detail, out var receivableAgeValue3))
+				{
+					continue;
+				}
 				if (flag3 == receivableAgeValue3.IsDebit)
 				{
 					receivableAgeValue3.Values[num2] += num;

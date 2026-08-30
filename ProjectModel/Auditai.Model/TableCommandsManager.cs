@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Auditai.Model;
@@ -52,6 +52,17 @@ public class TableCommandsManager
 		command.Execute();
 		_redo.Clear();
 		_undo.Push(command);
+		StackChanged?.Invoke(this, EventArgs.Empty);
+	}
+
+	/// <summary>
+	/// 清空撤销/重做栈。在表格重新加载（LoadAndReturn）或从云端 Pull/Merge 后调用，
+	/// 防止历史命令引用已不存在的 Cell/Row 对象。
+	/// </summary>
+	public void Clear()
+	{
+		_undo.Clear();
+		_redo.Clear();
 		StackChanged?.Invoke(this, EventArgs.Empty);
 	}
 }

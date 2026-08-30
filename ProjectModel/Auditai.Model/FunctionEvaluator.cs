@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -1020,7 +1020,7 @@ public class FunctionEvaluator
 			return s.Split('|').Max(delegate(string s0)
 			{
 				Match match = Regex.Match(s0, "\\d+");
-				return match.Success ? double.Parse(match.Value) : double.NegativeInfinity;
+				return match.Success ? (double.TryParse(match.Value, out var dv) ? dv : double.NegativeInfinity) : double.NegativeInfinity;
 			});
 		}
 		double GetValue(Operand v)
@@ -1123,7 +1123,7 @@ public class FunctionEvaluator
 			return s.Split('|').Min(delegate(string s0)
 			{
 				Match match = Regex.Match(s0, "\\d+");
-				return match.Success ? double.Parse(match.Value) : double.PositiveInfinity;
+				return match.Success ? (double.TryParse(match.Value, out var dv) ? dv : double.PositiveInfinity) : double.PositiveInfinity;
 			});
 		}
 		double GetValue(Operand v)
@@ -1301,6 +1301,13 @@ public class FunctionEvaluator
 			if (cellsOperand == null || cellsOperand2 == null)
 			{
 				continue;
+			}
+			// 防御：VLookUp 按行索引关联条件列与查找列，两张表行结构不同会导致索引错位，
+			// 要么取到错行的值，要么因索引越界被上层 catch(FormulaException) 静默吞掉而显示空值。
+			// 返回 #REF! 让公式错误立即可见，提示用户条件列和查找列应指向同一张被查找表。
+			if (cellsOperand.Table != cellsOperand2.Table)
+			{
+				return ErrorOperand.BadReference;
 			}
 			if (cellsOperand.Cells.Count <= 0)
 			{
@@ -3258,9 +3265,15 @@ public class FunctionEvaluator
 	private static double StringSum(string s)
 	{
 		double num = 0.0;
+		// 匹配项可能含千分位逗号（如 "1,000"），double.Parse 直接解析会抛
+		// FormatException（非 FormulaException），导致公式求值崩溃。
+		// 先去除逗号再 TryParse，无法解析的项安全跳过。
 		foreach (Match item in Regex.Matches(s, "-?\\d+(,\\d{3})*(\\.\\d+)?"))
 		{
-			num += double.Parse(item.Value);
+			if (double.TryParse(item.Value.Replace(",", ""), out var v))
+			{
+				num += v;
+			}
 		}
 		return num;
 	}

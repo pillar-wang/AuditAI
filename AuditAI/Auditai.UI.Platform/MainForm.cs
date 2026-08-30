@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -52,13 +52,12 @@ public class MainForm
 		public TreeNodeBase LastNode { get; set; }
 	}
 
-	private const int ANIMATESPEED = 100;
-
 	private C1SplitContainer ctnRibbonFormClientArea;
 
 	private C1SplitContainer ctnAll;
 
-	private C1SplitterPanel pnlLedger;
+	// 账务数据独立窗口（单实例），承载 MultiLedgerViewer.View
+	private LedgerWindow _ledgerWindow;
 
 	private C1SplitterPanel pnlMain;
 
@@ -80,30 +79,12 @@ public class MainForm
 
 	private C1SplitterPanel pnlCtnAllParent;
 
-	private bool _isSplitterMoving;
-
-	private bool _ispnlMainShow;
-
 	private bool _closeByCode;
 
-	private readonly int _animateScreenWidth = Screen.PrimaryScreen.Bounds.Width;
-
-	private Timer _animateTimer = new Timer
-	{
-		Interval = 1
-	};
-
-	private bool _animateToRight = true;
+	// 关闭流程进行中标志：防止 FormClosing 网络等待期间重入（用户重复点关闭按钮）
+	private bool _isClosing;
 
 	private bool _firstTimeOpen = true;
-
-	private Form _animateForm = new Form
-	{
-		StartPosition = FormStartPosition.Manual,
-		FormBorderStyle = FormBorderStyle.None,
-		ShowInTaskbar = false,
-		TopLevel = true
-	};
 
 	private bool _isPreview;
 
@@ -362,32 +343,6 @@ public class MainForm
 
 	public C1SplitterPanel ProjectHierarchyTreePandel => pnlTree;
 
-	private bool IsPlatformEnableLedger
-	{
-		get
-		{
-			switch (Program.ClientPlatformType)
-			{
-			case PlatformType.AuditPlatform:
-			case PlatformType.EnterpriseReportPlatform:
-				return true;
-			case PlatformType.EnterpriseManagerPlatform:
-			case PlatformType.TableDevelopPlatform:
-			case PlatformType.ProductionCostAccountingSystem:
-			case PlatformType.ContractLedgerManagementSystem:
-			case PlatformType.RDExpenseLedgerSystem:
-			case PlatformType.SalesOrderManagementSystem:
-			case PlatformType.PSIManagementSystem:
-			case PlatformType.ProjectLedgerManagementSystem:
-				return false;
-			case PlatformType.Custom:
-				return ClientCustomizeData.Current.GetOptionValueInSettingIniFile_Bool("enable_ledger", defaultValue: false);
-			default:
-				return false;
-			}
-		}
-	}
-
 	public bool IsFormActived { get; protected set; }
 
 	public bool IsInSyncingProject
@@ -424,13 +379,15 @@ public class MainForm
 		return _lazyTableEditor.Value;
 	}
 
-	protected static void LedgerCloseEventProcessHandle(object sender, LedgerEventArgs e)
+	protected void LedgerCloseEventProcessHandle(object sender, LedgerEventArgs e)
 	{
 		Ledger ledger = e.Viewer.Ledger;
 		if (ledger != null)
 		{
 			LedgerVirtualTableUtils.ClearLederVirtualTable(e.Viewer.Ledger);
 		}
+		// 账套关闭后同步清空账务数据窗口标题
+		_ledgerWindow?.UpdateTitle(null);
 	}
 
 	protected static void LedgerDataChangeEventProcessHandle(object sender, LedgerEventArgs e)
@@ -522,17 +479,6 @@ public class MainForm
 			BorderWidth = 0,
 			AutoSizeElement = C1.Framework.AutoSizeElement.Both
 		};
-		pnlLedger = new C1SplitterPanel
-		{
-			Dock = PanelDockStyle.Left,
-			MinWidth = 0,
-			SizeRatio = 0.0,
-			BackColor = Color.Transparent,
-			Name = "pnlLedger",
-			Visible = IsPlatformEnableLedger
-		};
-		pnlLedger.Controls.Add(MultiLedgerViewer.View);
-		MultiLedgerViewer.View.Dock = DockStyle.Fill;
 		ctnMain = new C1SplitContainer
 		{
 			Dock = DockStyle.Fill,
@@ -658,7 +604,12 @@ public class MainForm
 						MessageBoxButtons.YesNo);
 					if (result == DialogResult.Yes)
 					{
-						_ = SyncProjects();
+						// 吞异常观察：避免未观察的 Task 异常逃逸触发进程级崩溃
+						_ = Task.Run(async () =>
+						{
+							try { await SyncProjects(); }
+							catch (Exception ex) { ex.Log("网络恢复后自动同步项目失败"); }
+						});
 					}
 				}
 			}
@@ -887,6 +838,13 @@ public class MainForm
 	/// <summary>
 	/// 为表格订阅 Saved 事件以触发自动 Push（仅订阅一次）。
 	/// 失败时记录日志，不影响本地保存（后续离线队列可补传）。
+	/// 关键守卫：同步流程（SyncProjects/SyncProjectImpl）期间跳过 AutoPush，
+	/// 因为同步循环本身会调用 Syncer.Push(table)，重复 Push 同一表格会引发
+	/// 1) Project.Dal 单例事务对象被多线程并发访问导致状态损坏；
+	/// 2) table.LoadAndReturn() 在 Push 内清空 Cells 集合，与同步循环对同一表格
+	///    的迭代操作产生冲突；
+	/// 3) HTTP 并发上传引发服务端版本冲突（OutOfDate）形成重试风暴。
+	/// 同步完成后的 Saved 事件不再触发，因为同步流程已统一推送所有 dirty 数据。
 	/// </summary>
 	private void EnsureAutoPushSubscribed(Auditai.Model.Table table)
 	{
@@ -894,18 +852,23 @@ public class MainForm
 		table.Saved += async (s, e) =>
 		{
 			if (!AutoPushEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			// 同步流程期间跳过 AutoPush：SyncProjectImpl 会统一处理推送
+			if (IsInSyncingProject) return;
 			try
 			{
 				await Syncer.Push(table).ConfigureAwait(false);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			// 记录推送异常，避免"静默丢推送"导致本地改动永远不上云（表格损坏死锁的诱因之一）
+			ex.Log($"AutoPush 表格 \"{table.TreeNode?.Name}\" 推送失败");
 		}
 		};
 	}
 
 	/// <summary>
 	/// 为文档订阅 Saved 事件以触发自动 Push（仅订阅一次）。
+	/// 同步流程期间同样跳过，理由同 Table 版本：SyncProjectImpl 会统一处理推送。
 	/// </summary>
 	private void EnsureAutoPushSubscribed(Auditai.Model.Document document)
 	{
@@ -913,12 +876,16 @@ public class MainForm
 		document.Saved += async (s, e) =>
 		{
 			if (!AutoPushEnabled || Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
+			// 同步流程期间跳过 AutoPush：SyncProjectImpl 会统一处理推送
+			if (IsInSyncingProject) return;
 			try
 			{
 				await Syncer.Push(document).ConfigureAwait(false);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			// 记录推送异常，避免"静默丢推送"导致本地改动永远不上云
+			ex.Log($"AutoPush 文档 \"{document.TreeNode?.Name}\" 推送失败");
 		}
 		};
 	}
@@ -990,6 +957,10 @@ public class MainForm
 		// 节点级强锁：心跳续约定时器。每 5 分钟调用 AcquireTableLock 刷新 LockerAcquiredAt，
 		// 防止长时间编辑时锁被服务端 30 分钟超时释放。
 		private System.Threading.Timer _tableLockHeartbeatTimer;
+
+		// 锁心跳已停止标志：定时器 Dispose 后在途回调仍可能执行，用标志阻止其继续续约
+		private volatile bool _lockHeartbeatStopped;
+
 		private const int LockHeartbeatIntervalMs = 5 * 60 * 1000; // 5 分钟
 
 		/// <summary>
@@ -1112,6 +1083,7 @@ public class MainForm
 		private void StartLockHeartbeat()
 		{
 			StopLockHeartbeat();
+			_lockHeartbeatStopped = false; // 重新启动心跳，恢复回调执行
 			_tableLockHeartbeatTimer = new System.Threading.Timer(
 				callback: async _ => await LockHeartbeatCallbackAsync(),
 				state: null,
@@ -1125,6 +1097,7 @@ public class MainForm
 		/// </summary>
 		private void StopLockHeartbeat()
 		{
+			_lockHeartbeatStopped = true; // 先置标志，阻止 Dispose 后仍在执行的在途回调续约
 			if (_tableLockHeartbeatTimer != null)
 			{
 				try { _tableLockHeartbeatTimer.Dispose(); } catch { }
@@ -1139,6 +1112,8 @@ public class MainForm
 		/// </summary>
 		private async Task LockHeartbeatCallbackAsync()
 		{
+			// 定时器已停止：丢弃在途回调，避免锁已释放/程序退出后仍向服务端续约
+			if (_lockHeartbeatStopped) return;
 			try
 			{
 				var table = _currentLockedTable;
@@ -1271,7 +1246,7 @@ public class MainForm
 	/// <summary>
 	/// 冲突解决提示（简化版）：OutOfDate 重试耗尽后提示用户本地修改已被他人覆盖性修改。
 	/// </summary>
-	private void ShowConflictResolutionDialog(object entity)
+	private DialogResult ShowConflictResolutionDialog(object entity)
 	{
 		string display = string.Empty;
 		Auditai.Model.Table t = entity as Auditai.Model.Table;
@@ -1299,10 +1274,15 @@ public class MainForm
 		{
 			display = entity == null ? string.Empty : entity.ToString();
 		}
-		System.Windows.Forms.MessageBox.Show(
-			"\"" + display + "\" 已被他人修改，请确认本地修改是否保留",
+		// 冲突解决对话框：由"仅提示"升级为可操作选择。
+		// 是=保留本地修改（保留本地未同步改动，稍后重新同步）；
+		// 否=放弃本地修改，采用云端版本（本地被云端覆盖）。
+		return System.Windows.Forms.MessageBox.Show(
+			"\"" + display + "\" 已被他人修改，存在冲突。\r\n\r\n" +
+			"选择【是】= 保留本地修改（本地改动保留，稍后重新同步）；\r\n" +
+			"选择【否】= 放弃本地修改，采用云端版本。",
 			"冲突解决",
-			MessageBoxButtons.OK,
+			MessageBoxButtons.YesNo,
 			MessageBoxIcon.Warning);
 	}
 
@@ -2582,6 +2562,7 @@ public class MainForm
 			select u).Count() + 1;
 		int hasProcessCount = 0;
 		float partPercent = 1f / (float)((totalCount == 0) ? 1 : totalCount);
+		var tableSaveErrors = new List<string>();
 		for (int j = 0; j < tables.Count; j++)
 		{
 			progressUpdater.UpdateMessage("正在保存表格 " + tables[j].TreeNode.Name);
@@ -2598,13 +2579,20 @@ public class MainForm
 				EnsureAutoPushSubscribed(tables[j]);
 				tables[j].Save(null, bypassMapRowIndex: false, progressUpdater);
 			}
-			catch (Exception ex2)
+			catch (TableModelException ex)
 			{
-				Exception inner = ex2;
-				while (inner.InnerException != null)
-					inner = inner.InnerException;
-				throw;
+				// 表格数据结构损坏（行数×列数≠单元格数）。
+				// 原代码直接 re-throw 会导致后续所有表格和文档都无法保存，
+				// 一个坏表卡死整个项目。改为收集错误并跳过，让其他表格继续保存。
+				tableSaveErrors.Add(tables[j].TreeNode.Name + "：" + ex.Message);
+				continue;
 			}
+		}
+		if (tableSaveErrors.Count > 0)
+		{
+			var msg = string.Join("\n", tableSaveErrors);
+			System.Windows.Forms.MessageBox.Show($"以下表格已损坏，已跳过保存。其他内容已正常保存：\n\n{msg}\n\n请尝试重新载入这些表格或删除后重建。",
+				"保存完成（部分表格被跳过）", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 		}
 		foreach (var pair in DocumentEditors.Select((KeyValuePair<Auditai.Model.Document, DocumentEditor> kv, int i) => new { kv, i }).ToList())
 		{
@@ -2751,6 +2739,12 @@ public class MainForm
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex2.InnerException?.Message ?? ex2.Message);
 			}
 		}
+		// 兜底捕获：ServerException/TimeoutException 等不能逃逸（本方法不向调用方抛出异常）
+		catch (Exception ex)
+		{
+			ex.Log("同步项目时发生错误");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "同步项目时发生错误");
+		}
 		if (anyNodeUpdated)
 		{
 			PopulateProject();
@@ -2859,33 +2853,44 @@ public class MainForm
 		}
 		TaskProgressValueUpdater progressUpdater = new TaskProgressValueUpdater(0f, 0.2f, progressRuntimeData.UpdateProgress);
 		TaskProgressValueUpdater synnDetailDataProgressUpdater = new TaskProgressValueUpdater(0.2f, 0.75f, progressRuntimeData.UpdateProgress);
-		new TaskProgressValueUpdater(0.95f, 0.05f, progressRuntimeData.UpdateProgress);
 		ProgressDisplayValueConverter_SmoothByTime progressDisplayValueConverter = new ProgressDisplayValueConverter_SmoothByTime(0.05f);
 		progressRuntimeData.NextStep("正在保存" + StringConstBase.Current.Project + "数据...");
 		progressForm.SetProgressDisplayValueConverter(progressDisplayValueConverter);
+		LogWriter.Info($"[SyncProjectImpl] === 开始同步项目: {proj.Name} (Id={proj.Id}) ===");
 		await SaveProjectImpl(proj, progressUpdater);
+		LogWriter.Info($"[SyncProjectImpl] SaveProjectImpl 完成，开始 Pull 项目结构");
 		List<Tuple<TreeNodeBase, Exception>> le = new List<Tuple<TreeNodeBase, Exception>>();
 		bool anyNodeUpdated = (await Syncer.Pull(proj)).Item2;
 		// 使用 PullAndRetryPush 处理乐观锁冲突：服务器返回 OutOfDate 时自动 Pull+重试
 		PushResult pushProjectResult = await Syncer.PullAndRetryPush(proj);
 		if (pushProjectResult == PushResult.OutOfDate)
 		{
-			// 重试耗尽仍冲突，提示用户手动解决
-			ShowConflictResolutionDialog(proj);
+			// 重试耗尽仍冲突，让用户选择：保留本地 或 采用云端
+			if (ShowConflictResolutionDialog(proj) == DialogResult.No)
+			{
+				// 采用云端：重新拉取项目结构并保存（尽力覆盖本地树）
+				try
+				{
+					await Syncer.Pull(proj);
+				}
+				catch (Exception pullEx) { pullEx.Log("冲突解决-采用云端-项目拉取失败"); }
+			}
 		}
 		proj.Save();
 		progressRuntimeData.UpdateMessage("准备开始同步数据...");
 		IEnumerable<TreeTableNode> tableNodes = proj.GetAllTableNodes();
 		Dictionary<Id64, int> tableVersions = (await Syncer.QueryVersion(proj.Id, tableNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
+		// 防御：服务器可能未对每个表都返回版本号，缺项按 0 处理，避免 KeyNotFoundException 中断整个同步
+		int ServerVersion(Id64 id) => tableVersions.TryGetValue(id, out int v) ? v : 0;
 		List<Auditai.Model.Table> tables = (from n in tableNodes
-			where n.IsEntityDirty || tableVersions[n.Id] > n.Version
+			where n.IsEntityDirty || ServerVersion(n.Id) > n.Version
 			select n.Table into t
-			where !t.IsCorrupted
 			select t).ToList();
 		IEnumerable<TreeDocumentNode> docNodes = proj.GetAllDocumentNodes();
 		Dictionary<Id64, int> docVersions = (await Syncer.QueryVersion(proj.Id, docNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
+		int DocServerVersion(Id64 id) => docVersions.TryGetValue(id, out int dv) ? dv : 0;
 		List<Auditai.Model.Document> documents = (from n in docNodes
-			where n.IsEntityDirty || docVersions[n.Id] > n.Version
+			where n.IsEntityDirty || DocServerVersion(n.Id) > n.Version
 			select n.Document).ToList();
 		IEnumerable<TreeImageNode> imageNodes = proj.GetAllImageNodes();
 		Dictionary<Id64, int> imageVersions = (await Syncer.QueryVersion(proj.Id, imageNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
@@ -2901,16 +2906,22 @@ public class MainForm
 		int hasProcessCount = 0;
 		TaskProgressValueUpdater syncProgressValueRefresher = new TaskProgressValueUpdater(0f, 1f, synnDetailDataProgressUpdater.UpdateProgress);
 		bool anyEntityPushed = false;
+		LogWriter.Info($"[SyncProjectImpl] 开始同步表格循环，共 {tables.Count} 张表格需要处理");
 		for (int l = 0; l < tables.Count; l++)
 		{
 			Auditai.Model.Table table2 = tables[l];
+			string tableName = table2.TreeNode?.Name ?? "<unnamed>";
+			LogWriter.Info($"[SyncProjectImpl] 表格同步进度 {l+1}/{tables.Count}：{tableName} (Id={table2.Id}, Rows={table2.Rows.Count}, Cols={table2.Columns.Count}, IsDirty={table2.TreeNode.IsEntityDirty})");
 			progressRuntimeData.UpdateMessage("正在同步表格 " + table2.TreeNode.Name);
 			int num = hasProcessCount + 1;
 			hasProcessCount = num;
 			syncProgressValueRefresher.UpdateProgress(num, syncTotalCount);
 			Task<Auditai.Model.Table> task = GetTableTask(table2);
+			LogWriter.Info($"[SyncProjectImpl] {tableName} - GetTableTask 已启动，等待 await");
 			ContinueWithTable(await task);
+			LogWriter.Info($"[SyncProjectImpl] {tableName} - ContinueWithTable 完成");
 		}
+		LogWriter.Info($"[SyncProjectImpl] 表格同步循环结束，处理了 {tables.Count} 张表格");
 		for (int l = 0; l < documents.Count; l++)
 		{
 			Auditai.Model.Document doc = documents[l];
@@ -2918,7 +2929,7 @@ public class MainForm
 			int num = hasProcessCount + 1;
 			hasProcessCount = num;
 			syncProgressValueRefresher.UpdateProgress(num, syncTotalCount);
-			if (docVersions[doc.Id] > doc.Version)
+			if (DocServerVersion(doc.Id) > doc.Version)
 			{
 				try
 				{
@@ -2943,8 +2954,13 @@ public class MainForm
 					}
 					else if (docPushResult == PushResult.OutOfDate)
 					{
-						// 重试耗尽仍冲突，提示用户手动解决
-						ShowConflictResolutionDialog(doc);
+						// 重试耗尽仍冲突，让用户选择：保留本地 或 采用云端
+						if (ShowConflictResolutionDialog(doc) == DialogResult.No)
+						{
+							// 采用云端：放弃本地未同步修改，从云端重建文档
+							bool adopted = await doc.RepairFromCloudAsync();
+							LogWriter.Info($"[SyncProjectImpl] 文档 \"{doc.TreeNode?.Name}\" 采用云端: {(adopted ? "成功" : "失败")}");
+						}
 					}
 				}
 				catch (Exception ex2)
@@ -3055,55 +3071,114 @@ public class MainForm
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, string.Concat("同步过程中出现异常，可能数据未完全同步成功，请再同步一次！异常详细信息：", string.Concat(le.Select((Tuple<TreeNodeBase, Exception> tup) => "\n同步\"" + tup.Item1.Name + "\"时出现异常：" + tup.Item2.Message))));
 		}
 		_serverDataChangedProject.Remove(proj.Id.ToString());
+		LogWriter.Info($"[SyncProjectImpl] === 项目同步完成: {proj.Name} (anyNodeUpdated={anyNodeUpdated}, 异常数={le.Count}) ===");
 		return anyNodeUpdated;
 		static void ContinueWithTable(Auditai.Model.Table table)
 		{
 			if (table == null || !table._loaded)
 			{
+				LogWriter.Info($"[ContinueWithTable] 跳过：table={(table==null?"null":table.TreeNode?.Name)} _loaded={(table?._loaded ?? false)}");
 				return;
 			}
+			string tname = table.TreeNode?.Name ?? "<unnamed>";
+			LogWriter.Info($"[ContinueWithTable] {tname} - 开始 Save (Rows={table.Rows.Count}, Cells={table.Cells.Count})");
 			try
 			{
 				table.Save(null, bypassMapRowIndex: true);
 				table._loaded = false;
+				LogWriter.Info($"[ContinueWithTable] {tname} - Save 完成");
 			}
 			catch (TableModelException ex5)
 			{
 				table._loaded = false;
 				ex5.Log(table.GetDebugInfo());
+				LogWriter.Info($"[ContinueWithTable] {tname} - TableModelException: {ex5.Message}");
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex5.Message);
+			}
+			catch (Exception exUnk)
+			{
+				table._loaded = false;
+				exUnk.Log($"[ContinueWithTable] {tname} - 未预期的异常");
+				LogWriter.Info($"[ContinueWithTable] {tname} - 未预期异常: {exUnk.GetType().Name}: {exUnk.Message}");
+				throw;
 			}
 		}
 		async Task<Auditai.Model.Table> GetTableTask(Auditai.Model.Table table)
 		{
-			table._loaded = false;
-			table.LoadAndReturn(bypassRowOwnerLoad: true);
-			if (tableVersions[table.Id] > table.Version)
+			string tname = table.TreeNode?.Name ?? "<unnamed>";
+			// 防御：若 SaveProjectImpl 落盘失败（保存异常被跳过，NeedSave 仍为 true），
+			// 此处强制重载会用旧 DB 数据覆盖内存中的用户编辑。先补存一次（内含自动修复）；
+			// 仍失败则跳过该表同步，保留内存编辑等待下次同步，绝不能用旧数据覆盖。
+			if (table.NeedSave)
 			{
 				try
 				{
+					table.Save(null);
+				}
+				catch (Exception saveEx)
+				{
+					le.Add(Tuple.Create((TreeNodeBase)table.TreeNode,
+						(Exception)new InvalidOperationException($"表格 \"{tname}\" 本地保存失败，已跳过本次同步以保护未保存的编辑：" + saveEx.Message)));
+					saveEx.Log($"[GetTableTask] {tname} 补存失败，跳过同步");
+					return null;
+				}
+			}
+			LogWriter.Info($"[GetTableTask] {tname} - 开始 LoadAndReturn");
+			table._loaded = false;
+			table.LoadAndReturn(bypassRowOwnerLoad: true);
+			LogWriter.Info($"[GetTableTask] {tname} - LoadAndReturn 完成 (Rows={table.Rows.Count}, Cols={table.Columns.Count}, Cells={table.Cells.Count}, Version={table.Version}, IsCorrupted={table.IsCorrupted})");
+			// 本地加载损坏的表不再被排除出同步：先尝试云端修复。
+			// 云端有数据则拉取覆盖本地；云端无数据（NotExist）则由 RepairFromCloudAsync
+			// 把修复后的本地数据推回云端重建，避免"损坏→被跳过→云端永远无数据→修复失败"的死锁。
+			if (table.IsCorrupted)
+			{
+				LogWriter.Info($"[GetTableTask] {tname} - 表格本地损坏，开始云端修复");
+				bool repaired = await table.RepairFromCloudAsync().ConfigureAwait(continueOnCapturedContext: false);
+				if (!repaired)
+				{
+					le.Add(Tuple.Create((TreeNodeBase)table.TreeNode,
+						(Exception)new InvalidOperationException($"表格 \"{tname}\" 已损坏且云端修复失败")));
+					LogWriter.Info($"[GetTableTask] {tname} - 云端修复失败");
+					return null;
+				}
+				LogWriter.Info($"[GetTableTask] {tname} - 云端修复成功 (Rows={table.Rows.Count}, Cols={table.Columns.Count}, Cells={table.Cells.Count})");
+			}
+			if (ServerVersion(table.Id) > table.Version)
+			{
+				LogWriter.Info($"[GetTableTask] {tname} - 服务器版本较新({ServerVersion(table.Id)} > {table.Version})，开始 Pull");
+				try
+				{
 					await Syncer.Pull(table);
+					LogWriter.Info($"[GetTableTask] {tname} - Pull 完成");
 				}
 				catch (Exception ex6)
 				{
 					le.Add(Tuple.Create((TreeNodeBase)table.TreeNode, ex6));
 					ex6.Log("表格同步时Pull操作失败");
+					LogWriter.Info($"[GetTableTask] {tname} - Pull 失败: {ex6.Message}");
 					return null;
 				}
 			}
 			if (table.TreeNode.IsEntityDirty)
 			{
+				LogWriter.Info($"[GetTableTask] {tname} - 表格已修改，开始 PullAndRetryPush");
 				try
 				{
 					PushResult tablePushResult = await Syncer.PullAndRetryPush(table);
+					LogWriter.Info($"[GetTableTask] {tname} - PullAndRetryPush 结果: {tablePushResult}");
 					if (tablePushResult == PushResult.Success)
 					{
 						anyEntityPushed = true;
 					}
 					else if (tablePushResult == PushResult.OutOfDate)
 					{
-						// 重试耗尽仍冲突，提示用户手动解决
-						ShowConflictResolutionDialog(table);
+						// 重试耗尽仍冲突，让用户选择：保留本地 或 采用云端
+						if (ShowConflictResolutionDialog(table) == DialogResult.No)
+						{
+							// 采用云端：放弃本地未同步修改，从云端全量重建表格
+							bool adopted = await table.AdoptServerStateAsync();
+							LogWriter.Info($"[GetTableTask] {tname} - 采用云端: {(adopted ? "成功" : "失败")}");
+						}
 					}
 					else if (tablePushResult == PushResult.Locked)
 					{
@@ -3119,9 +3194,14 @@ public class MainForm
 				{
 					le.Add(Tuple.Create((TreeNodeBase)table.TreeNode, ex7));
 					ex7.Log("表格同步时Push操作失败");
+					LogWriter.Info($"[GetTableTask] {tname} - Push 失败: {ex7.Message}");
+					// Pull 阶段可能已把云端数据合并进内存模型，此结果需要落盘，
+					// 否则下次重载回到旧 DB、下次同步重复拉取。best-effort 保存，失败不掩盖原异常。
+					try { table.Save(null); } catch { }
 					return null;
 				}
 			}
+			LogWriter.Info($"[GetTableTask] {tname} - 完成");
 			return table;
 		}
 	}
@@ -5638,39 +5718,95 @@ public class MainForm
 
 	private async void View_FormClosing(object sender, FormClosingEventArgs e)
 	{
-		if (State.ViewKind != MainFormView.Table && State.ViewKind != MainFormView.Document && State.ViewKind != 0 && State.ViewKind != MainFormView.Image && State.ViewKind != MainFormView.Pdf && State.ViewKind != MainFormView.TicketInput && State.ViewKind != MainFormView.Empty && State.ViewKind != MainFormView.Ledger)
+		// 防重入：关闭流程（含网络等待）进行中再次触发 FormClosing 时直接取消；
+		// Yes 分支 _closeByCode=true 后 View.Close() 会同步重入，需放行避免窗口永远关不掉
+		if (_isClosing && !_closeByCode)
 		{
-			string stateDesc = GetViewKindDescription(State.ViewKind);
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前正处于" + stateDesc + "，无法关闭程序，请先退出该编辑状态。");
 			e.Cancel = true;
+			return;
 		}
-		else if ((e.CloseReason == CloseReason.UserClosing || e.CloseReason == CloseReason.WindowsShutDown) && !_closeByCode)
+		_isClosing = true;
+		try
 		{
-			string closeMsg = Auditai.LocalDataStore.StorageRouter.IsLocalMode
-				? "程序即将退出，是否保存" + StringConstBase.Current.Project + "？"
-				: "程序即将退出，是否保存并同步" + ((RecentProjects.Count > 1) ? $"已打开的 {RecentProjects.Count} 个" : "当前") + StringConstBase.Current.Project + "？";
-			switch (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, closeMsg, MessageBoxButtons.YesNoCancel))
+			if (State.ViewKind != MainFormView.Table && State.ViewKind != MainFormView.Document && State.ViewKind != 0 && State.ViewKind != MainFormView.Image && State.ViewKind != MainFormView.Pdf && State.ViewKind != MainFormView.TicketInput && State.ViewKind != MainFormView.Empty && State.ViewKind != MainFormView.Ledger)
 			{
-			case DialogResult.Yes:
+				string stateDesc = GetViewKindDescription(State.ViewKind);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前正处于" + stateDesc + "，无法关闭程序，请先退出该编辑状态。");
 				e.Cancel = true;
-				await SyncProjects();
-				// 节点级强锁：SyncProjects 已统一推送所有 dirty 数据，释放锁时不再重复 Push
-				await ReleaseAllTableLocksForExitAsync();
-				await Program.Logout();
-				_closeByCode = true;
-				View.Close();
-				break;
-			case DialogResult.No:
-				// 节点级强锁：用户选择不同步直接退出，仅释放锁不 Push（本地修改保留待下次打开）
-				await ReleaseAllTableLocksForExitAsync();
-				await Program.Logout();
-				e.Cancel = false;
-				break;
-			case DialogResult.Cancel:
-				e.Cancel = true;
-				break;
 			}
-			CurrentLedgerViewer?.SaveConfig();
+			else if ((e.CloseReason == CloseReason.UserClosing || e.CloseReason == CloseReason.WindowsShutDown) && !_closeByCode)
+			{
+				string closeMsg = Auditai.LocalDataStore.StorageRouter.IsLocalMode
+					? "程序即将退出，是否保存" + StringConstBase.Current.Project + "？"
+					: "程序即将退出，是否保存并同步" + ((RecentProjects.Count > 1) ? $"已打开的 {RecentProjects.Count} 个" : "当前") + StringConstBase.Current.Project + "？";
+				switch (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, closeMsg, MessageBoxButtons.YesNoCancel))
+				{
+				case DialogResult.Yes:
+					e.Cancel = true;
+					// 程序退出：先真关闭账务数据窗口（隐藏逻辑不再拦截）
+					_ledgerWindow?.RealClose();
+					try
+					{
+						await SyncProjects();
+					}
+					catch (Exception ex)
+					{
+						ex.Log("退出时同步项目失败");
+						// 同步失败不阻断退出，继续关闭流程
+					}
+					try
+					{
+						// 节点级强锁：SyncProjects 已统一推送所有 dirty 数据，释放锁时不再重复 Push
+						await ReleaseAllTableLocksForExitAsync();
+					}
+					catch (Exception ex)
+					{
+						ex.Log("退出时释放表格锁失败");
+					}
+					try
+					{
+						await Program.Logout();
+					}
+					catch (Exception ex)
+					{
+						ex.Log("退出时注销会话失败");
+					}
+					_closeByCode = true;
+					View.Close();
+					break;
+				case DialogResult.No:
+					// 程序退出：先真关闭账务数据窗口（隐藏逻辑不再拦截）
+					_ledgerWindow?.RealClose();
+					try
+					{
+						// 节点级强锁：用户选择不同步直接退出，仅释放锁不 Push（本地修改保留待下次打开）
+						await ReleaseAllTableLocksForExitAsync();
+					}
+					catch (Exception ex)
+					{
+						ex.Log("退出时释放表格锁失败");
+					}
+					try
+					{
+						await Program.Logout();
+					}
+					catch (Exception ex)
+					{
+						ex.Log("退出时注销会话失败");
+					}
+					e.Cancel = false;
+					break;
+				case DialogResult.Cancel:
+					e.Cancel = true;
+					break;
+				}
+				try { CurrentLedgerViewer?.SaveConfig(); } catch (Exception ex) { ex.Log("退出保存账簿配置失败"); }
+			}
+		}
+		finally
+		{
+			// 流程结束（未走 View.Close 重入的路径）恢复标志，保证后续关闭仍可正常执行
+			_isClosing = false;
 		}
 	}
 
@@ -5678,13 +5814,10 @@ public class MainForm
 	{
 		if (e.Control && e.KeyCode == Keys.Q)
 		{
-			if (_ispnlMainShow)
+			// Ctrl+Q：显示/隐藏账务数据独立窗口
+			if (CurrentEdition != null && CurrentEdition.EnableLedger)
 			{
-				SwitchMainView();
-			}
-			else if (CurrentEdition != null && CurrentEdition.EnableLedger)
-			{
-				SwitchFinanceView();
+				ToggleLedgerWindow();
 			}
 		}
 		else if (e.KeyCode == Keys.Escape && State.ViewKind == MainFormView.FormatBrush)
@@ -5698,6 +5831,11 @@ public class MainForm
 		ThemeEditor.SelectTheme(UserSet.Config.CurrentTheme);
 		Theme.SetCurrentTree(staMain);
 		MultiLedgerViewer.SetTheme();
+		// Google Blue 主题初始化精修
+		if (Theme.SelectedAuditaiTheme?.Name == "auditai_GoogleBlue")
+		{
+			ProjectHierarchy.SetTheme();
+		}
 		SwitchToEmptyView();
 		Application.DoEvents();
 		ApplyConfig();
@@ -5835,99 +5973,13 @@ public class MainForm
 
 	private void View_FormClosed(object sender, FormClosedEventArgs e)
 	{
+		// 退订网络状态事件，防止窗体关闭后回调仍被触发（事件泄漏）
+		try { NetworkMonitor.Instance.NetworkStatusChanged -= UpdateNetworkStatus; } catch { }
 		// 窗体关闭时先清理数据库（WAL checkpoint），再触发 ApplicationExit。
 		// 这保证了即使在 ApplicationExit 事件中未能清理，这里也已经完成。
 		// 对应场景：用户通过 ALT+F4 或关闭按钮退出，或调试器停止触发窗体关闭。
 		try { Program.CleanupProjectDatabases(); } catch { }
 		Program.ApplicationExit();
-	}
-
-	private void CtnAll_SplitterMoved(object sender, SplitterEventArgs e)
-	{
-		_isSplitterMoving = false;
-	}
-
-	private void CtnAll_SplitterMoving(object sender, SplitterCancelEventArgs e)
-	{
-		_isSplitterMoving = true;
-	}
-
-	private void CtnAll_MouseUp(object sender, MouseEventArgs e)
-	{
-		if (_isSplitterMoving)
-		{
-			if (_ispnlMainShow)
-			{
-				AnimateStart(ctnAll.Panels[0], ToRight: false);
-				_animateTimer.Start();
-				_animateForm.Show();
-			}
-			else
-			{
-				AnimateStart(ctnAll.Panels[1]);
-				_animateTimer.Start();
-				_animateForm.Show();
-			}
-		}
-	}
-
-	private void _animateTimer_Tick(object s1, EventArgs e1)
-	{
-		if (_animateToRight)
-		{
-			if (_animateScreenWidth - _animateForm.Left < 100)
-			{
-				_animateForm.Left = _animateScreenWidth;
-				_animateTimer.Stop();
-				if (_ispnlMainShow)
-				{
-					ctnAll.Panels[0].Width = 0;
-					_ispnlMainShow = !_ispnlMainShow;
-				}
-				else
-				{
-					ctnAll.Panels[0].Width = View.Width;
-					_ispnlMainShow = !_ispnlMainShow;
-				}
-				_animateForm.Visible = false;
-				_animateForm.Left = 0;
-				AppCommandTabs.Ledger.Select();
-			}
-			else
-			{
-				if (!_animateForm.Visible)
-				{
-					_animateForm.Visible = true;
-				}
-				_animateForm.Left += 100;
-			}
-		}
-		else if (_animateForm.Right - 100 < 0)
-		{
-			_animateForm.Left = -_animateForm.Width;
-			_animateTimer.Stop();
-			if (_ispnlMainShow)
-			{
-				ctnAll.Panels[0].Width = 0;
-				_ispnlMainShow = !_ispnlMainShow;
-			}
-			else
-			{
-				ctnAll.Panels[0].Width = View.Width;
-				_ispnlMainShow = !_ispnlMainShow;
-			}
-			_animateForm.Visible = false;
-			_animateForm.Left = 0;
-			State.SelectedTab?.Select();
-		}
-		else
-		{
-			if (!_animateForm.Visible)
-			{
-				_animateForm.Visible = true;
-			}
-			_animateForm.Left -= 100;
-		}
 	}
 
 	private void cmdDuplicateDocument_Click(object sender, ClickEventArgs e)
@@ -5991,13 +6043,30 @@ public class MainForm
 
 	private async void ProjectHierarchy_TreeNodeSelected(object sender, EventArgs e)
 	{
-		if (FormulaEditor.IsEditing || TableEditor.ValidationEditor.IsEditing || TableEditor.AuxEditor.IsEditing || TableEditor.TitleEditor.AuxEditor.IsEditing || TableEditor.FootEditor.AuxEditor.IsEditing || TableEditor.FormControlFormula.IsEditing || TableEditor.LedgerCollectFormulaEditor.IsEditing)
+		// async void 处理器必须整体防护：未捕获异常会直接崩溃进程
+		try
 		{
-			TreeNodeSelected_EditingFormula();
+			// 长链判空：TableEditor 为懒创建，未创建时不应在此触发创建；子编辑器可能尚未初始化
+			TableEditor createdEditor = GetCreatedTableEditor();
+			if (FormulaEditor.IsEditing
+				|| (createdEditor?.ValidationEditor?.IsEditing ?? false)
+				|| (createdEditor?.AuxEditor?.IsEditing ?? false)
+				|| (createdEditor?.TitleEditor?.AuxEditor?.IsEditing ?? false)
+				|| (createdEditor?.FootEditor?.AuxEditor?.IsEditing ?? false)
+				|| (createdEditor?.FormControlFormula?.IsEditing ?? false)
+				|| (createdEditor?.LedgerCollectFormulaEditor?.IsEditing ?? false))
+			{
+				TreeNodeSelected_EditingFormula();
+			}
+			else
+			{
+				await TreeNodeSelected_Normal();
+			}
 		}
-		else
+		catch (Exception ex)
 		{
-			await TreeNodeSelected_Normal();
+			ex.Log("打开节点时发生错误");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "打开节点时发生错误");
 		}
 	}
 
@@ -6305,6 +6374,8 @@ public class MainForm
 
 	public void OpendLedger_Click()
 	{
+		// 账务窗口可能已被隐藏（Ctrl+Q 或点 X），先确保窗口可见，避免命令在隐藏窗口内静默执行
+		ShowLedgerWindow();
 		try
 		{
 			MultiLedgerViewer.LedgerDefaultPanel.BringToFront();
@@ -6330,10 +6401,6 @@ public class MainForm
 	private void Initialize()
 	{
 		CurrentProjectChanged += MainForm_CurrentProjectChanged;
-		ctnAll.SplitterMoving += CtnAll_SplitterMoving;
-		ctnAll.SplitterMoved += CtnAll_SplitterMoved;
-		ctnAll.MouseUp += CtnAll_MouseUp;
-		ctnAll.Panels.Add(pnlLedger);
 		pnlMain.Controls.Add(FormulaMap.View);
 		pnlMain.Controls.Add(ctnMain);
 		ctnAll.Panels.Add(pnlMain);
@@ -6375,7 +6442,6 @@ public class MainForm
 		ThemeEditor = new ThemeForm();
 		ThemeForm themeEditor = ThemeEditor;
 		themeEditor.SelectedThemeChanged = (EventHandler<AuditaiTheme>)Delegate.Combine(themeEditor.SelectedThemeChanged, new EventHandler<AuditaiTheme>(ThemeEditor_SelectedThemeChanged));
-		_animateTimer.Tick += _animateTimer_Tick;
 		stepRecorder = new StepRecorder<Tuple<Guid, long>>(new StepContext<Tuple<Guid, long>>
 		{
 			Restore = async delegate(Tuple<Guid, long> tp)
@@ -6512,6 +6578,8 @@ public class MainForm
 		}
 		MultiLedgerViewer.LedgerDefaultPanel.Populate(CurrentLedgerViewer?.CurrentFilePath);
 		MultiLedgerViewer.PopulateOpenedLedgers();
+		// 账套打开后同步更新账务数据窗口标题
+		_ledgerWindow?.UpdateTitle(CurrentLedgerViewer?.CurrentFilePath);
 	}
 
 	public async Task BatchPrint_Click(string functionDescription)
@@ -7178,6 +7246,11 @@ public class MainForm
 			Theme.SetCurrentTree(View);
 			Browser?.SetTheme();
 			MultiLedgerViewer.SetTheme();
+			// Google Blue 主题精修
+			if (theme.Name == "auditai_GoogleBlue")
+			{
+				ProjectHierarchy.SetTheme();
+			}
 			if (theme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 			{
 				ImageProcess.SetImageStrategy(new WhiteImageStrategy());
@@ -7394,34 +7467,60 @@ public class MainForm
 
 	public void SwitchMainView()
 	{
-		pnlLedger.Width = 0;
-		pnlMain.Width = View.Width;
-		_ispnlMainShow = false;
-		HideRelatedLedgerTip();
 		AppCommands.Undo.Visible = true;
 		AppCommands.Redo.Visible = true;
 		State.SelectedTab?.Select();
 	}
 
-	public void SwitchFinanceView()
+	// 打开（或激活已存在的）账务数据独立窗口；账套查看器已 Reparent 到该窗口
+	public void ShowLedgerWindow()
 	{
-		pnlMain.Width = 0;
-		pnlLedger.Width = View.Width;
-		_ispnlMainShow = true;
+		// 许可证防护：账务模块未启用（企业版等）时禁止打开，防止隐藏标签被代码选中而绕过入口判断
+		if (!SoftwareLicenseManager.IsLedgerModuleEnable())
+		{
+			return;
+		}
+		if (_ledgerWindow == null || _ledgerWindow.IsDisposed)
+		{
+			_ledgerWindow = new LedgerWindow(this);
+			_ledgerWindow.AttachViewer(MultiLedgerViewer.View);
+			// 窗口被隐藏（点 X）时收起关联账套提示
+			_ledgerWindow.WindowHidden += delegate
+			{
+				HideRelatedLedgerTip();
+			};
+		}
 		if (CurrentLedgerViewer == null)
 		{
 			MultiLedgerViewer.LedgerDefaultPanel.Populate();
 		}
+		MultiLedgerViewer.LedgerDefaultPanel.GetTileControl.Update();
+		_ledgerWindow.UpdateTitle(CurrentLedgerViewer?.CurrentFilePath);
+		if (_ledgerWindow.Visible)
+		{
+			_ledgerWindow.Activate();
+		}
 		else
 		{
-			CurrentLedgerViewer.GetMainView().Focus();
+			_ledgerWindow.Show(View);
 		}
-		MultiLedgerViewer.LedgerDefaultPanel.GetTileControl.Update();
+		// Show 之后再聚焦：首次打开时控件句柄随窗口显示才创建，提前 Focus 会静默失效
+		CurrentLedgerViewer?.GetMainView().Focus();
 		ShowRelatedLedgerTip(CurrentProject);
-		TableEditor?._ttpComment.Hide();
-		AppCommands.Undo.Visible = false;
-		AppCommands.Redo.Visible = false;
-		AppCommandTabs.Ledger.Select();
+	}
+
+	// Ctrl+Q 等入口：切换账务数据窗口的显示/隐藏
+	public void ToggleLedgerWindow()
+	{
+		if (_ledgerWindow != null && _ledgerWindow.Visible)
+		{
+			_ledgerWindow.Hide();
+			HideRelatedLedgerTip();
+		}
+		else
+		{
+			ShowLedgerWindow();
+		}
 	}
 
 	public void NodesIndexEdit()
@@ -7566,20 +7665,6 @@ public class MainForm
 	private void ApplyConfig()
 	{
 		CurrentEdition.Ribbon.Minimized = UserSet.Config.HideTab;
-		if (ctnAll.Panels.Contains(pnlLedger) && !SoftwareLicenseManager.IsLedgerModuleEnable())
-		{
-			ctnAll.Panels.Remove(pnlLedger);
-			UpdateState(delegate
-			{
-			});
-		}
-		else if (!ctnAll.Panels.Contains(pnlLedger) && SoftwareLicenseManager.IsLedgerModuleEnable())
-		{
-			ctnAll.Panels.Insert(ctnAll.Panels.IndexOf(pnlMain), pnlLedger);
-			UpdateState(delegate
-			{
-			});
-		}
 	}
 
 	private async Task SkipToTreeNode(Tuple<Guid, long> tp)
@@ -7671,30 +7756,12 @@ public class MainForm
 
 	public async Task MergeLedger()
 	{
+		// 账务窗口可能已被隐藏，先确保窗口可见，避免合并结果在隐藏窗口中静默重开
+		ShowLedgerWindow();
 		if (!SoftwareLicenseManager.IsMergeLedgerOutOfLicenseLimit())
 		{
 			await MultiLedgerViewer.MergeLedger();
 		}
-	}
-
-	private void AnimateStart(Control control, bool ToRight = true)
-	{
-		Point point = control.Parent.PointToScreen(control.Location);
-		Bitmap bitmap = control.GetScreenshot();
-		if (bitmap == null)
-		{
-			bitmap = new Bitmap(control.Width, control.Height);
-			using Graphics graphics = Graphics.FromImage(bitmap);
-			graphics.CopyFromScreen(point, new Point(0, 0), control.Size);
-		}
-		if (_animateForm.BackgroundImage != null)
-		{
-			_animateForm.BackgroundImage.Dispose();
-		}
-		_animateForm.BackgroundImage = bitmap;
-		_animateForm.Location = point;
-		_animateForm.Size = control.Size;
-		_animateToRight = ToRight;
 	}
 
 	private static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target, HashSet<string> except)

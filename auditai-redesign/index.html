@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AuditAI · ABC有限公司2025年度审计</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS — Google Blue (Material-inspired)
+     ============================================================ */
+  :root {
+    /* Surfaces */
+    --color-surface: #ffffff;
+    --color-surface-muted: #f8fafc;
+    --color-surface-subtle: #f1f5f9;
+
+    /* Text */
+    --color-text: #0f172a;
+    --color-text-muted: #64748b;
+    --color-text-secondary: #334155;
+
+    /* Border */
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e1;
+
+    /* State */
+    --color-success-text: #16a34a;
+    --color-success-subtle: #f0fdf4;
+    --color-success-border: #bbf7d0;
+    --color-error-text: #dc2626;
+    --color-error-subtle: #fef2f2;
+    --color-error-border: #fecaca;
+    --color-warning-text: #d97706;
+    --color-warning-subtle: #fffbeb;
+    --color-warning-border: #fde68a;
+
+    /* Brand — Google Blue */
+    --color-brand: #1a73e8;
+    --color-brand-hover: #1765cc;
+    --color-brand-active: #1557b0;
+    --color-brand-subtle: #e8f0fe;
+    --color-brand-foreground: #ffffff;
+
+    /* Chart — Google palette */
+    --chart-1: #1a73e8;
+    --chart-2: #34a853;
+    --chart-3: #fbbc04;
+    --chart-4: #ea4335;
+    --chart-5: #9334e6;
+
+    /* Sidebar */
+    --sidebar-bg: #f8fafc;
+    --sidebar-primary: #1a73e8;
+    --sidebar-accent: #e8f0fe;
+    --sidebar-border: #e2e8f0;
+
+    /* Typography */
+    --font-sans: "PingFang SC", "Microsoft YaHei", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+    /* Radius */
+    --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+    --radius-lg: 0.75rem;
+
+    /* Spacing base: 4px */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+
+    /* Shadow — Material-inspired subtle */
+    --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  }
+
+  /* ============================================================
+     RESET & BASE
+     ============================================================ */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-surface);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+
+  /* ============================================================
+     APP LAYOUT
+     ============================================================ */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  /* Title bar */
+  .title-bar {
+    height: 36px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .title-bar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .title-bar-logo {
+    width: 16px;
+    height: 16px;
+    background: var(--color-brand);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .title-bar-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .title-bar-separator {
+    width: 1px;
+    height: 12px;
+    background: var(--color-border);
+  }
+
+  .title-bar-project {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .title-bar-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .title-bar-btn {
+    width: 28px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    transition: background 0.15s;
+  }
+
+  .title-bar-btn:hover {
+    background: var(--color-surface-subtle);
+  }
+
+  .title-bar-btn.close:hover {
+    background: #dc2626;
+    color: #fff;
+  }
+
+  /* Main body */
+  .app-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     SIDEBAR
+     ============================================================ */
+  .sidebar {
+    width: 240px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-brand {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--sidebar-border);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--sidebar-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .sidebar-brand-icon {
+    width: 20px;
+    height: 20px;
+    background: var(--color-brand);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: var(--space-2);
+  }
+
+  .sidebar-section {
+    padding: var(--space-4) var(--space-3) var(--space-2);
+  }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0 var(--space-2) var(--space-2);
+  }
+
+  .sidebar-nav {
+    padding: 0 var(--space-2);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 5px var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-item:hover {
+    background: var(--sidebar-accent);
+    color: var(--color-text);
+  }
+
+  .nav-item.active {
+    background: var(--sidebar-primary);
+    color: #fff;
+  }
+
+  .nav-item.level-1 {
+    padding-left: var(--space-2);
+  }
+
+  .nav-item.level-2 {
+    padding-left: calc(var(--space-2) + 16px + var(--space-2));
+  }
+
+  .nav-item.level-3 {
+    padding-left: calc(var(--space-2) + 32px + var(--space-2));
+  }
+
+  .nav-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-chevron {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform 0.15s;
+  }
+
+  .nav-item.folder-open .nav-chevron {
+    transform: rotate(90deg);
+  }
+
+  .nav-item.active .nav-chevron,
+  .nav-item.active .nav-icon {
+    color: #fff;
+  }
+
+  /* Sidebar footer */
+  .sidebar-footer {
+    padding: var(--space-3);
+    border-top: 1px solid var(--sidebar-border);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .sidebar-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-brand);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .sidebar-user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sidebar-user-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar-user-role {
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  /* ============================================================
+     MAIN CONTENT AREA
+     ============================================================ */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Tabs */
+  .tabs-bar {
+    height: 40px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 var(--space-2);
+    background: var(--color-surface);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    height: 39px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab:hover {
+    color: var(--color-text);
+  }
+
+  .tab.active {
+    color: var(--color-text);
+    border-bottom-color: var(--color-brand);
+    font-weight: 500;
+  }
+
+  .tab-close {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+  }
+
+  .tab:hover .tab-close {
+    opacity: 1;
+  }
+
+  .tab-close:hover {
+    background: var(--color-surface-subtle);
+  }
+
+  .tab-add {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    margin-left: var(--space-1);
+    margin-bottom: 5px;
+  }
+
+  .tab-add:hover {
+    background: var(--color-surface-subtle);
+    color: var(--color-text);
+  }
+
+  /* Toolbar / Filter bar */
+  .toolbar {
+    height: 44px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    background: var(--color-surface);
+    flex-shrink: 0;
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .toolbar-label {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--color-text);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .dropdown:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  .dropdown-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--color-brand);
+    color: #fff;
+    border: 1px solid var(--color-brand);
+  }
+
+  .btn-primary:hover {
+    background: #27272a;
+    border-color: #27272a;
+  }
+
+  .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+  }
+
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .toolbar-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
+    margin: 0 var(--space-1);
+  }
+
+  /* Data table container */
+  .table-container {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+    background: var(--color-surface);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 900px;
+  }
+
+  .data-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .data-table th {
+    background: var(--color-surface-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .data-table th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .data-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+    color: var(--color-text);
+  }
+
+  .data-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .data-table tbody tr:nth-child(even) {
+    background: var(--color-surface-muted);
+  }
+
+  .data-table tbody tr:hover {
+    background: var(--color-surface-subtle);
+  }
+
+  .data-table tbody tr.selected {
+    background: #eff6ff;
+  }
+
+  .data-table tbody tr.selected td {
+    color: var(--color-text);
+  }
+
+  .account-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+
+  .account-name {
+    font-weight: 500;
+  }
+
+  .account-name.level-1 { padding-left: 0; }
+  .account-name.level-2 { padding-left: 20px; }
+  .account-name.level-3 { padding-left: 40px; font-size: 12px; color: var(--color-text-secondary); }
+
+  /* Totals row */
+  .data-table tfoot td {
+    background: var(--color-surface-muted);
+    border-top: 2px solid var(--color-border-strong);
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px 10px;
+    font-weight: 600;
+    font-size: 12.5px;
+  }
+
+  .data-table tfoot td.num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* Status strip below table */
+  .status-strip {
+    height: 32px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    background: var(--color-surface-muted);
+    flex-shrink: 0;
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+  }
+
+  .status-strip-left,
+  .status-strip-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .status-badge.success {
+    background: var(--color-success-subtle);
+    color: var(--color-success-text);
+    border: 1px solid var(--color-success-border);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ============================================================
+     RIGHT PANEL — AI Assistant
+     ============================================================ */
+  .right-panel {
+    width: 320px;
+    border-left: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    height: 48px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-text);
+  }
+
+  .panel-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--color-success-text);
+    font-weight: 500;
+  }
+
+  .panel-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success-text);
+    position: relative;
+  }
+
+  .panel-status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--color-success-text);
+    opacity: 0.3;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.3); opacity: 0.15; }
+  }
+
+  .panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .panel-icon-btn {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .panel-icon-btn:hover {
+    background: var(--color-surface-subtle);
+    color: var(--color-text);
+  }
+
+  /* Chat messages */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .msg {
+    display: flex;
+    gap: var(--space-2);
+    max-width: 100%;
+  }
+
+  .msg-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .msg-ai .msg-avatar {
+    background: var(--color-brand);
+    color: #fff;
+  }
+
+  .msg-user .msg-avatar {
+    background: var(--color-surface-subtle);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+
+  .msg-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .msg-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 3px;
+  }
+
+  .msg-user {
+    flex-direction: row-reverse;
+  }
+
+  .msg-user .msg-body {
+    text-align: right;
+  }
+
+  .msg-bubble {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+
+  .msg-ai .msg-bubble {
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-top-left-radius: 4px;
+  }
+
+  .msg-user .msg-bubble {
+    background: var(--color-brand);
+    color: #fff;
+    border-top-right-radius: 4px;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-muted);
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Quick action chips */
+  .quick-actions {
+    padding: var(--space-2) var(--space-4) var(--space-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-size: 11.5px;
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .chip:hover {
+    background: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+
+  .chip-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Chat input */
+  .chat-input-container {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+    background: var(--color-surface);
+  }
+
+  .chat-input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 6px 6px 6px 10px;
+    background: var(--color-surface);
+    transition: border-color 0.15s;
+  }
+
+  .chat-input-wrapper:focus-within {
+    border-color: var(--color-border-strong);
+  }
+
+  .chat-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: transparent;
+    padding: 4px 0;
+    max-height: 100px;
+  }
+
+  .chat-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .send-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--color-brand);
+    color: #fff;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .send-btn:hover {
+    background: #27272a;
+  }
+
+  .send-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* ============================================================
+     BOTTOM STATUS BAR
+     ============================================================ */
+  .bottom-bar {
+    height: 28px;
+    background: var(--color-surface-muted);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  .bottom-bar-left,
+  .bottom-bar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .bottom-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .bottom-item .status-dot {
+    background: var(--color-success-text);
+  }
+
+  .bottom-separator {
+    width: 1px;
+    height: 12px;
+    background: var(--color-border);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============================================================
+       TITLE BAR
+       ============================================================ -->
+  <div class="title-bar">
+    <div class="title-bar-left">
+      <div class="title-bar-logo">A</div>
+      <span class="title-bar-title">AuditAI</span>
+      <div class="title-bar-separator"></div>
+      <span class="title-bar-project">ABC有限公司2025年度审计</span>
+    </div>
+    <div class="title-bar-controls">
+      <button class="title-bar-btn" title="最小化">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect y="4.5" width="10" height="1" fill="currentColor"/></svg>
+      </button>
+      <button class="title-bar-btn" title="最大化">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor"/></svg>
+      </button>
+      <button class="title-bar-btn close" title="关闭">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       APP BODY (3 columns)
+       ============================================================ -->
+  <div class="app-body">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">A</div>
+        AuditAI
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">项目导航</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- 工作底稿 (open) -->
+        <div class="nav-item level-1 folder-open">
+          <svg class="nav-chevron" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M1 3.5C1 2.94772 1.44772 2.5 2 2.5H5.2L6.2 3.5H12C12.5523 3.5 13 3.94772 13 4.5V11C13 11.5523 12.5523 12 12 12H2C1.44772 12 1 11.5523 1 11V3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>工作底稿</span>
+        </div>
+
+        <div class="nav-item level-2 active">
+          <span style="width:14px;flex-shrink:0"></span>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M3 1.5H9L11 3.5V12.5C11 12.7761 10.7761 13 10.5 13H3.5C3.22386 13 3 12.7761 3 12.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 1.5V3.5H11" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 6H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5 8.5H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span>试算平衡表</span>
+        </div>
+
+        <div class="nav-item level-2">
+          <span style="width:14px;flex-shrink:0"></span>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M3 1.5H9L11 3.5V12.5C11 12.7761 10.7761 13 10.5 13H3.5C3.22386 13 3 12.7761 3 12.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 1.5V3.5H11" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>审计报告</span>
+        </div>
+
+        <!-- 实质性程序 (open) -->
+        <div class="nav-item level-2 folder-open">
+          <svg class="nav-chevron" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M1 3.5C1 2.94772 1.44772 2.5 2 2.5H5.2L6.2 3.5H12C12.5523 3.5 13 3.94772 13 4.5V11C13 11.5523 12.5523 12 12 12H2C1.44772 12 1 11.5523 1 11V3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>实质性程序</span>
+        </div>
+
+        <div class="nav-item level-3">
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M3 1.5H9L11 3.5V12.5C11 12.7761 10.7761 13 10.5 13H3.5C3.22386 13 3 12.7761 3 12.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 1.5V3.5H11" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>货币资金</span>
+        </div>
+
+        <div class="nav-item level-3">
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M3 1.5H9L11 3.5V12.5C11 12.7761 10.7761 13 10.5 13H3.5C3.22386 13 3 12.7761 3 12.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 1.5V3.5H11" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>应收账款</span>
+        </div>
+
+        <div class="nav-item level-3">
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M3 1.5H9L11 3.5V12.5C11 12.7761 10.7761 13 10.5 13H3.5C3.22386 13 3 12.7761 3 12.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9 1.5V3.5H11" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>存货</span>
+        </div>
+
+        <!-- 控制测试 (collapsed) -->
+        <div class="nav-item level-2">
+          <svg class="nav-chevron" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M1 3.5C1 2.94772 1.44772 2.5 2 2.5H5.2L6.2 3.5H12C12.5523 3.5 13 3.94772 13 4.5V11C13 11.5523 12.5523 12 12 12H2C1.44772 12 1 11.5523 1 11V3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>控制测试</span>
+        </div>
+
+        <!-- 账簿数据 (collapsed) -->
+        <div class="nav-item level-1">
+          <svg class="nav-chevron" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M1 3.5C1 2.94772 1.44772 2.5 2 2.5H5.2L6.2 3.5H12C12.5523 3.5 13 3.94772 13 4.5V11C13 11.5523 12.5523 12 12 12H2C1.44772 12 1 11.5523 1 11V3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>账簿数据</span>
+        </div>
+
+        <!-- 模板库 (collapsed) -->
+        <div class="nav-item level-1">
+          <svg class="nav-chevron" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="nav-icon" viewBox="0 0 14 14" fill="none"><path d="M1 3.5C1 2.94772 1.44772 2.5 2 2.5H5.2L6.2 3.5H12C12.5523 3.5 13 3.94772 13 4.5V11C13 11.5523 12.5523 12 12 12H2C1.44772 12 1 11.5523 1 11V3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          <span>模板库</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-avatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">admin</div>
+          <div class="sidebar-user-role">项目负责人</div>
+        </div>
+        <button class="panel-icon-btn" title="设置">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 8.5C7.82843 8.5 8.5 7.82843 8.5 7C8.5 6.17157 7.82843 5.5 7 5.5C6.17157 5.5 5.5 6.17157 5.5 7C5.5 7.82843 6.17157 8.5 7 8.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M12.5 7C12.5 7.46347 12.3474 7.91349 12.0642 8.30374L12.856 9.09546C13.0466 9.28608 13.0745 9.58769 12.9323 9.80642L11.9885 11.281C11.8657 11.4715 11.6348 11.5628 11.4153 11.5068L10.0425 11.1485C9.65044 11.4344 9.21423 11.6314 8.75 11.725V13.125C8.75 13.4732 8.47316 13.75 8.125 13.75H5.875C5.52684 13.75 5.25 13.4732 5.25 13.125V11.725C4.78577 11.6314 4.34956 11.4344 3.95754 11.1485L2.58466 11.5068C2.36523 11.5628 2.13434 11.4715 2.01147 11.281L1.06771 9.80642C0.925486 9.58769 0.953366 9.28608 1.14399 9.09546L1.9358 8.30374C1.65256 7.91349 1.5 7.46347 1.5 7C1.5 6.53653 1.65256 6.08651 1.9358 5.69626L1.14399 4.90454C0.953366 4.71392 0.925486 4.41231 1.06771 4.19358L2.01147 2.719C2.13434 2.52849 2.36523 2.43718 2.58466 2.49319L3.95754 2.85154C4.34956 2.56562 4.78577 2.36858 5.25 2.275V0.875C5.25 0.526839 5.52684 0.25 5.875 0.25H8.125C8.47316 0.25 8.75 0.526839 8.75 0.875V2.275C9.21423 2.36858 9.65044 2.56562 10.0425 2.85154L11.4153 2.49319C11.6348 2.43718 11.8657 2.52849 11.9885 2.719L12.9323 4.19358C13.0745 4.41231 13.0466 4.71392 12.856 4.90454L12.0642 5.69626C12.3474 6.08651 12.5 6.53653 12.5 7Z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+      <!-- Tabs -->
+      <div class="tabs-bar">
+        <div class="tab active">
+          <span>试算平衡表</span>
+          <span class="tab-close">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          </span>
+        </div>
+        <div class="tab">
+          <span>审计报告</span>
+          <span class="tab-close">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          </span>
+        </div>
+        <div class="tab">
+          <span>货币资金审定表</span>
+          <span class="tab-close">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          </span>
+        </div>
+        <button class="tab-add" title="新建标签页">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-label">科目级别</span>
+          <button class="dropdown">
+            全部
+            <svg class="dropdown-icon" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="toolbar-label">期间</span>
+          <button class="dropdown">
+            2025-12
+            <svg class="dropdown-icon" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="toolbar-label">显示</span>
+          <button class="dropdown">
+            有余额
+            <svg class="dropdown-icon" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 14 14" fill="none"><path d="M7 1V10M7 10L4 7M7 10L10 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12.5H12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            计算
+          </button>
+          <button class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 14 14" fill="none"><path d="M2 3.5H9C9.55228 3.5 10 3.94772 10 4.5V11.5C10 12.0523 9.55228 12.5 9 12.5H2C1.44772 12.5 1 12.0523 1 11.5V4.5C1 3.94772 1.44772 3.5 2 3.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M10 6.5H11.5C11.7761 6.5 12 6.72386 12 7V12.5C12 12.7761 11.7761 13 11.5 13H4.5C4.22386 13 4 12.7761 4 12.5V11" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M4 6H6M4 8.5H7M4 11H5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            导出 Excel
+          </button>
+          <button class="btn btn-primary">
+            <svg class="btn-icon" viewBox="0 0 14 14" fill="none"><path d="M11.5 3.5L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            校验
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:100px">科目代码</th>
+              <th>科目名称</th>
+              <th class="num" style="width:120px">期初借方</th>
+              <th class="num" style="width:120px">期初贷方</th>
+              <th class="num" style="width:120px">本期借方</th>
+              <th class="num" style="width:120px">本期贷方</th>
+              <th class="num" style="width:120px">期末借方</th>
+              <th class="num" style="width:120px">期末贷方</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 资产类 -->
+            <tr>
+              <td class="account-code">1001</td>
+              <td class="account-name level-1">库存现金</td>
+              <td class="num">8,500.00</td>
+              <td class="num">—</td>
+              <td class="num">156,200.00</td>
+              <td class="num">154,800.00</td>
+              <td class="num">9,900.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1002</td>
+              <td class="account-name level-1">银行存款</td>
+              <td class="num">2,456,800.00</td>
+              <td class="num">—</td>
+              <td class="num">8,923,400.00</td>
+              <td class="num">7,834,500.00</td>
+              <td class="num">3,545,700.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1012</td>
+              <td class="account-name level-1">其他货币资金</td>
+              <td class="num">120,000.00</td>
+              <td class="num">—</td>
+              <td class="num">350,000.00</td>
+              <td class="num">280,000.00</td>
+              <td class="num">190,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr class="selected">
+              <td class="account-code">1122</td>
+              <td class="account-name level-1">应收账款</td>
+              <td class="num">1,856,400.00</td>
+              <td class="num">—</td>
+              <td class="num">6,240,000.00</td>
+              <td class="num">5,480,000.00</td>
+              <td class="num">2,616,400.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1123</td>
+              <td class="account-name level-1">预付账款</td>
+              <td class="num">320,000.00</td>
+              <td class="num">—</td>
+              <td class="num">1,450,000.00</td>
+              <td class="num">1,280,000.00</td>
+              <td class="num">490,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1221</td>
+              <td class="account-name level-1">其他应收款</td>
+              <td class="num">145,600.00</td>
+              <td class="num">—</td>
+              <td class="num">523,000.00</td>
+              <td class="num">498,500.00</td>
+              <td class="num">170,100.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1231</td>
+              <td class="account-name level-1">坏账准备</td>
+              <td class="num">—</td>
+              <td class="num">92,820.00</td>
+              <td class="num">38,000.00</td>
+              <td class="num">130,820.00</td>
+              <td class="num">—</td>
+              <td class="num">185,640.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">1403</td>
+              <td class="account-name level-1">原材料</td>
+              <td class="num">1,280,000.00</td>
+              <td class="num">—</td>
+              <td class="num">4,560,000.00</td>
+              <td class="num">3,890,000.00</td>
+              <td class="num">1,950,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1405</td>
+              <td class="account-name level-1">库存商品</td>
+              <td class="num">2,156,000.00</td>
+              <td class="num">—</td>
+              <td class="num">5,890,000.00</td>
+              <td class="num">6,240,000.00</td>
+              <td class="num">1,806,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1411</td>
+              <td class="account-name level-1">周转材料</td>
+              <td class="num">86,500.00</td>
+              <td class="num">—</td>
+              <td class="num">125,000.00</td>
+              <td class="num">98,600.00</td>
+              <td class="num">112,900.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1471</td>
+              <td class="account-name level-1">存货跌价准备</td>
+              <td class="num">—</td>
+              <td class="num">68,500.00</td>
+              <td class="num">—</td>
+              <td class="num">45,000.00</td>
+              <td class="num">—</td>
+              <td class="num">113,500.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">1601</td>
+              <td class="account-name level-1">固定资产</td>
+              <td class="num">8,560,000.00</td>
+              <td class="num">—</td>
+              <td class="num">1,280,000.00</td>
+              <td class="num">420,000.00</td>
+              <td class="num">9,420,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1602</td>
+              <td class="account-name level-1">累计折旧</td>
+              <td class="num">—</td>
+              <td class="num">2,140,000.00</td>
+              <td class="num">—</td>
+              <td class="num">856,000.00</td>
+              <td class="num">—</td>
+              <td class="num">2,996,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">1604</td>
+              <td class="account-name level-1">在建工程</td>
+              <td class="num">680,000.00</td>
+              <td class="num">—</td>
+              <td class="num">920,000.00</td>
+              <td class="num">—</td>
+              <td class="num">1,600,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1701</td>
+              <td class="account-name level-1">无形资产</td>
+              <td class="num">420,000.00</td>
+              <td class="num">—</td>
+              <td class="num">150,000.00</td>
+              <td class="num">42,000.00</td>
+              <td class="num">528,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">1801</td>
+              <td class="account-name level-1">长期待摊费用</td>
+              <td class="num">156,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">52,000.00</td>
+              <td class="num">104,000.00</td>
+              <td class="num">—</td>
+            </tr>
+            <!-- 负债类 -->
+            <tr>
+              <td class="account-code">2001</td>
+              <td class="account-name level-1">短期借款</td>
+              <td class="num">—</td>
+              <td class="num">1,500,000.00</td>
+              <td class="num">500,000.00</td>
+              <td class="num">800,000.00</td>
+              <td class="num">—</td>
+              <td class="num">1,800,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2202</td>
+              <td class="account-name level-1">应付账款</td>
+              <td class="num">—</td>
+              <td class="num">1,248,600.00</td>
+              <td class="num">3,890,000.00</td>
+              <td class="num">4,156,000.00</td>
+              <td class="num">—</td>
+              <td class="num">1,514,600.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2203</td>
+              <td class="account-name level-1">预收账款</td>
+              <td class="num">—</td>
+              <td class="num">285,000.00</td>
+              <td class="num">180,000.00</td>
+              <td class="num">320,000.00</td>
+              <td class="num">—</td>
+              <td class="num">425,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2211</td>
+              <td class="account-name level-1">应付职工薪酬</td>
+              <td class="num">—</td>
+              <td class="num">156,800.00</td>
+              <td class="num">2,456,000.00</td>
+              <td class="num">2,580,000.00</td>
+              <td class="num">—</td>
+              <td class="num">280,800.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2221</td>
+              <td class="account-name level-1">应交税费</td>
+              <td class="num">—</td>
+              <td class="num">198,500.00</td>
+              <td class="num">1,256,000.00</td>
+              <td class="num">1,342,000.00</td>
+              <td class="num">—</td>
+              <td class="num">284,500.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2241</td>
+              <td class="account-name level-1">其他应付款</td>
+              <td class="num">—</td>
+              <td class="num">89,600.00</td>
+              <td class="num">245,000.00</td>
+              <td class="num">268,500.00</td>
+              <td class="num">—</td>
+              <td class="num">113,100.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">2501</td>
+              <td class="account-name level-1">长期借款</td>
+              <td class="num">—</td>
+              <td class="num">2,000,000.00</td>
+              <td class="num">—</td>
+              <td class="num">500,000.00</td>
+              <td class="num">—</td>
+              <td class="num">2,500,000.00</td>
+            </tr>
+            <!-- 权益类 -->
+            <tr>
+              <td class="account-code">4001</td>
+              <td class="account-name level-1">实收资本</td>
+              <td class="num">—</td>
+              <td class="num">5,000,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">5,000,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">4002</td>
+              <td class="account-name level-1">资本公积</td>
+              <td class="num">—</td>
+              <td class="num">856,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">856,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">4101</td>
+              <td class="account-name level-1">盈余公积</td>
+              <td class="num">—</td>
+              <td class="num">620,000.00</td>
+              <td class="num">—</td>
+              <td class="num">128,000.00</td>
+              <td class="num">—</td>
+              <td class="num">748,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">4103</td>
+              <td class="account-name level-1">本年利润</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">8,560,000.00</td>
+              <td class="num">12,480,000.00</td>
+              <td class="num">—</td>
+              <td class="num">3,920,000.00</td>
+            </tr>
+            <tr>
+              <td class="account-code">4104</td>
+              <td class="account-name level-1">利润分配</td>
+              <td class="num">—</td>
+              <td class="num">1,856,080.00</td>
+              <td class="num">128,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">1,728,080.00</td>
+            </tr>
+            <!-- 损益类 -->
+            <tr>
+              <td class="account-code">6001</td>
+              <td class="account-name level-1">主营业务收入</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">12,480,000.00</td>
+              <td class="num">12,480,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">6401</td>
+              <td class="account-name level-1">主营业务成本</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">6,240,000.00</td>
+              <td class="num">6,240,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">6601</td>
+              <td class="account-name level-1">销售费用</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">1,256,000.00</td>
+              <td class="num">1,256,000.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">6602</td>
+              <td class="account-name level-1">管理费用</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">986,400.00</td>
+              <td class="num">986,400.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+            <tr>
+              <td class="account-code">6603</td>
+              <td class="account-name level-1">财务费用</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num">245,600.00</td>
+              <td class="num">245,600.00</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">合计</td>
+              <td class="num">18,245,800.00</td>
+              <td class="num">18,245,800.00</td>
+              <td class="num">68,518,100.00</td>
+              <td class="num">68,518,100.00</td>
+              <td class="num">22,543,000.00</td>
+              <td class="num">22,543,000.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Status strip -->
+      <div class="status-strip">
+        <div class="status-strip-left">
+          <span>共 1,284 行</span>
+          <span class="status-badge success">
+            <span class="status-dot"></span>
+            已计算
+          </span>
+        </div>
+        <div class="status-strip-right">
+          <span>差异: <strong style="color: var(--color-success-text); font-weight: 600;">0.00</strong></span>
+          <span>最后更新: 2025-12-31 17:42</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== RIGHT PANEL — AI Assistant ===== -->
+    <aside class="right-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C11.5899 1.5 14.5 4.41015 14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5Z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 6.5H6.005M10 6.5H10.005M5.5 10C6.16667 10.5 7.1 10.8 8 10.8C8.9 10.8 9.83333 10.5 10.5 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          AI 助手
+        </div>
+        <div class="panel-actions">
+          <div class="panel-status">
+            <span class="panel-status-dot"></span>
+            已连接
+          </div>
+          <button class="panel-icon-btn" title="更多">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="2" r="1.5" fill="currentColor"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/><circle cx="7" cy="12" r="1.5" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-messages">
+        <!-- AI message 1 -->
+        <div class="msg msg-ai">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-body">
+            <div class="msg-name">AuditAI 助手</div>
+            <div class="msg-bubble">
+              已完成试算平衡表校验，未发现异常。借贷方余额一致，差异为 0.00 元。需要我检查应收账款账龄分析吗？
+            </div>
+            <div class="msg-time">14:32</div>
+          </div>
+        </div>
+
+        <!-- User message -->
+        <div class="msg msg-user">
+          <div class="msg-avatar">我</div>
+          <div class="msg-body">
+            <div class="msg-name">admin</div>
+            <div class="msg-bubble">
+              好的，生成账龄分析表
+            </div>
+            <div class="msg-time">14:33</div>
+          </div>
+        </div>
+
+        <!-- AI message 2 (typing) -->
+        <div class="msg msg-ai">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-body">
+            <div class="msg-name">AuditAI 助手</div>
+            <div class="msg-bubble">
+              <div class="typing-indicator">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick action chips -->
+      <div class="quick-actions">
+        <button class="chip">
+          <svg class="chip-icon" viewBox="0 0 12 12" fill="none"><path d="M2 1.5H7.5L10 4V10.5C10 10.7761 9.77614 11 9.5 11H2.5C2.22386 11 2 10.7761 2 10.5V1.5Z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M7.5 1.5V4H10" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+          生成审计报告
+        </button>
+        <button class="chip">
+          <svg class="chip-icon" viewBox="0 0 12 12" fill="none"><path d="M10.5 2L4.5 8L1.5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          校验全部表格
+        </button>
+        <button class="chip">
+          <svg class="chip-icon" viewBox="0 0 12 12" fill="none"><path d="M6 1V10M6 10L3 7M6 10L9 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11.5H11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          导入账簿
+        </button>
+      </div>
+
+      <!-- Chat input -->
+      <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+          <textarea class="chat-input" rows="1" placeholder="输入消息，询问 AI 助手..."></textarea>
+          <button class="send-btn" title="发送">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M1 7L13 1M13 1L7 13M13 1L5 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============================================================
+       BOTTOM STATUS BAR
+       ============================================================ -->
+  <div class="bottom-bar">
+    <div class="bottom-bar-left">
+      <div class="bottom-item">
+        <span class="status-dot"></span>
+        已连接
+      </div>
+      <div class="bottom-separator"></div>
+      <span>admin</span>
+      <div class="bottom-separator"></div>
+      <span>v2.5.0</span>
+    </div>
+    <div class="bottom-bar-right">
+      <span>项目: ABC有限公司2025年度审计</span>
+      <div class="bottom-separator"></div>
+      <span>账套: 2025年12期</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

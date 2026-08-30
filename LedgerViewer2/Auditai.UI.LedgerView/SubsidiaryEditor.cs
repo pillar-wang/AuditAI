@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -98,34 +98,6 @@ internal class SubsidiaryEditor : ISetTheme
 
 	private C1Command cmdNormal = new C1Command();
 
-	private C1Command cmdCopy2 = new C1Command();
-
-	private C1CommandLink lnkCopy2 = new C1CommandLink();
-
-	private C1Command cmdDirectionChange2 = new C1Command();
-
-	private C1CommandLink lnkDirectionChange2 = new C1CommandLink();
-
-	private C1Command cmdDirectionReduce2 = new C1Command();
-
-	private C1CommandLink lnkDirectionReduce2 = new C1CommandLink();
-
-	private C1Command cmdMakeMark2 = new C1Command();
-
-	private C1CommandLink lnkMakeMark2 = new C1CommandLink();
-
-	private C1Command cmdCancelMark2 = new C1Command();
-
-	private C1CommandLink lnkCancelMark2 = new C1CommandLink();
-
-	private C1Command cmdColHide2 = new C1Command();
-
-	private C1CommandLink lnkColHide2 = new C1CommandLink();
-
-	private C1Command cmdCancelHide2 = new C1Command();
-
-	private C1CommandLink lnkCancelHide2 = new C1CommandLink();
-
 	private C1Command cmdModifyBalance = new C1Command();
 
 	private C1CommandLink lnkModifyBalance = new C1CommandLink();
@@ -142,19 +114,7 @@ internal class SubsidiaryEditor : ISetTheme
 
 	private C1SplitterPanel pnlSubsidiaryGrid;
 
-	private C1SplitterPanel pnlSubsidiaryVoucher;
-
 	private C1SplitterPanel pnlSubsidiayFoot;
-
-	private C1SplitContainer ctnVoucher;
-
-	private C1SplitterPanel pnlVoucherTitle;
-
-	private C1SplitterPanel pnlVoucherHead;
-
-	private C1SplitterPanel pnlVoucherGrid;
-
-	private C1SplitterPanel pnlVoucherFoot;
 
 	public C1Button btnSubsidiaryBack;
 
@@ -172,24 +132,6 @@ internal class SubsidiaryEditor : ISetTheme
 
 	public C1FlexGridEx grdSubsidiary;
 
-	private C1Label lblVoucherTitle;
-
-	private C1Label lblVoucherType;
-
-	private C1Label lblVoucherNumber;
-
-	private C1Label lblVoucherDate;
-
-	private C1Label lblNumAttachments;
-
-	public C1FlexGridEx grdVoucher;
-
-	private C1Label lblChecker;
-
-	private C1Label lblMaker;
-
-	private C1Label lblBooker;
-
 	private C1DockingTab SubDockingTab;
 
 	private RibbonImageProcess imageProcess = new RibbonImageProcess();
@@ -197,8 +139,6 @@ internal class SubsidiaryEditor : ISetTheme
 	private C1ToolBar toolBar = new C1ToolBar();
 
 	private C1SplitterPanel pnlSidebar;
-
-	private C1Button btnCloseVoucher = new C1Button();
 
 	private C1CommandLink lnkSidebarDirectionChange = new C1CommandLink();
 
@@ -226,21 +166,11 @@ internal class SubsidiaryEditor : ISetTheme
 
 	private bool initializedSubsidiaryCaption;
 
-	private bool initializedVoucherCaption;
-
-	public bool _voucherVisible;
-
 	private C1ContextMenu ctxSubFixed = new C1ContextMenu();
 
 	private C1ContextMenu ctxSubEmpty = new C1ContextMenu();
 
 	private C1ContextMenu ctxSubCell = new C1ContextMenu();
-
-	private C1ContextMenu ctxVouCell = new C1ContextMenu();
-
-	private C1ContextMenu ctxVouFixed = new C1ContextMenu();
-
-	private C1ContextMenu ctxVouEmpty = new C1ContextMenu();
 
 	private Ledger Ledger => _owner.Ledger;
 
@@ -277,7 +207,6 @@ internal class SubsidiaryEditor : ISetTheme
 		_owner = owner;
 		InitComponent();
 		BindSubContexMenu();
-		BindVoucherContexMenu();
 		Initialize();
 	}
 
@@ -303,13 +232,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiaryTitle = new C1SplitterPanel();
 		pnlSubsidiaryHead = new C1SplitterPanel();
 		pnlSubsidiaryGrid = new C1SplitterPanel();
-		pnlSubsidiaryVoucher = new C1SplitterPanel();
 		pnlSubsidiayFoot = new C1SplitterPanel();
-		ctnVoucher = new C1SplitContainer();
-		pnlVoucherTitle = new C1SplitterPanel();
-		pnlVoucherHead = new C1SplitterPanel();
-		pnlVoucherGrid = new C1SplitterPanel();
-		pnlVoucherFoot = new C1SplitterPanel();
 		btnSubsidiaryBack = new C1Button();
 		lblSubsidiaryTitle = new C1Label();
 		lblAccountName = new C1Label();
@@ -319,16 +242,6 @@ internal class SubsidiaryEditor : ISetTheme
 		lblSubCurrency = new C1Label();
 		grdSubsidiary = new C1FlexGridEx();
 		grdSubsidiary.Name = "grdSubsidiary";
-		lblVoucherTitle = new C1Label();
-		lblVoucherType = new C1Label();
-		lblVoucherNumber = new C1Label();
-		lblVoucherDate = new C1Label();
-		lblNumAttachments = new C1Label();
-		grdVoucher = new C1FlexGridEx();
-		grdVoucher.Name = "grdVoucher";
-		lblChecker = new C1Label();
-		lblMaker = new C1Label();
-		lblBooker = new C1Label();
 		SubDockingTab = new C1DockingTab();
 		btnSubsidiaryBack.Location = new Point(0, -3);
 		btnSubsidiaryBack.Size = new Size(30, 30);
@@ -551,153 +464,6 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiaryGrid.KeepRelativeSize = true;
 		pnlSubsidiaryGrid.SizeRatio = 59.74;
 		pnlSubsidiaryGrid.Controls.Add(value);
-		lblVoucherTitle.TextDetached = true;
-		lblVoucherTitle.Anchor = AnchorStyles.Top;
-		lblVoucherTitle.AutoSize = true;
-		lblVoucherTitle.BorderStyle = BorderStyle.None;
-		lblVoucherTitle.Font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
-		lblVoucherTitle.Location = new Point(417, 0);
-		lblVoucherTitle.Size = new Size(74, 25);
-		lblVoucherTitle.Text = "记账凭证";
-		lblVoucherTitle.TextAlign = ContentAlignment.MiddleCenter;
-		btnCloseVoucher.Size = new Size(25, 25);
-		btnCloseVoucher.Image = Auditai.UI.Controls.Properties.Resources.tileClose;
-		btnCloseVoucher.ImageAlign = ContentAlignment.MiddleCenter;
-		btnCloseVoucher.Dock = DockStyle.Right;
-		btnCloseVoucher.FlatStyle = FlatStyle.Flat;
-		btnCloseVoucher.FlatAppearance.BorderSize = 0;
-		btnCloseVoucher.MouseEnter += delegate
-		{
-			btnCloseVoucher.Image = Auditai.UI.Controls.Properties.Resources.tileCloseSlide;
-		};
-		btnCloseVoucher.MouseLeave += delegate
-		{
-			btnCloseVoucher.Image = Auditai.UI.Controls.Properties.Resources.tileClose;
-		};
-		btnCloseVoucher.Click += delegate
-		{
-			ShowVoucher(visible: false);
-		};
-		btnCloseVoucher.MouseDown += delegate
-		{
-			btnCloseVoucher.Image = Auditai.UI.Controls.Properties.Resources.tileCloseDown;
-		};
-		btnCloseVoucher.MouseUp += delegate
-		{
-			btnCloseVoucher.Image = Auditai.UI.Controls.Properties.Resources.tileCloseSlide;
-		};
-		pnlVoucherTitle.Height = 25;
-		pnlVoucherTitle.KeepRelativeSize = false;
-		pnlVoucherTitle.Location = new Point(0, 0);
-		pnlVoucherTitle.MinHeight = 25;
-		pnlVoucherTitle.Resizable = false;
-		pnlVoucherTitle.Size = new Size(927, 20);
-		pnlVoucherTitle.SizeRatio = 10.204;
-		pnlVoucherTitle.Controls.Add(btnCloseVoucher);
-		pnlVoucherTitle.Controls.Add(lblVoucherTitle);
-		lblVoucherType.TextDetached = true;
-		lblVoucherType.AutoSize = true;
-		lblVoucherType.BorderStyle = BorderStyle.None;
-		lblVoucherType.Location = new Point(9, 1);
-		lblVoucherType.Size = new Size(32, 17);
-		lblVoucherType.Text = "字：";
-		lblVoucherType.TextAlign = ContentAlignment.MiddleLeft;
-		lblVoucherNumber.TextDetached = true;
-		lblVoucherNumber.AutoSize = true;
-		lblVoucherNumber.BorderStyle = BorderStyle.None;
-		lblVoucherNumber.Location = new Point(92, 1);
-		lblVoucherNumber.Margin = new Padding(10, 0, 3, 0);
-		lblVoucherNumber.Size = new Size(32, 17);
-		lblVoucherNumber.Text = "号：";
-		lblVoucherNumber.TextAlign = ContentAlignment.MiddleLeft;
-		lblVoucherDate.TextDetached = true;
-		lblVoucherDate.Anchor = AnchorStyles.Top;
-		lblVoucherDate.BorderStyle = BorderStyle.None;
-		lblVoucherDate.Location = new Point(383, 1);
-		lblVoucherDate.Size = new Size(150, 17);
-		lblVoucherDate.Text = "制单日期：0000-00-00";
-		lblVoucherDate.TextAlign = ContentAlignment.MiddleCenter;
-		lblNumAttachments.TextDetached = true;
-		lblNumAttachments.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-		lblNumAttachments.BorderStyle = BorderStyle.None;
-		lblNumAttachments.ImageAlign = ContentAlignment.MiddleRight;
-		lblNumAttachments.Location = new Point(727, 1);
-		lblNumAttachments.Size = new Size(180, 17);
-		lblNumAttachments.Text = "附件张数：";
-		lblNumAttachments.TextAlign = ContentAlignment.MiddleRight;
-		pnlVoucherHead.HeaderTextAlign = PanelTextAlign.Center;
-		pnlVoucherHead.Height = 20;
-		pnlVoucherHead.KeepRelativeSize = false;
-		pnlVoucherHead.Location = new Point(0, 21);
-		pnlVoucherHead.Resizable = false;
-		pnlVoucherHead.Size = new Size(927, 20);
-		pnlVoucherHead.SizeRatio = 2.0;
-		pnlVoucherHead.Width = 927;
-		pnlVoucherHead.Controls.Add(lblVoucherType);
-		pnlVoucherHead.Controls.Add(lblVoucherNumber);
-		pnlVoucherHead.Controls.Add(lblVoucherDate);
-		pnlVoucherHead.Controls.Add(lblNumAttachments);
-		grdVoucher.AllowEditing = false;
-		grdVoucher.AllowResizing = AllowResizingEnum.Both;
-		grdVoucher.AllowSorting = AllowSortingEnum.None;
-		grdVoucher.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
-		grdVoucher.Dock = DockStyle.Fill;
-		grdVoucher.DrawMode = DrawModeEnum.OwnerDraw;
-		grdVoucher.ExtendLastCol = true;
-		grdVoucher.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
-		grdVoucher.Location = new Point(0, 0);
-		grdVoucher.Rows.DefaultSize = 20;
-		grdVoucher.Size = new Size(927, 126);
-		grdVoucher.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
-		pnlVoucherGrid.Height = 126;
-		pnlVoucherGrid.Location = new Point(0, 42);
-		pnlVoucherGrid.Size = new Size(927, 126);
-		pnlVoucherGrid.SizeRatio = 95.0;
-		pnlVoucherGrid.Controls.Add(grdVoucher);
-		lblChecker.TextDetached = true;
-		lblChecker.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-		lblChecker.BorderStyle = BorderStyle.None;
-		lblChecker.ImageAlign = ContentAlignment.MiddleRight;
-		lblChecker.Location = new Point(727, 7);
-		lblChecker.Size = new Size(180, 17);
-		lblChecker.Text = "审核人：";
-		lblChecker.TextAlign = ContentAlignment.MiddleRight;
-		lblMaker.TextDetached = true;
-		lblMaker.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-		lblMaker.BorderStyle = BorderStyle.None;
-		lblMaker.Location = new Point(9, 7);
-		lblMaker.Size = new Size(150, 17);
-		lblMaker.Text = "制单人：";
-		lblMaker.TextAlign = ContentAlignment.MiddleLeft;
-		lblBooker.TextDetached = true;
-		lblBooker.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
-		lblBooker.BorderStyle = BorderStyle.None;
-		lblBooker.Location = new Point(383, 7);
-		lblBooker.Size = new Size(150, 17);
-		lblBooker.Text = "记账人：";
-		lblBooker.TextAlign = ContentAlignment.MiddleCenter;
-		pnlVoucherFoot.Dock = PanelDockStyle.Bottom;
-		pnlVoucherFoot.Height = 30;
-		pnlVoucherFoot.KeepRelativeSize = false;
-		pnlVoucherFoot.Location = new Point(0, 169);
-		pnlVoucherFoot.MinHeight = 30;
-		pnlVoucherFoot.MinWidth = 30;
-		pnlVoucherFoot.Resizable = false;
-		pnlVoucherFoot.Size = new Size(927, 30);
-		pnlVoucherFoot.SizeRatio = 100.0;
-		pnlVoucherFoot.Controls.Add(lblChecker);
-		pnlVoucherFoot.Controls.Add(lblMaker);
-		pnlVoucherFoot.Controls.Add(lblBooker);
-		ctnVoucher.AutoSizeElement = AutoSizeElement.Both;
-		ctnVoucher.CollapsingCueColor = Color.FromArgb(133, 133, 150);
-		ctnVoucher.Dock = DockStyle.Fill;
-		ctnVoucher.Location = new Point(0, 0);
-		ctnVoucher.Size = new Size(927, 199);
-		ctnVoucher.SplitterWidth = 2;
-		ctnVoucher.Panels.Add(pnlVoucherFoot);
-		ctnVoucher.Panels.Add(pnlVoucherTitle);
-		ctnVoucher.Panels.Add(pnlVoucherHead);
-		ctnVoucher.Panels.Add(pnlVoucherGrid);
 		SubDockingTab.BorderStyle = BorderStyle.None;
 		SubDockingTab.CanCloseTabs = true;
 		SubDockingTab.CanMoveTabs = true;
@@ -717,14 +483,6 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiayFoot.Size = new Size(927, 23);
 		pnlSubsidiayFoot.SizeRatio = 3.657;
 		pnlSubsidiayFoot.Controls.Add(SubDockingTab);
-		pnlSubsidiaryVoucher.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
-		pnlSubsidiaryVoucher.HeaderLineColor = Color.Transparent;
-		pnlSubsidiaryVoucher.HeaderTextAlign = PanelTextAlign.Center;
-		pnlSubsidiaryVoucher.Height = 220;
-		pnlSubsidiaryVoucher.Location = new Point(0, 407);
-		pnlSubsidiaryVoucher.Size = new Size(927, 199);
-		pnlSubsidiaryVoucher.SizeRatio = 100.0;
-		pnlSubsidiaryVoucher.Controls.Add(ctnVoucher);
 		View.AutoSizeElement = AutoSizeElement.Both;
 		View.BackColor = Color.FromArgb(240, 240, 240);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
@@ -737,7 +495,6 @@ internal class SubsidiaryEditor : ISetTheme
 		View.Panels.Add(pnlSubsidiaryTitle);
 		View.Panels.Add(pnlSubsidiaryHead);
 		View.Panels.Add(pnlSubsidiaryGrid);
-		View.Panels.Add(pnlSubsidiaryVoucher);
 		_owner._owner.AfterOpenLedger += _owner_AfterOpenLedger;
 	}
 
@@ -970,10 +727,10 @@ internal class SubsidiaryEditor : ISetTheme
 				row["DC"] = Common.GetDCChar(account.IsDebit, subsidiaryLedger.BeginBalance);
 				row["Digest"] = "期初余额";
 			}
-			C1.Win.C1FlexGrid.CellStyle cellStyle = grdVoucher.Styles.Add("center");
-			cellStyle.TextAlign = TextAlignEnum.CenterCenter;
-			cellStyle.DataType = typeof(string);
-			if (SubStatus == SubOrTotal.Subsidiary)
+			C1.Win.C1FlexGrid.CellStyle cellStyle = grdSubsidiary.Styles.Add("center");
+		cellStyle.TextAlign = TextAlignEnum.CenterCenter;
+		cellStyle.DataType = typeof(string);
+		if (SubStatus == SubOrTotal.Subsidiary)
 			{
 				grdSubsidiary.Cols["MyMark"].Visible = true;
 				grdSubsidiary.Cols["Date"].Visible = true;
@@ -1005,8 +762,8 @@ internal class SubsidiaryEditor : ISetTheme
 							grdSubsidiary.SetCellCheck(row2.Index, index, item2.Voucher.VoucherMark ? CheckEnum.Checked : CheckEnum.Unchecked);
 							if (item2.Voucher.VoucherMark)
 							{
-								row2.StyleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
-								row2.StyleNew.ForeColor = Common.MarkForeColor;
+								row2.StyleNew.BackColor = Common.MarkBackColor;
+							row2.StyleNew.ForeColor = Common.MarkForeColor;
 							}
 						}
 					}
@@ -1092,15 +849,8 @@ internal class SubsidiaryEditor : ISetTheme
 					}
 				}
 			}
-			PopulateBottomVoucher();
 			_owner.StyleRecord.ResumeStyle(grdSubsidiary);
-			_owner.StyleRecord.ResumeStyle(grdVoucher);
-			if (SubStatus == SubOrTotal.Total)
-			{
-				ShowVoucher(visible: false);
-			}
 			AutoSizeSubsidiaryColumns();
-			AutoSizeVoucherColumns();
 		}
 		catch
 		{
@@ -1262,153 +1012,6 @@ internal class SubsidiaryEditor : ISetTheme
 		}
 	}
 
-	public void PopulateVouchers(IEnumerable<Voucher> vouchers)
-	{
-		grdVoucher.BeginUpdate();
-		bool pendingAllEvent = PendingAllEvent;
-		try
-		{
-			if (!pendingAllEvent)
-			{
-				PendingAllEvent = true;
-			}
-			InitializeVoucherCaption();
-			grdVoucher.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
-			grdVoucher.Rows.Fixed = 1;
-			grdVoucher.Cols.Fixed = 1;
-			int num = 1;
-			decimal num2 = default(decimal);
-			decimal num3 = default(decimal);
-			C1.Win.C1FlexGrid.CellStyle cellStyle = grdVoucher.Styles.Add("center");
-			cellStyle.TextAlign = TextAlignEnum.CenterCenter;
-			cellStyle.DataType = typeof(string);
-			foreach (Voucher voucher in vouchers)
-			{
-				C1.Win.C1FlexGrid.Row row = grdVoucher.Rows.Add();
-				row.UserData = voucher;
-				row["Index"] = num++;
-				row["Digest"] = voucher.Digest;
-				row["Code"] = voucher.GetDisplayAccountCodeWithDetail();
-				row["Name"] = voucher.GetDisplayAccountNameWithDetail();
-				row["Debit"] = (voucher.IsDebit ? voucher.Amount : 0m);
-				row["Credit"] = (voucher.IsDebit ? 0m : voucher.Amount);
-				num2 += (voucher.IsDebit ? voucher.Amount : 0m);
-				num3 += (voucher.IsDebit ? 0m : voucher.Amount);
-				if (voucher.VoucherMark)
-				{
-					row.StyleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
-					row.StyleNew.ForeColor = Common.MarkForeColor;
-				}
-			}
-			C1.Win.C1FlexGrid.Row row2 = grdVoucher.Rows.Add();
-			row2["Digest"] = "合计";
-			row2["Debit"] = num2;
-			row2["Credit"] = num3;
-			row2.StyleNew.BackColor = UserSet.Config.TableStyle.FormalaColor;
-			grdVoucher.SetCellStyle(row2.Index, "Digest", cellStyle);
-			SetVoucherHeader(vouchers.FirstOrDefault());
-			_owner.StyleRecord.ResumeStyle(grdVoucher);
-		}
-		catch
-		{
-		}
-		finally
-		{
-			if (!pendingAllEvent)
-			{
-				PendingAllEvent = false;
-			}
-			grdVoucher.EndUpdate();
-		}
-	}
-
-	private void InitializeVoucherCaption()
-	{
-		if (!initializedVoucherCaption)
-		{
-			grdVoucher.Cols.Count = 0;
-			grdVoucher.Rows.Count = 1;
-			grdVoucher.Rows.Fixed = 1;
-			C1.Win.C1FlexGrid.Column column = grdVoucher.Cols.Add();
-			column.Name = "Index";
-			column.Caption = "序号";
-			column.DataType = typeof(int);
-			column.TextAlign = TextAlignEnum.CenterCenter;
-			column.AllowMerging = true;
-			column.Width = 50;
-			column = grdVoucher.Cols.Add();
-			column.Name = "Digest";
-			column.Caption = "摘要";
-			column.DataType = typeof(string);
-			column.AllowMerging = true;
-			column.Width = 220;
-			column = grdVoucher.Cols.Add();
-			column.Name = "Code";
-			column.Caption = "科目代码";
-			column.DataType = typeof(string);
-			column.AllowMerging = true;
-			column.Width = 100;
-			column = grdVoucher.Cols.Add();
-			column.Name = "Name";
-			column.Caption = "科目名称";
-			column.DataType = typeof(string);
-			column.AllowMerging = true;
-			column.Width = 200;
-			column = grdVoucher.Cols.Add();
-			column.Name = "Debit";
-			column.Caption = "借方金额";
-			column.DataType = typeof(decimal);
-			column.Format = "#,0.00;-#,0.00;#";
-			column.AllowMerging = true;
-			column.Width = 100;
-			column = grdVoucher.Cols.Add();
-			column.Name = "Credit";
-			column.Caption = "贷方金额";
-			column.DataType = typeof(decimal);
-			column.Format = "#,0.00;-#,0.00;#";
-			column.AllowMerging = true;
-			column.Width = 100;
-			initializedVoucherCaption = true;
-		}
-		else
-		{
-			grdVoucher.Rows.Count = 1;
-			C1.Win.C1FlexGrid.Column column2 = grdVoucher.Cols["Index"];
-			column2.Caption = "序号";
-			column2.DataType = typeof(int);
-			column2.TextAlign = TextAlignEnum.CenterCenter;
-			column2.AllowMerging = true;
-			column2 = grdVoucher.Cols["Digest"];
-			column2.Caption = "摘要";
-			column2.DataType = typeof(string);
-			column2.AllowMerging = true;
-			column2 = grdVoucher.Cols["Code"];
-			column2.Caption = "科目代码";
-			column2.DataType = typeof(string);
-			column2.AllowMerging = true;
-			column2 = grdVoucher.Cols["Name"];
-			column2.Caption = "科目名称";
-			column2.DataType = typeof(string);
-			column2.AllowMerging = true;
-			column2 = grdVoucher.Cols["Debit"];
-			column2.Caption = "借方金额";
-			column2.DataType = typeof(decimal);
-			column2.Format = "#,0.00;-#,0.00;#";
-			column2.AllowMerging = true;
-			column2 = grdVoucher.Cols["Credit"];
-			column2.Caption = "贷方金额";
-			column2.DataType = typeof(decimal);
-			column2.Format = "#,0.00;-#,0.00;#";
-			column2.AllowMerging = true;
-		}
-	}
-
-	public void ShowVoucher(bool visible)
-	{
-		_voucherVisible = visible;
-		pnlSubsidiaryVoucher.Visible = visible;
-	}
-
 	public void UpdateTitle(Account account)
 	{
 		lblAccountName.Text = "科目名称：" + Common.GetFullNameWithCode(account);
@@ -1430,21 +1033,6 @@ internal class SubsidiaryEditor : ISetTheme
 		lblSubsidiaryTitle.Text = ((SubStatus == SubOrTotal.Total) ? "总账" : "明细账");
 	}
 
-	private void _grid_Click(object sender, EventArgs e)
-	{
-		if (!_voucherVisible || grdSubsidiary.Row < grdSubsidiary.Rows.Fixed)
-		{
-			return;
-		}
-		object userData = grdSubsidiary.Rows[grdSubsidiary.Row].UserData;
-		Voucher voucher = userData as Voucher;
-		if (voucher != null)
-		{
-			IEnumerable<Voucher> vouchers = Ledger.Vouchers.Where((Voucher t) => t.Type == voucher.Type && t.Number == voucher.Number && t.Day.Year == voucher.Day.Year && t.Day.Month == voucher.Day.Month);
-			PopulateVouchers(vouchers);
-		}
-	}
-
 	private void _grid_DoubleClick(object sender, EventArgs e)
 	{
 		try
@@ -1458,7 +1046,6 @@ internal class SubsidiaryEditor : ISetTheme
 			switch (SubStatus)
 			{
 			case SubOrTotal.Total:
-				ShowVoucher(visible: false);
 				SubStatus = SubOrTotal.Subsidiary;
 				PopulateSubsidiarySheet(_owner.CurrentAccount, StartDate, EndDate);
 				UpdateTitle(_owner.CurrentAccount);
@@ -1469,9 +1056,8 @@ internal class SubsidiaryEditor : ISetTheme
 				Voucher voucher = userData as Voucher;
 				if (voucher != null)
 				{
-					ShowVoucher(visible: true);
 					IEnumerable<Voucher> vouchers = Ledger.Vouchers.Where((Voucher t) => t.Type == voucher.Type && t.Number == voucher.Number && t.Day.Year == voucher.Day.Year && t.Day.Month == voucher.Day.Month);
-					PopulateVouchers(vouchers);
+					OpenVoucherView(vouchers);
 				}
 				break;
 			}
@@ -1480,6 +1066,37 @@ internal class SubsidiaryEditor : ISetTheme
 		catch
 		{
 		}
+	}
+
+	private void OpenVoucherView(IEnumerable<Voucher> vouchers)
+	{
+		frmVoucherView view = new frmVoucherView(_owner, vouchers, NavigateToVoucherAccount, RefreshSubsidiaryGridBackground);
+		view.ShowView();
+	}
+
+	private void NavigateToVoucherAccount(Voucher voucher)
+	{
+		try
+		{
+			if (voucher.Details.Count == 0)
+			{
+				PopulateSubsidiarySheet(voucher.Account, StartDate, EndDate);
+				UpdateTitle(voucher.Account);
+				_owner.CurrentAccount = voucher.Account;
+				_owner.CurrentAuxiliary = null;
+				_owner.AccountTreeEditor.UpdateNodeStatus(voucher.Account);
+			}
+			else
+			{
+				AuxiliaryItem auxiliaryItem = voucher.Details[0];
+				PopulateSubsidiarySheet(voucher.Account, StartDate, EndDate, auxiliaryItem);
+				UpdateTitle(voucher.Account, auxiliaryItem);
+				_owner.CurrentAccount = voucher.Account;
+				_owner.CurrentAuxiliary = auxiliaryItem;
+				_owner.AccountTreeEditor.UpdateNodeStatus(Tuple.Create(voucher.Account, auxiliaryItem));
+			}
+		}
+		catch { }
 	}
 
 	private void _grid_AfterResizeRow(object sender, RowColEventArgs e)
@@ -1535,58 +1152,6 @@ internal class SubsidiaryEditor : ISetTheme
 				Common.SetTreeCheck(_owner.AccountTreeEditor.Tree, CheckEnum.None);
 			}
 			break;
-		}
-	}
-
-	private void _grdVoucher_DoubleClick(object sender, EventArgs e)
-	{
-		C1.Win.C1FlexGrid.Row row = grdVoucher.Rows[grdVoucher.Row];
-		if (row.UserData is Voucher voucher)
-		{
-			if (voucher.Details.Count == 0)
-			{
-				PopulateSubsidiarySheet(voucher.Account, StartDate, EndDate);
-				UpdateTitle(voucher.Account);
-				_owner.CurrentAccount = voucher.Account;
-				_owner.CurrentAuxiliary = null;
-				_owner.AccountTreeEditor.UpdateNodeStatus(voucher.Account);
-			}
-			else
-			{
-				AuxiliaryItem auxiliaryItem = voucher.Details[0];
-				PopulateSubsidiarySheet(voucher.Account, StartDate, EndDate, auxiliaryItem);
-				UpdateTitle(voucher.Account, auxiliaryItem);
-				_owner.CurrentAccount = voucher.Account;
-				_owner.CurrentAuxiliary = auxiliaryItem;
-				_owner.AccountTreeEditor.UpdateNodeStatus(Tuple.Create(voucher.Account, auxiliaryItem));
-			}
-		}
-	}
-
-	private void _grdVoucher_AfterResizeRow(object sender, RowColEventArgs e)
-	{
-		if (!PendingAllEvent)
-		{
-			_owner.StyleRecord.RecordHeight(sender as C1FlexGridEx, e.Row);
-		}
-	}
-
-	private void _grdVoucher_AfterResizeColumn(object sender, RowColEventArgs e)
-	{
-		if (!PendingAllEvent)
-		{
-			C1FlexGridEx c1FlexGridEx = sender as C1FlexGridEx;
-			_owner.StyleRecord.RecordWidth(c1FlexGridEx.Name, c1FlexGridEx.Cols[e.Col].Name, c1FlexGridEx.Cols[e.Col].Width);
-		}
-	}
-
-	private void _grdVoucher_AfterDragColumn(object sender, DragRowColEventArgs e)
-	{
-		if (!PendingAllEvent)
-		{
-			C1FlexGridEx c1FlexGridEx = sender as C1FlexGridEx;
-			_owner.StyleRecord.RecordOrder(c1FlexGridEx.Name, from C1.Win.C1FlexGrid.Column t in c1FlexGridEx.Cols
-				select t.Name);
 		}
 	}
 
@@ -1648,8 +1213,6 @@ internal class SubsidiaryEditor : ISetTheme
 	{
 		grdSubsidiary.DrawMode = DrawModeEnum.OwnerDraw;
 		grdSubsidiary.OwnerDrawCell += GrdSubsidiary_OwnerDrawCell;
-		grdSubsidiary.Click += _grid_Click;
-		grdSubsidiary.RowColChange += _grid_Click;
 		grdSubsidiary.DoubleClick += _grid_DoubleClick;
 		grdSubsidiary.BodySelectionChanged += GrdSubsidiary_BodySelectionChanged;
 		grdSubsidiary.BeforeMouseDown += GrdSubsidiary_BeforeMouseDown;
@@ -1659,29 +1222,14 @@ internal class SubsidiaryEditor : ISetTheme
 		grdSubsidiary.AfterDragColumn += _grid_AfterDragColumn;
 		grdSubsidiary.Resize += GrdSubsidiary_Resize;
 		btnSubsidiaryBack.Click += btnBack_Click;
-		grdVoucher.DoubleClick += _grdVoucher_DoubleClick;
-		grdVoucher.AfterResizeRow += _grdVoucher_AfterResizeRow;
-		grdVoucher.AfterResizeColumn += _grdVoucher_AfterResizeColumn;
-		grdVoucher.AfterDragColumn += _grdVoucher_AfterDragColumn;
-		grdVoucher.KeyDown += GrdVoucher_KeyDown;
-		grdVoucher.Resize += GrdVoucher_Resize;
 		SubStatus = BooksStyle.BalanceTo;
 		SubDisplay = BooksStyle.SubDisplay;
 		TotalDisplay = BooksStyle.TotalDisplay;
-		grdVoucher.Paint += delegate(object s1, PaintEventArgs e1)
-		{
-			Auditai.UI.Controls.Theme.DrawFormBorder(grdVoucher, e1.Graphics);
-		};
 	}
 
 	private void GrdSubsidiary_Resize(object sender, EventArgs e)
 	{
 		AutoSizeSubsidiaryColumns();
-	}
-
-	private void GrdVoucher_Resize(object sender, EventArgs e)
-	{
-		AutoSizeVoucherColumns();
 	}
 
 	private void AutoSizeSubsidiaryColumns()
@@ -1713,46 +1261,6 @@ internal class SubsidiaryEditor : ISetTheme
 			}
 		}
 		finally { grdSubsidiary.EndUpdate(); }
-	}
-
-	private void AutoSizeVoucherColumns()
-	{
-		if (grdVoucher == null || grdVoucher.Cols.Count <= grdVoucher.Cols.Fixed)
-		{
-			return;
-		}
-		int clientWidth = grdVoucher.ClientSize.Width;
-		if (clientWidth <= 0) return;
-		int fixedWidth = 0;
-		for (int i = 0; i < grdVoucher.Cols.Fixed; i++)
-			fixedWidth += grdVoucher.Cols[i].WidthDisplay;
-		int availableWidth = clientWidth - fixedWidth;
-		if (availableWidth <= 0) return;
-		string[] colNames = { "Index", "Date", "Type", "Number", "Digest", "Code", "Name", "Debit", "Credit" };
-		double[] ratios = { 0.06, 0.10, 0.04, 0.06, 0.22, 0.10, 0.14, 0.14, 0.14 };
-		grdVoucher.BeginUpdate();
-		try
-		{
-			for (int i = 0; i < colNames.Length && i < ratios.Length; i++)
-			{
-				if (grdVoucher.Cols.Contains(colNames[i]) && grdVoucher.Cols[colNames[i]].Visible)
-				{
-					int width = (int)(availableWidth * ratios[i]);
-					if (width < 30) width = 30;
-					grdVoucher.Cols[colNames[i]].Width = width;
-				}
-			}
-		}
-		finally { grdVoucher.EndUpdate(); }
-	}
-
-	private void GrdVoucher_KeyDown(object sender, KeyEventArgs e)
-	{
-		Keys keyData = e.KeyData;
-		if (keyData == Keys.Space)
-		{
-			CheckCellBox(grdVoucher);
-		}
 	}
 
 	private void GrdSubsidiary_KeyDown(object sender, KeyEventArgs e)
@@ -1844,7 +1352,6 @@ internal class SubsidiaryEditor : ISetTheme
 		{
 			grdSubsidiary.EndUpdate();
 		}
-		RefreshVouchersGridBackground();
 	}
 
 	private void GrdSubsidiary_OwnerDrawCell(object sender, OwnerDrawCellEventArgs e)
@@ -1878,11 +1385,6 @@ internal class SubsidiaryEditor : ISetTheme
 						userData.SetCellCheck(i, index, voucher.VoucherMark ? CheckEnum.Checked : CheckEnum.Unchecked);
 					}
 				}
-				RefreshVouchersGridBackground();
-			}
-			else if (userData == grdVoucher)
-			{
-				RefreshSubsidiaryGridBackground();
 			}
 		}
 		finally
@@ -1913,11 +1415,6 @@ internal class SubsidiaryEditor : ISetTheme
 						userData.SetCellCheck(i, index, voucher.VoucherMark ? CheckEnum.Checked : CheckEnum.Unchecked);
 					}
 				}
-				RefreshVouchersGridBackground();
-			}
-			else if (userData == grdVoucher)
-			{
-				RefreshSubsidiaryGridBackground();
 			}
 		}
 		finally
@@ -1946,13 +1443,13 @@ internal class SubsidiaryEditor : ISetTheme
 					grdSubsidiary.SetCellCheck(i, index, voucher.VoucherMark ? CheckEnum.Checked : CheckEnum.Unchecked);
 					if (voucher.VoucherMark)
 					{
-						row.StyleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
-						row.StyleNew.ForeColor = Common.MarkForeColor;
+						row.StyleNew.BackColor = Common.MarkBackColor;
+					row.StyleNew.ForeColor = Common.MarkForeColor;
 					}
 					else
 					{
 						row.StyleNew.BackColor = Color.White;
-						row.StyleNew.ForeColor = grdVoucher.ForeColor;
+						row.StyleNew.ForeColor = grdSubsidiary.ForeColor;
 					}
 				}
 			}
@@ -1960,40 +1457,6 @@ internal class SubsidiaryEditor : ISetTheme
 		finally
 		{
 			grdSubsidiary.EndUpdate();
-		}
-	}
-
-	private void RefreshVouchersGridBackground()
-	{
-		if (!_voucherVisible)
-		{
-			return;
-		}
-		grdVoucher.BeginUpdate();
-		try
-		{
-			int count = grdVoucher.Rows.Count;
-			for (int i = grdVoucher.Rows.Fixed; i < count; i++)
-			{
-				C1.Win.C1FlexGrid.Row row = grdVoucher.Rows[i];
-				if (row.UserData is Voucher voucher)
-				{
-					if (voucher.VoucherMark)
-					{
-						row.StyleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
-						row.StyleNew.ForeColor = Common.MarkForeColor;
-					}
-					else
-					{
-						row.StyleNew.BackColor = Color.White;
-						row.StyleNew.ForeColor = grdVoucher.ForeColor;
-					}
-				}
-			}
-		}
-		finally
-		{
-			grdVoucher.EndUpdate();
 		}
 	}
 
@@ -2316,145 +1779,6 @@ internal class SubsidiaryEditor : ISetTheme
 		e.Visible = mouseRow >= grdSubsidiary.Rows.Fixed && grdSubsidiary.Rows[mouseRow].UserData?.ToString() == "BeginBalance";
 	}
 
-	private void BindVoucherContexMenu()
-	{
-		try
-		{
-			cmdCopy2.Text = "复制";
-			cmdCopy2.Image = ContextResources.ctxCopy;
-			cmdCopy2.Click += delegate
-			{
-				Common.SetSelectionToClipboard(grdVoucher);
-			};
-			lnkCopy2.Command = cmdCopy2;
-			ctxVouCell.CommandLinks.Add(lnkCopy2);
-			ctxVouCell.CommandLinks.Add(grdVoucher.FilterManager.GenLnkFilter());
-			ctxVouCell.CommandLinks.Add(grdVoucher.FilterManager.GenLnkSample());
-			ctxVouCell.CommandLinks.Add(grdVoucher.FilterManager.GenLnkSelect());
-			ctxVouCell.CommandLinks.Add(grdVoucher.FilterManager.GenLnkCancelCurrentColumn());
-			cmdDirectionChange2.Text = "方向调整";
-			cmdDirectionChange2.UserData = grdVoucher;
-			cmdDirectionChange2.Image = ContextResources.ctxDirectionChange;
-			cmdDirectionChange2.Click += _owner.DirectionChange_Click;
-			lnkDirectionChange2.Command = cmdDirectionChange2;
-			lnkDirectionChange2.Delimiter = true;
-			ctxVouCell.CommandLinks.Add(lnkDirectionChange2);
-			cmdDirectionReduce2.Text = "方向还原";
-			cmdDirectionReduce2.UserData = grdVoucher;
-			cmdDirectionReduce2.Click += _owner.DirectionReduce_Click;
-			lnkDirectionReduce2.Command = cmdDirectionReduce2;
-			ctxVouCell.CommandLinks.Add(lnkDirectionReduce2);
-			cmdMakeMark2.Text = "标记关注";
-			cmdMakeMark2.UserData = grdVoucher;
-			cmdMakeMark2.Image = ContextResources.ctxMakeMark;
-			cmdMakeMark2.Click += MakeMarkImpl;
-			lnkMakeMark2.Command = cmdMakeMark2;
-			ctxVouCell.CommandLinks.Add(lnkMakeMark2);
-			cmdCancelMark2.Text = "取消关注";
-			cmdCancelMark2.UserData = grdVoucher;
-			cmdCancelMark2.Click += CancelMarkImpl;
-			lnkCancelMark2.Command = cmdCancelMark2;
-			ctxVouCell.CommandLinks.Add(lnkCancelMark2);
-			C1CommandLink c1CommandLink = new C1CommandLink();
-			C1Command c1Command = new C1Command();
-			c1Command.Text = "修改凭证";
-			c1Command.Image = ContextResources.modifyLedger;
-			c1Command.CommandStateQuery += delegate(object s1, CommandStateQueryEventArgs e1)
-			{
-				int row = grdVoucher.Row;
-				e1.Visible = row >= grdVoucher.Rows.Fixed && row < grdVoucher.Rows.Count && grdVoucher.Rows[row].UserData is Voucher;
-			};
-			c1Command.Click += async delegate
-			{
-				await _owner.ModifyVoucher(grdVoucher.Rows[grdVoucher.Row].UserData as Voucher);
-			};
-			c1CommandLink.Command = c1Command;
-			c1CommandLink.Delimiter = true;
-			ctxVouCell.CommandLinks.Add(c1CommandLink);
-			ctxVouCell.Popup += delegate
-			{
-				ctxVouCell.ShowAll();
-				if (grdVoucher.MouseRow >= 0 && grdVoucher.MouseRow < grdVoucher.Rows.Fixed)
-				{
-					ctxVouCell.OnlyShow(lnkColHide2, lnkCancelHide2);
-				}
-				else
-				{
-					ctxVouCell.HideLinks(lnkColHide2, lnkCancelHide2);
-					bool flag = grdVoucher.Selection.r2 - grdVoucher.Selection.r1 == 0;
-					if (grdVoucher.Row >= grdVoucher.Rows.Fixed && flag && grdVoucher.Rows[grdVoucher.Row].UserData is Voucher voucher)
-					{
-						if (voucher.DirectionToggled)
-						{
-							ctxVouCell.HideLinks(lnkDirectionChange2);
-						}
-						else
-						{
-							ctxVouCell.HideLinks(lnkDirectionReduce2);
-						}
-						if (voucher.VoucherMark)
-						{
-							ctxVouCell.HideLinks(lnkMakeMark2);
-						}
-						else
-						{
-							ctxVouCell.HideLinks(lnkCancelMark2);
-						}
-					}
-				}
-			};
-			ctxVouEmpty.CommandLinks.Add(grdVoucher.FilterManager.GenLnkCancelAll());
-			ctxVouFixed.HideFirstDelimiter = true;
-			cmdColHide2.Text = "隐藏本列";
-			cmdColHide2.UserData = grdVoucher;
-			cmdColHide2.Click += _owner.ColHide_Click;
-			lnkColHide2.Command = cmdColHide2;
-			ctxVouFixed.CommandLinks.Add(lnkColHide2);
-			cmdCancelHide2.Text = "取消隐藏";
-			cmdCancelHide2.UserData = grdVoucher;
-			cmdCancelHide2.Click += _owner.CancelHide_Click;
-			lnkCancelHide2.Command = cmdCancelHide2;
-			ctxVouFixed.CommandLinks.Add(lnkCancelHide2);
-			grdVoucher.MouseClick += GrdVoucher_MouseClick;
-		}
-		catch
-		{
-		}
-	}
-
-	private void GrdVoucher_MouseClick(object sender, MouseEventArgs e)
-	{
-		if (e.Button == MouseButtons.Right)
-		{
-			switch (grdVoucher.HitTest(e.Location).Type)
-			{
-			case HitTestTypeEnum.ColumnHeader:
-				ctxVouFixed.ShowContextMenu(grdVoucher, e.Location);
-				break;
-			case HitTestTypeEnum.None:
-				ctxVouEmpty.ShowContextMenu(grdVoucher, e.Location);
-				break;
-			case HitTestTypeEnum.Cell:
-				ctxVouCell.ShowContextMenu(grdVoucher, e.Location);
-				break;
-			}
-		}
-	}
-
-	private void SetVoucherHeader(Voucher voucher)
-	{
-		if (voucher != null)
-		{
-			lblVoucherType.Text = $"字：{voucher.Type}";
-			lblVoucherNumber.Text = "号： " + voucher.Number;
-			lblVoucherDate.Text = "制单日期：" + voucher.Day.ToString("yyyy-MM-dd");
-			lblNumAttachments.Text = $"附件张数：{voucher.NumAttachments} ";
-			lblMaker.Text = "制单人：" + voucher.Maker;
-			lblBooker.Text = "记账人：" + voucher.Booker;
-			lblChecker.Text = "审核人：" + voucher.Checker;
-		}
-	}
-
 	public void FillToTable()
 	{
 		if (_owner.CurrentAccount == null)
@@ -2484,27 +1808,6 @@ internal class SubsidiaryEditor : ISetTheme
 		});
 	}
 
-	private void PopulateBottomVoucher()
-	{
-		if (grdSubsidiary.Rows.Count <= grdSubsidiary.Rows.Fixed)
-		{
-			ShowVoucher(visible: false);
-			return;
-		}
-		C1.Win.C1FlexGrid.Row row = grdSubsidiary.Rows[grdSubsidiary.Rows.Fixed];
-		object userData = row.UserData;
-		Voucher voucher = userData as Voucher;
-		if (voucher != null)
-		{
-			ShowVoucher(visible: true);
-			PopulateVouchers(Ledger.Vouchers.Where((Voucher v) => v.Type == voucher.Type && v.Number == voucher.Number && v.Day.Year == voucher.Day.Year && v.Day.Month == voucher.Day.Month));
-		}
-		else
-		{
-			ShowVoucher(visible: false);
-		}
-	}
-
 	public void SetTheme()
 	{
 		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
@@ -2512,14 +1815,8 @@ internal class SubsidiaryEditor : ISetTheme
 		btnSubsidiaryBack.FlatStyle = FlatStyle.Flat;
 		btnSubsidiaryBack.FlatAppearance.BorderSize = 0;
 		btnSubsidiaryBack.FlatAppearance.MouseOverBackColor = Color.LightGray;
-		btnCloseVoucher.BackColor = Color.Transparent;
-		btnCloseVoucher.FlatStyle = FlatStyle.Flat;
-		btnCloseVoucher.FlatAppearance.BorderSize = 0;
-		btnCloseVoucher.FlatAppearance.MouseDownBackColor = Color.LightGray;
 		grdSubsidiary.Styles.Fixed.Border.Color = Color.DarkGray;
-		grdVoucher.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdSubsidiary.Styles.Fixed.Font = grdSubsidiary.Font;
-		grdVoucher.Styles.Fixed.Font = grdVoucher.Font;
 		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
 			imageProcess.SetImageStrategy(new WhiteImageStrategy());
@@ -2533,7 +1830,6 @@ internal class SubsidiaryEditor : ISetTheme
 
 	public void AttachTooltip(TooltipManager tooltipManager)
 	{
-		attachTooltip(grdVoucher, TipInfo.Parse(TipResource.会计凭证区域_指明细账的下方));
 		TipInfo subsidiary = TipInfo.Parse(TipResource.明细账区域);
 		TipInfo total = TipInfo.Parse(TipResource.总账区域);
 		grdSubsidiary.MouseMove += delegate(object s1, MouseEventArgs e1)
@@ -2548,24 +1844,5 @@ internal class SubsidiaryEditor : ISetTheme
 		{
 			tooltipManager.Hide();
 		};
-		void attachTooltip(Component component, TipInfo text)
-		{
-			Control control = component as Control;
-			if (control != null)
-			{
-				control.MouseMove += delegate(object s1, MouseEventArgs e1)
-				{
-					if (tooltipManager.ShouldDisplay)
-					{
-						tooltipManager.Show(text, control, e1.X, e1.Y);
-					}
-				};
-				control.MouseLeave += delegate
-				{
-					tooltipManager.Hide();
-				};
-			}
-			tooltipManager.Attach(component, text);
-		}
 	}
 }

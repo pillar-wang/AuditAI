@@ -393,6 +393,10 @@ public class FormProjectManage : ISetTheme
 
 	private const string RB_EXPORTPROJECT = "RB_EXPORTPROJECT";
 
+	private const string RB_EXPORTPROJECTFILE = "RB_EXPORTPROJECTFILE";
+
+	private const string RB_IMPORTPROJECT = "RB_IMPORTPROJECT";
+
 	private const string RB_SAVEASTEMPLATE = "RB_SAVEASTEMPLATE";
 
 	private const string RB_SHAREPROJECT = "RB_SHAREPROJECT";
@@ -422,6 +426,10 @@ public class FormProjectManage : ISetTheme
 	private const string RB_DELETETEMPLATE = "RB_DELETETEMPLATE";
 
 	private const string RB_DUPLICATETEMPLATE = "RB_DUPLICATETEMPLATE";
+
+	private const string RB_EXPORTTEMPLATE = "RB_EXPORTTEMPLATE";
+
+	private const string RB_IMPORTTEMPLATE = "RB_IMPORTTEMPLATE";
 
 	private const string RB_REFRESHTEMPLATE = "RB_REFRESHTEMPLATE";
 
@@ -491,7 +499,9 @@ public class FormProjectManage : ISetTheme
 
 	private readonly C1RibbonForm _form;
 
-	private readonly C1Ribbon _ribbon;
+	private readonly SideCommandBar _sidebar;
+
+	private readonly TopCommandBar _topBar;
 
 	private readonly C1SplitContainer _ctn;
 
@@ -736,64 +746,12 @@ public class FormProjectManage : ISetTheme
 			["RB_SHAREPROJECT"] = Resources.ShareProject,
 			["RB_SHARETEMPLATE"] = Resources.ShareProject
 		};
-		_ribbon = new C1Ribbon
-		{
-			AllowContextMenu = false
-		};
-		_ribbon.ApplicationMenu.Visible = false;
-		_ribbon.Qat.MenuVisible = false;
-		RibbonTab tab2 = AddRibbonTab("TAB_PROJECT", StringConstBase.Current.Project + "管理");
-		RibbonGroup group2 = AddRibbonGroup(tab2, "RG_PROJECT", StringConstBase.Current.Project + "管理");
-		RibbonButton ribbonButton = AddRibbonButton(group2, "RB_CREATEPROJECT", "新建" + StringConstBase.Current.Project);
-		ribbonButton.Visible = !(Program.MainForm.CurrentEdition is AppEditionGeneral);
-		AddRibbonButton(group2, "RB_OPENPROJECT", "打开" + StringConstBase.Current.Project);
-		AddRibbonButton(group2, "RB_MODIFYPROJECT", (Program.MainForm.CurrentEdition is AppEditionGeneral) ? ("重命名" + StringConstBase.Current.Project) : ("修改" + StringConstBase.Current.Project));
-		AddRibbonButton(group2, "RB_DELETEPROJECT", "删除" + StringConstBase.Current.Project);
-		ribbonButton = AddRibbonButton(group2, "RB_DUPLICATEPROJECT", "复制" + StringConstBase.Current.Project);
-		ribbonButton.Visible = !SoftwareLicenseManager.IsDuplicateProjectOutOfLicenseLimit();
-		AddRibbonButton(group2, "RB_EXPORTPROJECT", StringConstBase.Current.Project + "导出");
-		AddRibbonButton(group2, "RB_EXPORTPROJECTFILE", "导出项目文件");
-		AddRibbonButton(group2, "RB_IMPORTPROJECT", "导入项目");
-		ribbonButton = AddRibbonButton(group2, "RB_SAVEASTEMPLATE", "另存" + StringConstBase.Current.Template);
-		ribbonButton.Visible = !(Program.MainForm.CurrentEdition is AppEditionGeneral);
-		AddRibbonButton(group2, "RB_SEARCH", "搜索" + StringConstBase.Current.Project);
-		ribbonButton = AddRibbonButton(group2, "RB_SHAREPROJECT", "跨组织分享" + StringConstBase.Current.Project);
-		ribbonButton.Visible = SoftwareLicenseManager.IsAllowShowShareProjectButton();
-		AddRibbonButton(group2, "RB_REFRESHPROJECT", "刷新" + StringConstBase.Current.Project);
-		group2 = AddRibbonGroup(tab2, "RG_VIEWMODE", "视图模式");
-		AddRibbonButton(group2, "RB_VIEWMODE", "磁贴模式");
-		group2 = AddRibbonGroup(tab2, "RG_USERMANAGE", "人员管理");
-		AddRibbonButton(group2, "RB_USERMANAGE", Auditai.Model.User.Current.IsTeamAdmin ? "同事管理" : "我的同事");
-		AddRibbonButton(group2, "RB_USERINFO", "用户资料");
-		AddRibbonButton(group2, "RB_CHANGEPASSWORD", "修改密码");
-		tab2 = AddRibbonTab("TAB_TEMPLATE", StringConstBase.Current.Template + "管理");
-		group2 = AddRibbonGroup(tab2, "RG_TEMPLATE", StringConstBase.Current.Template + "管理");
-		AddRibbonButton(group2, "RB_USETEMPLATE", "基于" + StringConstBase.Current.Template + "创建项目");
-		AddRibbonButton(group2, "RB_CREATETEMPLATE", "新建" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_OPENTEMPLATE", "打开" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_MODIFYTEMPLATE", "修改" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_DELETETEMPLATE", "删除" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_DUPLICATETEMPLATE", "复制" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_EXPORTTEMPLATE", "导出" + StringConstBase.Current.Template);
-		AddRibbonButton(group2, "RB_IMPORTTEMPLATE", "导入" + StringConstBase.Current.Template);
-		group2.Items.Add(GetRibbonButton("RB_SEARCH"));
-		ribbonButton = AddRibbonButton(group2, "RB_SHARETEMPLATE", "跨组织分享" + StringConstBase.Current.Template);
-		ribbonButton.Visible = SoftwareLicenseManager.IsAllowShowShareProjectButton();
-		AddRibbonButton(group2, "RB_REFRESHTEMPLATE", "刷新" + StringConstBase.Current.Template);
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_VIEWMODE"));
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_USERMANAGE"));
-		tab2 = AddRibbonTab("TAB_RECYCLEPROJECT", StringConstBase.Current.Project + "回收站");
-		group2 = AddRibbonGroup(tab2, "RG_RECYCLE", Auditai.Model.User.Current.IsTeamAdmin ? "恢复及删除" : "恢复");
-		AddRibbonButton(group2, "RB_RESTORESELECT", "恢复所选" + StringConstBase.Current.Project);
-		ribbonButton = AddRibbonButton(group2, "RB_DELETESELECT", "删除所选" + StringConstBase.Current.Project);
-		ribbonButton.Visible = Auditai.Model.User.Current.IsTeamAdmin;
-		ribbonButton = AddRibbonButton(group2, "RB_EMPTYRECYCLE", "清空回收站");
-		ribbonButton.Visible = Auditai.Model.User.Current.IsTeamAdmin;
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_VIEWMODE"));
-		tab2 = AddRibbonTab("TAB_RECYCLETEMPLATE", StringConstBase.Current.Template + "回收站");
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_RECYCLE"));
-		tab2.Groups.Add((RibbonGroup)_ribbon.GetItemByName("RG_VIEWMODE"));
-		_form.Controls.Add(_ribbon);
+		_sidebar = new SideCommandBar();
+		_sidebar.ModuleSelected += Sidebar_ModuleSelected;
+		_topBar = new TopCommandBar();
+		InitializeSideBar();
+		_form.Controls.Add(_topBar);
+		_form.Controls.Add(_sidebar);
 		_cmdh = C1CommandHolder.CreateCommandHolder(_form);
 		_lnkNull = new C1CommandLink();
 		_cmdh.CommandClick += _cmdh_CommandClick;
@@ -866,43 +824,66 @@ public class FormProjectManage : ISetTheme
 			_commandDic[name] = ret;
 			return ret;
 		}
-		RibbonButton AddRibbonButton(RibbonGroup group, string name, string text)
-		{
-			RibbonButton ribbonButton2 = new RibbonButton
-			{
-				Name = name,
-				Text = text,
-				TextImageRelation = C1.Win.C1Ribbon.TextImageRelation.ImageAboveText
-			};
-			if (_dicImages.TryGetValue(name, out var value))
-			{
-				ribbonButton2.LargeImage = value;
-			}
-			ribbonButton2.Click += RibbonButton_Click;
-			group.Items.Add(ribbonButton2);
-			return ribbonButton2;
-		}
-		static RibbonGroup AddRibbonGroup(RibbonTab tab, string name, string text)
-		{
-			RibbonGroup ribbonGroup = new RibbonGroup
-			{
-				Name = name,
-				Text = text
-			};
-			tab.Groups.Add(ribbonGroup);
-			return ribbonGroup;
-		}
-		RibbonTab AddRibbonTab(string name, string text)
-		{
-			RibbonTab ribbonTab = new RibbonTab
-			{
-				Name = name,
-				Text = text
-			};
-			_ribbon.Tabs.Add(ribbonTab);
-			ribbonTab.Select += Tab_Select;
-			return ribbonTab;
-		}
+	}
+
+	/// <summary>注册侧边栏 4 个模块与全部命令（沿用原 Ribbon 页签的组归属与可见性规则）。</summary>
+	private void InitializeSideBar()
+	{
+		EventHandler onClick = CommandBar_Click;
+		bool isGeneral = Program.MainForm.CurrentEdition is AppEditionGeneral;
+		string projectText = StringConstBase.Current.Project;
+		string templateText = StringConstBase.Current.Template;
+		string recycleGroupText = Auditai.Model.User.Current.IsTeamAdmin ? "恢复及删除" : "恢复";
+		_sidebar.RegisterModule(TAB_PROJECT, projectText + "管理", Resources.Projects24);
+		_sidebar.RegisterModule(TAB_TEMPLATE, templateText + "管理", Resources.Templates24);
+		_sidebar.RegisterModule(TAB_RECYCLEPROJECT, projectText + "回收站", Resources.RecycleNode);
+		_sidebar.RegisterModule(TAB_RECYCLETEMPLATE, templateText + "回收站", Resources.RecycleNode);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_CREATEPROJECT, "新建" + projectText, _dicImages[RB_CREATEPROJECT], onClick, projectText + "管理");
+		_topBar.SetCommandVisible(RB_CREATEPROJECT, !isGeneral);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_OPENPROJECT, "打开" + projectText, _dicImages[RB_OPENPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_MODIFYPROJECT, isGeneral ? ("重命名" + projectText) : ("修改" + projectText), _dicImages[RB_MODIFYPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_DELETEPROJECT, "删除" + projectText, _dicImages[RB_DELETEPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_DUPLICATEPROJECT, "复制" + projectText, _dicImages[RB_DUPLICATEPROJECT], onClick);
+		_topBar.SetCommandVisible(RB_DUPLICATEPROJECT, !SoftwareLicenseManager.IsDuplicateProjectOutOfLicenseLimit());
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_EXPORTPROJECT, projectText + "导出", _dicImages[RB_EXPORTPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_EXPORTPROJECTFILE, "导出项目文件", _dicImages[RB_EXPORTPROJECTFILE], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_IMPORTPROJECT, "导入项目", _dicImages[RB_IMPORTPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_SAVEASTEMPLATE, "另存" + templateText, _dicImages[RB_SAVEASTEMPLATE], onClick);
+		_topBar.SetCommandVisible(RB_SAVEASTEMPLATE, !isGeneral);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_SEARCH, "搜索" + projectText, _dicImages[RB_SEARCH], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_SHAREPROJECT, "跨组织分享" + projectText, _dicImages[RB_SHAREPROJECT], onClick);
+		_topBar.SetCommandVisible(RB_SHAREPROJECT, SoftwareLicenseManager.IsAllowShowShareProjectButton());
+		_topBar.AddCommand(TAB_PROJECT, RG_PROJECT, RB_REFRESHPROJECT, "刷新" + projectText, _dicImages[RB_REFRESHPROJECT], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_VIEWMODE, RB_VIEWMODE, "磁贴模式", _dicImages[IL_LISTMODE], onClick, "视图模式");
+		_topBar.AddCommand(TAB_PROJECT, RG_USERMANAGE, RB_USERMANAGE, Auditai.Model.User.Current.IsTeamAdmin ? "同事管理" : "我的同事", _dicImages[RB_USERMANAGE], onClick, "人员管理");
+		_topBar.AddCommand(TAB_PROJECT, RG_USERMANAGE, RB_USERINFO, "用户资料", _dicImages[RB_USERINFO], onClick);
+		_topBar.AddCommand(TAB_PROJECT, RG_USERMANAGE, RB_CHANGEPASSWORD, "修改密码", _dicImages[RB_CHANGEPASSWORD], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_USETEMPLATE, "基于" + templateText + "创建项目", _dicImages[RB_USETEMPLATE], onClick, templateText + "管理");
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_CREATETEMPLATE, "新建" + templateText, _dicImages[RB_CREATETEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_OPENTEMPLATE, "打开" + templateText, _dicImages[RB_OPENTEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_MODIFYTEMPLATE, "修改" + templateText, _dicImages[RB_MODIFYTEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_DELETETEMPLATE, "删除" + templateText, _dicImages[RB_DELETETEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_DUPLICATETEMPLATE, "复制" + templateText, _dicImages[RB_DUPLICATETEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_EXPORTTEMPLATE, "导出" + templateText, _dicImages[RB_EXPORTTEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_IMPORTTEMPLATE, "导入" + templateText, _dicImages[RB_IMPORTTEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_SEARCH, "搜索" + templateText, _dicImages[RB_SEARCH], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_SHARETEMPLATE, "跨组织分享" + templateText, _dicImages[RB_SHARETEMPLATE], onClick);
+		_topBar.SetCommandVisible(RB_SHARETEMPLATE, SoftwareLicenseManager.IsAllowShowShareProjectButton());
+		_topBar.AddCommand(TAB_TEMPLATE, RG_TEMPLATE, RB_REFRESHTEMPLATE, "刷新" + templateText, _dicImages[RB_REFRESHTEMPLATE], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_VIEWMODE, RB_VIEWMODE, "磁贴模式", _dicImages[IL_LISTMODE], onClick, "视图模式");
+		_topBar.AddCommand(TAB_TEMPLATE, RG_USERMANAGE, RB_USERMANAGE, Auditai.Model.User.Current.IsTeamAdmin ? "同事管理" : "我的同事", _dicImages[RB_USERMANAGE], onClick, "人员管理");
+		_topBar.AddCommand(TAB_TEMPLATE, RG_USERMANAGE, RB_USERINFO, "用户资料", _dicImages[RB_USERINFO], onClick);
+		_topBar.AddCommand(TAB_TEMPLATE, RG_USERMANAGE, RB_CHANGEPASSWORD, "修改密码", _dicImages[RB_CHANGEPASSWORD], onClick);
+		_topBar.AddCommand(TAB_RECYCLEPROJECT, RG_RECYCLE, RB_RESTORESELECT, "恢复所选" + projectText, _dicImages[RB_RESTORESELECT], onClick, recycleGroupText);
+		_topBar.AddCommand(TAB_RECYCLEPROJECT, RG_RECYCLE, RB_DELETESELECT, "删除所选" + projectText, _dicImages[RB_DELETESELECT], onClick);
+		_topBar.SetCommandVisible(RB_DELETESELECT, Auditai.Model.User.Current.IsTeamAdmin);
+		_topBar.AddCommand(TAB_RECYCLEPROJECT, RG_RECYCLE, RB_EMPTYRECYCLE, "清空回收站", _dicImages[RB_EMPTYRECYCLE], onClick);
+		_topBar.SetCommandVisible(RB_EMPTYRECYCLE, Auditai.Model.User.Current.IsTeamAdmin);
+		_topBar.AddCommand(TAB_RECYCLEPROJECT, RG_VIEWMODE, RB_VIEWMODE, "磁贴模式", _dicImages[IL_LISTMODE], onClick, "视图模式");
+		_topBar.AddCommand(TAB_RECYCLETEMPLATE, RG_RECYCLE, RB_RESTORESELECT, "恢复所选" + templateText, _dicImages[RB_RESTORESELECT], onClick, recycleGroupText);
+		_topBar.AddCommand(TAB_RECYCLETEMPLATE, RG_RECYCLE, RB_DELETESELECT, "删除所选" + templateText, _dicImages[RB_DELETESELECT], onClick);
+		_topBar.AddCommand(TAB_RECYCLETEMPLATE, RG_RECYCLE, RB_EMPTYRECYCLE, "清空回收站", _dicImages[RB_EMPTYRECYCLE], onClick);
+		_topBar.AddCommand(TAB_RECYCLETEMPLATE, RG_VIEWMODE, RB_VIEWMODE, "磁贴模式", _dicImages[IL_LISTMODE], onClick, "视图模式");
 	}
 
 	public DialogResult ShowDialog()
@@ -918,6 +899,9 @@ public class FormProjectManage : ISetTheme
 		_grid.Styles.SelectedColumnHeader.Clear();
 		_tile.TileBorderColor = Color.Transparent;
 		_tile.CustomBorderColor = Theme.SelectedAuditaiTheme.ThemeContext.DarkColor;
+		Color dark = Theme.SelectedAuditaiTheme.ThemeContext.DarkColor;
+		_sidebar.ApplyTheme(Theme.SelectedAuditaiTheme.ThemeContext.BackColor, Color.FromArgb(40, dark), Color.FromArgb(70, dark), Color.FromArgb(52, 64, 84));
+		_topBar.ApplyTheme(Theme.SelectedAuditaiTheme.ThemeContext.BackColor, Color.FromArgb(40, dark), Color.FromArgb(70, dark), Color.FromArgb(52, 64, 84));
 	}
 
 	public async Task Populate()
@@ -930,7 +914,7 @@ public class FormProjectManage : ISetTheme
 		PopulateViewMode();
 		PopulateSearch();
 		PopulateForm();
-		SetRibbonState();
+		SetCommandState();
 	}
 
 	private void PopulateModel()
@@ -1474,26 +1458,26 @@ public class FormProjectManage : ISetTheme
 	{
 		if (Program.MainForm.CurrentEdition is AppEditionGeneral)
 		{
-			((RibbonGroup)_ribbon.GetItemByName("RG_VIEWMODE")).Visible = false;
+			_topBar.SetCommandVisible(RB_VIEWMODE, false);
 			Style.ViewMode = ListTileViewMode.Tile;
 			_grid.Hide();
 			_tile.Show();
 			return;
 		}
-		RibbonButton ribbonButton = GetRibbonButton("RB_VIEWMODE");
+		SimpleCommand ribbonButton = GetSideCommand(RB_VIEWMODE);
 		if (Style.ViewMode == ListTileViewMode.List)
 		{
 			_grid.Show();
 			_tile.Hide();
 			ribbonButton.Text = "磁贴模式";
-			ribbonButton.LargeImage = _dicImages["IL_TILEMODE"];
+			ribbonButton.Image = _dicImages["IL_TILEMODE"];
 		}
 		else if (Style.ViewMode == ListTileViewMode.Tile)
 		{
 			_grid.Hide();
 			_tile.Show();
 			ribbonButton.Text = "列表模式";
-			ribbonButton.LargeImage = _dicImages["IL_LISTMODE"];
+			ribbonButton.Image = _dicImages["IL_LISTMODE"];
 		}
 	}
 
@@ -1617,7 +1601,7 @@ public class FormProjectManage : ISetTheme
 			{
 				return;
 			}
-			_ribbon.Tabs["TAB_PROJECT"].Selected = true;
+			_sidebar.SelectModule(TAB_PROJECT);
 		}
 		try
 		{
@@ -2042,10 +2026,10 @@ public class FormProjectManage : ISetTheme
 			Style.ViewMode = ListTileViewMode.List;
 		}
 		PopulateViewMode();
-		SetRibbonState();
+		SetCommandState();
 	}
 
-	private async Task ExportProject(RibbonButton btn)
+	private async Task ExportProject(SimpleCommand btn)
 	{
 		await ExportProjectImpl(btn.Text);
 	}
@@ -2352,7 +2336,7 @@ public class FormProjectManage : ISetTheme
 				// 5. 执行注册（本地模式：File.Copy + 主库注册；服务端模式：HTTP 上传 .db 流）
 				var created = await TemplateArchive.ImportAsync(ctx, newTemplate);
 
-				_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+				_sidebar.SelectModule(TAB_TEMPLATE);
 				await Populate();
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
 					$"{StringConstBase.Current.Template}导入成功！\n新{StringConstBase.Current.Template}名称：{created.Name}",
@@ -2419,7 +2403,7 @@ public class FormProjectManage : ISetTheme
 				await Auditai.LocalDataStore.StorageRouter.SaveProjectAsTemplate(id, newTemplate);
 			});
 			ProjectInfoManager.GetInstance().UpdateOpenTime(newTemplate.Id.ToString(), DateTime.Now);
-			_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+			_sidebar.SelectModule(TAB_TEMPLATE);
 			await Populate();
 			FindAndSelectRow(newTemplate);
 			// P2 协同增强 Task 8：另存为模板成功后广播通知团队成员
@@ -2684,12 +2668,12 @@ public class FormProjectManage : ISetTheme
 			_pnlCategory.Hide();
 			if (_isSearch)
 			{
-				GetRibbonButton("RB_SEARCH").Text = "关闭搜索";
+				GetSideCommand(RB_SEARCH).Text = "关闭搜索";
 				_pnlSearch.Show();
 			}
 			else
 			{
-				GetRibbonButton("RB_SEARCH").Text = ((State == ViewState.Project) ? ("搜索" + StringConstBase.Current.Project) : ("搜索" + StringConstBase.Current.Template));
+				GetSideCommand(RB_SEARCH).Text = ((State == ViewState.Project) ? ("搜索" + StringConstBase.Current.Project) : ("搜索" + StringConstBase.Current.Template));
 				_pnlSearch.Hide();
 			}
 		}
@@ -2700,56 +2684,56 @@ public class FormProjectManage : ISetTheme
 		}
 		else if (_isSearch)
 		{
-			GetRibbonButton("RB_SEARCH").Text = "关闭搜索";
+			GetSideCommand(RB_SEARCH).Text = "关闭搜索";
 			_pnlSearch.Show();
 			_pnlCategory.Hide();
 		}
 		else
 		{
-			GetRibbonButton("RB_SEARCH").Text = ((State == ViewState.Project) ? ("搜索" + StringConstBase.Current.Project) : ("搜索" + StringConstBase.Current.Template));
+			GetSideCommand(RB_SEARCH).Text = ((State == ViewState.Project) ? ("搜索" + StringConstBase.Current.Project) : ("搜索" + StringConstBase.Current.Template));
 			_pnlSearch.Hide();
 			_pnlCategory.Show();
 		}
 	}
 
-	private void SetRibbonState()
+	private void SetCommandState()
 	{
 		if (State == ViewState.Project)
 		{
-			GetRibbonButton("RB_OPENPROJECT").Enabled = HasSelectedProject;
-			GetRibbonButton("RB_MODIFYPROJECT").Enabled = CanModifyProject();
-			GetRibbonButton("RB_DELETEPROJECT").Enabled = CanModifyProject();
-			GetRibbonButton("RB_DUPLICATEPROJECT").Enabled = CanDuplicateProject();
-			GetRibbonButton("RB_EXPORTPROJECT").Enabled = CanDuplicateProject();
-			GetRibbonButton("RB_EXPORTPROJECTFILE").Enabled = HasSelectedProject;
-			GetRibbonButton("RB_SAVEASTEMPLATE").Enabled = CanDuplicateProject();
-			GetRibbonButton("RB_SHAREPROJECT").Visible = CanSeeShareProject();
-			GetRibbonButton("RB_SHAREPROJECT").Enabled = CanShareProject();
+			GetSideCommand(RB_OPENPROJECT).Enabled = HasSelectedProject;
+			GetSideCommand(RB_MODIFYPROJECT).Enabled = CanModifyProject();
+			GetSideCommand(RB_DELETEPROJECT).Enabled = CanModifyProject();
+			GetSideCommand(RB_DUPLICATEPROJECT).Enabled = CanDuplicateProject();
+			GetSideCommand(RB_EXPORTPROJECT).Enabled = CanDuplicateProject();
+			GetSideCommand(RB_EXPORTPROJECTFILE).Enabled = HasSelectedProject;
+			GetSideCommand(RB_SAVEASTEMPLATE).Enabled = CanDuplicateProject();
+			GetSideCommand(RB_SHAREPROJECT).Visible = CanSeeShareProject();
+			GetSideCommand(RB_SHAREPROJECT).Enabled = CanShareProject();
 		}
 		else if (State == ViewState.Template)
 		{
-			GetRibbonButton("RB_USETEMPLATE").Enabled = HasSelectedProject;
-			GetRibbonButton("RB_OPENTEMPLATE").Enabled = CanOpenTemplate();
-			GetRibbonButton("RB_MODIFYTEMPLATE").Enabled = CanOpenTemplate();
-			GetRibbonButton("RB_DELETETEMPLATE").Enabled = CanOpenTemplate();
-			GetRibbonButton("RB_DUPLICATETEMPLATE").Enabled = HasSelectedProject;
-			GetRibbonButton("RB_EXPORTTEMPLATE").Enabled = HasSelectedProject;
-			GetRibbonButton("RB_SHARETEMPLATE").Visible = CanSeeShareProject();
-			GetRibbonButton("RB_SHARETEMPLATE").Enabled = CanOpenTemplate();
+			GetSideCommand(RB_USETEMPLATE).Enabled = HasSelectedProject;
+			GetSideCommand(RB_OPENTEMPLATE).Enabled = CanOpenTemplate();
+			GetSideCommand(RB_MODIFYTEMPLATE).Enabled = CanOpenTemplate();
+			GetSideCommand(RB_DELETETEMPLATE).Enabled = CanOpenTemplate();
+			GetSideCommand(RB_DUPLICATETEMPLATE).Enabled = HasSelectedProject;
+			GetSideCommand(RB_EXPORTTEMPLATE).Enabled = HasSelectedProject;
+			GetSideCommand(RB_SHARETEMPLATE).Visible = CanSeeShareProject();
+			GetSideCommand(RB_SHARETEMPLATE).Enabled = CanOpenTemplate();
 		}
 		else if (State == ViewState.RecycleProject)
 		{
-			GetRibbonButton("RB_DELETESELECT").Text = "删除所选" + StringConstBase.Current.Project;
-			GetRibbonButton("RB_DELETESELECT").Enabled = SelectedProjects.Count > 0;
-			GetRibbonButton("RB_RESTORESELECT").Text = "恢复所选" + StringConstBase.Current.Project;
-			GetRibbonButton("RB_RESTORESELECT").Enabled = SelectedProjects.Count > 0;
+			GetSideCommand(RB_DELETESELECT).Text = "删除所选" + StringConstBase.Current.Project;
+			GetSideCommand(RB_DELETESELECT).Enabled = SelectedProjects.Count > 0;
+			GetSideCommand(RB_RESTORESELECT).Text = "恢复所选" + StringConstBase.Current.Project;
+			GetSideCommand(RB_RESTORESELECT).Enabled = SelectedProjects.Count > 0;
 		}
 		else if (State == ViewState.RecycleTemplate)
 		{
-			GetRibbonButton("RB_DELETESELECT").Text = "删除所选" + StringConstBase.Current.Template;
-			GetRibbonButton("RB_DELETESELECT").Enabled = SelectedProjects.Count > 0;
-			GetRibbonButton("RB_RESTORESELECT").Text = "恢复所选" + StringConstBase.Current.Template;
-			GetRibbonButton("RB_RESTORESELECT").Enabled = SelectedProjects.Count > 0;
+			GetSideCommand(RB_DELETESELECT).Text = "删除所选" + StringConstBase.Current.Template;
+			GetSideCommand(RB_DELETESELECT).Enabled = SelectedProjects.Count > 0;
+			GetSideCommand(RB_RESTORESELECT).Text = "恢复所选" + StringConstBase.Current.Template;
+			GetSideCommand(RB_RESTORESELECT).Enabled = SelectedProjects.Count > 0;
 		}
 	}
 
@@ -2909,9 +2893,9 @@ public class FormProjectManage : ISetTheme
 		return _cmdh.Commands[name];
 	}
 
-	private RibbonButton GetRibbonButton(string name)
+	private SimpleCommand GetSideCommand(string name)
 	{
-		return (RibbonButton)_ribbon.GetItemByName(name);
+		return _topBar.GetCommand(name);
 	}
 
 	private async Task RestoreProjects()
@@ -2926,10 +2910,10 @@ public class FormProjectManage : ISetTheme
 			switch (previousState)
 			{
 			case ViewState.RecycleProject:
-				_ribbon.Tabs["TAB_PROJECT"].Selected = true;
+				_sidebar.SelectModule(TAB_PROJECT);
 				break;
 			case ViewState.RecycleTemplate:
-				_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
+				_sidebar.SelectModule(TAB_TEMPLATE);
 				break;
 			}
 		}
@@ -3012,19 +2996,19 @@ public class FormProjectManage : ISetTheme
 		{
 			if (Program.MainForm.CurrentEdition is AppEditionGeneral)
 			{
-				_ribbon.HideTabHeaderRow = true;
+				_sidebar.SetModuleNavVisible(visible: false);
 			}
 			PopulateViewMode();
 			PopulateSearch();
 			Theme.SetCurrentTree(_form);
 			SetTheme();
 			State = ViewState.Project;
+			_sidebar.SetSelectedModule(TAB_PROJECT);
+			_topBar.SetModule(TAB_PROJECT);
 			await Populate();
 			if (!(Program.MainForm.CurrentEdition is AppEditionGeneral) && _projects.Count == 0)
 			{
-				State = ViewState.Template;
-				_ribbon.Tabs["TAB_TEMPLATE"].Selected = true;
-				await Populate();
+				_sidebar.SelectModule(TAB_TEMPLATE);
 			}
 		}
 		catch (Exception ex)
@@ -3055,10 +3039,9 @@ public class FormProjectManage : ISetTheme
 		}
 	}
 
-	private async void Tab_Select(object sender, EventArgs e)
+	private async void Sidebar_ModuleSelected(string moduleName)
 	{
-		RibbonTab ribbonTab = sender as RibbonTab;
-		switch (ribbonTab.Name)
+		switch (moduleName)
 		{
 		case "TAB_PROJECT":
 			State = ViewState.Project;
@@ -3073,9 +3056,18 @@ public class FormProjectManage : ISetTheme
 			State = ViewState.RecycleTemplate;
 			break;
 		}
-		_ribbon.Enabled = false;
-		await Populate();
-		_ribbon.Enabled = true;
+		_topBar.SetModule(moduleName);
+		_sidebar.Enabled = false;
+		_topBar.Enabled = false;
+		try
+		{
+			await Populate();
+		}
+		finally
+		{
+			_sidebar.Enabled = true;
+			_topBar.Enabled = true;
+		}
 	}
 
 	private async void _cmdh_CommandClick(object sender, CommandClickEventArgs e)
@@ -3240,7 +3232,7 @@ public class FormProjectManage : ISetTheme
 		PopulateModel();
 	}
 
-	private async void RibbonButton_Click(object sender, EventArgs e)
+	private async void CommandBar_Click(object sender, EventArgs e)
 	{
 		if (_noAllowReentry)
 		{
@@ -3249,7 +3241,7 @@ public class FormProjectManage : ISetTheme
 		_noAllowReentry = true;
 		try
 		{
-			RibbonButton ribbonButton = sender as RibbonButton;
+			SimpleCommand ribbonButton = sender as SimpleCommand;
 			string name = ribbonButton.Name;
 			if (name == null)
 			{
@@ -3590,7 +3582,7 @@ public class FormProjectManage : ISetTheme
 	{
 		if (State == ViewState.Project || State == ViewState.Template)
 		{
-			SetRibbonState();
+			SetCommandState();
 		}
 	}
 
@@ -3604,7 +3596,7 @@ public class FormProjectManage : ISetTheme
 
 	private void _grid_CellChecked(object sender, RowColEventArgs e)
 	{
-		SetRibbonState();
+		SetCommandState();
 	}
 
 	private void _grid_Paint(object sender, PaintEventArgs e)
@@ -3632,7 +3624,7 @@ public class FormProjectManage : ISetTheme
 		{
 			_tile.ToggleTile(e.Tile);
 		}
-		SetRibbonState();
+		SetCommandState();
 	}
 
 	private void _tile_MouseUp(object sender, MouseEventArgs e)

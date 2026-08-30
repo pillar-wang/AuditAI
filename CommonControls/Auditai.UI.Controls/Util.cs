@@ -65,9 +65,15 @@ public static class Util
 
 	public static System.Drawing.Image MarkImage2(System.Drawing.Image image, int width, int height)
 	{
+		// 修复：原重载只把原图向右平移 width 留白，全程未绘制标记图标，导致
+		// 非管理员的头像标记丢失。此处与 MarkImage2(image, Bitmap) 一致，
+		// 把标记绘制到左侧（markImage 已按 width/height 缩放）。
+		Bitmap mark = new Bitmap(markImage, width, height);
 		Bitmap bitmap = new Bitmap(image.Width + width * 2, (image.Height > height) ? image.Height : height);
 		using Graphics graphics = Graphics.FromImage(bitmap);
+		graphics.DrawImage(mark, new RectangleF(0f, 0f, width, height), new RectangleF(0f, 0f, width, height), GraphicsUnit.Pixel);
 		graphics.DrawImage(image, new RectangleF(width, 0f, image.Width, image.Height), new RectangleF(0f, 0f, image.Width, image.Height), GraphicsUnit.Pixel);
+		mark.Dispose();
 		return bitmap;
 	}
 

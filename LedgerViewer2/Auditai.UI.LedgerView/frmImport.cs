@@ -324,6 +324,9 @@ public class frmImport : C1RibbonForm
 	{
 		InitializeComponent();
 		base.Shown += FrmImport_Shown;
+		grdBalance.BindAutoSizeColsFill(this);
+		grdVoucher.BindAutoSizeColsFill(this);
+		grdAuxiliary.BindAutoSizeColsFill(this);
 		ckbTypeNumSplit.Checked = true;
 		ckbTypeNumSplit.CheckedChanged += ckbTypeNumSplit_CheckedChanged;
 		ckbBalanceNonDirection.Checked = true;
@@ -399,11 +402,11 @@ public class frmImport : C1RibbonForm
 		PopulateIndex(grdVoucher);
 		PopulateIndex(grdAuxiliary);
 		grdBalance.AutoSizeCol(0);
-		AutoSizeCols(grdBalance);
+		grdBalance.AutoSizeColsFill();
 		grdVoucher.AutoSizeCol(0);
-		AutoSizeCols(grdVoucher);
+		grdVoucher.AutoSizeColsFill();
 		grdAuxiliary.AutoSizeCol(0);
-		AutoSizeCols(grdAuxiliary);
+		grdAuxiliary.AutoSizeColsFill();
 		HotGrid = grdBalance;
 		dockTab.SelectedTabChanged += DockTab_SelectedTabChanged;
 		_cmdCopyBalance = new C1Command
@@ -607,6 +610,12 @@ public class frmImport : C1RibbonForm
 	private void FrmImport_Shown(object sender, EventArgs e)
 	{
 		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.OpenExcelLedger);
+		BeginInvoke(new Action(() =>
+		{
+			grdBalance.AutoSizeColsFill();
+			grdVoucher.AutoSizeColsFill();
+			grdAuxiliary.AutoSizeColsFill();
+		}));
 	}
 
 	private void CmdModifyAuxColumn_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -1750,18 +1759,6 @@ public class frmImport : C1RibbonForm
 		finally
 		{
 			grid.EndUpdate();
-		}
-	}
-
-	private void AutoSizeCols(C1FlexGrid grid)
-	{
-		grid.AutoSizeCols(0, grid.Cols.Count - 1, 10);
-		for (int i = grid.Cols.Fixed; i < grid.Cols.Count; i++)
-		{
-			if (grid.Cols[i].Width < 120)
-			{
-				grid.Cols[i].Width = 120;
-			}
 		}
 	}
 
@@ -4327,13 +4324,13 @@ public class frmImport : C1RibbonForm
 		this.pnlInput.Controls.Add(this.txtCompany);
 		this.pnlInput.Controls.Add(this.lblCurrency);
 		this.pnlInput.Controls.Add(this.lblCompany);
-		this.pnlInput.Height = 52;
+		this.pnlInput.Height = 90;
 		this.pnlInput.KeepRelativeSize = false;
 		this.pnlInput.Location = new System.Drawing.Point(0, 83);
 		this.pnlInput.Name = "pnlInput";
 		this.pnlInput.Resizable = false;
-		this.pnlInput.Size = new System.Drawing.Size(1330, 52);
-		this.pnlInput.SizeRatio = 9.709;
+		this.pnlInput.Size = new System.Drawing.Size(1330, 90);
+		this.pnlInput.SizeRatio = 14.493;
 		this.pnlInput.TabIndex = 2;
 		this.dockTabInput.Alignment = System.Windows.Forms.TabAlignment.Bottom;
 		this.dockTabInput.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -4342,7 +4339,7 @@ public class frmImport : C1RibbonForm
 		this.dockTabInput.Controls.Add(this.tabPageInputBoxVoucher);
 		this.dockTabInput.Location = new System.Drawing.Point(519, 4);
 		this.dockTabInput.Name = "dockTabInput";
-		this.dockTabInput.Size = new System.Drawing.Size(1262, 78);
+		this.dockTabInput.Size = new System.Drawing.Size(811, 78);
 		this.dockTabInput.TabIndex = 1;
 		this.dockTabInput.TabsSpacing = 5;
 		this.dockTabInput.TabStyle = C1.Win.C1Command.TabStyleEnum.Office2007;
@@ -4352,7 +4349,7 @@ public class frmImport : C1RibbonForm
 		this.tabPageInputBoxBalance.Controls.Add(this.ckbBalanceHasAuxiliary);
 		this.tabPageInputBoxBalance.Location = new System.Drawing.Point(0, 0);
 		this.tabPageInputBoxBalance.Name = "tabPageInputBoxBalance";
-		this.tabPageInputBoxBalance.Size = new System.Drawing.Size(1262, 31);
+		this.tabPageInputBoxBalance.Size = new System.Drawing.Size(811, 31);
 		this.tabPageInputBoxBalance.TabIndex = 0;
 		this.tabPageInputBoxBalance.Text = "Page1";
 		this.ckbBalanceNonDirection.BackColor = System.Drawing.Color.Transparent;
@@ -4383,7 +4380,7 @@ public class frmImport : C1RibbonForm
 		this.tabPageInputBoxAuxiliary.Controls.Add(this.ckbAuxiliaryNonDirection);
 		this.tabPageInputBoxAuxiliary.Location = new System.Drawing.Point(0, 0);
 		this.tabPageInputBoxAuxiliary.Name = "tabPageInputBoxAuxiliary";
-		this.tabPageInputBoxAuxiliary.Size = new System.Drawing.Size(1262, 31);
+		this.tabPageInputBoxAuxiliary.Size = new System.Drawing.Size(811, 31);
 		this.tabPageInputBoxAuxiliary.TabIndex = 1;
 		this.tabPageInputBoxAuxiliary.Text = "Page2";
 		this.ckbAuxPageHasAuxiliary.BackColor = System.Drawing.Color.Transparent;
@@ -4418,7 +4415,7 @@ public class frmImport : C1RibbonForm
 		this.tabPageInputBoxVoucher.Controls.Add(this.cboAuxStyle);
 		this.tabPageInputBoxVoucher.Location = new System.Drawing.Point(0, 0);
 		this.tabPageInputBoxVoucher.Name = "tabPageInputBoxVoucher";
-		this.tabPageInputBoxVoucher.Size = new System.Drawing.Size(1262, 31);
+		this.tabPageInputBoxVoucher.Size = new System.Drawing.Size(811, 31);
 		this.tabPageInputBoxVoucher.TabIndex = 2;
 		this.tabPageInputBoxVoucher.Text = "Page3";
 		this.ckbAuxCodeNameSplit.BackColor = System.Drawing.Color.Transparent;
@@ -4531,13 +4528,13 @@ public class frmImport : C1RibbonForm
 		this.lblCompany.Text = "核算单位名称：";
 		this.lblCompany.TextDetached = true;
 		this.pnlDatas.Controls.Add(this.dockTab);
-		this.pnlDatas.Height = 485;
-		this.pnlDatas.Location = new System.Drawing.Point(0, 137);
+		this.pnlDatas.Height = 447;
+		this.pnlDatas.Location = new System.Drawing.Point(0, 173);
 		this.pnlDatas.MinHeight = 52;
 		this.pnlDatas.MinWidth = 52;
 		this.pnlDatas.Name = "pnlDatas";
-		this.pnlDatas.Size = new System.Drawing.Size(1330, 485);
-		this.pnlDatas.SizeRatio = 100.0;
+		this.pnlDatas.Size = new System.Drawing.Size(1330, 447);
+		this.pnlDatas.SizeRatio = 72.303;
 		this.pnlDatas.TabIndex = 0;
 		this.pnlDatas.Width = 1330;
 		this.dockTab.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -4548,7 +4545,7 @@ public class frmImport : C1RibbonForm
 		this.dockTab.Location = new System.Drawing.Point(0, 0);
 		this.dockTab.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.dockTab.Name = "dockTab";
-		this.dockTab.Size = new System.Drawing.Size(1330, 485);
+		this.dockTab.Size = new System.Drawing.Size(1330, 447);
 		this.dockTab.TabIndex = 1;
 		this.dockTab.TabsShowFocusCues = false;
 		this.dockTab.TabsSpacing = 0;
@@ -4558,7 +4555,7 @@ public class frmImport : C1RibbonForm
 		this.tabBalance.Controls.Add(this.grdBalance);
 		this.tabBalance.Location = new System.Drawing.Point(0, 45);
 		this.tabBalance.Name = "tabBalance";
-		this.tabBalance.Size = new System.Drawing.Size(1330, 418);
+		this.tabBalance.Size = new System.Drawing.Size(1330, 402);
 		this.tabBalance.TabIndex = 0;
 		this.tabBalance.Text = "年初科目余额表";
 		this.grdBalance.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None;
@@ -4570,12 +4567,12 @@ public class frmImport : C1RibbonForm
 		this.grdBalance.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdBalance.Name = "grdBalance";
 		this.grdBalance.Rows.DefaultSize = 37;
-		this.grdBalance.Size = new System.Drawing.Size(1330, 418);
+		this.grdBalance.Size = new System.Drawing.Size(1330, 402);
 		this.grdBalance.TabIndex = 0;
 		this.tabAuxiliary.Controls.Add(this.grdAuxiliary);
 		this.tabAuxiliary.Location = new System.Drawing.Point(0, 45);
 		this.tabAuxiliary.Name = "tabAuxiliary";
-		this.tabAuxiliary.Size = new System.Drawing.Size(1330, 418);
+		this.tabAuxiliary.Size = new System.Drawing.Size(1330, 402);
 		this.tabAuxiliary.TabIndex = 2;
 		this.tabAuxiliary.Text = "年初辅助余额表";
 		this.grdAuxiliary.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None;
@@ -4587,12 +4584,12 @@ public class frmImport : C1RibbonForm
 		this.grdAuxiliary.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdAuxiliary.Name = "grdAuxiliary";
 		this.grdAuxiliary.Rows.DefaultSize = 37;
-		this.grdAuxiliary.Size = new System.Drawing.Size(1330, 418);
+		this.grdAuxiliary.Size = new System.Drawing.Size(1330, 402);
 		this.grdAuxiliary.TabIndex = 1;
 		this.tabVoucher.Controls.Add(this.grdVoucher);
 		this.tabVoucher.Location = new System.Drawing.Point(0, 45);
 		this.tabVoucher.Name = "tabVoucher";
-		this.tabVoucher.Size = new System.Drawing.Size(1330, 418);
+		this.tabVoucher.Size = new System.Drawing.Size(1330, 402);
 		this.tabVoucher.TabIndex = 1;
 		this.tabVoucher.Text = "会计凭证库";
 		this.grdVoucher.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None;
@@ -4604,7 +4601,7 @@ public class frmImport : C1RibbonForm
 		this.grdVoucher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdVoucher.Name = "grdVoucher";
 		this.grdVoucher.Rows.DefaultSize = 37;
-		this.grdVoucher.Size = new System.Drawing.Size(1330, 418);
+		this.grdVoucher.Size = new System.Drawing.Size(1330, 402);
 		this.grdVoucher.TabIndex = 0;
 		this.cmdGenerate.Image = (System.Drawing.Image)resources.GetObject("cmdGenerate.Image");
 		this.cmdGenerate.Name = "cmdGenerate";

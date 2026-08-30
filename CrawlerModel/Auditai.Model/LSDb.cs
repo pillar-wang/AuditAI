@@ -63,7 +63,21 @@ public abstract class LSDb
 
 	public int GetTablesAllRecordsCount(IEnumerable<string> tableName)
 	{
-		return ExecuteScalar<int>("SELECT " + string.Join("+", tableName.Select((string x) => "(SELECT COUNT(1) FROM " + x + ")").ToArray()));
+		// 修复：原实现直接拼接表名到 SQL（无转义/校验），且空集合时生成 "SELECT " 非法 SQL。
+		if (tableName == null || !tableName.Any())
+		{
+			return 0;
+		}
+		// 只允许合法 SQL 标识符，避免注入/非法字符导致语法错误。
+		var safeNames = tableName
+			.Where(n => !string.IsNullOrEmpty(n) && System.Text.RegularExpressions.Regex.IsMatch(n, @"^[A-Za-z_][A-Za-z0-9_]*$"))
+			.ToList();
+		if (safeNames.Count == 0)
+		{
+			return 0;
+		}
+		string sql = "SELECT " + string.Join("+", safeNames.Select((string x) => "(SELECT COUNT(1) FROM [" + x + "])").ToArray());
+		return ExecuteScalar<int>(sql);
 	}
 
 	public abstract void TryConnectAsync();

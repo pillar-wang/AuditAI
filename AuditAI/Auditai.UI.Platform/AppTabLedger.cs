@@ -1,4 +1,4 @@
-namespace Auditai.UI.Platform;
+﻿namespace Auditai.UI.Platform;
 
 public class AppTabLedger : AppCommandTab
 {
@@ -30,6 +30,6 @@ public class AppTabLedger : AppCommandTab
 
 	protected override void Selected()
 	{
-		Program.MainForm.SwitchFinanceView();
+		Program.MainForm.ShowLedgerWindow();
 	}
 }

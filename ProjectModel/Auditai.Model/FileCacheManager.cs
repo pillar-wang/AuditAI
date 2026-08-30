@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Auditai.Util;
@@ -42,7 +42,9 @@ public class FileCacheManager
 
 	public async Task Upload(Guid fileId)
 	{
-		await WebApiClient.UploadFile(fileId, new FileStream(GetPath(fileId), FileMode.Open, FileAccess.Read));
+		// 修复：原 FileStream 未 using/Dispose，上传失败时句柄悬空。
+		using FileStream fs = new FileStream(GetPath(fileId), FileMode.Open, FileAccess.Read);
+		await WebApiClient.UploadFile(fileId, fs);
 	}
 
 	public async Task DownloadIfNotExist(Guid fileId)
@@ -64,6 +66,13 @@ public class FileCacheManager
 		catch (IOException)
 		{
 			File.Delete(GetPath(fileId));
+			throw;
+		}
+		catch (Exception)
+		{
+			// 修复：原实现仅捕获 IOException 删除半成品，其它异常（如 UnauthorizedAccess）
+			// 会留下损坏的缓存文件，后续 Exists 返回 true 用坏数据。任何失败都清理。
+			try { File.Delete(GetPath(fileId)); } catch { }
 			throw;
 		}
 	}

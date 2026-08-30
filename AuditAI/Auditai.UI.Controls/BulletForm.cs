@@ -25,7 +25,9 @@ public class BulletForm : Form
 
 	private Timer _repaintTimer = new Timer
 	{
-		Interval = 1
+		// 修复：原 Interval=1ms（约 1000 帧/秒），每帧全窗体重绘 + ClearType 抗锯齿文本，
+		// CPU 占用极高且 GDI 画刷分配速率远超回收。降至 33ms（约 30fps）对弹幕动画足够流畅。
+		Interval = 33
 	};
 
 	private Form _owner;
@@ -126,7 +128,15 @@ public class BulletForm : Form
 			}
 			else
 			{
-				graphics.DrawString(text, _font, new SolidBrush(Theme.SelectedAuditaiTheme.ThemeContext.BulletColor), num, num2, StringFormat.GenericDefault);
+				// 修复：原实现每次 DrawString 都 new SolidBrush 且从不释放 → GDI 画刷句柄持续泄漏。
+				// 改用 using 立即释放；若画笔颜色为透明则无需绘制。
+				using (SolidBrush brush = new SolidBrush(Theme.SelectedAuditaiTheme.ThemeContext.BulletColor))
+				{
+					if (brush.Color.A != 0)
+					{
+						graphics.DrawString(text, _font, brush, num, num2, StringFormat.GenericDefault);
+					}
+				}
 				num += (float)(int)graphics.MeasureString(text, _font).Width;
 			}
 		}

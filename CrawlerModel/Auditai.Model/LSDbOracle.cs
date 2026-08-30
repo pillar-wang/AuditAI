@@ -95,23 +95,22 @@ public class LSDbOracle : LSDb
 				try
 				{
 					oracleCommand.Transaction = oracleTransaction;
-					try
-					{
-						num += ((DbCommand)(object)oracleCommand).ExecuteNonQuery();
-						((DbTransaction)(object)oracleTransaction).Commit();
-					}
-					catch (OracleException)
-					{
-						((DbTransaction)(object)oracleTransaction).Rollback();
-						throw;
-					}
+					num += ((DbCommand)(object)oracleCommand).ExecuteNonQuery();
 				}
 				finally
 				{
 					((IDisposable)oracleCommand)?.Dispose();
 				}
 			}
+			// 修复：原实现在循环内每条命令后 Commit，下一条命令仍绑定已提交事务
+			// 抛 InvalidOperationException。改为循环外统一 Commit。
+			((DbTransaction)(object)oracleTransaction).Commit();
 			return num;
+		}
+		catch (OracleException)
+		{
+			((DbTransaction)(object)oracleTransaction).Rollback();
+			throw;
 		}
 		finally
 		{
@@ -158,7 +157,12 @@ public class LSDbOracle : LSDb
 		try
 		{
 			object value = ((DbCommand)(object)oracleCommand).ExecuteScalar();
-			return Convert.IsDBNull(value) ? default(T) : ((T)Convert.ChangeType(value, typeof(T)));
+			// 修复：SQL 无返回行时 ExecuteScalar 返回 null，对值类型 ChangeType 抛 InvalidCastException。
+			if (value == null || Convert.IsDBNull(value))
+			{
+				return default(T);
+			}
+			return (T)Convert.ChangeType(value, typeof(T));
 		}
 		finally
 		{
@@ -302,7 +306,8 @@ public class LSDbOracle : LSDb
 			OracleParameter value = new OracleParameter("tablename", tableName.ToUpper());
 			oracleCommand.Parameters.Add(value);
 			object value2 = ((DbCommand)(object)oracleCommand).ExecuteScalar();
-			return 1m.Equals(value2);
+			// 修复：原 1m.Equals(value2) 对非 decimal 装箱值（int）恒返回 false，导致 Oracle 下恒判表不存在。
+			return value2 != null && !Convert.IsDBNull(value2) && Convert.ToInt32(value2) == 1;
 		}
 		finally
 		{

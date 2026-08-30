@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -18,35 +18,35 @@ namespace Auditai.UI.Platform;
 
 public class frmFindPwd : Form
 {
-	#region === 设计令牌（小清新浅蓝风格，统一全局） ===
+	#region === 设计令牌（Google Blue 风格，统一全局） ===
 
-	/// <summary>主色（主题 LineColor = 74,144,217），用于按钮/链接/下划线/聚焦边框</summary>
-	private static Color Primary = Color.FromArgb(74, 144, 217);
+	/// <summary>主色（Google Blue #1a73e8），用于按钮/链接/下划线/聚焦边框</summary>
+	private static Color Primary = Color.FromArgb(26, 115, 232);
 
 	/// <summary>主色-按下态（暗一档，FlatAppearance.MouseDown）</summary>
-	private static Color PrimaryDark = Color.FromArgb(53, 123, 189);
+	private static Color PrimaryDark = Color.FromArgb(21, 87, 176);
 
 	/// <summary>主色-悬停态（亮一档，FlatAppearance.MouseOver）</summary>
-	private static Color PrimaryLight = Color.FromArgb(90, 160, 230);
+	private static Color PrimaryLight = Color.FromArgb(23, 101, 204);
 
 	/// <summary>边框/分隔线色：默认灰蓝（未聚焦的输入框边框）</summary>
-	private static Color LineColorDefault = Color.FromArgb(208, 215, 222);
+	private static Color LineColorDefault = Color.FromArgb(226, 232, 240);
 
-	/// <summary>Surface-0：窗体背景（浅蓝渐变替代）</summary>
-	private static Color Surface0 = Color.FromArgb(245, 249, 252);
+	/// <summary>Surface-0：窗体背景（浅蓝灰 #f8fafc）</summary>
+	private static Color Surface0 = Color.FromArgb(248, 250, 252);
 
 	/// <summary>Surface-1：卡片/面板背景（纯白）</summary>
 	private static Color Surface1 = Color.FromArgb(255, 255, 255);
 
-	/// <summary>主文字色（深靛蓝灰，WCAG 对比度 ~15.8:1 on 白色）</summary>
-	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
+	/// <summary>主文字色（#0f172a，WCAG 对比度 ~16.3:1 on 白色）</summary>
+	private static Color TextPrimary = Color.FromArgb(15, 23, 42);
 
-	/// <summary>次文字色（标签/占位符，对比度 ~6.2:1，满足 WCAG AA）</summary>
-	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
+	/// <summary>次文字色（标签/占位符，对比度 ~8.6:1，满足 WCAG AA）</summary>
+	private static Color TextSecondary = Color.FromArgb(51, 65, 85);
 
 	#endregion
 
-	// 小清新：天蓝主色（已替换为 Primary 令牌，此处保留兼容）
+	// Google Blue：天蓝主色（已替换为 Primary 令牌，此处保留兼容）
 	private static Color _auditaiMainColor = Primary;
 
 	public const int WM_SYSCOMMAND = 274;
@@ -134,10 +134,15 @@ public class frmFindPwd : Form
 		InitializeComponent();
 		InitPlatformStyle();
 		base.StartPosition = FormStartPosition.CenterScreen;
-		ApplyRoundedRegion(12);
-		ApplyRoundedButton(btnFindPwd, 9);
-		ApplyRoundedButton(btnGetVerification, 9);
-		ApplyRoundedButton(btnClose, 9);
+		ApplyRoundedRegion(AuditTheme.CardRadius);
+		ApplyRoundedButton(btnClose, 6);
+		// Google 风格布局精修：统一按钮/输入框尺寸
+		ApplyGoogleLayout();
+		// 圆角 Region 必须在最终尺寸确定后再应用：原先先按设计器尺寸(54/50 高)打圆角、
+		// 再由 ApplyGoogleLayout 把按钮缩到 40/36，底部圆弧与实际底边错位，
+		// 导致 btnFindPwd/btnGetVerification 下边缘两角被裁掉一块
+		ApplyRoundedButton(btnFindPwd, AuditTheme.ButtonRadius);
+		ApplyRoundedButton(btnGetVerification, AuditTheme.ButtonRadius);
 		txtEmail.Focus();
 	}
 
@@ -172,7 +177,7 @@ public class frmFindPwd : Form
 
 	private void InitColor()
 	{
-		// 小清新：使用令牌体系，覆盖平台默认配色，与登录/注册窗口一致
+		// Google Blue：使用令牌体系，覆盖平台默认配色，与登录/注册窗口一致
 		_auditaiMainColor = Primary;
 		btnGetVerification.BackColor = Primary;
 		btnGetVerification.FlatAppearance.MouseDownBackColor = PrimaryDark;
@@ -180,6 +185,53 @@ public class frmFindPwd : Form
 		btnFindPwd.BackColor = Primary;
 		btnFindPwd.FlatAppearance.MouseDownBackColor = PrimaryDark;
 		btnFindPwd.FlatAppearance.MouseOverBackColor = PrimaryLight;
+	}
+
+	/// <summary>
+	/// Google 风格布局精修
+	/// 统一输入框高度 40px、按钮高度 40px、按钮圆角 8px
+	/// 确保与登录/注册窗体视觉一致
+	/// </summary>
+	private void ApplyGoogleLayout()
+	{
+		// === 统一输入框高度为 40px，不改变位置 ===
+		C1TextBoxEx[] inputs = { txtEmail, txtEmailValidate, txtUserName, txtNewPassword };
+		foreach (var txt in inputs)
+		{
+			if (txt == null) continue;
+			txt.Height = AuditTheme.InputHeight;
+			txt.Font = AuditTheme.FontBody;
+		}
+
+		// === 主按钮：高度统一 40px ===
+		if (btnFindPwd != null)
+		{
+			btnFindPwd.Height = AuditTheme.ButtonHeight;
+			btnFindPwd.Font = AuditTheme.FontBodyBold;
+		}
+
+		// === 获取验证码按钮：高度与输入框对齐 ===
+		if (btnGetVerification != null)
+		{
+			btnGetVerification.Height = AuditTheme.InputHeight - 4;
+			btnGetVerification.Font = AuditTheme.FontBodyBold;
+		}
+
+		// === 标题字号 ===
+		if (lblFindPwd != null)
+		{
+			lblFindPwd.Font = AuditTheme.FontDisplay; // 14pt Bold
+			lblFindPwd.ForeColor = AuditTheme.Text;
+		}
+
+		// === 标签字号和颜色 ===
+		C1Label[] labels = { lblEmail, lblEmailVerification, lblUserName, c1Label1 };
+		foreach (var lbl in labels)
+		{
+			if (lbl == null) continue;
+			lbl.Font = AuditTheme.FontBody;
+			lbl.ForeColor = AuditTheme.TextSecondary;
+		}
 	}
 
 	private void InitPlatform_Audit()
@@ -351,7 +403,7 @@ public class frmFindPwd : Form
 	{
 		var g = e.Graphics;
 		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-		// 小清新：浅天蓝渐变背景
+		// Google Blue：浅天蓝渐变背景
 		Rectangle bgRect = new Rectangle(0, 0, base.Width, base.Height);
 		using (var bgBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
 			bgRect, Color.FromArgb(227, 240, 255), Color.FromArgb(245, 248, 250),
@@ -597,7 +649,7 @@ public class frmFindPwd : Form
 		this.c1Label1.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.ForeColor = TextSecondary;
 		// 紧凑化：x 39→32，宽 86→70，y 481→374，高 34→30
-		this.c1Label1.Location = new System.Drawing.Point(32, 374);
+		this.c1Label1.Location = new System.Drawing.Point(32, 363);
 		this.c1Label1.Name = "c1Label1";
 		this.c1Label1.Size = new System.Drawing.Size(70, 30);
 		this.c1Label1.TabIndex = 83;

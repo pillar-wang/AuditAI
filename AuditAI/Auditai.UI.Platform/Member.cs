@@ -45,7 +45,9 @@ public class Member : MemTab
 		{
 			Bitmap bitmap = (Sex ? Resources.Boy : Resources.Girl);
 			base.Image = bitmap.ToSize(32, 32);
-			bitmap.Dispose();
+			// 修复：Resources.Boy/Girl 是 ResourceManager 缓存的共享实例，
+			// 原 Dispose 会销毁共享资源，后续其它位置再用已释放的 Bitmap 绘制即崩溃。
+			// 这里只使用不释放，由程序退出时统一回收。
 			base.GrayImage = ((Bitmap)base.Image).ToGray();
 			ClearImage16InMainThread();
 		}
@@ -58,7 +60,7 @@ public class Member : MemTab
 		{
 			Bitmap bitmap2 = (Sex ? Resources.Boy : Resources.Girl);
 			base.Image = bitmap2.ToSize(32, 32);
-			bitmap2.Dispose();
+			// 修复：同 SetPicture(byte[])，不再释放共享资源实例。
 			base.GrayImage = ((Bitmap)base.Image).ToGray();
 			ClearImage16InMainThread();
 		}

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -728,16 +728,27 @@ public class Column
 							}
 							Dictionary<string, int> dictionary2 = list9.Select((IGrouping<string, Column> g) => g.First()).ToDictionary((Column c) => c.CrossAttributes.Caption, (Column c) => c.Index);
 							for (int l = 0; l < dt.Rows.Count - 1; l++)
+						{
+							for (int m = 1; m <= dt.Columns.Count - 2; m++)
 							{
-								for (int m = 1; m <= dt.Columns.Count - 2; m++)
+								// 修复：来源数据首列值/列标题不在字典中时原直接索引抛 KeyNotFoundException，
+								// 被外层 catch 静默吞掉。防御性跳过缺失键。
+								string rowKey = (string)dt.Rows[l][0];
+								string colKey = dt.Columns[m].Caption;
+								if (dictionary.TryGetValue(rowKey, out int rowIdx) && dictionary2.TryGetValue(colKey, out int colIdx))
 								{
-									Table[dictionary[(string)dt.Rows[l][0]], dictionary2[dt.Columns[m].Caption]].UpdateValue(ZeroDBNull(dt.Rows[l][m]));
+									Table[rowIdx, colIdx].UpdateValue(ZeroDBNull(dt.Rows[l][m]));
 								}
 							}
-							for (int n = 0; n < dt.Rows.Count - 1; n++)
+						}
+						for (int n = 0; n < dt.Rows.Count - 1; n++)
+						{
+							string rowKey2 = (string)dt.Rows[n][0];
+							if (dictionary.TryGetValue(rowKey2, out int rowIdx2))
 							{
-								Table[dictionary[(string)dt.Rows[n][0]], column3.Index].UpdateValue(dt.Rows[n][dt.Columns.Count - 1]);
+								Table[rowIdx2, column3.Index].UpdateValue(dt.Rows[n][dt.Columns.Count - 1]);
 							}
+						}
 						}
 					}
 				}

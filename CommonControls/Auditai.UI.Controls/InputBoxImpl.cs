@@ -1,6 +1,7 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using C1.Win.C1Input;
 using C1.Win.C1Ribbon;
@@ -47,8 +48,11 @@ internal class InputBoxImpl : C1RibbonForm
 	/// <summary>按钮宽度（增大以提升点击舒适度）</summary>
 	private const int ButtonWidth = 110;
 
-	/// <summary>按钮高度</summary>
-	private const int ButtonHeight = 36;
+	/// <summary>按钮高度（36→40 对齐统一按钮规格）</summary>
+	private const int ButtonHeight = 40;
+
+	/// <summary>按钮圆角半径（统一规范 8px）</summary>
+	private const int ButtonRadius = 8;
 
 	/// <summary>按钮右侧距窗体右边缘的距离（避免按钮贴边）</summary>
 	private const int ButtonRightMargin = 50;
@@ -65,14 +69,99 @@ internal class InputBoxImpl : C1RibbonForm
 	/// <summary>取消按钮 Left 坐标（最右侧）</summary>
 	private static readonly int BtnCancelLeft = FormClientWidth - ButtonRightMargin - ButtonWidth;
 
+	#region === 设计令牌（同 MessageShowBox，支持 Google Blue 主题） ===
+
+	private Color Primary;
+	private Color PrimaryDark;
+	private Color PrimaryLight;
+	private Color LineColorDefault;
+	private Color TextPrimary;
+
+	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走 Google Blue 色板，其余走默认小清新浅蓝</summary>
+	private void LoadThemeColors()
+	{
+		var theme = Theme.SelectedAuditaiTheme;
+		if (theme != null && theme.Name == "auditai_GoogleBlue")
+		{
+			// Google Blue 色板
+			Primary = Color.FromArgb(26, 115, 232);
+			PrimaryDark = Color.FromArgb(21, 87, 176);
+			PrimaryLight = Color.FromArgb(23, 101, 204);
+			LineColorDefault = Color.FromArgb(226, 232, 240);
+			TextPrimary = Color.FromArgb(15, 23, 42);
+		}
+		else
+		{
+			// 默认：小清新浅蓝
+			Primary = Color.FromArgb(74, 144, 217);
+			PrimaryDark = Color.FromArgb(53, 123, 189);
+			PrimaryLight = Color.FromArgb(90, 160, 230);
+			LineColorDefault = Color.FromArgb(208, 215, 222);
+			TextPrimary = Color.FromArgb(30, 41, 59);
+		}
+	}
+
+	#endregion
+
+	/// <summary>
+	/// 统一按钮样式：确定=主按钮（蓝底白字无边框），取消=次按钮（白底深灰字+浅灰边框），均 Flat + 8px 圆角 Region
+	/// </summary>
+	private void ApplyButtonStyle(C1Button btn, bool isPrimary)
+	{
+		btn.FlatStyle = FlatStyle.Flat;
+		if (isPrimary)
+		{
+			// 主按钮：Primary 蓝填充 + 白字（悬停/按下深浅变体）
+			btn.BackColor = Primary;
+			btn.ForeColor = Color.White;
+			btn.FlatAppearance.BorderSize = 0;
+			btn.FlatAppearance.MouseDownBackColor = PrimaryDark;
+			btn.FlatAppearance.MouseOverBackColor = PrimaryLight;
+		}
+		else
+		{
+			// 次按钮：白底深灰字 + 浅灰边框，视觉低调
+			btn.BackColor = Color.White;
+			btn.ForeColor = TextPrimary;
+			btn.FlatAppearance.BorderColor = LineColorDefault;
+			btn.FlatAppearance.BorderSize = 1;
+			btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(240, 247, 252);
+			btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 249, 252);
+		}
+		// 8px 圆角 Region（四角 AddArc，同 MessageShowBox；只裁剪圆角，不影响按钮 Top 动态变化）
+		using (var path = new GraphicsPath())
+		{
+			int r = ButtonRadius * 2;
+			path.AddArc(0, 0, r, r, 180, 90);
+			path.AddArc(btn.Width - r, 0, r, r, 270, 90);
+			path.AddArc(btn.Width - r, btn.Height - r, r, r, 0, 90);
+			path.AddArc(0, btn.Height - r, r, r, 90, 90);
+			path.CloseFigure();
+			btn.Region = new Region(path);
+		}
+	}
+
+	/// <summary>统一应用两个按钮样式（构造末尾调用；主题应用后可在 ShowDialog 再次调用防覆盖）</summary>
+	private void RefreshButtonStyles()
+	{
+		ApplyButtonStyle(btnConfirm, isPrimary: true);
+		ApplyButtonStyle(btnCancel, isPrimary: false);
+	}
+
 	public InputBoxImpl()
 	{
+		// 先加载主题颜色令牌（须在 InitializeComponent 之前）
+		LoadThemeColors();
 		InitializeComponent();
 		base.StartPosition = FormStartPosition.CenterScreen;
+		// 统一按钮样式 + 8px 圆角（构造最终位置应用）
+		RefreshButtonStyles();
 	}
 
 	public InputBoxImpl(string title = "", string prompt = "", InputFormEnum inputEnum = InputFormEnum.Num)
 	{
+		// 先加载主题颜色令牌（须在 InitializeComponent 之前）
+		LoadThemeColors();
 		InitializeComponent();
 		Text = title;
 		lblPrompt.Text = prompt;
@@ -104,8 +193,8 @@ internal class InputBoxImpl : C1RibbonForm
 			txtInputRight.Visible = true;
 			dateInputLeft.Visible = false;
 			dateInputRight.Visible = false;
-			txtInputLeft.Width = 275;
-			txtInputRight.Width = 275;
+			txtInputLeft.Width = 273;
+			txtInputRight.Width = 273;
 			break;
 		case InputFormEnum.DateRange:
 			txtInputLeft.Visible = false;
@@ -116,8 +205,8 @@ internal class InputBoxImpl : C1RibbonForm
 			dateInputRight.FormatType = FormatTypeEnum.CustomFormat;
 			dateInputLeft.CustomFormat = "yyyy年MM月dd日";
 			dateInputRight.CustomFormat = "yyyy年MM月dd日";
-			dateInputLeft.Width = 275;
-			dateInputRight.Width = 275;
+			dateInputLeft.Width = 273;
+			dateInputRight.Width = 273;
 			break;
 		case InputFormEnum.Text:
 			txtInputLeft.Visible = true;
@@ -163,8 +252,8 @@ internal class InputBoxImpl : C1RibbonForm
 			txtInputRight.DataType = typeof(DateTime);
 			txtInputRight.FormatType = FormatTypeEnum.LongTime;
 			txtInputRight.Value = DateTime.Now;
-			txtInputLeft.Width = 275;
-			txtInputRight.Width = 275;
+			txtInputLeft.Width = 273;
+			txtInputRight.Width = 273;
 			break;
 		case InputFormEnum.DateYearMonth:
 			txtInputLeft.Visible = false;
@@ -185,10 +274,12 @@ internal class InputBoxImpl : C1RibbonForm
 			dateInputRight.FormatType = FormatTypeEnum.CustomFormat;
 			dateInputLeft.CustomFormat = "yyyy年MM月";
 			dateInputRight.CustomFormat = "yyyy年MM月";
-			dateInputLeft.Width = 275;
-			dateInputRight.Width = 275;
+			dateInputLeft.Width = 273;
+			dateInputRight.Width = 273;
 			break;
 		}
+		// 统一按钮样式 + 8px 圆角（构造最终位置应用）
+		RefreshButtonStyles();
 	}
 
 	/// <summary>
@@ -213,7 +304,9 @@ internal class InputBoxImpl : C1RibbonForm
 			size = g.MeasureString(prompt, font, maxWidth, fmt);
 		}
 
-		int lblHeight = Math.Max(minHeight, (int)Math.Ceiling(size.Height) + 4);
+		// 高度上限 120 与 ApplyPromptAutoScrollOrTextBox 的滚动阈值一致：
+		// 超长提示由滚动文本框承载，避免窗体高度无上限导致底部按钮超出屏幕
+		int lblHeight = Math.Min(Math.Max(minHeight, (int)Math.Ceiling(size.Height) + 4), 120);
 		lblPrompt.Height = lblHeight;
 
 		// 下方控件的 Top = lblPrompt.Bottom + 间距
@@ -442,6 +535,8 @@ internal class InputBoxImpl : C1RibbonForm
 		Theme.SetCurrentObject(this);
 		Theme.SetCurrentObject(btnConfirm);
 		Theme.SetCurrentObject(btnCancel);
+		// 主题应用后重设按钮样式，防止被 C1Theme 覆盖
+		RefreshButtonStyles();
 		base.AcceptButton = btnConfirm;
 
 		// 根据提示文字的长度自动布局控件（避免 lblPrompt 过高时，下方输入框/按钮看不见）
@@ -486,7 +581,7 @@ internal class InputBoxImpl : C1RibbonForm
 			ReadOnly = true,
 			ScrollBars = ScrollBars.Vertical,
 			WordWrap = true,
-			Font = new Font("微软雅黑", 10.5f),
+			Font = new Font("Noto Sans SC", 10.5f), // 字体统一 Noto Sans SC（字号不变）
 			Location = lblPrompt.Location,
 			Size = new Size(lblPrompt.Width, maxPromptHeight),
 			Text = lblPrompt.Text ?? "",
@@ -541,30 +636,31 @@ internal class InputBoxImpl : C1RibbonForm
 		this.txtInputLeft.TextChanged += new System.EventHandler(txtInputLeft_TextChanged);
 		this.txtInputLeft.KeyPress += new System.Windows.Forms.KeyPressEventHandler(txtInputLeft_KeyPress);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnConfirm.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.btnConfirm.Location = new System.Drawing.Point(BtnConfirmLeft, 130);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
 		this.btnConfirm.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnConfirm.TabIndex = 1;
 		this.btnConfirm.Text = "确定";
-		this.btnConfirm.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（RefreshButtonStyles 应用）
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		this.btnCancel.Location = new System.Drawing.Point(BtnCancelLeft, 130);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(ButtonWidth, ButtonHeight);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
-		this.btnCancel.UseVisualStyleBackColor = true;
+		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（RefreshButtonStyles 应用）
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.lblPrompt.AutoSize = false;
 		this.lblPrompt.BackColor = System.Drawing.Color.Transparent;
 		this.lblPrompt.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPrompt.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.lblPrompt.ForeColor = System.Drawing.Color.Black;
+		this.lblPrompt.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		// 界面文字统一深灰（原 Color.Black）
+		this.lblPrompt.ForeColor = TextPrimary;
 		this.lblPrompt.Location = new System.Drawing.Point(26, 20);
 		this.lblPrompt.Name = "lblPrompt";
 		this.lblPrompt.Size = new System.Drawing.Size(550, 28);
@@ -575,7 +671,7 @@ internal class InputBoxImpl : C1RibbonForm
 		this.lblwarnNum.AutoSize = true;
 		this.lblwarnNum.BackColor = System.Drawing.Color.Transparent;
 		this.lblwarnNum.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblwarnNum.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblwarnNum.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（Color.Red 警告语义保留）
 		this.lblwarnNum.ForeColor = System.Drawing.Color.Red;
 		this.lblwarnNum.Location = new System.Drawing.Point(26, 94);
 		this.lblwarnNum.Name = "lblwarnNum";
@@ -631,7 +727,7 @@ internal class InputBoxImpl : C1RibbonForm
 		base.Controls.Add(this.btnCancel);
 		base.Controls.Add(this.btnConfirm);
 		base.Controls.Add(this.txtInputLeft);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

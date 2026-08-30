@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -423,35 +423,59 @@ namespace AuditAI.McpServer.Services
                         DurationMs = sw.ElapsedMilliseconds
                     };
 
-                // 注意：先 BeginOutputReadLine / ReadToEnd 必须在 WaitForExit 之前避免死锁。
-                // 此处用同步 ReadToEnd + WaitForExit(timeout) 模式。
-                string output = proc.StandardOutput.ReadToEnd();
-                string error = proc.StandardError.ReadToEnd();
-
-                bool exited = proc.WaitForExit(timeoutMs);
-                if (!exited)
+                // 修复：原实现先同步 proc.StandardOutput.ReadToEnd() 再读 stderr。
+                // 若子进程向 stderr 大量输出（如 dotnet build 大量警告）且 stdout 未关闭，
+                // stderr 管道缓冲填满后子进程阻塞写，父进程阻塞读 stdout → 双方死锁。
+                // 改用异步事件读取，避免管道缓冲耗尽。
+                var outputSb = new System.Text.StringBuilder();
+                var errorSb = new System.Text.StringBuilder();
+                using (var outputWait = new System.Threading.ManualResetEvent(false))
+                using (var errorWait = new System.Threading.ManualResetEvent(false))
                 {
-                    try { proc.Kill(); } catch { /* 忽略 */ }
+                    proc.OutputDataReceived += (s, e) =>
+                    {
+                        if (e.Data == null) outputWait.Set();
+                        else outputSb.AppendLine(e.Data);
+                    };
+                    proc.ErrorDataReceived += (s, e) =>
+                    {
+                        if (e.Data == null) errorWait.Set();
+                        else errorSb.AppendLine(e.Data);
+                    };
+                    proc.BeginOutputReadLine();
+                    proc.BeginErrorReadLine();
+
+                    bool exited = proc.WaitForExit(timeoutMs);
+                    if (!exited)
+                    {
+                        try { proc.Kill(); } catch { /* 忽略 */ }
+                        sw.Stop();
+                        return new ServerOpsResult
+                        {
+                            Success = false,
+                            Output = outputSb.ToString(),
+                            Error = "Process timed out after " + timeoutMs + "ms. " + errorSb.ToString(),
+                            ExitCode = -1,
+                            DurationMs = sw.ElapsedMilliseconds
+                        };
+                    }
+
+                    // 等待异步读取完成（有内部超时保护，避免极端情况下卡死）
+                    outputWait.WaitOne(2000);
+                    errorWait.WaitOne(2000);
+                    string output = outputSb.ToString();
+                    string error = errorSb.ToString();
+
                     sw.Stop();
                     return new ServerOpsResult
                     {
-                        Success = false,
+                        Success = proc.ExitCode == 0,
                         Output = output,
-                        Error = "Process timed out after " + timeoutMs + "ms. " + (error ?? ""),
-                        ExitCode = -1,
+                        Error = error,
+                        ExitCode = proc.ExitCode,
                         DurationMs = sw.ElapsedMilliseconds
                     };
                 }
-
-                sw.Stop();
-                return new ServerOpsResult
-                {
-                    Success = proc.ExitCode == 0,
-                    Output = output,
-                    Error = error,
-                    ExitCode = proc.ExitCode,
-                    DurationMs = sw.ElapsedMilliseconds
-                };
             }
             finally
             {

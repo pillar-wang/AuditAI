@@ -30,6 +30,8 @@ public class UserGroup
 
 	public List<UserGroup> DescendantsAndSelfGroup()
 	{
-		return new UserGroup[1] { this }.Concat(Children).Concat(Children.SelectMany((UserGroup c) => c.DescendantsAndSelfGroup())).ToList();
+		// 修复：原实现将 Children 同时通过 .Concat(Children) 和子组自身的
+		// DescendantsAndSelfGroup() 首元素加入两次，导致直接子组在结果中重复。
+		return new UserGroup[1] { this }.Concat(Children.SelectMany((UserGroup c) => c.DescendantsAndSelfGroup())).ToList();
 	}
 }

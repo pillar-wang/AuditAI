@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -330,7 +330,32 @@ public class ImportExcel : IDisposable
 			return;
 		}
 		IEnumerable<XLCellRange> cellMerges = sheet.MergedCells.Cast<XLCellRange>();
+		// 修复：原 int num=0 为反编译残留，恒走"固定表头"分支，多行表头解析成为死代码。
+		// 恢复为基于表头首行跨行合并推断表头行数：多行表头通常通过跨行合并体现
+		// （如"资产负债表"表头跨 2 行）。无跨行合并时 num=0 保持固定表头默认行为不变。
 		int num = 0;
+		if (cellMerges.Any())
+		{
+			int rowFrom = _currentRow;
+			int maxRowTo = rowFrom;
+			foreach (XLCellRange merge in cellMerges)
+			{
+				if (merge.RowFrom == rowFrom && merge.RowTo > maxRowTo)
+				{
+					maxRowTo = merge.RowTo;
+				}
+			}
+			if (maxRowTo > rowFrom)
+			{
+				num = maxRowTo - rowFrom + 1;
+			}
+			// 防御：表头行数不能超过有效行数（至少留 1 行数据），防止误判把数据区吞掉。
+			int maxNum = Math.Max(1, GetValidRowCount(sheet) - _currentRow - 1);
+			if (num > maxNum)
+			{
+				num = maxNum;
+			}
+		}
 		if (num == 0)
 		{
 			_fixHead = true;

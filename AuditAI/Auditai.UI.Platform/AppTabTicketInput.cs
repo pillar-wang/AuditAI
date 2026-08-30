@@ -1,4 +1,4 @@
-namespace Auditai.UI.Platform;
+﻿namespace Auditai.UI.Platform;
 
 public class AppTabTicketInput : AppCommandTab
 {

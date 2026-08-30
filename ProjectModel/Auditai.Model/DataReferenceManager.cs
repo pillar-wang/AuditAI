@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Auditai.DTO;
@@ -86,7 +86,11 @@ public class DataReferenceManager
 
 	public void UpdateKey(string key, string newKey)
 	{
-		DataReference dataReference = _dic[key];
+		// 修复：原 _dic[key] 在 key 不存在时抛 KeyNotFoundException。防御性处理。
+		if (!_dic.TryGetValue(key, out var dataReference))
+		{
+			return;
+		}
 		dataReference.UpdateKey(newKey);
 		_dic.Remove(key);
 		_dic.Add(newKey, dataReference);
@@ -94,7 +98,11 @@ public class DataReferenceManager
 
 	public void Remove(string key)
 	{
-		DataReference dataReference = _dic[key];
+		// 修复：原 _dic[key] 在 key 不存在时抛 KeyNotFoundException。防御性处理。
+		if (!_dic.TryGetValue(key, out var dataReference))
+		{
+			return;
+		}
 		_dic.Remove(key);
 		_removed.Add(dataReference.Id);
 	}
@@ -129,7 +137,9 @@ public class DataReferenceManager
 		}
 		
 		// 原有逻辑
+		// 修复：原实现直接取 array[1]，store 无 "." 时越界。
 		string[] array = store.Split('.');
+		if (array.Length < 2) return "引用格式错误";
 		Table tableById2 = _project.GetTableById(Id64.ParseBase64(array[0]));
 		if (tableById2 == null)
 		{
@@ -225,11 +235,19 @@ public class DataReferenceManager
 					return null;
 
 				var dal = new Auditai.DTO.ProjectDAL(dbPath);
-				var dto = dal.GetProject();
-				if (dto != null)
+				try
 				{
-					project.Name = dto.Name;
-					return project;
+					var dto = dal.GetProject();
+					if (dto != null)
+					{
+						project.Name = dto.Name;
+						return project;
+					}
+				}
+				finally
+				{
+					// 修复：原 ProjectDAL 未释放，持有连接可能锁住外部项目文件。
+					dal.Dispose();
 				}
 			}
 		}

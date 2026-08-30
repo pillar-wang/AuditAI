@@ -1,4 +1,4 @@
-﻿extern alias CrawlerModelAlias;
+extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections;
@@ -349,9 +349,7 @@ public class LedgerViewer
 			SubsidiaryEditor subsidiaryEditor = new SubsidiaryEditor(this);
 			pnlData.Controls.Add(subsidiaryEditor.View);
 			subsidiaryEditor.SetTitle(StartDate.ToString("yyyy-MM-dd"), EndDate.ToString("yyyy-MM-dd"));
-			subsidiaryEditor.ShowVoucher(visible: false);
 			AttachGenerateEvent1(subsidiaryEditor.grdSubsidiary);
-			AttachGenerateEvent1(subsidiaryEditor.grdVoucher);
 			subsidiaryEditor.AttachTooltip(tooltipManager);
 			if (IsHideSidebar)
 			{
@@ -1315,14 +1313,12 @@ public class LedgerViewer
 			if (lazySubsidiaryEditor.IsValueCreated)
 			{
 				SetGridStyle(SubsidiaryEditor.grdSubsidiary);
-				SetGridStyle(SubsidiaryEditor.grdVoucher);
 				SubsidiaryEditor.SubDisplay = booksStyle.SubDisplay;
 				SubsidiaryEditor.TotalDisplay = booksStyle.TotalDisplay;
 				SubsidiaryEditor.SubStatus = booksStyle.BalanceTo;
 				if (CurrentView == ActiveView.Subsidiary)
 				{
 					SetGridHeight(SubsidiaryEditor.grdSubsidiary);
-					SetGridHeight(SubsidiaryEditor.grdVoucher);
 				}
 			}
 			if (lazyVoucherListEditor.IsValueCreated)
@@ -2107,8 +2103,6 @@ public class LedgerViewer
 			case ActiveView.Subsidiary:
 				StyleRecord.ResumeFont(AccountTreeEditor.Tree);
 				StyleRecord.ResumeHeight(AccountTreeEditor.Tree);
-				StyleRecord.ResumeFont(SubsidiaryEditor.grdVoucher);
-				StyleRecord.ResumeHeight(SubsidiaryEditor.grdVoucher);
 				StyleRecord.ResumeFont(SubsidiaryEditor.grdSubsidiary);
 				StyleRecord.ResumeHeight(SubsidiaryEditor.grdSubsidiary);
 				break;
@@ -2358,10 +2352,6 @@ public class LedgerViewer
 
 	private void InitOtherView()
 	{
-		if (lazySubsidiaryEditor.IsValueCreated)
-		{
-			SubsidiaryEditor.ShowVoucher(visible: false);
-		}
 		if (lazyVoucherListEditor.IsValueCreated)
 		{
 			VoucherListEditor.PopulateTree();
@@ -2759,7 +2749,7 @@ public class LedgerViewer
 		if (row.UserData is Voucher { VoucherMark: false } voucher && row.Visible)
 		{
 			voucher.ToggleMark();
-			row.StyleNew.BackColor = UserSet.Config.TableStyle.CheckFailColor;
+			row.StyleNew.BackColor = Common.MarkBackColor;
 			row.StyleNew.ForeColor = Common.MarkForeColor;
 		}
 	}
@@ -2888,7 +2878,7 @@ public class LedgerViewer
 			{
 				color = grid.Rows[rowIndex - 1].Style?.BackColor ?? Color.White;
 			}
-			else if (grid.Rows[rowIndex + 1].UserData is Voucher voucher3 && voucher3.Number == voucher.Number && voucher3.Type == voucher.Type)
+			else if (rowIndex + 1 < grid.Rows.Count && grid.Rows[rowIndex + 1].UserData is Voucher voucher3 && voucher3.Number == voucher.Number && voucher3.Type == voucher.Type)
 			{
 				color = grid.Rows[rowIndex + 1].Style?.BackColor ?? Color.White;
 			}
@@ -2897,7 +2887,7 @@ public class LedgerViewer
 		{
 			exception.Log("取消关注时发生了未预期的异常");
 		}
-		row.StyleNew.BackColor = ((color == UserSet.Config.TableStyle.CheckFailColor) ? Color.White : color);
+		row.StyleNew.BackColor = ((color == Common.MarkBackColor) ? Color.White : color);
 		row.StyleNew.ForeColor = grid.ForeColor;
 	}
 

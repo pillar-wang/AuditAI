@@ -34,7 +34,13 @@ public static class UserSet
 		}
 		if (Config.TableStyle.SubTitleContent.Count < Config.TableStyle.SubTitleRows)
 		{
-			Config = new UserConfig();
+			// 修复：原实现直接把整个 Config 重置为默认值，会把用户已配置的主题、
+			// 账号等全部个性化设置一并丢失（如用户手动删掉一条副标题内容后重启）。
+			// 此处仅补全副标题内容到目标行数，避免破坏其余配置。
+			while (Config.TableStyle.SubTitleContent.Count < Config.TableStyle.SubTitleRows)
+			{
+				Config.TableStyle.SubTitleContent.Add(Tuple.Create(string.Empty, string.Empty, string.Empty));
+			}
 		}
 		Config.Tooltip = false;
 	}

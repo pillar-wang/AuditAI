@@ -1018,6 +1018,7 @@ public class frmTableCollect : C1RibbonForm
 		this.spbAnalysis.Items.Add(this.dropDownItem1);
 		this.spbAnalysis.Items.Add(this.dropDownItem2);
 		this.spbAnalysis.Items.Add(this.dropDownItem3);
+		this.spbAnalysis.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.spbAnalysis.Location = new System.Drawing.Point(438, 27);
 		this.spbAnalysis.Name = "spbAnalysis";
 		this.spbAnalysis.Size = new System.Drawing.Size(137, 34);
@@ -1250,7 +1251,7 @@ public class frmTableCollect : C1RibbonForm
 		this.lblAuxiliary.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblAuxiliary.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblAuxiliary.ForeColor = System.Drawing.Color.Black;
-		this.lblAuxiliary.Location = new System.Drawing.Point(589, 62);
+		this.lblAuxiliary.Location = new System.Drawing.Point(589, 60);
 		this.lblAuxiliary.Name = "lblAuxiliary";
 		this.lblAuxiliary.Size = new System.Drawing.Size(68, 17);
 		this.lblAuxiliary.TabIndex = 22;
@@ -1291,7 +1292,7 @@ public class frmTableCollect : C1RibbonForm
 		this.lblEndMonth.BackColor = System.Drawing.Color.Transparent;
 		this.lblEndMonth.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblEndMonth.ForeColor = System.Drawing.Color.Black;
-		this.lblEndMonth.Location = new System.Drawing.Point(919, 22);
+		this.lblEndMonth.Location = new System.Drawing.Point(919, 20);
 		this.lblEndMonth.Name = "lblEndMonth";
 		this.lblEndMonth.Size = new System.Drawing.Size(20, 17);
 		this.lblEndMonth.TabIndex = 24;

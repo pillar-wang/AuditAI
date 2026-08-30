@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -112,8 +112,7 @@ public static class WebApiClient
 	{
 		_handler = new HttpClientHandler
 		{
-			Proxy = null,
-			UseProxy = false
+			UseDefaultCredentials = true
 		};
 		ServicePointManager.DefaultConnectionLimit = 10;
 #if DEBUG
@@ -141,6 +140,8 @@ public static class WebApiClient
 	{
 		httpClient.BaseAddress = new Uri(address);
 	}
+
+	public static Uri BaseAddress => httpClient.BaseAddress;
 
 	public static async Task<IEnumerable<Project>> GetProjects()
 	{
@@ -505,7 +506,8 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, null);
-		long taskId = (long?)jObject["taskId"] ?? 0;
+		// 修复：服务端返回 null 时 jObject["taskId"] 抛 NRE。
+		long taskId = (long?)jObject?["taskId"] ?? 0;
 		await WaitingServerTaskRunOver(taskId, serverProgressUpdater);
 	}
 
@@ -525,7 +527,8 @@ public static class WebApiClient
 			WithAuthorization = true
 		});
 		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, null);
-		long taskId = (long?)jObject["taskId"] ?? 0;
+		// 修复：服务端返回 null 时 jObject["taskId"] 抛 NRE。
+		long taskId = (long?)jObject?["taskId"] ?? 0;
 		await WaitingServerTaskRunOver(taskId, serverProgressUpdater);
 	}
 
@@ -604,6 +607,11 @@ public static class WebApiClient
 			Timeout = TimeSpan.FromMinutes(3.0),
 			WithAuthorization = true
 		});
+		// 修复：服务端返回 null 时 jObject["Result"] 抛 NRE。
+		if (jObject == null)
+		{
+			return null;
+		}
 		string text = (string)jObject["Result"];
 		if (text == null || !text.StartsWith("WaitingTaskEnd:"))
 		{
@@ -1186,23 +1194,37 @@ public static class WebApiClient
 			}))
 			{
 				string text = item.Picture?.Value<string>();
-				users.Add(new User
+				try
 				{
-					Id = item.Id,
-					UserName = item.UserName,
-					Name = item.Name,
-					Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-					TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
-					Email = item.Email,
-					Company = item.Company,
-					Sex = item.Sex,
-					Phone = item.Phone,
-					City = item.City,
-					GroupId = item.GroupId,
-					JobTitle = item.JobTitle,
-					IsTeamAdmin = item.IsTeamAdmin,
-					Permissions = UserTeamPermissions.Deserialize(item.Permissions)
-				});
+					// 修复：原 Convert.FromBase64String 无逐条 try/catch，一条头像非法
+					// Base64 会让整个用户列表加载失败。坏行跳过，不影响其余用户。
+					byte[] picture = (text == null) ? null : Convert.FromBase64String(text);
+					users.Add(new User
+					{
+						Id = item.Id,
+						UserName = item.UserName,
+						Name = item.Name,
+						Picture = picture,
+						TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
+						Email = item.Email,
+						Company = item.Company,
+						Sex = item.Sex,
+						Phone = item.Phone,
+						City = item.City,
+						GroupId = item.GroupId,
+						JobTitle = item.JobTitle,
+						IsTeamAdmin = item.IsTeamAdmin,
+						Permissions = UserTeamPermissions.Deserialize(item.Permissions)
+					});
+				}
+				catch (FormatException)
+				{
+					// 头像 Base64 非法，跳过该用户头像
+				}
+				catch (ArgumentException)
+				{
+					// 头像 Base64 非法（含非法字符），跳过该用户头像
+				}
 			}
 		}
 		return users;
@@ -1225,12 +1247,25 @@ public static class WebApiClient
 		JToken usersToken = response?["Users"];
 		if (usersToken != null && usersToken.Type == JTokenType.Array)
 		{
-			return usersToken.Select((JToken j) => new User
+			List<User> permissionsUsers = new List<User>();
+			foreach (JToken j in usersToken)
 			{
-				Id = (long)j["userId"],
-				Name = (string)j["Name"],
-				Permissions = UserTeamPermissions.Deserialize((string)j["Permissions"])
-			}).ToList();
+				// 防御：服务端 userId 缺失/类型不符时，(long) 直接强转会抛 InvalidCastException
+				// 导致整个权限列表加载失败。改为 TryGetValue 安全提取，异常行跳过。
+				long id = 0L;
+				JToken idToken = j?["userId"];
+				if (idToken == null || !long.TryParse(idToken.ToString(), out id))
+				{
+					continue;
+				}
+				permissionsUsers.Add(new User
+				{
+					Id = id,
+					Name = (string)j["Name"],
+					Permissions = UserTeamPermissions.Deserialize((string)j["Permissions"])
+				});
+			}
+			return permissionsUsers;
 		}
 		return Enumerable.Empty<User>();
 	}
@@ -1268,20 +1303,33 @@ public static class WebApiClient
 			}))
 			{
 				string text = item.Picture?.Value<string>();
-				users.Add(new User
+				try
 				{
-					Id = item.Id,
-					UserName = item.UserName,
-					Name = item.Name,
-					Picture = ((text == null) ? null : Convert.FromBase64String(text)),
-					TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
-					Email = item.Email,
-					Company = item.Company,
-					Sex = item.Sex,
-					Phone = item.Phone,
-					City = item.City,
-					Role = item.UserRole
-				});
+					// 修复：同 GetTeamUsersWithPic，单条头像非法 Base64 不拖垮整个项目成员列表。
+					byte[] picture = (text == null) ? null : Convert.FromBase64String(text);
+					users.Add(new User
+					{
+						Id = item.Id,
+						UserName = item.UserName,
+						Name = item.Name,
+						Picture = picture,
+						TeamId = Guid.TryParse(item.TeamId, out var tid) ? tid : Guid.Empty,
+						Email = item.Email,
+						Company = item.Company,
+						Sex = item.Sex,
+						Phone = item.Phone,
+						City = item.City,
+						Role = item.UserRole
+					});
+				}
+				catch (FormatException)
+				{
+					// 头像 Base64 非法，跳过该用户头像
+				}
+				catch (ArgumentException)
+				{
+					// 头像 Base64 非法（含非法字符），跳过该用户头像
+				}
 			}
 		}
 		return users;
@@ -1317,7 +1365,9 @@ public static class WebApiClient
 				});
 			}
 		}
-		Dictionary<long, UserGroup> userGroupMap = userGroups.ToDictionary((UserGroup g) => g.Id, (UserGroup g) => g);
+		// 修复：原 ToDictionary 在服务端返回重复组 Id 时抛 ArgumentException。
+		// 改为 GroupBy 取每组第一条，保证不崩溃且结果可用。
+		Dictionary<long, UserGroup> userGroupMap = userGroups.GroupBy((UserGroup g) => g.Id).Select((IGrouping<long, UserGroup> g) => g.First()).ToDictionary((UserGroup g) => g.Id, (UserGroup g) => g);
 		List<UserGroup> topUserGroup = new List<UserGroup>();
 		foreach (UserGroup item2 in userGroups)
 		{
@@ -1394,12 +1444,8 @@ public static class WebApiClient
 		};
 		JObject respObj = await SendAsObject<JObject>(options);
 		long taskId = (long?)respObj?["taskId"] ?? 0;
-			File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
-				$"[{DateTime.Now:HH:mm:ss.fff}] WaitingServerTaskRunOver START taskId={taskId}\n");
-			TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
-			JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
-			File.AppendAllText(Path.Combine(Path.GetTempPath(), "open-project-debug.log"),
-				$"[{DateTime.Now:HH:mm:ss.fff}] WaitingServerTaskRunOver DONE result={(jObject == null ? "null" : jObject.ToString())}\n");
+		TaskProgressValueUpdater serverProgressUpdater = new TaskProgressValueUpdater(0f, 1f, reportCallback);
+		JObject jObject = JsonConvert.DeserializeObject<JObject>(await WaitingServerTaskRunOver(taskId, serverProgressUpdater));
 		string requestUri = jObject?.Value<string>("Url");
 		if (string.IsNullOrEmpty(requestUri))
 		{
@@ -2183,6 +2229,9 @@ public static class WebApiClient
 	}
 
 	#region SendAsStream
+	/// <summary>401 已触发过一次自动重新登录的标志（进程内仅触发一次，防重入）</summary>
+	private static int _reloginTriggered;
+
 	private static async Task<Stream> SendAsStream(RequestOptions options)
 	{
 		string url = options.Url ?? "";
@@ -2208,8 +2257,25 @@ public static class WebApiClient
 			{
 				string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
 				DebugLog($"[SendAsStream] ERROR response body: {errorContent}");
+				// 先构造错误消息再 Dispose，避免访问已释放对象的属性
+				string msg = $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}";
+				if (response.StatusCode == HttpStatusCode.Unauthorized)
+				{
+					// Token 失效：防重入触发一次自动重新登录（不重放当前请求，客户端下次调用自然成功）。
+					// Message 保留 "401/Unauthorized" 关键字，兼容 TokenUpdater 的失效检测逻辑。
+					if (Interlocked.CompareExchange(ref _reloginTriggered, 1, 0) == 0)
+					{
+						DebugLog("[SendAsStream] 401 received, triggering one-shot auto relogin");
+						_ = Task.Run(async () =>
+						{
+							try { await ReloginForTokenUpdate(); }
+							catch { }
+						});
+					}
+					msg = "登录状态已失效，请重新登录（HTTP 401 Unauthorized）";
+				}
 				response.Dispose();
-				throw new HttpRequestException($"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}");
+				throw new HttpRequestException(msg);
 			}
 
 			return await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
@@ -2222,9 +2288,10 @@ public static class WebApiClient
 	}
 	#endregion
 
-	/// <summary>临时调试日志（写文件），联调完成后移除</summary>
+	/// <summary>临时调试日志（写文件），联调完成后移除。仅 DEBUG 编译写入，避免生产环境数据外泄/磁盘膨胀。</summary>
 	private static void DebugLog(string message)
 	{
+#if DEBUG
 		try
 		{
 			string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
@@ -2233,6 +2300,7 @@ public static class WebApiClient
 			File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss.fff}] {message}{Environment.NewLine}");
 		}
 		catch { }
+#endif
 	}
 
 	/// <summary>Token 更新失败时的自动重新登录入口（供 TokenUpdater 调用）</summary>
@@ -2407,6 +2475,18 @@ public static class WebApiClient
 				ExceptionStackTrace = ex.StackTrace
 			};
 		}
+		catch (JsonReaderException ex)
+		{
+			// 修复：主反序列化遇到非法 JSON（如服务器返回 HTML 错误页）时，
+			// 原实现只捕获 IOException/JsonSerializationException，JsonReaderException
+			// 会裸抛给上层。此处统一转为 ServerException 友好错误。
+			throw new ServerException
+			{
+				ExceptionMessage = "服务器返回数据格式错误: " + ex.Message,
+				ExceptionType = "JsonReaderError",
+				ExceptionStackTrace = ex.StackTrace
+			};
+		}
 	}
 
 	private static async Task<JObject> SendAsPushProject(Guid projectId, JObject request, RequestOptions options, TaskProgressValueReportCallback progressReportCallback)
@@ -2426,8 +2506,9 @@ public static class WebApiClient
 			options.Body = null;
 			options.Url = string.Format("{0}?taskId={1}&projectId={2}", options.Url, taskId, projectId.ToString("D"));
 			JObject jObject = await SendAsObject<JObject>(options);
+			if (jObject == null) return new JObject();
 			string text = (string)jObject["Result"];
-			if (!text.StartsWith("WaitingTaskEnd:"))
+			if (string.IsNullOrEmpty(text) || !text.StartsWith("WaitingTaskEnd:"))
 			{
 				return jObject;
 			}
@@ -2527,8 +2608,9 @@ public static class WebApiClient
 			options.Body = null;
 			options.Url = $"{options.Url}?taskId={taskId}&projectId={text}&tableId={guidTableId}&version={request.Version}";
 			JObject jObject = await SendAsObject<JObject>(options);
+			if (jObject == null) return new JObject();
 			string text2 = (string)jObject["Result"];
-			if (!text2.StartsWith("WaitingTaskEnd:"))
+			if (string.IsNullOrEmpty(text2) || !text2.StartsWith("WaitingTaskEnd:"))
 			{
 				return jObject;
 			}
@@ -2740,10 +2822,18 @@ public static class WebApiClient
 	{
 		int tryCount = 6;
 		int timeOutTryTimes = tryCount;
+		// 修复：原实现在每次成功轮询后把 timeOutTryTimes 重置回 6，任务未结束时
+		// Task.Delay(2000) 无限轮询，服务端任务永久挂起时客户端无限等待（UI 卡死）。
+		// 增加总截止时间（10 分钟），超时抛错退出。
+		var deadline = DateTime.UtcNow.AddMinutes(10);
 		try
 		{
 			while (timeOutTryTimes > 0)
 			{
+				if (DateTime.UtcNow > deadline)
+				{
+					throw new HttpRequestException("服务器任务处理超时（超过 10 分钟仍未完成），请稍后重试");
+				}
 				try
 				{
 					JObject jObject = await SendAsObject<JObject>(new RequestOptions
@@ -2833,8 +2923,14 @@ public static class WebApiClient
 	{
 		int tryCount = 6;
 		int timeOutTryTimes = tryCount;
+		// 修复：同无下载 URL 重载，增加总截止时间防止服务端任务挂起时无限轮询。
+		var deadline = DateTime.UtcNow.AddMinutes(10);
 		while (timeOutTryTimes > 0)
 		{
+			if (DateTime.UtcNow > deadline)
+			{
+				throw new HttpRequestException("服务器任务处理超时（超过 10 分钟仍未完成），请稍后重试");
+			}
 			try
 			{
 				JObject jObject = await SendAsObject<JObject>(new RequestOptions
@@ -3107,8 +3203,9 @@ public static class WebApiClient
 			options.Body = null;
 			options.Url = $"{options.Url}?taskId={taskId}&projectId={text}&docId={request.Id}&version={request.Version}";
 			JObject jObject = await SendAsObject<JObject>(options);
+			if (jObject == null) return new JObject();
 			string text2 = (string)jObject["Result"];
-			if (!text2.StartsWith("WaitingTaskEnd:"))
+			if (string.IsNullOrEmpty(text2) || !text2.StartsWith("WaitingTaskEnd:"))
 			{
 				return jObject;
 			}

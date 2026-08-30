@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -306,12 +306,49 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 
 	public C1FlexGrid Grid => _grid;
 
+	/// <summary>给按钮应用圆角区域（与 frmFindPwd 保持一致的统一设计语言）</summary>
+	private void ApplyRoundedButton(Control btn, int radius)
+	{
+		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
+		{
+			path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+			path.AddArc(btn.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+			path.AddArc(btn.Width - radius * 2, btn.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+			path.AddArc(0, btn.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+			path.CloseFigure();
+			btn.Region = new System.Drawing.Region(path);
+		}
+	}
+
 	public frmNodeSelectorWithTicketRecord()
 	{
 		InitializeComponent();
 
+		// 统一设计语言：按钮最终尺寸确定后再应用 8px 圆角 Region
+		ApplyRoundedButton(btnCertain, 8);
+		ApplyRoundedButton(btnCancel, 8);
 
 		Initialize();
+		// 统一设计语言：C1Button 皮肤会覆盖设计时配色，构造末尾重设主/次按钮样式
+		RefreshButtonStyles();
+	}
+
+	/// <summary>统一设计语言：重新应用主/次按钮配色（防止 C1Button 皮肤/主题覆盖）</summary>
+	private void RefreshButtonStyles()
+	{
+		// 主按钮：Brand 蓝底白字
+		btnCertain.BackColor = AuditTheme.Brand;
+		btnCertain.ForeColor = Color.White;
+		btnCertain.FlatStyle = FlatStyle.Flat;
+		btnCertain.FlatAppearance.BorderSize = 0;
+		btnCertain.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		btnCertain.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		// 次按钮：白底灰字 + 浅蓝边框
+		btnCancel.BackColor = Color.White;
+		btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
+		btnCancel.FlatStyle = FlatStyle.Flat;
+		btnCancel.FlatAppearance.BorderSize = 1;
+		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
 	}
 
 	private Id64 GenerateSingleId()
@@ -321,7 +358,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 
 	private new DialogResult ShowDialog()
 	{
-		base.Size = new Size(471, 594);
+		base.Size = new Size(550, 650);
 		return base.ShowDialog();
 	}
 
@@ -959,6 +996,13 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 	private void SetTheme()
 	{
 		ctnAll.SplitterWidth = 0;
+		// 统一设计语言：Populate 每次填充都会走到这里，同步保证主题浅色系不被回退
+		ctnAll.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
+		ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		ctnAll.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		ctnAll.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
+		splSearch.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		splSearch.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
 	}
 
 	private void GrdEditor_Resize(object sender, EventArgs e)
@@ -1331,11 +1375,14 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this._grid).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(164, 195, 235);
+		// 统一设计语言：容器背景由旧 C1 蓝改为现代浅色表面色
+		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
 		this.ctnAll.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
-		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
+		// 统一设计语言：固定线由旧深蓝改为浅灰
+		this.ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		// 统一设计语言：前景文字由旧深蓝改为深灰蓝
+		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		this.ctnAll.HeaderHeight = 35;
 		this.ctnAll.Location = new System.Drawing.Point(0, 0);
 		this.ctnAll.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -1344,10 +1391,11 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.ctnAll.Panels.Add(this.pnlSearch);
 		this.ctnAll.Panels.Add(this.pnlEditor);
 		this.ctnAll.Size = new System.Drawing.Size(532, 732);
-		this.ctnAll.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		// 统一设计语言：分隔条颜色同步为浅灰
+		this.ctnAll.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
 		this.ctnAll.SplitterWidth = 0;
 		this.ctnAll.TabIndex = 0;
-		this.ctnAll.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
+		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
 		this.pnlButton.Controls.Add(this.progressBar);
 		this.pnlButton.Controls.Add(this.cboShowHideNodes);
 		this.pnlButton.Controls.Add(this.ckbExportExcel);
@@ -1386,28 +1434,46 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.ckbExportExcel.Location = new System.Drawing.Point(6, 14);
 		this.ckbExportExcel.Name = "ckbExportExcel";
 		this.ckbExportExcel.Padding = new System.Windows.Forms.Padding(1);
-		this.ckbExportExcel.Size = new System.Drawing.Size(303, 31);
+		this.ckbExportExcel.Size = new System.Drawing.Size(360, 31);
 		this.ckbExportExcel.TabIndex = 3;
 		this.ckbExportExcel.Text = "同文件夹下表格导出至一个Excel文件";
 		this.ckbExportExcel.UseVisualStyleBackColor = true;
 		this.ckbExportExcel.Value = null;
+		// 统一设计语言：主按钮（品牌蓝底白字、无边框），加宽到 110、高 40，右对齐重排（Right=398，与取消按钮间距 12）
 		this.btnCertain.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCertain.Location = new System.Drawing.Point(306, 10);
+		// 修复：原先 btnCertain(370)+btnCancel(483) 中 btnCancel 右缘 483+91=574 超出 pnlButton 宽 532，
+		// 右侧 42px 被裁剪。现右对齐重排：btnCancel 右边距 12，两按钮间距 12。
+		this.btnCertain.Location = new System.Drawing.Point(288, 6);
 		this.btnCertain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCertain.Name = "btnCertain";
-		this.btnCertain.Size = new System.Drawing.Size(91, 34);
+		this.btnCertain.Size = new System.Drawing.Size(110, 40);
 		this.btnCertain.TabIndex = 1;
 		this.btnCertain.Text = "确定";
-		this.btnCertain.UseVisualStyleBackColor = true;
+		this.btnCertain.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+		this.btnCertain.FlatAppearance.BorderSize = 0;
+		this.btnCertain.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		this.btnCertain.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		this.btnCertain.ForeColor = System.Drawing.Color.White;
+		this.btnCertain.BackColor = AuditTheme.Brand;
+		this.btnCertain.UseVisualStyleBackColor = false;
+		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Bold);
 		this.btnCertain.Click += new System.EventHandler(btnCertain_Click);
+		// 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框），加宽到 110、高 40，右缘距面板右边 12
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Location = new System.Drawing.Point(419, 10);
+		this.btnCancel.Location = new System.Drawing.Point(410, 6);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
-		this.btnCancel.Size = new System.Drawing.Size(91, 34);
+		this.btnCancel.Size = new System.Drawing.Size(110, 40);
 		this.btnCancel.TabIndex = 2;
 		this.btnCancel.Text = "取消";
-		this.btnCancel.UseVisualStyleBackColor = true;
+		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+		this.btnCancel.FlatAppearance.BorderSize = 1;
+		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.btnCancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(241, 245, 249);
+		this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
+		this.btnCancel.BackColor = System.Drawing.Color.White;
+		this.btnCancel.UseVisualStyleBackColor = false;
+		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9.5f);
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.pnlSearch.Controls.Add(this.splSearch);
 		this.pnlSearch.Height = 31;
@@ -1422,17 +1488,19 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.splSearch.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.splSearch.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
 		this.splSearch.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.splSearch.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		// 统一设计语言：搜索区固定线由旧深蓝改为浅灰
+		this.splSearch.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
 		this.splSearch.HeaderHeight = 35;
 		this.splSearch.Location = new System.Drawing.Point(0, 0);
 		this.splSearch.Name = "splSearch";
 		this.splSearch.Panels.Add(this.pnlSearchIcon);
 		this.splSearch.Panels.Add(this.pnlSearchTxt);
 		this.splSearch.Size = new System.Drawing.Size(532, 31);
-		this.splSearch.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		// 统一设计语言：搜索区分隔条颜色同步为浅灰
+		this.splSearch.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
 		this.splSearch.SplitterWidth = 0;
 		this.splSearch.TabIndex = 1;
-		this.splSearch.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
+		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
 		this.pnlSearchIcon.Controls.Add(this.btnSearch);
 		this.pnlSearchIcon.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Right;
 		this.pnlSearchIcon.Height = 31;

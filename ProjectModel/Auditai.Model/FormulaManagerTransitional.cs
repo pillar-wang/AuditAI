@@ -69,10 +69,26 @@ public class FormulaManagerTransitional
 		int i = 0;
 		int totalCount = _hosts.Count();
 		HashSet<Id64> hasEvalTableNameSet = new HashSet<Id64>();
-		foreach (FormulaHost host in _hosts)
+		int pass = 0;
+		do
 		{
-			await Eval(host);
+			pass++;
+			// 收敛式多轮求值：跨表运算中，源表数据（尤其是填充公式生成的明细行/列）可能因宿主求值
+			// 顺序不固定而在目标表读取之后才被填充；若沿用上一轮的公式缓存，VLookUp/SumIf 会
+			// 读到旧值而偶发算不出数据。因此每轮清空公式缓存并按最新数据重建，直到没有任何单元格
+			// 值再发生变化为止（与 TryApplyFormula 的收敛方式一致，最多 10 轮防止循环）。
+			Cell.UpdateValueSuccessFlag = false;
+			FormulaEvaluator.ClearCache();
+			evaling.Clear();
+			evaled.Clear();
+			hasEvalTableNameSet.Clear();
+			i = 0;
+			foreach (FormulaHost host in _hosts)
+			{
+				await Eval(host);
+			}
 		}
+		while (Cell.UpdateValueSuccessFlag && pass <= 10);
 		async Task Eval(FormulaHost host)
 		{
 			if (!evaling.Contains(host) && !evaled.Contains(host))
