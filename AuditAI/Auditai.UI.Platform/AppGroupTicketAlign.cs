@@ -7,7 +7,7 @@ public class AppGroupTicketAlign : AppCommandGroup
 {
 	public override string Text => "对齐设置";
 
-	public override Image Image => Resources.tb_AlignTopLeft;
+	public override Image Image => IconRes.tb_AlignTopLeft;
 
 	public AppGroupTicketAlign()
 	{

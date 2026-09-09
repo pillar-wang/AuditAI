@@ -12,7 +12,7 @@ namespace Auditai.UI.Controls;
 
 public class BulletForm : Form
 {
-	private static Font _font = new Font("Noto Sans SC", 15f, FontStyle.Bold);
+	private static Font _font = new Font("微软雅黑", 15f, FontStyle.Bold);
 
 	private List<Bullet> _bullets = new List<Bullet>();
 

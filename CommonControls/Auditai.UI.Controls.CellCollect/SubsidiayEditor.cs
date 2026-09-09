@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -336,19 +336,19 @@ internal class SubsidiayEditor
 		cmdAppendRow.Text = "新增行";
 		lnkAppendRow.Command = cmdAppendRow;
 		cmdAppendRow.Click += CmdAppendRow_Click;
-		cmdAppendRow.Image = Resources.ctxAppendRow;
+		cmdAppendRow.Image = IconRes.ctxAppendRow;
 		ctxCell.CommandLinks.Add(lnkAppendRow);
 		cmdDeleteRow.Text = "删除行";
 		lnkDeleteRow.Command = cmdDeleteRow;
 		cmdDeleteRow.Click += CmdDeleteRow_Click;
-		cmdDeleteRow.Image = Resources.ctxDeleteRow;
+		cmdDeleteRow.Image = IconRes.ctxDeleteRow;
 		ctxCell.CommandLinks.Add(lnkDeleteRow);
 		_owner.grdSubsidiary.MouseClick += GrdSubsidiary_MouseClick;
 		_owner.grdSubsidiary.MouseDown += GrdSubsidiary_MouseDown;
 		cmdAppendRow2.Text = "新增行";
 		lnkAppendRow2.Command = cmdAppendRow2;
 		cmdAppendRow2.Click += CmdAppendRow_Click;
-		cmdAppendRow2.Image = Resources.ctxAppendRow;
+		cmdAppendRow2.Image = IconRes.ctxAppendRow;
 		ctxEmpty.CommandLinks.Add(lnkAppendRow2);
 		InitiliazeSubsidiaryGrid(_grid);
 		AttachEvents();
@@ -395,11 +395,11 @@ internal class SubsidiayEditor
 		case HitTestTypeEnum.RowHeader:
 			if (grdSubsidiary.MouseRow >= grdSubsidiary.Rows.Fixed)
 			{
-				ctxCell.ShowContextMenu(grdSubsidiary, e.Location);
+				NativeMenuShim.Show(ctxCell, grdSubsidiary, e.Location);
 			}
 			break;
 		case HitTestTypeEnum.None:
-			ctxEmpty.ShowContextMenu(grdSubsidiary, e.Location);
+			NativeMenuShim.Show(ctxEmpty, grdSubsidiary, e.Location);
 			break;
 		}
 	}

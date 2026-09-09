@@ -10,7 +10,7 @@ public class AppCommandFillToTable : AppCommandButton
 {
 	public override string Text => "填充至底稿";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.batchFill;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.batchFill;
 
 	protected override string Tooltip => TipResource.填充至底稿按钮;
 

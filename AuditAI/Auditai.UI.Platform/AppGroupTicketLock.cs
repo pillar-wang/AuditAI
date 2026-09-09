@@ -7,7 +7,7 @@ public class AppGroupTicketLock : AppCommandGroup
 {
 	public override string Text => "单据权限保护";
 
-	public override Image Image => Resources.ToggleLockTable;
+	public override Image Image => IconRes.ToggleLockTable;
 
 	public AppGroupTicketLock()
 	{

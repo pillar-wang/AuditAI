@@ -9,7 +9,7 @@ public class AppCommandMonthSummary : AppCommandButton
 {
 	public override string Text => "月度汇总表";
 
-	public override Image LargeIcon => Resources.MonthSummary;
+	public override Image LargeIcon => IconRes.MonthSummary;
 
 	protected override void Clicked()
 	{

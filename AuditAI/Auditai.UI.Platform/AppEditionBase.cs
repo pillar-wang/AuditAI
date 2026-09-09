@@ -200,6 +200,5 @@ public abstract class AppEditionBase
 		ConfigToolbarCommands.Add(AppCommands.ShowTooltipSmall);
 		ConfigToolbarCommands.Add(AppCommands.ToggleFullscreenSmall);
 		ConfigToolbarCommands.Add(AppCommands.Theme);
-		ConfigToolbarCommands.Add(AppCommands.ContactWay);
 	}
 }

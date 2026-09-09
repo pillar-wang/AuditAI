@@ -7,7 +7,7 @@ public class AppGroupFormulaTip : AppCommandGroup
 {
 	public override string Text => "公式编辑";
 
-	public override Image Image => Resources.FormulaCommit;
+	public override Image Image => IconRes.FormulaCommit;
 
 	public AppGroupFormulaTip()
 	{

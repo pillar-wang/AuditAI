@@ -12,7 +12,7 @@ public class AppCommandDocValidationMgmt : AppCommandButton
 {
 	public override string Text => "校验域管理";
 
-	public override Image LargeIcon => Resources.ValidationSettings;
+	public override Image LargeIcon => IconRes.ValidationSettings;
 
 	protected override Func<Task> ClickedTask => delegate
 	{

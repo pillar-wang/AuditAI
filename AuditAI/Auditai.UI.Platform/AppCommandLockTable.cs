@@ -8,7 +8,7 @@ public class AppCommandLockTable : AppCommandToggleButton
 {
 	public override string Text => "锁定表格";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ToggleLockTable;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ToggleLockTable;
 
 	protected override string Tooltip => TipResource.锁定表格;
 

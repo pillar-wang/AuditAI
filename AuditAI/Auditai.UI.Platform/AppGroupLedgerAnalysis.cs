@@ -7,7 +7,7 @@ public class AppGroupLedgerAnalysis : AppCommandGroup
 {
 	public override string Text => "数据分析";
 
-	public override Image Image => Resources.TrendAnalysis;
+	public override Image Image => IconRes.TrendAnalysis;
 
 	public AppGroupLedgerAnalysis()
 	{

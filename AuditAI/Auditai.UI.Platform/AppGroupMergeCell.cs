@@ -7,7 +7,7 @@ public class AppGroupMergeCell : AppCommandGroup
 {
 	public override string Text => "单元格操作";
 
-	public override Image Image => Resources.MergeCells;
+	public override Image Image => IconRes.MergeCells;
 
 	public AppGroupMergeCell()
 	{

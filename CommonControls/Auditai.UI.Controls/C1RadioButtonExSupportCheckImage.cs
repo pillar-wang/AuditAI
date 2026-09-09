@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -158,12 +158,8 @@ public class C1RadioButtonExSupportCheckImage : RadioButton
 			int left = base.Margin.Left;
 			if (Text != null && Text != "")
 			{
-				using SolidBrush brush = new SolidBrush(GetTextColor());
 				Rectangle rectangle = new Rectangle(left, 0, TextImageDistance, base.Size.Height);
-				StringFormat stringFormat = new StringFormat();
-				stringFormat.Alignment = StringAlignment.Near;
-				stringFormat.LineAlignment = StringAlignment.Center;
-				pevent.Graphics.DrawString(Text, Font, brush, rectangle, stringFormat);
+				TextRenderer.DrawText(pevent.Graphics, Text, Font, rectangle, GetTextColor(), TextFormatFlags.VerticalCenter);
 			}
 			left += TextImageDistance;
 			int num = 0;
@@ -210,12 +206,8 @@ public class C1RadioButtonExSupportCheckImage : RadioButton
 		{
 			return;
 		}
-		using SolidBrush brush2 = new SolidBrush(GetTextColor());
 		Rectangle rectangle2 = new Rectangle(left2, 0, base.Size.Width - TextImageDistance, base.Size.Height);
-		StringFormat stringFormat2 = new StringFormat();
-		stringFormat2.Alignment = StringAlignment.Near;
-		stringFormat2.LineAlignment = StringAlignment.Center;
-		pevent.Graphics.DrawString(Text, Font, brush2, rectangle2, stringFormat2);
+		TextRenderer.DrawText(pevent.Graphics, Text, Font, rectangle2, GetTextColor(), TextFormatFlags.VerticalCenter);
 	}
 
 	private void PaintBorder(PaintEventArgs pevent)

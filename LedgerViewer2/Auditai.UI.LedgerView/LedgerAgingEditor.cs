@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -101,8 +101,6 @@ public class LedgerAgingEditor : ISetTheme
 
 	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private Ledger Ledger => _owner.Ledger;
 
 	public bool PendingAllEvent { get; set; }
@@ -135,7 +133,7 @@ public class LedgerAgingEditor : ISetTheme
 		lblAnalyzeAccount = new C1Label();
 		grid = new C1FlexGridEx();
 		grid.Name = "grid";
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAgeTitle.TextDetached = true;
 		lblAgeTitle.BorderStyle = BorderStyle.None;
 		lblAgeTitle.Dock = DockStyle.Fill;
@@ -150,7 +148,7 @@ public class LedgerAgingEditor : ISetTheme
 		pnlAnalyzeTitle.Resizable = false;
 		pnlAnalyzeTitle.Size = new Size(927, 39);
 		pnlAnalyzeTitle.SizeRatio = 4.769;
-		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAnalyzeAccount.TextDetached = true;
 		lblAnalyzeAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblAnalyzeAccount.BorderStyle = BorderStyle.None;
@@ -214,7 +212,7 @@ public class LedgerAgingEditor : ISetTheme
 		C1CommandLink c1CommandLink3 = new C1CommandLink();
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "分析选项";
-		c1Command3.Image = Resources.sidebarAnalyzyProject;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += CmdDirection_Click;
 		c1CommandLink3.Command = c1Command3;
 		c1ToolBar.CommandLinks.Add(c1CommandLink3);
@@ -224,23 +222,19 @@ public class LedgerAgingEditor : ISetTheme
 		};
 		C1Command c1Command4 = new C1Command();
 		c1Command4.Text = "隐藏侧边栏";
-		c1Command4.Image = Resources.sideHideSidebar;
+		c1Command4.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command4.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
 		};
 		c1CommandLink4.Command = c1Command4;
 		C1SplitContainer c1SplitContainer = ComponentFactory.BuildSidebar(grid, c1ToolBar, out pnlSidebar);
-		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		pnlAnalyzeGrid.Height = 573;
 		pnlAnalyzeGrid.KeepRelativeSize = true;
 		pnlAnalyzeGrid.Controls.Add(grid);
 		grid.Dock = DockStyle.Fill;
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -307,7 +301,7 @@ public class LedgerAgingEditor : ISetTheme
 
 	private void CmdDirection_Click(object sender, ClickEventArgs e)
 	{
-		ctxDirection.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxDirection, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdSidebarDirection_Click(object sender, ClickEventArgs e)
@@ -495,15 +489,6 @@ public class LedgerAgingEditor : ISetTheme
 	public void SetTheme()
 	{
 		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	private void CtxMenu_Popup(object sender, EventArgs e)
@@ -652,13 +637,13 @@ public class LedgerAgingEditor : ISetTheme
 			switch (grid.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(grid, e.Location);
+				NativeMenuShim.Show(ctxFixed, grid, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(grid, e.Location);
+				NativeMenuShim.Show(ctxEmpty, grid, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(grid, e.Location);
+				NativeMenuShim.Show(ctxCell, grid, e.Location);
 				break;
 			}
 		}

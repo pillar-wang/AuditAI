@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -70,8 +70,6 @@ public class VoucherListEditor : ISetTheme
 	public C1Label lblVoucherListTitle;
 
 	public C1FlexGridEx _grid;
-
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
 
 	private C1ToolBar toolBar = new C1ToolBar();
 
@@ -516,7 +514,7 @@ public class VoucherListEditor : ISetTheme
 		lblVoucherListTitle = new C1Label();
 		_grid = new C1FlexGridEx();
 		_grid.Name = "_grid";
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblVoucherListTitle.TextDetached = true;
 		lblVoucherListTitle.BorderStyle = BorderStyle.None;
 		lblVoucherListTitle.Dock = DockStyle.Fill;
@@ -542,13 +540,13 @@ public class VoucherListEditor : ISetTheme
 		_grid.Size = new Size(927, 599);
 		_grid.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		cmdSidebarDirectionChange.Text = "方向调整";
-		cmdSidebarDirectionChange.Image = Resources.sideDirectionChange;
+		cmdSidebarDirectionChange.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-down-up", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		cmdSidebarDirectionChange.UserData = _grid;
 		cmdSidebarDirectionChange.Click += CmdSidebarDirectionChange_Click;
 		lnkSidebarDirectionChange.Command = cmdSidebarDirectionChange;
 		toolBar.CommandLinks.Add(lnkSidebarDirectionChange);
 		cmdSidebarMarkVoucher.Text = "标记关注";
-		cmdSidebarMarkVoucher.Image = Resources.sideMarkVoucher;
+		cmdSidebarMarkVoucher.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("star", 28, Color.FromArgb(217, 119, 6));
 		cmdSidebarMarkVoucher.UserData = _grid;
 		cmdSidebarMarkVoucher.Click += CmdSidebarFlagMarkVoucher_Click;
 		lnkSidebarMarkVoucher.Command = cmdSidebarMarkVoucher;
@@ -556,14 +554,14 @@ public class VoucherListEditor : ISetTheme
 		C1CommandLink c1CommandLink = new C1CommandLink();
 		C1Command c1Command = new C1Command();
 		c1Command.Text = "修改凭证";
-		c1Command.Image = Resources.sideModifyVoucher;
+		c1Command.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("note-pencil", 28, Color.FromArgb(59, 130, 246));
 		c1Command.Click += CmdModifyVoucher_Click;
 		c1CommandLink.Command = c1Command;
 		toolBar.CommandLinks.Add(c1CommandLink);
 		C1CommandLink c1CommandLink2 = new C1CommandLink();
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = "填充至底稿";
-		c1Command2.Image = Resources.sideFillToTable;
+		c1Command2.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("export", 28, Color.FromArgb(217, 119, 6));
 		c1Command2.Click += delegate
 		{
 			FillToTable();
@@ -578,20 +576,16 @@ public class VoucherListEditor : ISetTheme
 		c1CommandLink3.Delimiter = true;
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "隐藏侧边栏";
-		c1Command3.Image = Resources.sideHideSidebar;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += CmdHideSidebar_Click;
 		c1CommandLink3.Command = c1Command3;
-		foreach (C1CommandLink commandLink in toolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(_grid, toolBar, out pnlSidebar);
 		pnlVoucherListGrid.Height = 599;
 		pnlVoucherListGrid.KeepRelativeSize = true;
 		pnlVoucherListGrid.SizeRatio = 100.0;
 		pnlVoucherListGrid.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -1054,15 +1048,6 @@ public class VoucherListEditor : ISetTheme
 		Tree.Styles.Normal.Border.Width = 0;
 		Tree.Styles.EmptyArea.BackColor = Color.Transparent;
 		Tree.Styles.EmptyArea.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 		_brushHoverBackground.Color = Color.FromArgb(100, Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetBackgroundSolidColor("C1FlexGrid\\Styles\\Highlight\\Background"));
 	}
 
@@ -1098,7 +1083,7 @@ public class VoucherListEditor : ISetTheme
 		}
 		else if (e.Button == MouseButtons.Right)
 		{
-			mnuTree.ShowContextMenu(Tree, e.Location);
+			NativeMenuShim.Show(mnuTree, Tree, e.Location);
 		}
 	}
 
@@ -1327,13 +1312,13 @@ public class VoucherListEditor : ISetTheme
 			switch (_grid.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxFixed, _grid, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxEmpty, _grid, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxCell, _grid, e.Location);
 				break;
 			}
 		}

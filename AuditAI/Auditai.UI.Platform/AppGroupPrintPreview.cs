@@ -7,7 +7,7 @@ public class AppGroupPrintPreview : AppCommandGroup
 {
 	public override string Text => "打印";
 
-	public override Image Image => Resources.PrintPreview;
+	public override Image Image => IconRes.PrintPreview;
 
 	public AppGroupPrintPreview()
 	{

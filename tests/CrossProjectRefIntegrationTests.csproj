@@ -30,12 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
     <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

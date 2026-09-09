@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +12,7 @@ public class AppCommandRefreshCrossProjectRefs : AppCommandButton
 {
 	public override string Text => "刷新引用";
 
-	public override System.Drawing.Image LargeIcon => Resources.RefreshProject;
+	public override System.Drawing.Image LargeIcon => IconRes.RefreshProject;
 
 	protected override string Tooltip => "刷新当前表的所有跨项目数据引用";
 

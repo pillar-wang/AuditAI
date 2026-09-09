@@ -16,12 +16,7 @@
       <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
-    <Reference Include="ProjectModel">
-      <HintPath>..\Libs\ProjectModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />

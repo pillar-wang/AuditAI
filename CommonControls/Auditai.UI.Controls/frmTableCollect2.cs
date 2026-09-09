@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -585,7 +585,7 @@ public class frmTableCollect2 : C1RibbonForm
 
 	private void FrmTableCollect_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.TableCollect16);
+		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.TableCollect16);
 	}
 
 	private void AdjustButtonToCenter()
@@ -1074,7 +1074,7 @@ public class frmTableCollect2 : C1RibbonForm
 			{
 				if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && DictionarySync.TableCollector.Version == 0)
 				{
-					System.Windows.Forms.MessageBox.Show("因网络问题，字典更新失败！");
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "因网络问题，字典更新失败！", MessageBoxButtons.OK, "错误");
 				}
 			}
 			catch (TimeoutException)
@@ -1653,7 +1653,7 @@ public class frmTableCollect2 : C1RibbonForm
 				c1CommandLink.Command.Checked = text == _currentSelectedColumnMappingData.MappingItemName;
 				c1CommandLink.Command.Text = ConvertMappingItemNameToDisplayName(text, 0, 0);
 			}
-			_ctxMappingMenu.ShowContextMenu(_dataGrid, hitInfo.Point);
+			NativeMenuShim.Show(_ctxMappingMenu, _dataGrid, hitInfo.Point);
 			e.Cancel = true;
 		}
 		else
@@ -1720,7 +1720,7 @@ public class frmTableCollect2 : C1RibbonForm
 			TableHeaderCellSetting tableHeaderSetting = GetTableHeaderSetting(_tableHeaderRowsCount - 1, hitTestInfo.Column);
 			if (tableHeaderSetting.ColumnMappingData != null && tableHeaderSetting.ColumnMappingData.IsMappingItemSet && (tableHeaderSetting.ColumnMappingData.MappingItemName == "借方金额" || tableHeaderSetting.ColumnMappingData.MappingItemName == "贷方金额" || tableHeaderSetting.ColumnMappingData.MappingItemName == "余额"))
 			{
-				_ctxColSort.ShowContextMenu(_dataGrid, e.Location);
+				NativeMenuShim.Show(_ctxColSort, _dataGrid, e.Location);
 			}
 		}
 	}
@@ -2321,9 +2321,9 @@ public class frmTableCollect2 : C1RibbonForm
 				DrawIconBackground(dwonIcon);
 			}
 		}
-		e.Graphics.DrawImage(Resources.btnMenu16, menuIcon);
-		e.Graphics.DrawImage(Resources.btnUp16, upIcon);
-		e.Graphics.DrawImage(Resources.btnDown16, dwonIcon);
+		e.Graphics.DrawImage(IconRes.btnMenu16, menuIcon);
+		e.Graphics.DrawImage(IconRes.btnUp16, upIcon);
+		e.Graphics.DrawImage(IconRes.btnDown16, dwonIcon);
 		e.DrawCell(DrawCellFlags.Border);
 		e.Handled = true;
 		void DrawIconBackground(Rectangle rt)
@@ -2339,13 +2339,13 @@ public class frmTableCollect2 : C1RibbonForm
 		if (_dataGrid.FilterManager.IsFiltering)
 		{
 			Rectangle cellRect = _dataGrid.GetCellRect(0, 0);
-			int num = Resources.Filter12.Width;
-			int num2 = Resources.Filter12.Height;
+			int num = IconLibrary.LogicalWidth(IconRes.Filter12);
+			int num2 = IconLibrary.LogicalHeight(IconRes.Filter12);
 			int num3 = (cellRect.Width - num) / 2;
 			int num4 = (cellRect.Height - num2) / 2;
 			Rectangle rect = new Rectangle(cellRect.X + num3, cellRect.Y + num4, num, num2);
 			e.DrawCell(DrawCellFlags.Background);
-			e.Graphics.DrawImage(Resources.Filter12, rect);
+			e.Graphics.DrawImage(IconRes.Filter12, rect);
 			e.DrawCell(DrawCellFlags.Border);
 			e.Handled = true;
 		}
@@ -2733,7 +2733,7 @@ public class frmTableCollect2 : C1RibbonForm
 		C1Command c1Command = new C1Command
 		{
 			Text = "复制",
-			Image = Resources.ctxCopy
+			Image = IconRes.ctxCopy
 		};
 		c1Command.Click += Cmd_Click;
 		_ctxCellRightClick.CommandLinks.Add(new C1CommandLink(c1Command)
@@ -2743,7 +2743,7 @@ public class frmTableCollect2 : C1RibbonForm
 		C1Command c1Command2 = new C1Command
 		{
 			Text = "降序排列",
-			Image = Resources.ctxDescending
+			Image = IconRes.ctxDescending
 		};
 		c1Command2.Click += Cmd_SortDesc_Click;
 		_ctxColSort.CommandLinks.Add(new C1CommandLink(c1Command2)
@@ -2753,7 +2753,7 @@ public class frmTableCollect2 : C1RibbonForm
 		C1Command c1Command3 = new C1Command
 		{
 			Text = "升序排列",
-			Image = Resources.ctxAscending
+			Image = IconRes.ctxAscending
 		};
 		c1Command3.Click += Cmd_SortAsc_Click;
 		_ctxColSort.CommandLinks.Add(new C1CommandLink(c1Command3));
@@ -4748,7 +4748,7 @@ public class frmTableCollect2 : C1RibbonForm
 				Delimiter = (i == num)
 			});
 		}
-		_ctxIconMenu.ShowContextMenu(_dataGrid, point);
+		NativeMenuShim.Show(_ctxIconMenu, _dataGrid, point);
 	}
 
 	private void ShowContextMenu_OnIconMenuClicked_Balance(int rowIndex, Point point)
@@ -4763,17 +4763,17 @@ public class frmTableCollect2 : C1RibbonForm
 
 	private void ShowContextMenu_OnCellRightClicked_Balance(int rowIndex, int colIndex, Point point)
 	{
-		_ctxCellRightClick.ShowContextMenu(_dataGrid, point);
+		NativeMenuShim.Show(_ctxCellRightClick, _dataGrid, point);
 	}
 
 	private void ShowContextMenu_OnCellRightClicked_Subsidiary(int rowIndex, int colIndex, Point point)
 	{
-		_ctxCellRightClick.ShowContextMenu(_dataGrid, point);
+		NativeMenuShim.Show(_ctxCellRightClick, _dataGrid, point);
 	}
 
 	private void ShowContextMenu_OnCellRightClicked_Summary(int rowIndex, int colIndex, Point point)
 	{
-		_ctxCellRightClick.ShowContextMenu(_dataGrid, point);
+		NativeMenuShim.Show(_ctxCellRightClick, _dataGrid, point);
 	}
 
 	private int GetChildAccountMaxLevel(Account parent, int parentLevel)

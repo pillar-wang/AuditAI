@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模板管理 - AuditAI 管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <script src="/js/common.js"></script>
+    <script>
+        if (!requireAdmin()) {
+            document.documentElement.innerHTML = '';
+            throw new Error('unauthorized');
+        }
+    </script>
+    <style>
+        body {
+            background: var(--bg);
+            min-width: 0;
+        }
+        .page-container { padding: 20px; }
+        .toolbar {
+            display: flex; gap: 8px; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .toolbar .search-input { width: 280px; }
+        .toolbar .toolbar-info {
+            margin-left: auto; color: var(--text-gray); font-size: 13px;
+        }
+        .tag {
+            display: inline-block; padding: 2px 8px;
+            border-radius: 10px; font-size: 12px; font-weight: 500;
+        }
+        .tag-system { background: var(--tag-system-bg); color: var(--tag-system-text); }
+        .tag-team { background: var(--tag-team-bg); color: var(--tag-team-text); }
+        .tag-editor { background: var(--tag-editor-bg); color: var(--tag-editor-text); }
+        .tag-user { background: var(--tag-user-bg); color: var(--tag-user-text); }
+        .op-btns { display: flex; gap: 6px; white-space: nowrap; }
+        .btn-publish {
+            background: var(--primary); color: #fff; border: none;
+            padding: 4px 10px; border-radius: var(--radius-btn); font-size: 12px;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-publish:hover { background: var(--primary-hover); }
+        .btn-publish:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-promote {
+            background: var(--warning-subtle, #fffbeb); color: var(--warning); border: 1px solid var(--warning);
+            padding: 4px 10px; border-radius: var(--radius-btn); font-size: 12px;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-promote:hover { background: #fde68a; }
+        .btn-promote:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-view {
+            background: #fff; color: var(--primary);
+            border: 1px solid var(--border); padding: 4px 10px;
+            border-radius: var(--radius-btn); font-size: 12px;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-view:hover { background: var(--row-hover); }
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,.4); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: #fff; border-radius: var(--radius-card);
+            width: 520px; max-height: 80vh; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .modal-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            font-size: 16px; font-weight: 600;
+        }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .member-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid var(--border-light);
+        }
+        .member-row:last-child { border-bottom: none; }
+        .member-name { font-weight: 500; }
+        .member-role { font-size: 12px; }
+        .publish-result {
+            margin-top: 12px; padding: 10px;
+            background: var(--row-hover); border-radius: var(--radius-input);
+        }
+        .publish-result .team-item {
+            display: flex; justify-content: space-between;
+            padding: 4px 0; font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-title">模板管理</div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <input type="text" id="keywordInput" class="input search-input" placeholder="搜索模板名称、编号、分类...">
+                <button id="searchBtn" class="btn btn-primary"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>搜索</button>
+                <button id="resetBtn" class="btn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>重置</button>
+                <span class="toolbar-info" id="totalCountInfo"></span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="table" id="templatesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">#</th>
+                            <th>模板名称</th>
+                            <th style="width: 100px;">编号</th>
+                            <th style="width: 100px;">分类</th>
+                            <th style="width: 80px;">类型</th>
+                            <th style="width: 100px;">创建者</th>
+                            <th style="width: 80px;">可编辑</th>
+                            <th style="width: 80px;">可使用</th>
+                            <th style="width: 140px;">创建时间</th>
+                            <th style="width: 160px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="templatesTbody">
+                        <tr><td colspan="10" class="text-center text-gray" style="padding:32px;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成员详情弹窗 -->
+    <div class="modal-overlay" id="membersModal">
+        <div class="modal-card">
+            <div class="modal-header" id="membersModalTitle">模板成员</div>
+            <div class="modal-body" id="membersModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn" id="membersCloseBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布确认弹窗 -->
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal-card">
+            <div class="modal-header">发布系统模板</div>
+            <div class="modal-body">
+                <p style="margin-bottom:12px;">确定要将模板 <strong id="publishTemplateName"></strong> 推送到所有团队吗？</p>
+                <p style="font-size:13px;color:var(--text-gray);">该操作将把模板复制到系统中所有团队，作为团队可用的模板。此操作不可撤销。</p>
+                <div id="publishResult" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="publishCancelBtn">取消</button>
+                <button class="btn btn-primary" id="publishConfirmBtn">确认发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提升确认弹窗 -->
+    <div class="modal-overlay" id="promoteModal">
+        <div class="modal-card">
+            <div class="modal-header">提升为系统模板</div>
+            <div class="modal-body">
+                <p style="margin-bottom:12px;">确定要将模板 <strong id="promoteTemplateName"></strong> 提升为系统模板吗？</p>
+                <p style="font-size:13px;color:var(--text-gray);">提升后该模板将成为系统级模板（脱离当前团队），所有团队均可见。之后可在"发布"按钮将其推送到所有团队。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="promoteCancelBtn">取消</button>
+                <button class="btn btn-primary" id="promoteConfirmBtn">确认提升</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/templates.js"></script>
+</body>
+</html>

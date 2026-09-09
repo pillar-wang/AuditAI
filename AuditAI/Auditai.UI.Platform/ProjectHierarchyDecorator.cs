@@ -217,7 +217,7 @@ public class ProjectHierarchyDecorator
 					_lastModifyObj = obj;
 					if (_lastModifyObj is C1OutPage)
 					{
-						_lastModifyOrignImage = Resources.chatgroup;
+						_lastModifyOrignImage = IconRes.chatgroup;
 					}
 					else if (_lastModifyObj is C1.Win.C1FlexGrid.Row row)
 					{

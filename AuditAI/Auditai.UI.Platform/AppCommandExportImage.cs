@@ -7,7 +7,7 @@ public class AppCommandExportImage : AppCommandButton
 {
 	public override string Text => "图片文件";
 
-	public override Image LargeIcon => Resources.ExportImage;
+	public override Image LargeIcon => IconRes.ExportImage;
 
 	protected override void Clicked()
 	{

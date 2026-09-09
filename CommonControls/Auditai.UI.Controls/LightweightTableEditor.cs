@@ -14,7 +14,7 @@ namespace Auditai.UI.Controls
         private readonly C1FlexGridEx _grid;
         private readonly Label _lblError;
         private bool _hasRowHeader = true;
-        private readonly Font _rowHeaderFont = new Font("Microsoft YaHei", 9f);
+        private readonly Font _rowHeaderFont = new Font("微软雅黑", 9f);
 
         /// <summary>
         /// 选择区域改变事件
@@ -148,7 +148,7 @@ namespace Auditai.UI.Controls
 
             // Normal 样式（数据单元格）
             _grid.Styles.Normal.BackColor = Color.White;
-            _grid.Styles.Normal.Font = new Font("Microsoft YaHei", 9.5f);
+            _grid.Styles.Normal.Font = new Font("微软雅黑", 9.5f);
             _grid.Styles.Normal.Border.Style = BorderStyleEnum.Flat;
             _grid.Styles.Normal.Border.Width = 1;
             _grid.Styles.Normal.Border.Color = borderColor;
@@ -158,7 +158,7 @@ namespace Auditai.UI.Controls
 
             // Alternate 样式（隔行变色）
             _grid.Styles.Alternate.BackColor = Color.FromArgb(248, 249, 251);
-            _grid.Styles.Alternate.Font = new Font("Microsoft YaHei", 9.5f);
+            _grid.Styles.Alternate.Font = new Font("微软雅黑", 9.5f);
             _grid.Styles.Alternate.Border.Style = BorderStyleEnum.Flat;
             _grid.Styles.Alternate.Border.Width = 1;
             _grid.Styles.Alternate.Border.Color = borderColor;
@@ -166,7 +166,7 @@ namespace Auditai.UI.Controls
 
             // Fixed 样式（列头/行号）
             _grid.Styles.Fixed.BackColor = Color.FromArgb(243, 245, 248);
-            _grid.Styles.Fixed.Font = new Font("Microsoft YaHei", 9.5f, FontStyle.Bold);
+            _grid.Styles.Fixed.Font = new Font("微软雅黑", 9.5f, FontStyle.Bold);
             _grid.Styles.Fixed.ForeColor = Color.FromArgb(50, 55, 65);
             _grid.Styles.Fixed.Border.Style = BorderStyleEnum.Flat;
             _grid.Styles.Fixed.Border.Width = 1;
@@ -178,13 +178,13 @@ namespace Auditai.UI.Controls
             _grid.Styles.EmptyArea.BackColor = Color.White;
             _grid.Styles.EmptyArea.Border.Style = BorderStyleEnum.None;
 
-            // 选区高亮（Google Blue 品牌蓝）
-            _grid.Styles.Highlight.BackColor = Color.FromArgb(26, 115, 232);
+            // 选区高亮（清新品牌蓝）
+            _grid.Styles.Highlight.BackColor = Color.FromArgb(59, 130, 246);
             _grid.Styles.Highlight.ForeColor = Color.White;
 
             // 焦点单元格（淡蓝）
-            _grid.Styles.Focus.BackColor = Color.FromArgb(232, 240, 254);
-            _grid.Styles.Focus.ForeColor = Color.FromArgb(15, 23, 42);
+            _grid.Styles.Focus.BackColor = Color.FromArgb(239, 246, 255);
+            _grid.Styles.Focus.ForeColor = Color.FromArgb(30, 41, 59);
 
             // 行列头
             _grid.Rows.DefaultSize = 28;
@@ -257,7 +257,7 @@ namespace Auditai.UI.Controls
                 ForeColor = Color.Red,
                 Padding = new Padding(10),
                 Visible = false,
-                Font = new Font("Microsoft YaHei", 10f)
+                Font = new Font("微软雅黑", 10f)
             };
             Controls.Add(_lblError);
         }

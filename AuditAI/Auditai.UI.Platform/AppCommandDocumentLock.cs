@@ -7,7 +7,7 @@ public class AppCommandDocumentLock : AppCommandToggleButton
 {
 	public override string Text => "文档锁定";
 
-	public override Image LargeIcon => Resources.ToggleDocLock;
+	public override Image LargeIcon => IconRes.ToggleDocLock;
 
 	protected override void Pressed()
 	{

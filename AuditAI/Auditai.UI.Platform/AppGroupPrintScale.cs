@@ -7,7 +7,7 @@ public class AppGroupPrintScale : AppCommandGroup
 {
 	public override string Text => "打印缩放";
 
-	public override Image Image => Resources.PrintZoom;
+	public override Image Image => IconRes.PrintZoom;
 
 	public AppGroupPrintScale()
 	{

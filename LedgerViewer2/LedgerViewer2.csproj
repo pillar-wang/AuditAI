@@ -19,9 +19,6 @@
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CommonControls">
-      <HintPath>..\Libs\CommonControls.dll</HintPath>
-    </Reference>
     <Reference Include="C1.Win.C1Command.4">
       <HintPath>..\Libs\C1.Win.C1Command.4.dll</HintPath>
     </Reference>
@@ -32,6 +29,7 @@
       <HintPath>..\Libs\C1.Win.C1Input.4.dll</HintPath>
     </Reference>
     <ProjectReference Include="..\LedgerModel\LedgerModel.csproj" />
+    <ProjectReference Include="..\CommonControls\CommonControls.csproj" />
     <Reference Include="C1.Win.C1FlexGrid.4">
       <HintPath>..\Libs\C1.Win.C1FlexGrid.4.dll</HintPath>
     </Reference>
@@ -39,26 +37,16 @@
     <Reference Include="C1.Win.C1TileControl.4">
       <HintPath>..\Libs\C1.Win.C1TileControl.4.dll</HintPath>
     </Reference>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
-    <Reference Include="FileTransferModel">
-      <HintPath>..\Libs\FileTransferModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
+    <ProjectReference Include="..\FileTransferModel\FileTransferModel.csproj" />
     <Reference Include="System.Xml.Linq" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
     <Reference Include="C1.Win.C1Ribbon.4">
       <HintPath>..\Libs\C1.Win.C1Ribbon.4.dll</HintPath>
     </Reference>
-    <Reference Include="ProjectModel">
-      <HintPath>..\Libs\ProjectModel.dll</HintPath>
-    </Reference>
-    <Reference Include="LedgerImport">
-      <HintPath>..\Libs\LedgerImport.dll</HintPath>
-    </Reference>
-    <Reference Include="CrawlerModel" Aliases="CrawlerModelAlias">
-      <HintPath>..\Libs\CrawlerModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
+    <ProjectReference Include="..\LedgerImport\LedgerImport.csproj" />
+    <ProjectReference Include="..\CrawlerModel\CrawlerModel.csproj" Aliases="CrawlerModelAlias" />
     <Reference Include="System.Data" />
     <Reference Include="C1.Win.C1Report.4">
       <HintPath>..\Libs\C1.Win.C1Report.4.dll</HintPath>
@@ -75,15 +63,11 @@
     <Reference Include="C1.C1Report.4">
       <HintPath>..\Libs\C1.C1Report.4.dll</HintPath>
     </Reference>
-    <Reference Include="XinJiYuan">
-      <HintPath>..\Libs\XinJiYuan.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\XinJiYuan\XinJiYuan.csproj" />
     <Reference Include="C1.Win.4">
       <HintPath>..\Libs\C1.Win.4.dll</HintPath>
     </Reference>
-    <Reference Include="SignalRClient">
-      <HintPath>..\Libs\SignalRClient.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\SignalRClient\SignalRClient.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- 嵌入预编译的许可证文件，包含 frmImport 所需的 C1 控件许可证密钥 -->

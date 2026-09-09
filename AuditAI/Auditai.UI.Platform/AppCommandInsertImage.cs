@@ -7,7 +7,7 @@ public class AppCommandInsertImage : AppCommandButton
 {
 	public override string Text => "插入图片";
 
-	public override Image LargeIcon => ContextResources.ctxInsertImage;
+	public override Image LargeIcon => IconRes.ctxInsertImage;
 
 	protected override void Clicked()
 	{

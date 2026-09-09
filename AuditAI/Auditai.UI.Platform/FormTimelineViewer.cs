@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -111,7 +111,7 @@ public class FormTimelineViewer
 		_cmdPrevious = new C1Command
 		{
 			Text = "上一个版本",
-			Image = Resources.PreviousError
+			Image = IconRes.PreviousError
 		};
 		_cmdPrevious.Click += _cmdPrevious_Click;
 		_lnkPrevious = new C1CommandLink(_cmdPrevious);
@@ -119,7 +119,7 @@ public class FormTimelineViewer
 		_cmdNext = new C1Command
 		{
 			Text = "下一个版本",
-			Image = Resources.NextError
+			Image = IconRes.NextError
 		};
 		_cmdNext.Click += _cmdNext_Click;
 		_lnkNext = new C1CommandLink(_cmdNext);
@@ -127,7 +127,7 @@ public class FormTimelineViewer
 		_cmdRevert = new C1Command
 		{
 			Text = "恢复当前历史版本",
-			Image = Resources.RevertTable
+			Image = IconRes.RevertTable
 		};
 		_cmdRevert.Click += _cmdRevert_Click;
 		_lnkRevert = new C1CommandLink(_cmdRevert);
@@ -336,7 +336,7 @@ public class FormTimelineViewer
 			{
 				Template = _template,
 				Text1 = $"第{i + 1}版",
-				Image1 = Resources.RevertTableDark,
+				Image1 = IconRes.RevertTableDark,
 				Image2 = member?.Image?.ToSize(16, 16),
 				Text2 = (member?.Name ?? "[未知用户]") + "编辑",
 				Text3 = $"{pushEntityMeta.Time:G}  {Auditai.Model.Util.GetReadableFileSize(pushEntityMeta.Length)}",
@@ -399,7 +399,7 @@ public class FormTimelineViewer
 			{
 				Template = _template,
 				Text1 = $"第{i + 1}版",
-				Image1 = Resources.RevertTableDark,
+				Image1 = IconRes.RevertTableDark,
 				Image2 = member?.Image?.ToSize(16, 16),
 				Text2 = (member?.Name ?? "[未知用户]") + "编辑",
 				Text3 = $"{pushEntityMeta.Time:G}  {Auditai.Model.Util.GetReadableFileSize(pushEntityMeta.Length)}",
@@ -595,10 +595,10 @@ public class FormTimelineViewer
 	private async void _form_Shown(object sender, EventArgs e)
 	{
 		Theme.SetCurrentTree(_form);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Snapshots);
-		_cmdPrevious.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(Resources.PreviousError);
-		_cmdNext.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(Resources.NextError);
-		_cmdRevert.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(Resources.RevertTable);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Snapshots);
+		_cmdPrevious.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.PreviousError);
+		_cmdNext.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.NextError);
+		_cmdRevert.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.RevertTable);
 		_tile.TileBorderColor = Color.Transparent;
 		if (TemporaryTable != null)
 		{
@@ -687,7 +687,7 @@ public class FormTimelineViewer
 		else if (displayFormat.FormatType == DataFormatType.BoolOnOff)
 		{
 			e.Text = string.Empty;
-			e.Image = (cell.Value.Equals(true) ? Resources.On : Resources.Off);
+			e.Image = (cell.Value.Equals(true) ? IconRes.On : IconRes.Off);
 			styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cell.DisplayAlign);
 		}
 		else

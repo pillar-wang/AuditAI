@@ -8,7 +8,7 @@ public class AppCommandValidateCurrentTable : AppCommandButton
 {
 	public override string Text => "当前表校验";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ValidateTable;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ValidateTable;
 
 	protected override string Tooltip => TipResource.当前表校验;
 

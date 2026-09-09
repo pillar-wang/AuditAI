@@ -610,7 +610,7 @@ public class AccountTreeEditor : ISetTheme
 		}
 		else if (e.Button == MouseButtons.Right)
 		{
-			mnuTree.ShowContextMenu(Tree, e.Location);
+			NativeMenuShim.Show(mnuTree, Tree, e.Location);
 		}
 	}
 

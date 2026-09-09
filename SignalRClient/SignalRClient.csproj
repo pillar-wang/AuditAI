@@ -17,9 +17,7 @@
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="FileTransferModel">
-      <HintPath>..\Libs\FileTransferModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\FileTransferModel\FileTransferModel.csproj" />
     <Reference Include="System.Configuration" />
   </ItemGroup>
 </Project>

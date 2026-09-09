@@ -7,7 +7,7 @@ public class AppCommandTicketSave : AppCommandButton
 {
 	public override string Text => "保存表单";
 
-	public override Image LargeIcon => Resources.SaveProject;
+	public override Image LargeIcon => IconRes.SaveProject;
 
 	protected override void Clicked()
 	{

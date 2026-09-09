@@ -107,7 +107,7 @@ public class MergeForm : C1RibbonForm
 
 	private void MergeForm_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.SelectColumn);
+		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.SelectColumn);
 	}
 
 	public void Show(Project project)
@@ -118,7 +118,7 @@ public class MergeForm : C1RibbonForm
 		_projectTree.TreeNodeClicked += _projectTree_TreeNodeClicked;
 		_projectTree.Project = project;
 		_projectTree.Populate();
-		holder.SetC1ContextMenu(_projectTree.View, ctxMenu);
+		NativeMenuShim.Wire(_projectTree.View, ctxMenu);
 		pnlTables.Controls.Clear();
 		pnlTables.Controls.Add(_projectTree.View);
 		List<C1.Win.C1FlexGrid.Row> list = new List<C1.Win.C1FlexGrid.Row>();
@@ -207,7 +207,7 @@ public class MergeForm : C1RibbonForm
 		treeTableNode.Table.LoadAndReturn();
 		foreach (Auditai.Model.Column column in treeTableNode.Table.Columns)
 		{
-			Node node2 = node.AddNode(NodeTypeEnum.LastChild, column.CaptionDisplay, column, Resources.SelectColumn);
+			Node node2 = node.AddNode(NodeTypeEnum.LastChild, column.CaptionDisplay, column, IconRes.SelectColumn);
 		}
 		canTriggerMouse = false;
 	}
@@ -254,7 +254,7 @@ public class MergeForm : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.btnInsert).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -313,7 +313,7 @@ public class MergeForm : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(363, 662);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "MergeForm";
 		base.ShowInTaskbar = false;

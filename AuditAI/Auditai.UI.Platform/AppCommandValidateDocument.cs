@@ -10,7 +10,7 @@ public class AppCommandValidateDocument : AppCommandButton
 {
 	public override string Text => "当前文档校验";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ValidateDocument;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ValidateDocument;
 
 	protected override Func<Task> ClickedTask => delegate
 	{

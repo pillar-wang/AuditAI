@@ -10,7 +10,7 @@ public class AppCommandGenerateConfirmation : AppCommandButton
 {
 	public override string Text => "生成函证";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ConfirmationGenerate;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ConfirmationGenerate;
 
 	protected override Func<Task> ClickedTask => () => Program.MainForm.GenerateConfirmationFromDocument();
 

@@ -20,15 +20,11 @@
     <Reference Include="C1.C1Report.4">
       <HintPath>..\Libs\C1.C1Report.4.dll</HintPath>
     </Reference>
-    <Reference Include="ProjectModel">
-      <HintPath>..\Libs\ProjectModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
     <Reference Include="C1.Win.C1Report.4">
       <HintPath>..\Libs\C1.Win.C1Report.4.dll</HintPath>
     </Reference>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="System.Core" />
     <Reference Include="TXTextControl.Server">
       <HintPath>..\Libs\TXTextControl.Server.dll</HintPath>

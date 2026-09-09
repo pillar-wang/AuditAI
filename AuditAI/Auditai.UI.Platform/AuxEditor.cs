@@ -27,7 +27,7 @@ public class AuxEditor
 	public void ShowList(IWin32Window owner)
 	{
 		View.Text = "下拉列表";
-		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ComboList);
+		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ComboList);
 		View.DockingTab.SelectedTab = View.tabDropList;
 		View.Show(owner);
 	}
@@ -35,7 +35,7 @@ public class AuxEditor
 	public DialogResult ShowComment()
 	{
 		View.Text = "编辑注释";
-		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.AuxEditComment);
+		View.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.AuxEditComment);
 		View.DockingTab.SelectedTab = View.tabEdit;
 		return View.ShowDialog();
 	}

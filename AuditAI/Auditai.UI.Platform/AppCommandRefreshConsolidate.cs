@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Auditai.UI.Controls.Properties;
@@ -13,7 +13,7 @@ public class AppCommandRefreshConsolidate : AppCommandButton
 {
 	public override string Text => "刷新合并报表";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ConsolidateStatements;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ConsolidateStatements;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

@@ -7,7 +7,7 @@ public class AppCommandDoubleUnderline : AppCommandToggleButton
 {
 	public override string Text => "双下划线";
 
-	public override Image LargeIcon => Resources.DoubleUnderline;
+	public override Image LargeIcon => IconRes.DoubleUnderline;
 
 	protected override void Pressed()
 	{

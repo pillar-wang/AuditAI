@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -163,7 +163,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbExceptSelect.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.ckbExceptSelect.BackColor = System.Drawing.SystemColors.Control;
 		this.ckbExceptSelect.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckbExceptSelect.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ckbExceptSelect.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ckbExceptSelect.ForeColor = System.Drawing.SystemColors.ControlText;
 		this.ckbExceptSelect.Location = new System.Drawing.Point(244, 4);
 		this.ckbExceptSelect.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -177,7 +177,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbCheckAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 		this.ckbCheckAll.BackColor = System.Drawing.SystemColors.Control;
 		this.ckbCheckAll.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckbCheckAll.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ckbCheckAll.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ckbCheckAll.ForeColor = System.Drawing.SystemColors.ControlText;
 		this.ckbCheckAll.Location = new System.Drawing.Point(35, 4);
 		this.ckbCheckAll.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -189,7 +189,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.ckbCheckAll.Value = null;
 		this.ckbCheckAll.CheckedChanged += new System.EventHandler(ckbCheckAll_CheckedChanged);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnConfirm.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnConfirm.Location = new System.Drawing.Point(374 - ButtonRightMargin - ButtonWidth - ButtonGap - ButtonWidth, 55);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
@@ -199,7 +199,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.btnConfirm.UseVisualStyleBackColor = true;
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(374 - ButtonRightMargin - ButtonWidth, 55);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -211,7 +211,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.checkListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.checkListBox.CheckOnClick = true;
 		this.checkListBox.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.checkListBox.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.checkListBox.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.checkListBox.FormattingEnabled = true;
 		this.checkListBox.IntegralHeight = false;
 		this.checkListBox.Location = new System.Drawing.Point(0, 0);
@@ -220,7 +220,7 @@ public class SelectBoxForm : C1RibbonForm
 		this.checkListBox.Size = new System.Drawing.Size(374, 276);
 		this.checkListBox.TabIndex = 0;
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -258,7 +258,7 @@ public class SelectBoxForm : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(374, 381);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

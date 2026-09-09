@@ -169,7 +169,7 @@ public class ValidateEditor : ISetTheme
 		pnlValidateGrid.KeepRelativeSize = true;
 		pnlValidateGrid.Controls.Add(grdValidate);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -382,7 +382,7 @@ public class ValidateEditor : ISetTheme
 			HitTestTypeEnum type = Tree.HitTest(e.Location).Type;
 			if (type == HitTestTypeEnum.Cell)
 			{
-				ctxTreeCell.ShowContextMenu(Tree, e.Location);
+				NativeMenuShim.Show(ctxTreeCell, Tree, e.Location);
 			}
 		}
 	}
@@ -394,13 +394,13 @@ public class ValidateEditor : ISetTheme
 			switch (grdValidate.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxViewFixed.ShowContextMenu(grdValidate, e.Location);
+				NativeMenuShim.Show(ctxViewFixed, grdValidate, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxViewEmpty.ShowContextMenu(grdValidate, e.Location);
+				NativeMenuShim.Show(ctxViewEmpty, grdValidate, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxViewCell.ShowContextMenu(grdValidate, e.Location);
+				NativeMenuShim.Show(ctxViewCell, grdValidate, e.Location);
 				break;
 			}
 		}

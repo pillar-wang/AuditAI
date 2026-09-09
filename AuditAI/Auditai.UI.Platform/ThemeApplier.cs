@@ -7,7 +7,7 @@ using C1.Win.C1Ribbon;
 namespace Auditai.UI.Platform;
 
 /// <summary>
-/// 主题应用工具 — Google Blue 风格精修层
+/// 主题应用工具 — 轻盈清新风格精修层
 /// 
 /// 说明：
 /// - C1 控件（FlexGrid、Ribbon、SplitContainer 等）的整体样式由 C1ThemeController 负责
@@ -25,7 +25,7 @@ public static class ThemeApplier
 	{
 		form.BackColor = AuditTheme.Surface;
 		form.ForeColor = AuditTheme.Text;
-		form.Font = AuditTheme.FontDefault;
+		form.Font = AuditTheme.FontBody;
 	}
 
 	#endregion
@@ -33,7 +33,7 @@ public static class ThemeApplier
 	#region C1FlexGrid 表格（微调，在 C1Theme 基础上叠加）
 
 	/// <summary>
-	/// 在 C1 主题基础上，对表格做 Google Blue 风格精修
+	/// 在 C1 主题基础上，对表格做清新风格精修
 	/// 仅修改那些 C1Theme 覆盖不到或效果不理想的样式
 	/// </summary>
 	public static void ApplyFlexGrid(C1FlexGrid grid)
@@ -41,27 +41,35 @@ public static class ThemeApplier
 		grid.BeginUpdate();
 		try
 		{
-			// 字体
-			grid.Font = AuditTheme.FontDefault;
+			// 字体 — 使用正文级字号（10pt），确保清晰可读
+			grid.Font = AuditTheme.FontBody;
 
-			// 行高调整 — 更紧凑的表格行
+			// 行高调整 — 更透气的表格行
 			if (grid.Rows.Count > 0)
 			{
-				grid.Rows[0].Height = 30; // 列头行
+				grid.Rows[0].Height = 36; // 列头行
 			}
+			// 数据行默认高度 32px，足够容纳 10pt 字体 + 上下留白
+			grid.Rows.DefaultSize = 32;
 
-			// 列头样式微调
+			// 列头样式微调 — 字重适中，颜色更清晰
 			var fixedStyle = grid.Styles.Fixed;
 			fixedStyle.Font = AuditTheme.FontSmallBold;
-			fixedStyle.ForeColor = AuditTheme.TextMuted;
+			fixedStyle.ForeColor = AuditTheme.TextSecondary;
 			fixedStyle.TextAlign = TextAlignEnum.LeftCenter;
 
-			// 数字列右对齐（通过样式设置，调用方可指定具体列）
-			grid.Styles.Normal.Font = AuditTheme.FontDefault;
+			// 正常单元格字体 — 统一使用正文无衬线字体
+			grid.Styles.Normal.Font = AuditTheme.FontBody;
+			grid.Styles.Normal.ForeColor = AuditTheme.Text;
 
-			// 选中行高亮色 — Google Blue 淡蓝
+			// 斑马纹：偶数行浅灰底，提升可读性
+			grid.Styles[CellStyleEnum.Alternate].BackColor = AuditTheme.SurfaceMuted;
+			grid.Styles[CellStyleEnum.Alternate].Font = AuditTheme.FontBody;
+
+			// 选中行高亮色 — 清新蓝
 			grid.Styles.Highlight.BackColor = AuditTheme.BrandSubtle;
 			grid.Styles.Highlight.ForeColor = AuditTheme.Text;
+			grid.Styles.Highlight.Font = AuditTheme.FontBody;
 
 			// 焦点单元格
 			grid.Styles.Focus.BackColor = AuditTheme.BrandSubtle;
@@ -116,9 +124,11 @@ public static class ThemeApplier
 		btn.FlatAppearance.BorderSize = 0;
 		btn.BackColor = AuditTheme.Brand;
 		btn.ForeColor = AuditTheme.BrandForeground;
-		btn.Font = AuditTheme.FontDefaultBold;
+		btn.Font = AuditTheme.FontBodyBold;
 		btn.Cursor = Cursors.Hand;
-		btn.Padding = new Padding(16, 6, 16, 6);
+		// 垂直内边距取 6px：固定高度按钮（如 30px 高的发送按钮）内容区 ≥18px，
+		// 可完整容纳 10pt 加粗文字行高（~16px），避免文字上下被裁剪
+		btn.Padding = new Padding(20, 6, 20, 6);
 
 		btn.MouseEnter += (s, e) => btn.BackColor = AuditTheme.BrandHover;
 		btn.MouseLeave += (s, e) => btn.BackColor = AuditTheme.Brand;
@@ -133,12 +143,13 @@ public static class ThemeApplier
 	{
 		btn.FlatStyle = FlatStyle.Flat;
 		btn.FlatAppearance.BorderSize = 1;
-		btn.FlatAppearance.BorderColor = AuditTheme.BorderStrong;
+		btn.FlatAppearance.BorderColor = AuditTheme.Border;
 		btn.BackColor = AuditTheme.Surface;
 		btn.ForeColor = AuditTheme.Text;
-		btn.Font = AuditTheme.FontDefault;
+		btn.Font = AuditTheme.FontBody;
 		btn.Cursor = Cursors.Hand;
-		btn.Padding = new Padding(16, 6, 16, 6);
+		// 垂直内边距取 6px：与主按钮一致，保证固定高度按钮内容区可容纳 10pt 文字行高
+		btn.Padding = new Padding(20, 6, 20, 6);
 
 		btn.MouseEnter += (s, e) =>
 		{
@@ -148,7 +159,7 @@ public static class ThemeApplier
 		btn.MouseLeave += (s, e) =>
 		{
 			btn.BackColor = AuditTheme.Surface;
-			btn.FlatAppearance.BorderColor = AuditTheme.BorderStrong;
+			btn.FlatAppearance.BorderColor = AuditTheme.Border;
 		};
 	}
 
@@ -161,9 +172,10 @@ public static class ThemeApplier
 		btn.FlatAppearance.BorderSize = 0;
 		btn.BackColor = Color.Transparent;
 		btn.ForeColor = AuditTheme.Brand;
-		btn.Font = AuditTheme.FontDefault;
+		btn.Font = AuditTheme.FontBody;
 		btn.Cursor = Cursors.Hand;
 		btn.TextAlign = ContentAlignment.MiddleCenter;
+		btn.Padding = new Padding(8, 4, 8, 4);
 
 		btn.MouseEnter += (s, e) => btn.BackColor = AuditTheme.BrandSubtle;
 		btn.MouseLeave += (s, e) => btn.BackColor = Color.Transparent;
@@ -180,7 +192,7 @@ public static class ThemeApplier
 	{
 		txt.BackColor = AuditTheme.Surface;
 		txt.ForeColor = AuditTheme.Text;
-		txt.Font = AuditTheme.FontDefault;
+		txt.Font = AuditTheme.FontBody;
 		txt.BorderStyle = BorderStyle.FixedSingle;
 	}
 
@@ -195,8 +207,8 @@ public static class ThemeApplier
 	{
 		pnl.BackColor = AuditTheme.Surface;
 		pnl.ForeColor = AuditTheme.Text;
-		pnl.Font = AuditTheme.FontDefault;
-		pnl.Padding = new Padding(12);
+		pnl.Font = AuditTheme.FontBody;
+		pnl.Padding = new Padding(16);
 	}
 
 	/// <summary>
@@ -206,8 +218,8 @@ public static class ThemeApplier
 	{
 		pnl.BackColor = AuditTheme.SurfaceMuted;
 		pnl.ForeColor = AuditTheme.Text;
-		pnl.Font = AuditTheme.FontDefault;
-		pnl.Padding = new Padding(8, 6, 8, 6);
+		pnl.Font = AuditTheme.FontBody;
+		pnl.Padding = new Padding(12, 8, 12, 8);
 	}
 
 	#endregion
@@ -219,7 +231,58 @@ public static class ThemeApplier
 	/// </summary>
 	public static void ApplyStatusBar(C1StatusBar statusBar)
 	{
-		statusBar.Font = AuditTheme.FontSmall;
+		statusBar.Font = AuditTheme.FontCaption;
+	}
+
+	#endregion
+
+	#region ComboBox 下拉框
+
+	/// <summary>
+	/// 应用下拉框样式
+	/// </summary>
+	public static void ApplyComboBox(ComboBox cbo)
+	{
+		cbo.BackColor = AuditTheme.Surface;
+		cbo.ForeColor = AuditTheme.Text;
+		cbo.Font = AuditTheme.FontBody;
+		cbo.FlatStyle = FlatStyle.Standard;
+	}
+
+	#endregion
+
+	#region Badge 状态徽章
+
+	/// <summary>
+	/// 应用状态徽章样式（Label 模拟徽章）
+	/// </summary>
+	/// <param name="badge">Label 控件</param>
+	/// <param name="kind">徽章类型：success/error/warning/info</param>
+	public static void ApplyBadge(Label badge, string kind = "info")
+	{
+		badge.Font = AuditTheme.FontCaption;
+		badge.AutoSize = true;
+		badge.Padding = new Padding(8, 2, 8, 2);
+
+		switch (kind)
+		{
+			case "success":
+				badge.BackColor = AuditTheme.SuccessSubtle;
+				badge.ForeColor = AuditTheme.SuccessText;
+				break;
+			case "error":
+				badge.BackColor = AuditTheme.ErrorSubtle;
+				badge.ForeColor = AuditTheme.ErrorText;
+				break;
+			case "warning":
+				badge.BackColor = AuditTheme.WarningSubtle;
+				badge.ForeColor = AuditTheme.WarningText;
+				break;
+			default:
+				badge.BackColor = AuditTheme.BrandSubtle;
+				badge.ForeColor = AuditTheme.Brand;
+				break;
+		}
 	}
 
 	#endregion
@@ -227,19 +290,19 @@ public static class ThemeApplier
 	#region TreeView 树视图
 
 	/// <summary>
-	/// 应用到 TreeView 导航树 — 自绘节点，Google Blue 选中态
+	/// 应用到 TreeView 导航树 — 自绘节点，清新风格选中态
 	/// </summary>
 	public static void ApplyTreeView(TreeView tree)
 	{
 		tree.BackColor = AuditTheme.SidebarBg;
 		tree.ForeColor = AuditTheme.Text;
-		tree.Font = AuditTheme.FontDefault;
+		tree.Font = AuditTheme.FontBody;
 		tree.BorderStyle = BorderStyle.None;
 		tree.FullRowSelect = true;
 		tree.HotTracking = true;
 		tree.HideSelection = false;
-		tree.Indent = 16;
-		tree.ItemHeight = 26;
+		tree.Indent = 20;
+		tree.ItemHeight = 30;
 
 		tree.DrawMode = TreeViewDrawMode.OwnerDrawText;
 		tree.DrawNode -= Tree_DrawNode;
@@ -260,33 +323,59 @@ public static class ThemeApplier
 		}
 
 		int fullWidth = tree.ClientSize.Width;
-		Rectangle fullRect = new Rectangle(0, bounds.Top, fullWidth, bounds.Height);
+		// 圆角背景矩形（左右各留 4px 边距）
+		Rectangle bgRect = new Rectangle(4, bounds.Top + 2, fullWidth - 8, bounds.Height - 4);
+		const int cornerRadius = 6;
 
-		// 选中节点：蓝色背景 + 左边框
+		// 选中节点：蓝色背景 + 圆角
 		if ((e.State & TreeNodeStates.Selected) != 0)
 		{
-			using (var brush = new SolidBrush(AuditTheme.BrandSubtle))
+			using (var path = CreateRoundedRectPath(bgRect, cornerRadius))
+			using (var brush = new SolidBrush(AuditTheme.Brand))
 			{
-				g.FillRectangle(brush, fullRect);
-			}
-			using (var pen = new Pen(AuditTheme.Brand, 2f))
-			{
-				g.DrawLine(pen, 0, bounds.Top, 0, bounds.Bottom);
+				g.FillPath(brush, path);
 			}
 		}
 		else if ((e.State & TreeNodeStates.Hot) != 0)
 		{
-			using (var brush = new SolidBrush(AuditTheme.SurfaceSubtle))
+			using (var path = CreateRoundedRectPath(bgRect, cornerRadius))
+			using (var brush = new SolidBrush(AuditTheme.BrandSubtle))
 			{
-				g.FillRectangle(brush, fullRect);
+				g.FillPath(brush, path);
 			}
+		}
+
+		// 文字颜色（选中时白色，悬停时品牌色）
+		Color textColor = AuditTheme.Text;
+		if ((e.State & TreeNodeStates.Selected) != 0)
+		{
+			textColor = Color.White;
+		}
+		else if ((e.State & TreeNodeStates.Hot) != 0)
+		{
+			textColor = AuditTheme.Brand;
 		}
 
 		// 文字
 		TextRenderer.DrawText(g, node.Text, tree.Font,
 			new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height),
-			AuditTheme.Text,
+			textColor,
 			TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+	}
+
+	/// <summary>
+	/// 创建圆角矩形路径
+	/// </summary>
+	private static System.Drawing.Drawing2D.GraphicsPath CreateRoundedRectPath(Rectangle rect, int radius)
+	{
+		var path = new System.Drawing.Drawing2D.GraphicsPath();
+		int d = radius * 2;
+		path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+		path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+		path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+		path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+		path.CloseFigure();
+		return path;
 	}
 
 	#endregion
@@ -428,15 +517,12 @@ public static class ThemeApplier
 		{
 			RefineButton(btn);
 		}
-		// C1TextBoxEx：统一高度和字体
+		// C1TextBoxEx：统一字体和文字色（不强制改高度——
+		// 对话框布局按原始高度设计，强行撑高会导致输入框超出所在行、与下方控件重叠）
 		else if (c is Auditai.UI.Controls.C1TextBoxEx txt)
 		{
 			txt.Font = AuditTheme.FontBody;
 			txt.ForeColor = AuditTheme.Text;
-			if (txt.Height < AuditTheme.InputHeight - 4)
-			{
-				txt.Height = AuditTheme.InputHeight;
-			}
 		}
 		// C1Label：统一字体和颜色
 		else if (c is C1.Win.C1Input.C1Label lbl)
@@ -486,11 +572,9 @@ public static class ThemeApplier
 		// 过小的按钮（图标按钮、ToolBar 按钮）跳过
 		if (btn.Width < 50 || btn.Height < 28) return;
 
-		// 统一按钮高度为 36px（对话框内次一级尺寸）
-		if (btn.Height > 28 && btn.Height < AuditTheme.ButtonHeightSm)
-		{
-			btn.Height = AuditTheme.ButtonHeightSm;
-		}
+		// 注意：不强制改按钮高度——对话框按钮行按原始高度布局，
+		// 强行撑高会让按钮溢出底部面板或与相邻控件重叠。
+		// 仅统一字体（10pt 加粗在 28px+ 高度内可完整显示）和配色。
 
 		// 统一字体
 		btn.Font = AuditTheme.FontBodyBold;

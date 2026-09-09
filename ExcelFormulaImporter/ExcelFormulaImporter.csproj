@@ -14,9 +14,7 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="Irony">
       <HintPath>..\Libs\Irony.dll</HintPath>
     </Reference>

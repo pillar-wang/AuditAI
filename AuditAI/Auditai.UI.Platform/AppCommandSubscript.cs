@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandSubscript : AppCommandToggleButton
 {
-	public override Image SmallIcon => Resources.Subscript;
+	public override Image SmallIcon => IconRes.Subscript;
 
 	protected override void Pressed()
 	{

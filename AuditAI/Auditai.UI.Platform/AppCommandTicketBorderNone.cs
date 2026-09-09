@@ -7,7 +7,7 @@ public class AppCommandTicketBorderNone : AppCommandButton
 {
 	public override string Text => " 无边框 ";
 
-	public override Image LargeIcon => Resources.TicketBorderNone;
+	public override Image LargeIcon => IconRes.TicketBorderNone;
 
 	protected override void Clicked()
 	{

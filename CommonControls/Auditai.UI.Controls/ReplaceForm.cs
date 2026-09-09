@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -86,7 +86,7 @@ public class ReplaceForm : C1RibbonForm
 	private const int ButtonRadius = 8;
 	#endregion
 
-	#region === 设计令牌（同 MessageShowBox，支持 Google Blue 主题） ===
+	#region === 设计令牌（轻盈清新风格，支持主题切换） ===
 
 	private Color Primary;
 	private Color PrimaryDark;
@@ -95,19 +95,19 @@ public class ReplaceForm : C1RibbonForm
 	private Color TextPrimary;
 	private Color Surface0;
 
-	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走 Google Blue 色板，其余走默认小清新浅蓝</summary>
+	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走清新蓝色板，其余走默认小清新浅蓝</summary>
 	private void LoadThemeColors()
 	{
 		var theme = Theme.SelectedAuditaiTheme;
 		if (theme != null && theme.Name == "auditai_GoogleBlue")
 		{
-			// Google Blue 色板
-			Primary = Color.FromArgb(26, 115, 232);
-			PrimaryDark = Color.FromArgb(21, 87, 176);
-			PrimaryLight = Color.FromArgb(23, 101, 204);
-			LineColorDefault = Color.FromArgb(226, 232, 240);
-			TextPrimary = Color.FromArgb(15, 23, 42);
-			Surface0 = Color.FromArgb(248, 250, 252);
+			// 清新蓝色板
+			Primary = Color.FromArgb(59, 130, 246);
+			PrimaryDark = Color.FromArgb(29, 78, 216);
+			PrimaryLight = Color.FromArgb(37, 99, 235);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
+			TextPrimary = Color.FromArgb(30, 41, 59);
+			Surface0 = Color.FromArgb(250, 251, 252);
 		}
 		else
 		{
@@ -115,7 +115,7 @@ public class ReplaceForm : C1RibbonForm
 			Primary = Color.FromArgb(74, 144, 217);
 			PrimaryDark = Color.FromArgb(53, 123, 189);
 			PrimaryLight = Color.FromArgb(90, 160, 230);
-			LineColorDefault = Color.FromArgb(208, 215, 222);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
 			TextPrimary = Color.FromArgb(30, 41, 59);
 			Surface0 = Color.FromArgb(245, 249, 252);
 		}
@@ -207,7 +207,7 @@ public class ReplaceForm : C1RibbonForm
 			btnNext.Enabled = true;
 			btnReplace2.Enabled = true;
 			btnReplaceAll.Enabled = true;
-			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Replace);
+			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Replace);
 		}
 		else
 		{
@@ -219,7 +219,7 @@ public class ReplaceForm : C1RibbonForm
 			btnNext.Enabled = false;
 			btnReplace2.Enabled = false;
 			btnReplaceAll.Enabled = false;
-			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Replace);
+			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Replace);
 		}
 		base.ActiveControl = txtSearchTarget;
 		Show();
@@ -393,7 +393,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.Controls.Add(this.c1Label1);
 		this.pnlFind.Controls.Add(this.ckWholeWord);
 		this.pnlFind.Controls.Add(this.ckMatchCase);
-		this.pnlFind.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（字号不变）
+		this.pnlFind.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑（字号不变）
 		this.pnlFind.Height = 182;
 		this.pnlFind.KeepRelativeSize = false;
 		this.pnlFind.Location = new System.Drawing.Point(0, 0);
@@ -404,7 +404,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlFind.TabIndex = 1;
 		this.cboScope.AllowSpinLoop = false;
 		this.cboScope.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cboScope.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.cboScope.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.cboScope.GapHeight = 0;
 		this.cboScope.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cboScope.ItemsDisplayMember = "";
@@ -419,7 +419,7 @@ public class ReplaceForm : C1RibbonForm
 		this.lblScope.AutoSize = true;
 		this.lblScope.BackColor = System.Drawing.Color.Transparent;
 		this.lblScope.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblScope.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.lblScope.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		// 界面文字统一深灰（原 Color.Black）
 		this.lblScope.ForeColor = TextPrimary;
 		this.lblScope.Location = new System.Drawing.Point(16, 60);
@@ -492,7 +492,7 @@ public class ReplaceForm : C1RibbonForm
 		this.pnlReplace.Controls.Add(this.c1Label2);
 		this.pnlReplace.Controls.Add(this.txtReplaceBy);
 		this.pnlReplace.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Bottom;
-		this.pnlReplace.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（字号不变）
+		this.pnlReplace.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑（字号不变）
 		this.pnlReplace.Height = 139;
 		this.pnlReplace.Location = new System.Drawing.Point(0, 183);
 		this.pnlReplace.MinHeight = 0;
@@ -535,7 +535,7 @@ public class ReplaceForm : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(629, 322);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(5);
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

@@ -7,7 +7,7 @@ public class AppCommandMoveUp : AppCommandButton
 {
 	public override string Text => "上移位置";
 
-	public override Image LargeIcon => Resources.MoveUp;
+	public override Image LargeIcon => IconRes.MoveUp;
 
 	protected override void Clicked()
 	{

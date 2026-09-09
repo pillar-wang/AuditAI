@@ -7,7 +7,7 @@ public class AppCommandUnindent : AppCommandButton
 {
 	public override string Text => "左缩进";
 
-	public override Image LargeIcon => Resources.UnindentCell;
+	public override Image LargeIcon => IconRes.UnindentCell;
 
 	protected override void Clicked()
 	{

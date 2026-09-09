@@ -8,7 +8,7 @@ public class AppCommandSystemSettings : AppCommandButton
 {
 	public override string Text => "系统设置";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.Settings;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.Settings;
 
 	protected override string Tooltip => TipResource.系统设置;
 

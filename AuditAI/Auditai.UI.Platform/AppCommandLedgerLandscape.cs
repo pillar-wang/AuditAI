@@ -9,7 +9,7 @@ public class AppCommandLedgerLandscape : AppCommandButton
 {
 	public override string Text => "\u3000横向\u3000";
 
-	public override Image LargeIcon => Resources.Landscape;
+	public override Image LargeIcon => IconRes.Landscape;
 
 	public override void GenerateRibbonItem()
 	{

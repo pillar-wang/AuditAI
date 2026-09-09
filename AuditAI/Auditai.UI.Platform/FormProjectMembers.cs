@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -97,14 +97,14 @@ public class FormProjectMembers
 		_szMain.AddControl(_szTop, 0, 0);
 		_btnToggleMode = new C1Button
 		{
-			Image = Resources.toolListMode
+			Image = IconRes.toolListMode
 		};
 		_btnToggleMode.Click += _btnToggleMode_Click;
 		_szTop.AddControl(_btnToggleMode, 0, 0);
 		_ckbSearch = new C1CheckBox
 		{
 			BackColor = Color.Transparent,
-			BackgroundImage = Resources.btnSearch,
+			BackgroundImage = IconRes.btnSearch,
 			BackgroundImageLayout = ImageLayout.Center,
 			Appearance = Appearance.Button,
 			FlatStyle = FlatStyle.Flat
@@ -131,30 +131,31 @@ public class FormProjectMembers
 			Padding = Padding.Empty
 		};
 		_szBottom.Grid.Rows.Count = 3;
-		_szBottom.Grid.Columns.Count = 7;
+		_szBottom.Grid.Columns.Count = 5;
 		_szBottom.Grid.Rows.SetSizes(new int[3] { 8, 1, 8 });
 		_szBottom.Grid.Rows.SetFixed(0, 2);
-		_szBottom.Grid.Columns.SetSizes(new int[7] { 1, 80, 5, 80, 5, 80, 5 });
-		_szBottom.Grid.Columns.SetFixed(1, 2, 3, 4, 5, 6);
+		// 底部按钮区：弹性左间距 + 确定/取消两个 80px 按钮右对齐。
+		// "增加同事"入口已迁移到团队管理界面，不再占用栅格槽位（避免出现空白按钮位）。
+		_szBottom.Grid.Columns.SetSizes(new int[5] { 1, 80, 8, 80, 12 });
+		_szBottom.Grid.Columns.SetFixed(1, 2, 3, 4);
 		_szMain.AddControl(_szBottom, 2, 0);
 		_btnAddUser = new C1Button
 		{
 			Text = "增加同事"
 		};
 		_btnAddUser.Click += _btnAddUser_Click;
-		_szBottom.AddControl(_btnAddUser, 1, 1);
 		_btnOk = new C1Button
 		{
 			Text = "确定"
 		};
 		_btnOk.Click += _btnOk_Click;
-		_szBottom.AddControl(_btnOk, 1, 3);
+		_szBottom.AddControl(_btnOk, 1, 1);
 		_btnCancel = new C1Button
 		{
 			Text = "取消"
 		};
 		_btnCancel.Click += _btnCancel_Click;
-		_szBottom.AddControl(_btnCancel, 1, 5);
+		_szBottom.AddControl(_btnCancel, 1, 3);
 	}
 
 	public DialogResult ShowDialog()
@@ -193,12 +194,22 @@ public class FormProjectMembers
 	private async void _form_Load(object sender, EventArgs e)
 	{
 		Theme.SetCurrentTree(_form);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ProjectEditor);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ProjectEditor);
 		projectUsersTileSelector.SetTheme();
+		projectUsersListSelector.SetTheme();
+		// 顶部图标按钮：无边框透明底，悬停淡蓝反馈，与轻盈清新风格一致
 		_btnToggleMode.FlatStyle = FlatStyle.Flat;
 		_btnToggleMode.FlatAppearance.BorderSize = 0;
+		_btnToggleMode.BackColor = Color.Transparent;
+		_btnToggleMode.Cursor = Cursors.Hand;
+		_btnToggleMode.FlatAppearance.MouseOverBackColor = AuditTheme.BrandSubtle;
+		_btnToggleMode.FlatAppearance.MouseDownBackColor = AuditTheme.SurfaceHover;
+		_ckbSearch.Cursor = Cursors.Hand;
+		_ckbSearch.FlatAppearance.MouseOverBackColor = AuditTheme.BrandSubtle;
 		_ckbSearch.FlatAppearance.CheckedBackColor = Theme.SelectedAuditaiTheme.ThemeContext.TileColor;
 		_ckbSearch.BackColor = Color.Transparent;
+		// 搜索框统一正文字号（24px 工具条行内垂直居中，不强制改高度）
+		_txbSearch.Font = AuditTheme.FontBody;
 		_ckbSearch.Checked = false;
 		_txbSearch.Hide();
 		ToMode(_Mode);
@@ -283,6 +294,9 @@ public class FormProjectMembers
 				{
 					await WebApiClient.GetUserById(current.Id);
 				}
+				// 本地模式同样下发 Context（选择器内部对空数据做保护，显示空白而非报错）
+				projectUsersListSelector.Context = Context;
+				projectUsersTileSelector.Context = Context;
 				projectUsersListSelector.PopulateUsers();
 				projectUsersTileSelector.PopulateUsers();
 				return;
@@ -318,11 +332,11 @@ public class FormProjectMembers
 		{
 		case ListTileViewMode.List:
 			projectUsersListSelector.GetControl().BringToFront();
-			_btnToggleMode.Image = Resources.toolTileMode;
+			_btnToggleMode.Image = IconRes.toolTileMode;
 			break;
 		case ListTileViewMode.Tile:
 			projectUsersTileSelector.GetControl().BringToFront();
-			_btnToggleMode.Image = Resources.toolListMode;
+			_btnToggleMode.Image = IconRes.toolListMode;
 			break;
 		}
 	}

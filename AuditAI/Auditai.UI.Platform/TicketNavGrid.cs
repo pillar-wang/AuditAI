@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -230,16 +230,16 @@ public class TicketNavGrid : UserControl, ISetTheme
         _cmdExpandAll.Click += _cmdExpandAll_Click;
         _cmdCollapseAll = new C1Command { Text = "全部收缩" };
         _cmdCollapseAll.Click += _cmdCollapseAll_Click;
-        _cmdOrderAsc = new C1Command { Text = "升序排序", Image = ContextResources.ctxAscending };
+        _cmdOrderAsc = new C1Command { Text = "升序排序", Image = IconRes.ctxAscending };
         _cmdOrderAsc.Click += _cmdOrderAsc_Click;
         _cmdOrderAsc.CommandStateQuery += _cmdOrderAsc_CommandStateQuery;
-        _cmdOrderDesc = new C1Command { Text = "降序排序", Image = ContextResources.ctxDescending };
+        _cmdOrderDesc = new C1Command { Text = "降序排序", Image = IconRes.ctxDescending };
         _cmdOrderDesc.Click += _cmdOrderDesc_Click;
         _cmdOrderDesc.CommandStateQuery += _cmdOrderDesc_CommandStateQuery;
-        _cmdShowVirtualNode = new C1Command { Text = "显示预设节点", Image = Resources.ShowNodes16 };
+        _cmdShowVirtualNode = new C1Command { Text = "显示预设节点", Image = IconRes.ShowNodes16 };
         _cmdShowVirtualNode.Click += _cmdShowVirtualNode_Click;
         _cmdShowVirtualNode.CommandStateQuery += _cmdShowVirtualNode_CommandStateQuery;
-        _cmdHideVirtualNode = new C1Command { Text = "隐藏预设节点", Image = Resources.HideNodes16 };
+        _cmdHideVirtualNode = new C1Command { Text = "隐藏预设节点", Image = IconRes.HideNodes16 };
         _cmdHideVirtualNode.Click += _cmdHideVirtualNode_Click;
         _cmdHideVirtualNode.CommandStateQuery += _cmdHideVirtualNode_CommandStateQuery;
 
@@ -907,7 +907,7 @@ public class TicketNavGrid : UserControl, ISetTheme
                 }
 
                 var point = GetGridRowMoreMenuIconLeftTopPosition(e.Row);
-                e.Graphics.DrawImage(image, point);
+                e.Graphics.DrawImage(image, new Rectangle(point, IconLibrary.LogicalSize(IconRes.menuMoreOperation)));
             }
         }
         catch (Exception ex)
@@ -923,18 +923,18 @@ public class TicketNavGrid : UserControl, ISetTheme
         isImageEmpty = false;
         if (displayClass.e.Style.Name != Grid.Styles.Highlight.Name)
         {
-            return Resources.menuMoreOperation;
+            return IconRes.menuMoreOperation;
         }
         if (Theme.SelectedAuditaiTheme.ThemeContext.GridMoreMenuImageIndexOnHighLightRow == GridMoreMenuImageIndex.White)
         {
             if (_menuMoreOperationWhiteImage == null)
             {
-                _menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(Resources.menuMoreOperation);
+                _menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(IconRes.menuMoreOperation);
             }
             isImageEmpty = true;
             return _menuMoreOperationWhiteImage;
         }
-        return Resources.menuMoreOperation;
+        return IconRes.menuMoreOperation;
     }
 
     private class DisplayClass133_0
@@ -1000,7 +1000,7 @@ public class TicketNavGrid : UserControl, ISetTheme
                 }
                 else
                 {
-                    e.Image = navNode.IsVirtualNode ? Resources.VirtualTicket16 : Resources.Ticket16;
+                    e.Image = navNode.IsVirtualNode ? Resources.VirtualTicket16 : IconRes.Ticket16;
                 }
             }
             else if (row.IsNode)
@@ -1012,11 +1012,11 @@ public class TicketNavGrid : UserControl, ISetTheme
                 }
                 else if (row.Node.Collapsed)
                 {
-                    e.Image = navNode.IsVirtualNode ? Resources.VirtualTicketNavTreeListCollapsed : Resources.TicketNavTreeListCollapsed;
+                    e.Image = navNode.IsVirtualNode ? IconRes.VirtualTicketNavTreeListCollapsed : IconRes.TicketNavTreeListCollapsed;
                 }
                 else
                 {
-                    e.Image = navNode.IsVirtualNode ? Resources.VirtualTicketNavTreeListExpanded : Resources.TicketNavTreeListExpanded;
+                    e.Image = navNode.IsVirtualNode ? IconRes.VirtualTicketNavTreeListExpanded : IconRes.TicketNavTreeListExpanded;
                 }
             }
         }
@@ -1035,7 +1035,7 @@ public class TicketNavGrid : UserControl, ISetTheme
             {
                 Grid.Row = _mouseRow;
                 PrepareToShowCtx(e);
-                Ctx.ShowContextMenu(Grid, e.Location);
+                NativeMenuShim.Show(Ctx, Grid, e.Location);
                 return;
             }
 
@@ -1055,7 +1055,7 @@ public class TicketNavGrid : UserControl, ISetTheme
         if (e.Button == MouseButtons.Right)
         {
             PrepareToShowCtx(e);
-            Ctx.ShowContextMenu(Grid, e.Location);
+            NativeMenuShim.Show(Ctx, Grid, e.Location);
         }
     }
 
@@ -2283,7 +2283,7 @@ public class TicketNavGrid : UserControl, ISetTheme
         var cellRect = Grid.GetCellRect(row, 0);
         int rightPadding = 25;
         int x = cellRect.X + cellRect.Width - rightPadding;
-        int y = cellRect.Y + (cellRect.Height - Resources.menuMoreOperation.Height) / 2;
+        int y = cellRect.Y + (cellRect.Height - IconLibrary.LogicalHeight(IconRes.menuMoreOperation)) / 2;
         return new Point(x, y);
     }
 
@@ -2294,8 +2294,8 @@ public class TicketNavGrid : UserControl, ISetTheme
         var marginY = 3;
         var x = pos.X - marginX;
         var y = pos.Y - marginY;
-        var w = Resources.menuMoreOperation.Width + marginX * 2;
-        var h = Resources.menuMoreOperation.Height + marginY * 2;
+        var w = IconLibrary.LogicalWidth(IconRes.menuMoreOperation) + marginX * 2;
+        var h = IconLibrary.LogicalHeight(IconRes.menuMoreOperation) + marginY * 2;
         return new Rectangle(x, y, w, h);
     }
 

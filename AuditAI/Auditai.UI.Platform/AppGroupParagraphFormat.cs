@@ -7,7 +7,7 @@ public class AppGroupParagraphFormat : AppCommandGroup
 {
 	public override string Text => "段落格式";
 
-	public override Image Image => Resources.LineSpacing;
+	public override Image Image => IconRes.LineSpacing;
 
 	public override bool HasLauncherButton => true;
 

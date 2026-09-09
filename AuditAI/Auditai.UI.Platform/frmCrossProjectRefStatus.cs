@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -54,11 +54,11 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         this.Text = "跨项目数据引用状态仪表板";
         this.Size = new Size(1105, 845);
         this.StartPosition = FormStartPosition.CenterScreen;
-        this.Font = new Font("Noto Sans SC", 9f);
+        this.Font = new Font("微软雅黑", 9f);
         this.MinimumSize = new Size(910, 650);
 
         // 顶部关键指标卡片
-        _pnlStats = new Panel { Dock = DockStyle.Top, Height = 156, BackColor = Color.FromArgb(245, 245, 245), Padding = new Padding(10) };
+        _pnlStats = new Panel { Dock = DockStyle.Top, Height = 156, BackColor = Color.FromArgb(249, 250, 251), Padding = new Padding(10) };
 
         int cardWidth = 169;
         int cardHeight = 104;
@@ -66,10 +66,10 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         int startY = 26;
         var labels = new Dictionary<string, Label>
         {
-            {"引用总数", _lblTotalRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
-            {"已启用", _lblEnabledRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Green}},
-            {"异常", _lblErrorRefs = new Label{Text="0", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Red}},
-            {"缓存命中", _lblCacheHitRate = new Label{Text="0%", Font=new Font("Noto Sans SC", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
+            {"引用总数", _lblTotalRefs = new Label{Text="0", Font=new Font("微软雅黑", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
+            {"已启用", _lblEnabledRefs = new Label{Text="0", Font=new Font("微软雅黑", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Green}},
+            {"异常", _lblErrorRefs = new Label{Text="0", Font=new Font("微软雅黑", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.Red}},
+            {"缓存命中", _lblCacheHitRate = new Label{Text="0%", Font=new Font("微软雅黑", 18f, FontStyle.Bold), AutoSize=true, ForeColor=Color.FromArgb(0,120,215)}},
         };
 
         int idx = 0;
@@ -82,7 +82,7 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
             };
-            var title = new Label { Text = kv.Key, Location = new Point(7, 7), AutoSize = true, ForeColor = Color.Gray, Font = new Font("Noto Sans SC", 9f) };
+            var title = new Label { Text = kv.Key, Location = new Point(7, 7), AutoSize = true, ForeColor = Color.Gray, Font = new Font("微软雅黑", 9f) };
             kv.Value.Location = new Point(7, 39);
             card.Controls.Add(title);
             card.Controls.Add(kv.Value);
@@ -111,7 +111,7 @@ public frmCrossProjectRefStatus(Auditai.Model.Project currentProject)
         this.Controls.Add(_gridHealth);
 
         // 底部按钮
-        var pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 65, BackColor = Color.FromArgb(240, 240, 240) };
+        var pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 65, BackColor = Color.FromArgb(243, 244, 246) };
         _btnRunHealthCheck = new C1Button { Text = "运行健康检查", Location = new Point(13, 13), Size = new Size(169, 39) };
         _btnRunHealthCheck.Click += async (s, e) => await RunHealthCheck();
         _btnClose = new C1Button { Text = "关闭", Location = new Point(195, 13), Size = new Size(117, 39), DialogResult = DialogResult.Cancel };

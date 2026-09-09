@@ -9,7 +9,7 @@ public class AppCommandShowHelp : AppCommandToggleButton
 {
 	public override string Text => "软件向导";
 
-	public override System.Drawing.Image LargeIcon => Auditai.UI.Platform.Properties.Resources.Tooltip32;
+	public override System.Drawing.Image LargeIcon => Auditai.UI.Platform.IconRes.Tooltip32;
 
 	protected override string Tooltip => TipResource.显示设置菜单_软件向导;
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -32,6 +32,15 @@ public class ProjectUsersTileSelector
 	private Template _titleTemplate;
 
 	private C1ContextMenu contextMenu;
+
+	// 模板字体/画笔按主题 Token 缓存复用，避免每次重绘重复创建 GDI 对象
+	private static readonly Font GroupCaptionFont = new Font(AuditTheme.FontFamilySans, 9f);
+
+	private static readonly Font UserNameFont = new Font(AuditTheme.FontFamilySans, 9f);
+
+	private static readonly Font UserRoleFont = new Font(AuditTheme.FontFamilySans, 8.5f);
+
+	private static readonly Pen GroupCaptionPen = new Pen(AuditTheme.Brand, 1f);
 
 	public ProjectUsersSelectorContext Context { get; set; }
 
@@ -110,27 +119,16 @@ public class ProjectUsersTileSelector
 		c1CommandLink5.Command = c1Command5;
 		contextMenu.CommandLinks.Add(c1CommandLink5);
 
-		contextMenu.ShowContextMenu(_tileControl, new Point(tile.Group.X + tile.X, tile.Group.Y + tile.Y + tile.Height + _tileControl.ScrollOffset));
+		NativeMenuShim.Show(contextMenu, _tileControl, new Point(tile.Group.X + tile.X, tile.Group.Y + tile.Y + tile.Height + _tileControl.ScrollOffset));
 	}
 
 	private void CmdUserRole_Click(object sender, ClickEventArgs e)
 	{
 		if ((sender as C1Command)?.UserData is Tuple<Tile, UserRole> tuple)
 		{
-			string text = null;
-			switch (tuple.Item2)
-			{
-			case UserRole.Manager:
-				text = StringConstBase.Current.Manager;
-				break;
-			case UserRole.Assistant:
-				text = StringConstBase.Current.Assistant;
-				break;
-			case UserRole.Checker:
-				text = "复核人";
-				break;
-			}
-			if (text != null && tuple.Item1.Tag is TileTag tileTag)
+			// 五种角色统一走 GetUserRoleName（原实现漏了编辑者/查看者，菜单项点击无反应）
+			string text = GetUserRoleName(tuple.Item2);
+			if (!string.IsNullOrEmpty(text) && tuple.Item1.Tag is TileTag tileTag)
 			{
 				tuple.Item1.Text1 = tileTag.User.Name;
 				tuple.Item1.Text2 = text;
@@ -168,6 +166,11 @@ public class ProjectUsersTileSelector
 	{
 		_tileControl.ClearSelected();
 		_tileControl.Groups.Clear();
+		// 本地模式等无团队数据的场景：Context 尚未填充，直接保持空白，避免空引用
+		if (Context?.RootUsers == null)
+		{
+			return;
+		}
 		C1.Win.C1Tile.Group group = new C1.Win.C1Tile.Group();
 		foreach (Auditai.DTO.User rootUser in Context.RootUsers)
 		{
@@ -192,8 +195,8 @@ public class ProjectUsersTileSelector
 			};
 			tt.Paint += delegate(object s1, PaintEventArgs e1)
 			{
-				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, new Font("Noto Sans SC", 9f));
-				e1.Graphics.DrawLine(new Pen(Color.FromArgb(0, 73, 92), 1f), new Point(8, tt.Height - 9), new Point(8 + (int)sizeF.Width, tt.Height - 9));
+				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, GroupCaptionFont);
+				e1.Graphics.DrawLine(GroupCaptionPen, new Point(8, tt.Height - 9), new Point(8 + (int)sizeF.Width, tt.Height - 9));
 			};
 			group2.Tiles.Add(tt);
 			_tileControl.Groups.Add(group2);
@@ -250,12 +253,12 @@ public class ProjectUsersTileSelector
 	{
 		return role switch
 		{
-			UserRole.Manager => "项目经理", 
-			UserRole.Checker => "复核人", 
-			UserRole.Assistant => "项目助理", 
-			UserRole.Editor => "编辑者", 
-			UserRole.User => "查看者", 
-			_ => "", 
+			UserRole.Manager => StringConstBase.Current.Manager,
+			UserRole.Assistant => StringConstBase.Current.Assistant,
+			UserRole.Checker => "复核人",
+			UserRole.Editor => "编辑者",
+			UserRole.User => "查看者",
+			_ => "",
 		};
 	}
 
@@ -323,13 +326,13 @@ public class ProjectUsersTileSelector
 		PanelElement panelElement = new PanelElement();
 		panelElement.AlignmentOfContents = ContentAlignment.BottomLeft;
 		PanelElement panelElement2 = new PanelElement();
-		panelElement2.BackColor = Color.FromArgb(0, 73, 92);
+		panelElement2.BackColor = AuditTheme.Brand;
 		panelElement2.Dock = DockStyle.Bottom;
 		panelElement2.FixedHeight = 1;
 		TextElement textElement = new TextElement();
-		textElement.ForeColor = Color.Black;
+		textElement.ForeColor = AuditTheme.TextSecondary;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+		textElement.Font = GroupCaptionFont;
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(textElement);
@@ -365,7 +368,9 @@ public class ProjectUsersTileSelector
 		textElement.SingleLine = true;
 		textElement.FixedHeight = 18;
 		textElement.FixedWidth = 130;
-		textElement.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
+		textElement.ForeColor = AuditTheme.Text;
+		textElement.ForeColorSelector = ForeColorSelector.Unbound;
+		textElement.Font = UserNameFont;
 		textElement.TextSelector = TextSelector.Text1;
 		panelElement2.Children.Add(textElement);
 		panelElement2.Dock = DockStyle.Bottom;
@@ -379,7 +384,9 @@ public class ProjectUsersTileSelector
 		textElement2.SingleLine = true;
 		textElement2.FixedHeight = 18;
 		textElement2.FixedWidth = 130;
-		textElement2.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
+		textElement2.ForeColor = AuditTheme.TextSecondary;
+		textElement2.ForeColorSelector = ForeColorSelector.Unbound;
+		textElement2.Font = UserRoleFont;
 		textElement2.TextSelector = TextSelector.Text2;
 		panelElement3.Children.Add(textElement2);
 		panelElement3.Dock = DockStyle.Bottom;

@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -72,12 +72,8 @@ public class WinformRadioButtonEx : RadioButton
 			using Pen pen2 = new Pen(_isMouseOver ? RadioCircleMouseOverColor : RadioCircleNormalColor);
 			graphics.DrawEllipse(pen2, rect);
 		}
-		using SolidBrush brush2 = new SolidBrush(ForeColor);
 		int num3 = base.Size.Width - RadioCircleSize;
 		Rectangle rectangle = new Rectangle(RadioCircleSize + SpaceBetweenRadiocCirleAndText, 0, num3, base.Size.Height);
-		StringFormat stringFormat = new StringFormat();
-		stringFormat.Alignment = StringAlignment.Near;
-		stringFormat.LineAlignment = StringAlignment.Center;
-		graphics.DrawString(Text, Font, brush2, rectangle, stringFormat);
+		TextRenderer.DrawText(graphics, Text, Font, rectangle, ForeColor, TextFormatFlags.VerticalCenter);
 	}
 }

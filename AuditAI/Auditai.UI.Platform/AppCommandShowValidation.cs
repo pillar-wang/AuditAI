@@ -8,7 +8,7 @@ public class AppCommandShowValidation : AppCommandToggleButton
 {
 	public override string Text => "校验公式";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ToggleValidation;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ToggleValidation;
 
 	protected override string Tooltip => TipResource.校验公式;
 

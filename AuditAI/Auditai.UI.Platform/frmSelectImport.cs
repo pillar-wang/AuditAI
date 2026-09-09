@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -100,7 +100,7 @@ public class frmSelectImport : C1RibbonForm
 
 	private void FrmSelectImport_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.batchFill);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.batchFill);
 	}
 
 	private void GrdTree_SizeChanged(object sender, EventArgs e)
@@ -209,7 +209,7 @@ public class frmSelectImport : C1RibbonForm
 						Node node = grdTree.Rows.AddNode(0);
 						node.Key = item;
 						node.Data = item.Name;
-						node.Image = ContextResources.TreeTable;
+						node.Image = IconRes.TreeTable;
 						grdTree.SetCellCheck(node.Row.Index, grdTree.Cols["check"].Index, CheckEnum.Unchecked);
 					}
 				}
@@ -227,8 +227,11 @@ public class frmSelectImport : C1RibbonForm
 
 	private async Task<Auditai.Model.Table> OpenTableImpl(Auditai.Model.Table table)
 	{
-		ProgressForm<Auditai.Model.Table> progressForm = new ProgressForm<Auditai.Model.Table>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			progress.Report(new ProgressInfo
 			{
 				MainCaption = "正在打开表格，请稍候......",
@@ -236,10 +239,9 @@ public class frmSelectImport : C1RibbonForm
 			});
 			Application.DoEvents();
 			table.LoadAndReturn();
-			return await Task.FromResult(table);
+			return Task.CompletedTask;
 		});
-		progressForm.ShowDialog();
-		return await progressForm.Task;
+		return table;
 	}
 
 	private void btnCertain_Click(object sender, EventArgs e)
@@ -312,7 +314,7 @@ public class frmSelectImport : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.grdTree).BeginInit();
 		base.SuspendLayout();
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -379,7 +381,7 @@ public class frmSelectImport : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(433, 698);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmSelectImport";
 		this.Text = "填充至底稿";

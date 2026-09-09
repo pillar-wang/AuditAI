@@ -9,7 +9,7 @@ public class AppCommandAgeAnalysis : AppCommandButton
 {
 	public override string Text => "账龄分析表";
 
-	public override Image LargeIcon => Resources.AgeBalance;
+	public override Image LargeIcon => IconRes.AgeBalance;
 
 	protected override void Clicked()
 	{

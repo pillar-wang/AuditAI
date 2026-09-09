@@ -7,7 +7,7 @@ public class AppCommandDocNextError : AppCommandButton
 {
 	public override string Text => "下一个错误";
 
-	public override Image LargeIcon => Resources.NextError;
+	public override Image LargeIcon => IconRes.NextError;
 
 	protected override void Clicked()
 	{

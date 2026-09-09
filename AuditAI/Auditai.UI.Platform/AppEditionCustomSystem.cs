@@ -83,7 +83,7 @@ public class AppEditionCustomSystem : AppEditionGeneral
 			{
 				return Vip_System_Template_Tile_Icon;
 			}
-			return Resources.vipTemplate;
+			return IconRes.vipTemplate;
 		}
 	}
 

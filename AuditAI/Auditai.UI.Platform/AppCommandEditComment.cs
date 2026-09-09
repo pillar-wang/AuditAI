@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandEditComment : AppCommandButton
 {
-	public override Image LargeIcon => Resources.AuxEditComment;
+	public override Image LargeIcon => IconRes.AuxEditComment;
 
 	public override string Text => "编辑注释";
 

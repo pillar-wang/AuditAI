@@ -7,7 +7,7 @@ public class AppCommandTicketImportTable : AppCommandButton
 {
 	public override string Text => "导入他表单据样式";
 
-	public override Image LargeIcon => Resources.TicketMode;
+	public override Image LargeIcon => IconRes.TicketMode;
 
 	protected override void Clicked()
 	{

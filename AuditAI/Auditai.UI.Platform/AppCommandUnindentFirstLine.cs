@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandUnindentFirstLine : AppCommandButton
 {
-	public override Image LargeIcon => Resources.Unindent1stLine;
+	public override Image LargeIcon => IconRes.Unindent1stLine;
 
 	public override string Text => "段首减缩进";
 

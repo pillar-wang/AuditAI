@@ -7,7 +7,7 @@ public class AppCommandFormulaCancel : AppCommandButton
 {
 	public override string Text => "取消保存";
 
-	public override Image LargeIcon => Resources.FormulaCancel;
+	public override Image LargeIcon => IconRes.FormulaCancel;
 
 	protected override void Clicked()
 	{

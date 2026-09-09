@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -69,7 +69,7 @@ internal class InputBoxImpl : C1RibbonForm
 	/// <summary>取消按钮 Left 坐标（最右侧）</summary>
 	private static readonly int BtnCancelLeft = FormClientWidth - ButtonRightMargin - ButtonWidth;
 
-	#region === 设计令牌（同 MessageShowBox，支持 Google Blue 主题） ===
+	#region === 设计令牌（轻盈清新风格，支持主题切换） ===
 
 	private Color Primary;
 	private Color PrimaryDark;
@@ -77,18 +77,18 @@ internal class InputBoxImpl : C1RibbonForm
 	private Color LineColorDefault;
 	private Color TextPrimary;
 
-	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走 Google Blue 色板，其余走默认小清新浅蓝</summary>
+	/// <summary>根据当前主题加载颜色令牌：Google 蓝主题走清新蓝色板，其余走默认小清新浅蓝</summary>
 	private void LoadThemeColors()
 	{
 		var theme = Theme.SelectedAuditaiTheme;
 		if (theme != null && theme.Name == "auditai_GoogleBlue")
 		{
-			// Google Blue 色板
-			Primary = Color.FromArgb(26, 115, 232);
-			PrimaryDark = Color.FromArgb(21, 87, 176);
-			PrimaryLight = Color.FromArgb(23, 101, 204);
-			LineColorDefault = Color.FromArgb(226, 232, 240);
-			TextPrimary = Color.FromArgb(15, 23, 42);
+			// 清新蓝色板
+			Primary = Color.FromArgb(59, 130, 246);
+			PrimaryDark = Color.FromArgb(29, 78, 216);
+			PrimaryLight = Color.FromArgb(37, 99, 235);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
+			TextPrimary = Color.FromArgb(30, 41, 59);
 		}
 		else
 		{
@@ -96,7 +96,7 @@ internal class InputBoxImpl : C1RibbonForm
 			Primary = Color.FromArgb(74, 144, 217);
 			PrimaryDark = Color.FromArgb(53, 123, 189);
 			PrimaryLight = Color.FromArgb(90, 160, 230);
-			LineColorDefault = Color.FromArgb(208, 215, 222);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
 			TextPrimary = Color.FromArgb(30, 41, 59);
 		}
 	}
@@ -581,7 +581,7 @@ internal class InputBoxImpl : C1RibbonForm
 			ReadOnly = true,
 			ScrollBars = ScrollBars.Vertical,
 			WordWrap = true,
-			Font = new Font("Noto Sans SC", 10.5f), // 字体统一 Noto Sans SC（字号不变）
+			Font = new Font("微软雅黑", 10.5f), // 字体统一 微软雅黑（字号不变）
 			Location = lblPrompt.Location,
 			Size = new Size(lblPrompt.Width, maxPromptHeight),
 			Text = lblPrompt.Text ?? "",
@@ -636,7 +636,7 @@ internal class InputBoxImpl : C1RibbonForm
 		this.txtInputLeft.TextChanged += new System.EventHandler(txtInputLeft_TextChanged);
 		this.txtInputLeft.KeyPress += new System.Windows.Forms.KeyPressEventHandler(txtInputLeft_KeyPress);
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnConfirm.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.btnConfirm.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.btnConfirm.Location = new System.Drawing.Point(BtnConfirmLeft, 130);
 		this.btnConfirm.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnConfirm.Name = "btnConfirm";
@@ -646,7 +646,7 @@ internal class InputBoxImpl : C1RibbonForm
 		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（RefreshButtonStyles 应用）
 		this.btnConfirm.Click += new System.EventHandler(btnConfirm_Click);
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.btnCancel.Location = new System.Drawing.Point(BtnCancelLeft, 130);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -658,7 +658,7 @@ internal class InputBoxImpl : C1RibbonForm
 		this.lblPrompt.AutoSize = false;
 		this.lblPrompt.BackColor = System.Drawing.Color.Transparent;
 		this.lblPrompt.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblPrompt.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.lblPrompt.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		// 界面文字统一深灰（原 Color.Black）
 		this.lblPrompt.ForeColor = TextPrimary;
 		this.lblPrompt.Location = new System.Drawing.Point(26, 20);
@@ -671,7 +671,7 @@ internal class InputBoxImpl : C1RibbonForm
 		this.lblwarnNum.AutoSize = true;
 		this.lblwarnNum.BackColor = System.Drawing.Color.Transparent;
 		this.lblwarnNum.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblwarnNum.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC（Color.Red 警告语义保留）
+		this.lblwarnNum.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑（Color.Red 警告语义保留）
 		this.lblwarnNum.ForeColor = System.Drawing.Color.Red;
 		this.lblwarnNum.Location = new System.Drawing.Point(26, 94);
 		this.lblwarnNum.Name = "lblwarnNum";
@@ -727,7 +727,7 @@ internal class InputBoxImpl : C1RibbonForm
 		base.Controls.Add(this.btnCancel);
 		base.Controls.Add(this.btnConfirm);
 		base.Controls.Add(this.txtInputLeft);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

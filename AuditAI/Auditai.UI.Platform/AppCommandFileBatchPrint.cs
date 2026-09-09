@@ -9,7 +9,7 @@ public class AppCommandFileBatchPrint : AppCommandButton
 {
 	public override string Text => "批量打印";
 
-	public override Image LargeIcon => Resources.BatchPrint;
+	public override Image LargeIcon => IconRes.BatchPrint;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

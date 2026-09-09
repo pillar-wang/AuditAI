@@ -10,7 +10,7 @@ public class AppCommandCheckUpdate : AppCommandButton
 {
 	public override string Text => "检查更新";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.CheckUpdate;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.CheckUpdate;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

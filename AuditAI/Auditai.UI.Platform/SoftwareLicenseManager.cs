@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Windows.Forms;
 using Auditai.DTO;
 using Auditai.LocalDataStore;
@@ -508,7 +508,7 @@ public class SoftwareLicenseManager
 		{
 			if (showDialog)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无增加表格列的权限, 建议您致电官方客服电话：400-690-6500，联系购买或续期！");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无增加表格列的权限, 建议您及时联系管理员购买或续期！");
 			}
 			return false;
 		}
@@ -546,7 +546,7 @@ public class SoftwareLicenseManager
 		{
 			if (showDialog)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{Auditai.Model.Project.Current.ProjectLicenseDate:yyyy年MM月dd日}到期，无增加表格行的权限, 建议您致电官方客服电话：400-690-6500，联系购买或续期！");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{Auditai.Model.Project.Current.ProjectLicenseDate:yyyy年MM月dd日}到期，无增加表格行的权限, 建议您及时联系管理员购买或续期！");
 			}
 			return false;
 		}
@@ -554,7 +554,7 @@ public class SoftwareLicenseManager
 		{
 			if (showDialog)
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无增加表格行的权限, 建议您致电官方客服电话：400-690-6500，联系购买或续期！");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无增加表格行的权限, 建议您及时联系管理员购买或续期！");
 			}
 			return false;
 		}

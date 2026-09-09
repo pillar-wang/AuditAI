@@ -7,7 +7,7 @@ public class AppCommandMoveDownRow : AppCommandButton
 {
 	public override string Text => "下移行";
 
-	public override Image LargeIcon => Resources.RowDown;
+	public override Image LargeIcon => IconRes.RowDown;
 
 	protected override void Clicked()
 	{

@@ -7,7 +7,7 @@ public class AppCommandIndent : AppCommandButton
 {
 	public override string Text => "右缩进";
 
-	public override Image LargeIcon => Resources.IndentCell;
+	public override Image LargeIcon => IconRes.IndentCell;
 
 	protected override void Clicked()
 	{

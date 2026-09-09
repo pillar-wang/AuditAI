@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Auditai.DTO;
 using Auditai.Model;
+using User = Auditai.DTO.User;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -93,6 +94,9 @@ public static class WebApiClient
 
 	/// <summary>本地模式 LedgerValidateDic 处理器</summary>
 	public static Func<int, Task<JObject>> LocalLedgerValidateDicHandler { get; set; }
+
+	/// <summary>本地模式 StandardAccountDic 处理器</summary>
+	public static Func<int, Task<JObject>> LocalStandardAccountDicHandler { get; set; }
 
 	/// <summary>本地模式获取团队成员（含头像）处理器</summary>
 	public static Func<Task<IEnumerable<User>>> LocalGetTeamUsersWithPicHandler { get; set; }
@@ -220,6 +224,336 @@ public static class WebApiClient
 			Body = jobj
 		});
 	}
+
+	#region 上报审核与归档
+
+	/// <summary>上报审核：提交审核单（1~3 级顺序审批），成功后项目审核状态置为"审批中"</summary>
+	public static async Task<ReviewSubmissionDto> SubmitReview(ReviewSubmitRequest req)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<ReviewSubmissionDto>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Review/Submit",
+			Body = req,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>获取审核单列表：scope=pending 待我审批 / mine 我提交的 / all 本团队全部；projectId 为 null 时不带该参数</summary>
+	public static async Task<List<ReviewSubmissionDto>> GetReviewSubmissions(string scope, string projectId = null)
+	{
+		if (IsLocalMode)
+		{
+			return new List<ReviewSubmissionDto>();
+		}
+		string url = "Review/GetSubmissions?scope=" + scope;
+		if (!string.IsNullOrEmpty(projectId))
+		{
+			url = url + "&projectId=" + projectId;
+		}
+		return await SendAsObject<List<ReviewSubmissionDto>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = url,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<ReviewSubmissionDto>();
+	}
+
+	/// <summary>稽核检查页：读取项目级校验规则清单与节点名映射（项目未打开时的数据源）</summary>
+	public static async Task<ValidationRuleSetDto> GetProjectValidations(Guid projectId)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<ValidationRuleSetDto>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "Project/GetProjectValidations?projectId=" + projectId,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>稽核检查页：批量保存（UPSERT）项目级校验规则，服务端递增版本并记录变更历史</summary>
+	public static async Task SaveProjectValidations(Guid projectId, IEnumerable<ValidationFormula> formulas)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/SaveProjectValidations",
+			Body = new JObject
+			{
+				["ProjectId"] = projectId.ToString(),
+				["Formulas"] = JArray.FromObject(formulas)
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>稽核检查页：批量删除项目级校验规则（按 Id）</summary>
+	public static async Task DeleteProjectValidations(Guid projectId, IEnumerable<long> ids)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Project/DeleteProjectValidations",
+			Body = new JObject
+			{
+				["ProjectId"] = projectId.ToString(),
+				["Ids"] = JArray.FromObject(ids)
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>审批通过（仅当前节点审批人），最后一级通过后项目审核状态置为"已通过"</summary>
+	public static async Task ApproveReview(string submissionId, string comment)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Review/Approve",
+			Body = new JObject
+			{
+				["submissionId"] = submissionId,
+				["comment"] = comment
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>审批退回（仅当前节点审批人），整体退回提交人，重新上报产生新一轮记录</summary>
+	public static async Task RejectReview(string submissionId, string comment)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Review/Reject",
+			Body = new JObject
+			{
+				["submissionId"] = submissionId,
+				["comment"] = comment
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>撤回审核单（仅提交人且所有节点均未审批）</summary>
+	public static async Task WithdrawReview(string submissionId)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Review/Withdraw",
+			Body = new JObject
+			{
+				["submissionId"] = submissionId
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>获取项目全部轮次审核单（含节点明细，供审批记录查看）</summary>
+	public static async Task<List<ReviewSubmissionDto>> GetReviewHistory(string projectId)
+	{
+		if (IsLocalMode)
+		{
+			return new List<ReviewSubmissionDto>();
+		}
+		return await SendAsObject<List<ReviewSubmissionDto>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "Review/GetHistory?projectId=" + projectId,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<ReviewSubmissionDto>();
+	}
+
+	/// <summary>获取审批流程模板列表；includeDisabled=true 供管理界面查看停用项（仅 TeamAdmin 生效）</summary>
+	public static async Task<List<ReviewFlowTemplateDto>> GetReviewFlowTemplates(bool includeDisabled = false)
+	{
+		if (IsLocalMode)
+		{
+			return new List<ReviewFlowTemplateDto>();
+		}
+		string url = "ReviewFlow/GetTemplates";
+		if (includeDisabled)
+		{
+			url = url + "?includeDisabled=1";
+		}
+		return await SendAsObject<List<ReviewFlowTemplateDto>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = url,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<ReviewFlowTemplateDto>();
+	}
+
+	/// <summary>保存审批流程模板（新建 id 为空/更新 id 非空，仅 TeamAdmin），返回保存后的模板</summary>
+	public static async Task<ReviewFlowTemplateDto> SaveReviewFlowTemplate(ReviewFlowTemplateDto template)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<ReviewFlowTemplateDto>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "ReviewFlow/SaveTemplate",
+			Body = template,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>删除审批流程模板（仅 TeamAdmin）</summary>
+	public static async Task DeleteReviewFlowTemplate(string templateId)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "ReviewFlow/DeleteTemplate",
+			Body = new JObject
+			{
+				["id"] = templateId
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>启用/停用审批流程模板（仅 TeamAdmin；仅翻转状态，不做节点校验）</summary>
+	public static async Task SetReviewFlowTemplateEnabled(string templateId, int enabled)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "ReviewFlow/SetTemplateEnabled",
+			Body = new JObject
+			{
+				["id"] = templateId,
+				["enabled"] = enabled
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>归档项目（需审核已通过且未归档），返回归档记录；归档后项目锁定、禁止数据推送</summary>
+	public static async Task<ProjectArchiveDto> ArchiveProject(string projectId, string note)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<ProjectArchiveDto>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Archive/Submit",
+			Body = new JObject
+			{
+				["projectId"] = projectId,
+				["note"] = note
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>获取可归档项目列表（审核已通过且未归档）</summary>
+	public static async Task<List<Project>> GetArchiveCandidates()
+	{
+		if (IsLocalMode)
+		{
+			return new List<Project>();
+		}
+		return await SendAsObject<List<Project>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "Archive/GetCandidates",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<Project>();
+	}
+
+	/// <summary>获取本团队归档列表</summary>
+	public static async Task<List<ProjectArchiveDto>> GetArchives()
+	{
+		if (IsLocalMode)
+		{
+			return new List<ProjectArchiveDto>();
+		}
+		return await SendAsObject<List<ProjectArchiveDto>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "Archive/GetArchives",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<ProjectArchiveDto>();
+	}
+
+	/// <summary>取消归档（仅 TeamAdmin），项目恢复可编辑，保留"已通过"状态可再次归档</summary>
+	public static async Task CancelArchive(string projectId)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "Archive/Cancel",
+			Body = new JObject
+			{
+				["projectId"] = projectId
+			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	#endregion
 
 	public static async Task<IEnumerable<Project>> GetTemplates()
 	{
@@ -2008,6 +2342,22 @@ public static class WebApiClient
 		});
 	}
 
+	public static async Task<JObject> StandardAccountDic(int version)
+	{
+		if (IsLocalMode)
+		{
+			return LocalStandardAccountDicHandler != null ? await LocalStandardAccountDicHandler(version) : new JObject();
+		}
+		return await SendAsObject<JObject>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = $"DataSource/StandardAccountDic?version={version}",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithMachineCode = true,
+			WithAuthorization = true
+		});
+	}
+
 	public static async Task UploadFile(Guid fileId, Stream stream, Guid projectId = default, string fileName = "file.bin")
 	{
 		if (IsLocalMode)
@@ -2258,7 +2608,20 @@ public static class WebApiClient
 				string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
 				DebugLog($"[SendAsStream] ERROR response body: {errorContent}");
 				// 先构造错误消息再 Dispose，避免访问已释放对象的属性
-				string msg = $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}";
+				// 服务端错误体格式为 {"error":"forbidden","message":"无权访问该项目"}，优先提取 message 给用户看
+				string msg;
+				try
+				{
+					var errObj = JsonConvert.DeserializeObject<JObject>(errorContent);
+					string errMessage = errObj?["message"]?.ToString();
+					msg = string.IsNullOrEmpty(errMessage)
+						? $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}"
+						: $"HTTP {(int)response.StatusCode}: {errMessage}";
+				}
+				catch
+				{
+					msg = $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}";
+				}
 				if (response.StatusCode == HttpStatusCode.Unauthorized)
 				{
 					// Token 失效：防重入触发一次自动重新登录（不重放当前请求，客户端下次调用自然成功）。

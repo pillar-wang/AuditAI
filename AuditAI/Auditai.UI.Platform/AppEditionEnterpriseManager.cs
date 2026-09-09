@@ -15,13 +15,13 @@ public class AppEditionEnterpriseManager : AppEditionGeneral
 
 	public override string PlatformName => "AuditAI 业务管控平台";
 
-	public override Image ProjectTileIcon => Resources.tileModule;
+	public override Image ProjectTileIcon => ProjectCardIconProvider.Project;
 
-	public override Image SystemTemplateTileIcon => Resources.tileTemplate;
+	public override Image SystemTemplateTileIcon => ProjectCardIconProvider.SystemTemplate;
 
-	public override Image VipSystemTemplateTileIcon => Resources.vipTemplate;
+	public override Image VipSystemTemplateTileIcon => ProjectCardIconProvider.VipTemplate;
 
-	public override Image CustomTemplateTileIcon => Resources.tileModule;
+	public override Image CustomTemplateTileIcon => ProjectCardIconProvider.CustomTemplate;
 
 	public override Image CurrentProjectIcon => Resources.CurrentModule;
 

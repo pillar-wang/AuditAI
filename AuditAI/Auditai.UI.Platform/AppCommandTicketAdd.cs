@@ -7,7 +7,7 @@ public class AppCommandTicketAdd : AppCommandButton
 {
 	public override string Text => "新增表单";
 
-	public override Image LargeIcon => Resources.CreateTemplate;
+	public override Image LargeIcon => IconRes.CreateTemplate;
 
 	protected override void Clicked()
 	{

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -195,12 +195,12 @@ public class FindReplace : C1RibbonForm
 			btnRepalce2.Enabled = false;
 			btnReplaceAll.Enabled = false;
 			btnReplace1.Visible = true;
-			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Replace);
+			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Replace);
 		}
 		else
 		{
 			btnReplace1_Click(null, null);
-			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Replace);
+			base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Replace);
 		}
 		txtFindText.Focus();
 		Show();
@@ -384,7 +384,7 @@ public class FindReplace : C1RibbonForm
 		this.pnlFindText.Width = 629;
 		this.cboScope.AllowSpinLoop = false;
 		this.cboScope.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cboScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.cboScope.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.cboScope.GapHeight = 0;
 		this.cboScope.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cboScope.ItemsDisplayMember = "";
@@ -399,7 +399,7 @@ public class FindReplace : C1RibbonForm
 		this.lblScope.AutoSize = true;
 		this.lblScope.BackColor = System.Drawing.Color.Transparent;
 		this.lblScope.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblScope.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblScope.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblScope.ForeColor = System.Drawing.Color.Black;
 		this.lblScope.Location = new System.Drawing.Point(18, 105);
 		this.lblScope.Name = "lblScope";
@@ -412,7 +412,7 @@ public class FindReplace : C1RibbonForm
 		this.ckbIsMatchCase.BackColor = System.Drawing.Color.Transparent;
 		this.ckbIsMatchCase.BorderColor = System.Drawing.Color.Transparent;
 		this.ckbIsMatchCase.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.ckbIsMatchCase.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.ckbIsMatchCase.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.ckbIsMatchCase.ForeColor = System.Drawing.Color.Black;
 		this.ckbIsMatchCase.Location = new System.Drawing.Point(18, 138);
 		this.ckbIsMatchCase.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -426,7 +426,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label1.AutoSize = true;
 		this.c1Label1.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label1.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label1.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.ForeColor = System.Drawing.Color.Black;
 		this.c1Label1.Location = new System.Drawing.Point(18, 14);
 		this.c1Label1.Name = "c1Label1";
@@ -438,7 +438,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label2.AutoSize = true;
 		this.c1Label2.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label2.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label2.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label2.ForeColor = System.Drawing.Color.Black;
 		this.c1Label2.Location = new System.Drawing.Point(18, 61);
 		this.c1Label2.Name = "c1Label2";
@@ -448,7 +448,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label2.Text = "匹配方式：";
 		this.c1Label2.TextDetached = true;
 		this.c1Label2.VisualStyleBaseStyle = C1.Win.C1Input.VisualStyle.Office2007Blue;
-		this.btnFindNext.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnFindNext.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnFindNext.Location = new System.Drawing.Point(486, 5);
 		this.btnFindNext.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnFindNext.Name = "btnFindNext";
@@ -457,7 +457,7 @@ public class FindReplace : C1RibbonForm
 		this.btnFindNext.Text = "查找下一个";
 		this.btnFindNext.UseVisualStyleBackColor = true;
 		this.btnFindNext.Click += new System.EventHandler(btnFindNext_Click);
-		this.btnReplace1.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnReplace1.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnReplace1.Location = new System.Drawing.Point(486, 55);
 		this.btnReplace1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnReplace1.Name = "btnReplace1";
@@ -468,7 +468,7 @@ public class FindReplace : C1RibbonForm
 		this.btnReplace1.Click += new System.EventHandler(btnReplace1_Click);
 		this.cmbMatchModeList.AllowSpinLoop = false;
 		this.cmbMatchModeList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cmbMatchModeList.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.cmbMatchModeList.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.cmbMatchModeList.GapHeight = 0;
 		this.cmbMatchModeList.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cmbMatchModeList.ItemsDisplayMember = "";
@@ -497,7 +497,7 @@ public class FindReplace : C1RibbonForm
 		this.pnlReplaceText.TabIndex = 1;
 		this.pnlReplaceText.Visible = false;
 		this.pnlReplaceText.Width = 629;
-		this.btnRepalce2.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnRepalce2.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnRepalce2.Location = new System.Drawing.Point(486, 13);
 		this.btnRepalce2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnRepalce2.Name = "btnRepalce2";
@@ -506,7 +506,7 @@ public class FindReplace : C1RibbonForm
 		this.btnRepalce2.Text = "替换";
 		this.btnRepalce2.UseVisualStyleBackColor = true;
 		this.btnRepalce2.Click += new System.EventHandler(btnRepalce2_Click);
-		this.btnReplaceAll.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnReplaceAll.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnReplaceAll.Location = new System.Drawing.Point(486, 62);
 		this.btnReplaceAll.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnReplaceAll.Name = "btnReplaceAll";
@@ -518,7 +518,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label5.AutoSize = true;
 		this.c1Label5.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label5.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label5.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label5.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label5.ForeColor = System.Drawing.Color.Black;
 		this.c1Label5.Location = new System.Drawing.Point(18, 69);
 		this.c1Label5.Name = "c1Label5";
@@ -530,7 +530,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label4.AutoSize = true;
 		this.c1Label4.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label4.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.c1Label4.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1Label4.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label4.ForeColor = System.Drawing.Color.Black;
 		this.c1Label4.Location = new System.Drawing.Point(18, 20);
 		this.c1Label4.Name = "c1Label4";
@@ -541,7 +541,7 @@ public class FindReplace : C1RibbonForm
 		this.c1Label4.TextDetached = true;
 		this.cmbReplaceModeList.AllowSpinLoop = false;
 		this.cmbReplaceModeList.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.cmbReplaceModeList.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.cmbReplaceModeList.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.cmbReplaceModeList.GapHeight = 0;
 		this.cmbReplaceModeList.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.cmbReplaceModeList.ItemsDisplayMember = "";
@@ -554,7 +554,7 @@ public class FindReplace : C1RibbonForm
 		this.cmbReplaceModeList.Tag = null;
 		this.cmbReplaceModeList.TextDetached = true;
 		this.txtFindText.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtFindText.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtFindText.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtFindText.Location = new System.Drawing.Point(126, 9);
 		this.txtFindText.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.txtFindText.Name = "txtFindText";
@@ -564,7 +564,7 @@ public class FindReplace : C1RibbonForm
 		this.txtFindText.TextDetached = true;
 		this.txtFindText.TextChanged += new System.EventHandler(txtFindText_TextChanged);
 		this.txtReplaceText.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtReplaceText.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtReplaceText.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtReplaceText.Location = new System.Drawing.Point(126, 16);
 		this.txtReplaceText.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.txtReplaceText.Name = "txtReplaceText";
@@ -577,7 +577,7 @@ public class FindReplace : C1RibbonForm
 		base.BackgroundColor = System.Drawing.Color.White;
 		base.ClientSize = new System.Drawing.Size(629, 313);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

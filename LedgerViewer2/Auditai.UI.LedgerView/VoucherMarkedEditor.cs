@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -235,8 +235,6 @@ public class VoucherMarkedEditor : ISetTheme
 
 	private bool _isMouseOverCancelMyMarkIcon;
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private C1SplitterPanel pnlSidebar;
 
 	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
@@ -349,15 +347,6 @@ public class VoucherMarkedEditor : ISetTheme
 		Tree.Styles.EmptyArea.BackColor = Color.Transparent;
 		Tree.Styles.EmptyArea.Border.Style = C1.Win.C1FlexGrid.BorderStyleEnum.None;
 		_brushHoverBackground.Color = Color.FromArgb(100, Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetBackgroundSolidColor("C1FlexGrid\\Styles\\Highlight\\Background"));
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	private void PnlMarkDetails_CloseButtonClick(object sender, EventArgs e)
@@ -494,11 +483,11 @@ public class VoucherMarkedEditor : ISetTheme
 			HitTestInfo hitTestInfo = grdVouchers.HitTest();
 			if (hitTestInfo.Type == HitTestTypeEnum.Cell)
 			{
-				mnuVoucher.ShowContextMenu(grdVouchers, e.Location);
+				NativeMenuShim.Show(mnuVoucher, grdVouchers, e.Location);
 			}
 			else if (hitTestInfo.Type == HitTestTypeEnum.ColumnHeader)
 			{
-				mnuVoucherColumn.ShowContextMenu(grdVouchers, e.Location);
+				NativeMenuShim.Show(mnuVoucherColumn, grdVouchers, e.Location);
 			}
 		}
 	}
@@ -523,7 +512,7 @@ public class VoucherMarkedEditor : ISetTheme
 	{
 		if (e.Button == MouseButtons.Right && grdDetail.HitTest().Type == HitTestTypeEnum.Cell)
 		{
-			mnuDetail.ShowContextMenu(grdDetail, e.Location);
+			NativeMenuShim.Show(mnuDetail, grdDetail, e.Location);
 		}
 	}
 
@@ -710,7 +699,7 @@ public class VoucherMarkedEditor : ISetTheme
 		Tree.MouseLeave += Tree_MouseLeave;
 		Tree.MouseClick += Tree_MouseClick;
 		Tree.MouseDoubleClick += Tree_MouseDoubleClick;
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblVoucherTitle.TextDetached = true;
 		lblVoucherTitle.BorderStyle = BorderStyle.None;
 		lblVoucherTitle.Dock = DockStyle.Fill;
@@ -741,14 +730,14 @@ public class VoucherMarkedEditor : ISetTheme
 		C1CommandLink c1CommandLink = new C1CommandLink();
 		C1Command c1Command = new C1Command();
 		c1Command.Text = "取消关注";
-		c1Command.Image = Resources.sidebarMarkCancel;
+		c1Command.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("minus-circle", 28, Color.FromArgb(239, 68, 68));
 		c1Command.Click += CmdSideMarkCancel_Click;
 		c1CommandLink.Command = c1Command;
 		c1ToolBar.CommandLinks.Add(c1CommandLink);
 		C1CommandLink c1CommandLink2 = new C1CommandLink();
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = "填充至底稿";
-		c1Command2.Image = Resources.sideFillToTable;
+		c1Command2.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("export", 28, Color.FromArgb(217, 119, 6));
 		c1Command2.Click += delegate
 		{
 			FillToTable();
@@ -763,7 +752,7 @@ public class VoucherMarkedEditor : ISetTheme
 		c1CommandLink3.Delimiter = true;
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "隐藏侧边栏";
-		c1Command3.Image = Resources.sideHideSidebar;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
@@ -773,10 +762,6 @@ public class VoucherMarkedEditor : ISetTheme
 		pnlVoucherGrid.Height = 284;
 		pnlVoucherGrid.KeepRelativeSize = true;
 		pnlVoucherGrid.Controls.Add(value);
-		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		ctnVouchers.AutoSizeElement = AutoSizeElement.Both;
 		ctnVouchers.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		ctnVouchers.Dock = DockStyle.Fill;
@@ -789,7 +774,7 @@ public class VoucherMarkedEditor : ISetTheme
 		pnlVouchers.Height = 315;
 		pnlVouchers.KeepRelativeSize = true;
 		pnlVouchers.Controls.Add(ctnVouchers);
-		Font font2 = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblDetailTitle.TextDetached = true;
 		lblDetailTitle.Anchor = AnchorStyles.Top;
 		lblDetailTitle.AutoSize = true;
@@ -898,7 +883,7 @@ public class VoucherMarkedEditor : ISetTheme
 		pnlDetails.Text = " ";
 		pnlDetails.Controls.Add(ctnDetails);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -1068,7 +1053,7 @@ public class VoucherMarkedEditor : ISetTheme
 		}
 		else if (e.Button == MouseButtons.Right)
 		{
-			ctxTree.ShowContextMenu(Tree, e.Location);
+			NativeMenuShim.Show(ctxTree, Tree, e.Location);
 		}
 	}
 

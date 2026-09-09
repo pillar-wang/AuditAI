@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -185,7 +185,7 @@ internal class frmManageSnapshots : C1RibbonForm
 	{
 		if (e.Button == MouseButtons.Right && _grid.HitTest(e.Location).Type == HitTestTypeEnum.Cell)
 		{
-			_ctx.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(_ctx, _grid, e.Location);
 		}
 	}
 
@@ -205,10 +205,10 @@ internal class frmManageSnapshots : C1RibbonForm
 	{
 		return kind switch
 		{
-			0 => Resources.TreeTable, 
-			1 => Resources.TreeDoc, 
-			2 => Resources.TreeImage, 
-			3 => Resources.TreePdf, 
+			0 => IconRes.TreeTable, 
+			1 => IconRes.TreeDoc, 
+			2 => IconRes.TreeImage, 
+			3 => IconRes.TreePdf, 
 			_ => null, 
 		};
 	}
@@ -334,7 +334,7 @@ internal class frmManageSnapshots : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(770, 545);
 		base.Controls.Add(this._ctn);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmManageSnapshots";
 		base.ShowInTaskbar = false;

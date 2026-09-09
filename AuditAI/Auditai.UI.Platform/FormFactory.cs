@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿﻿﻿using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Ribbon;
 
@@ -10,7 +10,7 @@ public static class FormFactory
 
 	static FormFactory()
 	{
-		_font = new Font("Noto Sans SC", 9f);
+		_font = new Font("微软雅黑", 9f);
 	}
 
 	public static C1RibbonForm Create()

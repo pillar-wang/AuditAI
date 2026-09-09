@@ -7,7 +7,7 @@ public class AppCommandShowHorizontalRuler : AppCommandToggleButton
 {
 	public override string Text => "横向标尺";
 
-	public override Image LargeIcon => Resources.ToggleHorzRuler;
+	public override Image LargeIcon => IconRes.ToggleHorzRuler;
 
 	protected override void Pressed()
 	{

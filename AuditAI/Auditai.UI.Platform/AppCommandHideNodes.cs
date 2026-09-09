@@ -7,7 +7,7 @@ public class AppCommandHideNodes : AppCommandButton
 {
 	public override string Text => "批量隐藏文件";
 
-	public override Image LargeIcon => Resources.HideNodes;
+	public override Image LargeIcon => IconRes.HideNodes;
 
 	protected override void Clicked()
 	{

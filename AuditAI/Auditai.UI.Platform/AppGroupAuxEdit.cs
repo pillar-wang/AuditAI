@@ -7,7 +7,7 @@ public class AppGroupAuxEdit : AppCommandGroup
 {
 	public override string Text => "辅助编辑";
 
-	public override Image Image => Resources.ComboList;
+	public override Image Image => IconRes.ComboList;
 
 	public AppGroupAuxEdit()
 	{

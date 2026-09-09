@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -43,34 +43,34 @@ public class frmLogin : Form
 
 	private Auditai.Model.User _loginedUser;
 
-	#region === 设计令牌（Google Blue 风格，全局统一） ===
+	#region === 设计令牌（轻盈清新风格，全局统一） ===
 
-	/// <summary>主色（Google Blue #1a73e8）</summary>
-	private static Color Primary = Color.FromArgb(26, 115, 232);
+	/// <summary>主色（清新蓝 #3b82f6）</summary>
+	private static Color Primary = Color.FromArgb(59, 130, 246);
 
-	/// <summary>主色-按下态（暗一档 #1557b0）</summary>
-	private static Color PrimaryDark = Color.FromArgb(21, 87, 176);
+	/// <summary>主色-按下态（暗一档 #1d4ed8）</summary>
+	private static Color PrimaryDark = Color.FromArgb(29, 78, 216);
 
-	/// <summary>主色-悬停态（亮一档 #1765cc）</summary>
-	private static Color PrimaryLight = Color.FromArgb(23, 101, 204);
+	/// <summary>主色-悬停态（亮一档 #2563eb）</summary>
+	private static Color PrimaryLight = Color.FromArgb(37, 99, 235);
 
-	/// <summary>默认边框色（未聚焦输入框 #e2e8f0）</summary>
-	private static Color LineColorDefault = Color.FromArgb(226, 232, 240);
+	/// <summary>默认边框色（未聚焦输入框 #e5e7eb）</summary>
+	private static Color LineColorDefault = Color.FromArgb(229, 231, 235);
 
 	/// <summary>浅灰边框（鼠标离开后）</summary>
-	private static Color LineColorLightGray = Color.FromArgb(203, 213, 225);
+	private static Color LineColorLightGray = Color.FromArgb(209, 213, 219);
 
-	/// <summary>Surface-0：窗体背景 #f8fafc</summary>
-	private static Color Surface0 = Color.FromArgb(248, 250, 252);
+	/// <summary>Surface-0：窗体背景 #fafbfc</summary>
+	private static Color Surface0 = Color.FromArgb(250, 251, 252);
 
 	/// <summary>Surface-1：卡片/面板/输入框白底</summary>
 	private static Color Surface1 = Color.FromArgb(255, 255, 255);
 
-	/// <summary>主文字色（#0f172a，对比度 ~16.3:1 on 白色）</summary>
-	private static Color TextPrimary = Color.FromArgb(15, 23, 42);
+	/// <summary>主文字色（#1e293b，对比度 ~12.6:1 on 白色）</summary>
+	private static Color TextPrimary = Color.FromArgb(30, 41, 59);
 
-	/// <summary>次文字色（标签/占位符 #334155，对比度 ~8.6:1）</summary>
-	private static Color TextSecondary = Color.FromArgb(51, 65, 85);
+	/// <summary>次文字色（标签/占位符 #475569，对比度 ~6.3:1）</summary>
+	private static Color TextSecondary = Color.FromArgb(71, 85, 105);
 
 	/// <summary>占位符/链接普通态文字色（#64748b 对比度 ~4.7:1 满足 WCAG AA）</summary>
 	private static Color TextPlaceholder = Color.FromArgb(100, 116, 139);
@@ -86,13 +86,13 @@ public class frmLogin : Form
 
 	private LoginType _loginType;
 
-	private Font _loginLinkNormalFont = new Font("Noto Sans SC", 9.5f);
+	private Font _loginLinkNormalFont = new Font("微软雅黑", 9.5f);
 
-	private Font _loginLinkFocusFont = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
+	private Font _loginLinkFocusFont = new Font("微软雅黑", 9.5f, FontStyle.Bold);
 
-	private Font _passwordEmptyFont = new Font("Noto Sans SC", 9f);
+	private Font _passwordEmptyFont = new Font("微软雅黑", 9f);
 
-	private Font _passwordExistValueFont = new Font("Noto Sans SC", 9f, FontStyle.Bold);
+	private Font _passwordExistValueFont = new Font("微软雅黑", 9f, FontStyle.Bold);
 
 	private Color _loginLinkNormalColor = TextPlaceholder;
 
@@ -142,7 +142,7 @@ public class frmLogin : Form
 
 	private C1TextBoxEx txtPassword;
 
-	private C1Button btnClose;
+	private System.Windows.Forms.Button btnClose;
 
 	private C1SplitContainer ctnUserName;
 
@@ -329,17 +329,17 @@ public class frmLogin : Form
 		if (lblWelcomeTitle != null)
 		{
 			lblWelcomeTitle.ForeColor = TextPrimary;
-			lblWelcomeTitle.Font = new Font("Noto Sans SC", 15f, FontStyle.Bold);
+			lblWelcomeTitle.Font = new Font("微软雅黑", 15f, FontStyle.Bold);
 		}
 		if (lblProductName != null)
 		{
 			lblProductName.ForeColor = TextSecondary;
-			lblProductName.Font = new Font("Noto Sans SC", 10f);
+			lblProductName.Font = new Font("微软雅黑", 10f);
 		}
 		if (lblEnterpriseName != null)
 		{
 			lblEnterpriseName.ForeColor = TextSecondary;
-			lblEnterpriseName.Font = new Font("Noto Sans SC", 9.5f);
+			lblEnterpriseName.Font = new Font("微软雅黑", 9.5f);
 		}
 
 		// 递归应用到所有子控件
@@ -352,23 +352,23 @@ public class frmLogin : Form
 				{
 					tb.ForeColor = TextPrimary;
 					tb.BackColor = Surface1;
-					tb.Font = new Font("Noto Sans SC", 9.5f);
+					tb.Font = new Font("微软雅黑", 9.5f);
 				}
 				else if (c is C1Label c1lbl)
 				{
 					c1lbl.ForeColor = TextSecondary;
-					c1lbl.Font = new Font("Noto Sans SC", 9.5f);
+					c1lbl.Font = new Font("微软雅黑", 9.5f);
 				}
 				else if (c is LinkLabel ll)
 				{
 					if (ll.LinkColor == Color.Empty || ll.LinkColor.ToArgb() == Color.Black.ToArgb()
-						|| ll.LinkColor.ToArgb() == Color.FromArgb(51, 51, 51).ToArgb())
+						|| ll.LinkColor.ToArgb() == Color.FromArgb(30, 41, 59).ToArgb())
 					{
 						ll.LinkColor = Primary;
 					}
 					ll.ActiveLinkColor = PrimaryDark;
 					ll.VisitedLinkColor = PrimaryDark;
-					ll.Font = new Font("Noto Sans SC", 9.5f);
+					ll.Font = new Font("微软雅黑", 9.5f);
 				}
 				else if (c is Label lbl)
 				{
@@ -381,12 +381,12 @@ public class frmLogin : Form
 						|| lbl == labelSperator1 || lbl == labelSperator2)
 					{
 						// 下划线 / 分割线：由 InitColor / SwitchLoginType 单独设置颜色
-						lbl.Font = new Font("Noto Sans SC", 9.5f);
+						lbl.Font = new Font("微软雅黑", 9.5f);
 					}
 					else
 					{
 						lbl.ForeColor = TextSecondary;
-						lbl.Font = new Font("Noto Sans SC", 9.5f);
+						lbl.Font = new Font("微软雅黑", 9.5f);
 					}
 				}
 				else if (c is C1Button btn)
@@ -394,18 +394,18 @@ public class frmLogin : Form
 					if (btn == btnLogin || btn == btnSendCode)
 					{
 						btn.ForeColor = Color.White;
-						btn.Font = new Font("Noto Sans SC", 9f, FontStyle.Bold);
+						btn.Font = new Font("微软雅黑", 9f, FontStyle.Bold);
 					}
 					else if (btn == btnClose)
 					{
 						btn.ForeColor = TextPrimary;
-						btn.BackColor = Color.Transparent;
-						btn.Font = new Font("Noto Sans SC", 9f);
+						btn.BackColor = Color.White;
+						btn.Font = new Font("微软雅黑", 9f);
 					}
 					else
 					{
 						btn.ForeColor = TextPrimary;
-						btn.Font = new Font("Noto Sans SC", 9.5f);
+						btn.Font = new Font("微软雅黑", 9.5f);
 					}
 				}
 				if (c.HasChildren) Apply(c);
@@ -433,7 +433,7 @@ public class frmLogin : Form
 		if (lblVersion != null)
 		{
 			lblVersion.ForeColor = TextSecondary;
-			lblVersion.Font = new Font("Noto Sans SC", 9f);
+			lblVersion.Font = new Font("微软雅黑", 9f);
 		}
 	}
 
@@ -547,7 +547,7 @@ public class frmLogin : Form
 		foreach (var link in links)
 		{
 			if (link == null) continue;
-			link.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+			link.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 			link.LinkColor = AuditTheme.Brand;       // Google 蓝
 			link.ActiveLinkColor = AuditTheme.BrandActive; // 点击时深蓝
 			link.VisitedLinkColor = AuditTheme.Brand;    // 访问后也是品牌蓝
@@ -1485,7 +1485,7 @@ public class frmLogin : Form
 		using (var bgBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
 			new Point(0, 0),
 			new Point(base.Width, base.Height),
-			Color.FromArgb(227, 240, 255),
+			Color.FromArgb(239, 246, 255),
 			Color.FromArgb(245, 248, 250)))
 		{
 			g.FillRectangle(bgBrush, bgRect);
@@ -1625,7 +1625,7 @@ public class frmLogin : Form
 		this.linkRegister = new System.Windows.Forms.LinkLabel();
 		this.RememberPwd = new C1.Win.C1Input.C1CheckBox();
 		this.c1SuperTooltip1 = new C1.Win.C1SuperTooltip.C1SuperTooltip(this.components);
-		this.btnClose = new C1.Win.C1Input.C1Button();
+		this.btnClose = new System.Windows.Forms.Button();
 		this.lblVersion = new C1.Win.C1Input.C1Label();
 		this.progressBar1 = new Auditai.UI.Controls.WinformProgressBarEx();
 		this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -1657,8 +1657,7 @@ public class frmLogin : Form
 		((System.ComponentModel.ISupportInitialize)this.picPassword).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.txtPassword).BeginInit();
 		((System.ComponentModel.ISupportInitialize)this.RememberPwd).BeginInit();
-		((System.ComponentModel.ISupportInitialize)this.btnClose).BeginInit();
-		((System.ComponentModel.ISupportInitialize)this.lblVersion).BeginInit();
+				((System.ComponentModel.ISupportInitialize)this.lblVersion).BeginInit();
 		this.pnlBrand.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)this.picLogo).BeginInit();
 		this.pnlLoginRight.SuspendLayout();
@@ -1668,7 +1667,7 @@ public class frmLogin : Form
 		this.btnLogin.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(53, 123, 189);
 		this.btnLogin.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(90, 160, 230);
 		this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnLogin.Font = new System.Drawing.Font("Noto Sans SC", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnLogin.Font = new System.Drawing.Font("微软雅黑", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnLogin.ForeColor = System.Drawing.Color.White;
 		// 紧凑化：x 60→40，y 562→484，Size 450×66→420×54（保持高 54，满足 ≥44 触控
 		this.btnLogin.Location = new System.Drawing.Point(40, 484);
@@ -1690,7 +1689,7 @@ public class frmLogin : Form
 		this.ctnUserName.TabIndex = 6;
 		this.ctnUserName.UseParentVisualStyle = false;
 		this.pnlUserName.BackColor = System.Drawing.Color.White;
-		this.pnlUserName.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.pnlUserName.BorderColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.pnlUserName.BorderWidth = 1;
 		this.pnlUserName.Controls.Add(this.picturePhone);
 		this.pnlUserName.Controls.Add(this.txtPhoneNumber);
@@ -1706,7 +1705,7 @@ public class frmLogin : Form
 		this.pnlUserName.Size = new System.Drawing.Size(417, 54);
 		this.pnlUserName.TabIndex = 0;
 		this.pnlUserName.Click += new System.EventHandler(pnlUserName_Click);
-		this.picturePhone.BackgroundImage = Auditai.UI.Platform.Properties.Resources.phoneLogin;
+		this.picturePhone.BackgroundImage = Auditai.UI.Platform.IconRes.phoneLogin;
 		this.picturePhone.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		// 紧凑化：向左上收缩内边距
 		this.picturePhone.Location = new System.Drawing.Point(14, 12);
@@ -1717,8 +1716,8 @@ public class frmLogin : Form
 		this.txtPhoneNumber.AutoSize = false;
 		this.txtPhoneNumber.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f，与另外两个窗体保持一致
-		this.txtPhoneNumber.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPhoneNumber.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtPhoneNumber.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtPhoneNumber.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		// 字号统一：高度 44→46，为更大的字号留足垂直空间
 		this.txtPhoneNumber.Location = new System.Drawing.Point(48, 4);
 		this.txtPhoneNumber.Name = "txtPhoneNumber";
@@ -1727,7 +1726,7 @@ public class frmLogin : Form
 		this.txtPhoneNumber.Tag = null;
 		this.txtPhoneNumber.TextDetached = true;
 		this.txtPhoneNumber.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
-		this.picUserName.BackgroundImage = Auditai.UI.Platform.Properties.Resources.userlogin;
+		this.picUserName.BackgroundImage = Auditai.UI.Platform.IconRes.userlogin;
 		this.picUserName.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		// 紧凑化：向左上收缩内边距
 		this.picUserName.Location = new System.Drawing.Point(14, 12);
@@ -1738,8 +1737,8 @@ public class frmLogin : Form
 		this.txtUserName.AutoSize = false;
 		this.txtUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f
-		this.txtUserName.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtUserName.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtUserName.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtUserName.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		// 字号统一：高度 44→46
 		this.txtUserName.Location = new System.Drawing.Point(48, 4);
 		this.txtUserName.Name = "txtUserName";
@@ -1761,7 +1760,7 @@ public class frmLogin : Form
 		this.ctnPassword.TabIndex = 7;
 		this.ctnPassword.UseParentVisualStyle = false;
 		this.pnlPassword.BackColor = System.Drawing.Color.White;
-		this.pnlPassword.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.pnlPassword.BorderColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.pnlPassword.BorderWidth = 1;
 		this.pnlPassword.Controls.Add(this.txtValidateCode);
 		this.pnlPassword.Controls.Add(this.btnSendCode);
@@ -1779,8 +1778,8 @@ public class frmLogin : Form
 		this.txtValidateCode.AutoSize = false;
 		this.txtValidateCode.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f
-		this.txtValidateCode.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtValidateCode.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtValidateCode.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtValidateCode.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		// 字号统一：高度 44→46
 		this.txtValidateCode.Location = new System.Drawing.Point(48, 4);
 		this.txtValidateCode.Name = "txtValidateCode";
@@ -1804,7 +1803,7 @@ public class frmLogin : Form
 		this.btnSendCode.Text = "获取验证码";
 		this.btnSendCode.UseVisualStyleBackColor = false;
 		this.btnSendCode.Click += new System.EventHandler(btnSendCode_Click);
-		this.picPassword.BackgroundImage = Auditai.UI.Platform.Properties.Resources.password;
+		this.picPassword.BackgroundImage = Auditai.UI.Platform.IconRes.password;
 		this.picPassword.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		// 紧凑化：向左上收缩内边距
 		this.picPassword.Location = new System.Drawing.Point(14, 12);
@@ -1815,8 +1814,8 @@ public class frmLogin : Form
 		this.txtPassword.AutoSize = false;
 		this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f，保留 Bold 密码强调样式
-		this.txtPassword.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(51, 51, 51);
+		this.txtPassword.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtPassword.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		// 字号统一：高度 44→46
 		this.txtPassword.Location = new System.Drawing.Point(48, 4);
 		this.txtPassword.Name = "txtPassword";
@@ -1830,7 +1829,7 @@ public class frmLogin : Form
 		this.linkForgetPwd.AutoSize = true;
 		this.linkForgetPwd.BackColor = System.Drawing.Color.Transparent;
 		// 字号统一：正文 9f → 10.5f
-		this.linkForgetPwd.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.linkForgetPwd.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkForgetPwd.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		this.linkForgetPwd.LinkColor = System.Drawing.Color.FromArgb(74, 144, 226);
 		// 字号统一：高度 26→28
@@ -1847,7 +1846,7 @@ public class frmLogin : Form
 		this.linkRegister.AutoSize = true;
 		this.linkRegister.BackColor = System.Drawing.Color.Transparent;
 		// 字号统一：正文 9f → 10.5f
-		this.linkRegister.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.linkRegister.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkRegister.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		this.linkRegister.LinkColor = System.Drawing.Color.FromArgb(74, 144, 226);
 		// 字号统一：高度 26→28
@@ -1863,8 +1862,8 @@ public class frmLogin : Form
 		this.RememberPwd.BackColor = System.Drawing.Color.Transparent;
 		this.RememberPwd.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f
-		this.RememberPwd.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.RememberPwd.ForeColor = System.Drawing.Color.FromArgb(80, 80, 80);
+		this.RememberPwd.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.RememberPwd.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
 		// 字号统一：高度 32→34
 		this.RememberPwd.Location = new System.Drawing.Point(40, 434);
 		this.RememberPwd.Name = "RememberPwd";
@@ -1873,16 +1872,16 @@ public class frmLogin : Form
 		this.RememberPwd.Text = "记住密码";
 		this.RememberPwd.UseVisualStyleBackColor = false;
 		this.RememberPwd.Value = null;
-		this.c1SuperTooltip1.Font = new System.Drawing.Font("Tahoma", 8f);
+		this.c1SuperTooltip1.Font = new System.Drawing.Font("微软雅黑", 9f);
 		this.c1SuperTooltip1.RightToLeft = System.Windows.Forms.RightToLeft.Inherit;
 		this.c1SuperTooltip1.Shadow = false;
-		this.btnClose.BackColor = System.Drawing.Color.Transparent;
+		this.btnClose.BackColor = System.Drawing.Color.White;
 		this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 		this.btnClose.FlatAppearance.BorderSize = 0;
 		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(255, 200, 200);
 		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnClose.Image = Auditai.UI.Platform.Properties.Resources.close2;
+		this.btnClose.Image = Auditai.UI.Platform.IconRes.close2;
 		// 紧凑化：注意 btnClose 在 pnlLoginRight 内部，x 按 500 宽面板调整（右边距 10）
 		this.btnClose.Location = new System.Drawing.Point(452, 10);
 		this.btnClose.Name = "btnClose";
@@ -1893,7 +1892,7 @@ public class frmLogin : Form
 		this.lblVersion.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
 		this.lblVersion.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		// 字号统一：正文 9f → 10.5f（三个窗体底部版本号对齐）
-		this.lblVersion.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblVersion.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblVersion.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		// 字号统一：高度 26→28
 		this.lblVersion.Location = new System.Drawing.Point(40, 554);
@@ -1918,7 +1917,7 @@ public class frmLogin : Form
 		this.timer1.Interval = 5;
 		this.linkLabelLoginByPassword.ActiveLinkColor = System.Drawing.Color.FromArgb(90, 160, 230);
 		this.linkLabelLoginByPassword.BackColor = System.Drawing.Color.Transparent;
-		this.linkLabelLoginByPassword.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.linkLabelLoginByPassword.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkLabelLoginByPassword.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		this.linkLabelLoginByPassword.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
 		this.linkLabelLoginByPassword.LinkColor = System.Drawing.Color.FromArgb(74, 144, 226);
@@ -1932,7 +1931,7 @@ public class frmLogin : Form
 		this.linkLabelLoginByPassword.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 		this.linkLabelLoginByCode.ActiveLinkColor = System.Drawing.Color.FromArgb(90, 160, 230);
 		this.linkLabelLoginByCode.BackColor = System.Drawing.Color.Transparent;
-		this.linkLabelLoginByCode.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.linkLabelLoginByCode.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkLabelLoginByCode.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		this.linkLabelLoginByCode.LinkBehavior = System.Windows.Forms.LinkBehavior.NeverUnderline;
 		this.linkLabelLoginByCode.LinkColor = System.Drawing.Color.FromArgb(74, 144, 226);
@@ -1993,7 +1992,7 @@ public class frmLogin : Form
 		// lblProductName (品牌区 产品名)
 		this.lblProductName.AutoSize = false;
 		this.lblProductName.BackColor = System.Drawing.Color.Transparent;
-		this.lblProductName.Font = new System.Drawing.Font("Noto Sans SC", 14f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblProductName.Font = new System.Drawing.Font("微软雅黑", 14f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblProductName.ForeColor = System.Drawing.Color.FromArgb(74, 144, 226);
 		// 紧凑化：x 60→40，宽度 450→420，y 135→114
 		this.lblProductName.Location = new System.Drawing.Point(40, 114);
@@ -2005,7 +2004,7 @@ public class frmLogin : Form
 		// lblEnterpriseName (品牌区 企业名称，预留)
 		this.lblEnterpriseName.AutoSize = false;
 		this.lblEnterpriseName.BackColor = System.Drawing.Color.Transparent;
-		this.lblEnterpriseName.Font = new System.Drawing.Font("Noto Sans SC", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblEnterpriseName.Font = new System.Drawing.Font("微软雅黑", 11f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblEnterpriseName.ForeColor = System.Drawing.Color.FromArgb(107, 119, 133);
 		// 紧凑化：x 60→40，宽度 450→420，y 172→150
 		this.lblEnterpriseName.Location = new System.Drawing.Point(40, 150);
@@ -2017,7 +2016,7 @@ public class frmLogin : Form
 		// lblWelcomeTitle (登录区 "欢迎登录" 标题)
 		this.lblWelcomeTitle.AutoSize = false;
 		this.lblWelcomeTitle.BackColor = System.Drawing.Color.Transparent;
-		this.lblWelcomeTitle.Font = new System.Drawing.Font("Noto Sans SC", 15f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblWelcomeTitle.Font = new System.Drawing.Font("微软雅黑", 15f, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblWelcomeTitle.ForeColor = System.Drawing.Color.FromArgb(74, 144, 226);
 		// 紧凑化：x 60→40，宽度 450→420，y 210→186
 		this.lblWelcomeTitle.Location = new System.Drawing.Point(40, 186);
@@ -2063,7 +2062,7 @@ public class frmLogin : Form
 		base.ClientSize = new System.Drawing.Size(560, 680);
 		base.Controls.Add(this.pnlLoginRight);
 		// 字号统一：三个窗体的 Form 默认字体统一为 10.5f（与 frmFindPwd / frmRegister 一致）
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.Name = "frmLogin";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -2088,8 +2087,7 @@ public class frmLogin : Form
 		((System.ComponentModel.ISupportInitialize)this.picPassword).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.txtPassword).EndInit();
 		((System.ComponentModel.ISupportInitialize)this.RememberPwd).EndInit();
-		((System.ComponentModel.ISupportInitialize)this.btnClose).EndInit();
-		((System.ComponentModel.ISupportInitialize)this.lblVersion).EndInit();
+				((System.ComponentModel.ISupportInitialize)this.lblVersion).EndInit();
 		this.pnlBrand.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)this.picLogo).EndInit();
 		this.pnlLoginRight.ResumeLayout(false);

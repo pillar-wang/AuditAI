@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿extern alias CrawlerModelAlias;
+﻿﻿﻿﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -24,6 +25,7 @@ using Auditai.DTO;
 using Auditai.Model;
 using Auditai.UI.Controls;
 using Auditai.UI.LedgerView.Properties;
+using Newtonsoft.Json.Linq;
 
 namespace Auditai.UI.LedgerView;
 
@@ -112,6 +114,11 @@ public class frmImport : C1RibbonForm
 	internal const string FORMATSTRING_MONEY = "#,0.00;-#,0.00;#";
 
 	private List<ValidateResult2> ValidateResults = new List<ValidateResult2>();
+
+	/// <summary>
+	/// 标准科目字典 code→标准名称 索引（懒加载；空字典表示加载失败/文件不存在，不执行补全）
+	/// </summary>
+	private Dictionary<string, string> _standardAccountNamesByCode;
 
 	private readonly C1ContextMenu ctxCellBalance = new C1ContextMenu();
 
@@ -1074,41 +1081,41 @@ public class frmImport : C1RibbonForm
 			case HitTestTypeEnum.Cell:
 				if (c1FlexGrid == grdBalance)
 				{
-					ctxCellBalance.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxCellBalance, c1FlexGrid, e.Location);
 				}
 				else if (c1FlexGrid == grdVoucher)
 				{
-					ctxCellVoucher.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxCellVoucher, c1FlexGrid, e.Location);
 				}
 				else if (c1FlexGrid == grdAuxiliary)
 				{
-					ctxCellAux.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxCellAux, c1FlexGrid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.None:
 				if (c1FlexGrid == grdBalance)
 				{
-					ctxEmptyBalance.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxEmptyBalance, c1FlexGrid, e.Location);
 				}
 				else if (c1FlexGrid == grdVoucher)
 				{
-					ctxEmptyVoucher.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxEmptyVoucher, c1FlexGrid, e.Location);
 				}
 				else if (c1FlexGrid == grdAuxiliary)
 				{
-					ctxEmptyAux.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxEmptyAux, c1FlexGrid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.RowHeader:
 				if (c1FlexGrid.MouseRow >= c1FlexGrid.Rows.Fixed)
 				{
-					ctxFixedCol.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxFixedCol, c1FlexGrid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.ColumnHeader:
 				if (c1FlexGrid == grdVoucher)
 				{
-					ctxFixedHeader.ShowContextMenu(c1FlexGrid, e.Location);
+					NativeMenuShim.Show(ctxFixedHeader, c1FlexGrid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.ColumnResize:
@@ -1792,17 +1799,24 @@ public class frmImport : C1RibbonForm
 			try
 			{
 				int pasteLastRow = -1;
-				ProgressForm<List<List<object>>> progressForm = new ProgressForm<List<List<object>>>(delegate
+				List<List<object>> clipValue = null;
+				ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+				ProgressForm2 progressForm = new ProgressForm2();
+				progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 				{
-					Application.DoEvents();
-					return new ProgressInfo
+					IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
+					Task<List<List<object>>> readTask = Task.Run(() => ClipboardUtil.GetClipboardAsTable());
+					while (!readTask.IsCompleted)
 					{
-						MainCaption = "正在进行粘贴准备，可能时间较长，请耐心等待...",
-						MainProgress = ((ClipboardUtil.IsStreamReady && ClipboardUtil.RowsCount > 0) ? ((int)((double)ClipboardUtil.RowsCountAlreadyRead * 100.0 / (double)ClipboardUtil.RowsCount)) : 0)
-					};
-				}, () => Task.Run(() => ClipboardUtil.GetClipboardAsTable()), TimeSpan.FromSeconds(1.0));
-				progressForm.ShowDialog();
-				List<List<object>> clipValue = await progressForm.Task;
+						progress.Report(new ProgressInfo
+						{
+							MainCaption = "正在进行粘贴准备，可能时间较长，请耐心等待...",
+							MainProgress = ((ClipboardUtil.IsStreamReady && ClipboardUtil.RowsCount > 0) ? ((int)((double)ClipboardUtil.RowsCountAlreadyRead * 100.0 / (double)ClipboardUtil.RowsCount)) : 0)
+						});
+						await Task.Delay(100);
+					}
+					clipValue = await readTask;
+				});
 				grid.BeginUpdate();
 				if (clipValue == null)
 				{
@@ -1842,8 +1856,11 @@ public class frmImport : C1RibbonForm
 				{
 					int currentProgress = 0;
 					int totalProgress = clipValue.Count + 2;
-					ProgressForm<object> progressForm2 = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> iProg)
+					ProgressRuntimeData progressRuntimeData2 = new ProgressRuntimeData();
+					ProgressForm2 progressForm2 = new ProgressForm2();
+					progressForm2.ShowDialogOnUiThread(progressRuntimeData2, async delegate
 					{
+						IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData2);
 						iProg.Report(new ProgressInfo
 						{
 							MainCaption = "正在执行粘贴，请稍候...",
@@ -1915,10 +1932,7 @@ public class frmImport : C1RibbonForm
 						Application.DoEvents();
 						commandManager.NewCommand(new GridBatchCellUpdateValueCommand(cellInfos));
 						PopulateIndex(HotGrid);
-						return Task.FromResult(new object());
 					});
-					progressForm2.ShowDialog();
-					await progressForm2.Task;
 				}
 				else
 				{
@@ -2105,8 +2119,66 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
+	/// <summary>
+	/// 一次性同步加载本地标准科目字典（config\StandardAccountDic.json）到 code→名称 索引。
+	/// 加载失败/文件不存在时索引为空（= 不做补全），不得报错中断导入。
+	/// </summary>
+	private void EnsureStandardAccountDicLoaded()
+	{
+		if (_standardAccountNamesByCode != null)
+		{
+			return;
+		}
+		_standardAccountNamesByCode = new Dictionary<string, string>();
+		try
+		{
+			string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "StandardAccountDic.json");
+			if (File.Exists(path))
+			{
+				JObject dic = JObject.Parse(File.ReadAllText(path));
+				if (dic["Accounts"] is JArray accounts)
+				{
+					foreach (JToken item in accounts)
+					{
+						string code = item?.Value<string>("code");
+						string name = item?.Value<string>("name");
+						if (!string.IsNullOrEmpty(code) && !string.IsNullOrWhiteSpace(name))
+						{
+							_standardAccountNamesByCode[code] = name;
+						}
+					}
+				}
+			}
+		}
+		catch
+		{
+			// 文件损坏或格式错误：清空索引，仅跳过补全，不中断导入
+			_standardAccountNamesByCode.Clear();
+		}
+	}
+
+	/// <summary>
+	/// 标准名称补全：科目代码命中标准字典且名称为空/空白时返回标准名称；名称非空时保留原值不做替换
+	/// </summary>
+	private string CompleteStandardAccountName(object codeValue, object nameValue)
+	{
+		string name = nameValue?.ToString();
+		if (!string.IsNullOrWhiteSpace(name) || _standardAccountNamesByCode == null || _standardAccountNamesByCode.Count == 0)
+		{
+			return name;
+		}
+		string code = codeValue?.ToString()?.Trim();
+		if (string.IsNullOrEmpty(code))
+		{
+			return name;
+		}
+		return _standardAccountNamesByCode.TryGetValue(code, out string standardName) ? standardName : name;
+	}
+
 	private LedgerImport.DataTable ConvertFromBalance()
 	{
+		// 解析入口一次性加载标准科目字典（本地 config 文件，同步读取，无 UI 线程死锁风险）
+		EnsureStandardAccountDicLoaded();
 		LedgerImport.DataTable dataTable = new LedgerImport.DataTable();
 		DataColumn dataColumn = dataTable.Columns.Add("kmdm");
 		dataColumn.Caption = "科目代码";
@@ -2133,7 +2205,8 @@ public class frmImport : C1RibbonForm
 				{
 					DataRow dataRow = dataTable.Rows.Add();
 					dataRow["kmdm"] = row["kmdm"] ?? DBNull.Value;
-					dataRow["kmmc"] = row["kmmc"] ?? DBNull.Value;
+					// 科目名称为空时按标准字典补全标准名称，非空保留原值
+					dataRow["kmmc"] = CompleteStandardAccountName(row["kmdm"], row["kmmc"]) ?? (object)DBNull.Value;
 					dataRow["debit"] = row["debit"] ?? DBNull.Value;
 					dataRow["credit"] = row["credit"] ?? DBNull.Value;
 					dataTable.SetTag(dataRow, row);
@@ -2149,7 +2222,8 @@ public class frmImport : C1RibbonForm
 				{
 					DataRow dataRow2 = dataTable.Rows.Add();
 					dataRow2["kmdm"] = row2["kmdm"] ?? DBNull.Value;
-					dataRow2["kmmc"] = row2["kmmc"] ?? DBNull.Value;
+					// 科目名称为空时按标准字典补全标准名称，非空保留原值
+					dataRow2["kmmc"] = CompleteStandardAccountName(row2["kmdm"], row2["kmmc"]) ?? (object)DBNull.Value;
 					string text = row2["credit"]?.ToString();
 					string text2 = row2["debit"]?.ToString();
 					decimal result;
@@ -2765,8 +2839,11 @@ public class frmImport : C1RibbonForm
 			grdVoucher.FilterManager.Clear();
 			grdAuxiliary.FilterManager.Clear();
 			CrawlerModelAlias::Auditai.Model.Ledger ledger = LedgerBuilder3.EMPTY_LEDGER;
-			ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> iProgress)
+			ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+			ProgressForm2 progressForm = new ProgressForm2();
+			progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 			{
+				IProgress<ProgressInfo> iProgress = new ProgressRuntimeDataReporter(progressRuntimeData);
 				int totalProgress = 10;
 				int currentProgress = 0;
 				LedgerBuilder3 builder = new LedgerBuilder3();
@@ -2812,10 +2889,7 @@ public class frmImport : C1RibbonForm
 					MainProgress = ++currentProgress * 100 / totalProgress
 				});
 				Application.DoEvents();
-				return Task.FromResult(new object());
 			});
-			progressForm.ShowDialog();
-			await progressForm.Task;
 			if (save)
 			{
 				if (string.IsNullOrEmpty(txtCompany.Text))
@@ -4175,7 +4249,6 @@ public class frmImport : C1RibbonForm
 
 	private void InitializeComponent()
 	{
-		System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Auditai.UI.LedgerView.frmImport));
 		this.ctnAll = new C1.Win.C1SplitContainer.C1SplitContainer();
 		this.pnlTools = new C1.Win.C1SplitContainer.C1SplitterPanel();
 		this.c1CommandDock1 = new C1.Win.C1Command.C1CommandDock();
@@ -4337,9 +4410,9 @@ public class frmImport : C1RibbonForm
 		this.dockTabInput.Controls.Add(this.tabPageInputBoxBalance);
 		this.dockTabInput.Controls.Add(this.tabPageInputBoxAuxiliary);
 		this.dockTabInput.Controls.Add(this.tabPageInputBoxVoucher);
-		this.dockTabInput.Location = new System.Drawing.Point(519, 4);
+		this.dockTabInput.Location = new System.Drawing.Point(524, 4);
 		this.dockTabInput.Name = "dockTabInput";
-		this.dockTabInput.Size = new System.Drawing.Size(811, 78);
+		this.dockTabInput.Size = new System.Drawing.Size(806, 78);
 		this.dockTabInput.TabIndex = 1;
 		this.dockTabInput.TabsSpacing = 5;
 		this.dockTabInput.TabStyle = C1.Win.C1Command.TabStyleEnum.Office2007;
@@ -4492,16 +4565,16 @@ public class frmImport : C1RibbonForm
 		this.cboAuxStyle.TabIndex = 9;
 		this.cboAuxStyle.Tag = null;
 		this.txtCurrency.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtCurrency.Location = new System.Drawing.Point(389, 12);
+		this.txtCurrency.Location = new System.Drawing.Point(404, 12);
 		this.txtCurrency.Name = "txtCurrency";
 		this.txtCurrency.Size = new System.Drawing.Size(112, 36);
 		this.txtCurrency.TabIndex = 3;
 		this.txtCurrency.Tag = null;
 		this.txtCurrency.TextDetached = true;
 		this.txtCompany.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtCompany.Location = new System.Drawing.Point(95, 12);
+		this.txtCompany.Location = new System.Drawing.Point(112, 12);
 		this.txtCompany.Name = "txtCompany";
-		this.txtCompany.Size = new System.Drawing.Size(211, 36);
+		this.txtCompany.Size = new System.Drawing.Size(200, 36);
 		this.txtCompany.TabIndex = 2;
 		this.txtCompany.Tag = null;
 		this.txtCompany.TextDetached = true;
@@ -4603,28 +4676,28 @@ public class frmImport : C1RibbonForm
 		this.grdVoucher.Rows.DefaultSize = 37;
 		this.grdVoucher.Size = new System.Drawing.Size(1330, 402);
 		this.grdVoucher.TabIndex = 0;
-		this.cmdGenerate.Image = (System.Drawing.Image)resources.GetObject("cmdGenerate.Image");
+		this.cmdGenerate.Image = IconLibrary.CreateBitmap("folder-plus", 32, Color.FromArgb(22, 163, 74));
 		this.cmdGenerate.Name = "cmdGenerate";
 		this.cmdGenerate.ShortcutText = "";
 		this.cmdGenerate.Text = "生成账套";
 		this.cmdGenerate.Click += new C1.Win.C1Command.ClickEventHandler(cmdGenerate_Click);
 		this.cmdFilltip.CheckAutoToggle = true;
-		this.cmdFilltip.Image = (System.Drawing.Image)resources.GetObject("cmdFilltip.Image");
+		this.cmdFilltip.Image = IconLibrary.CreateBitmap("lightbulb", 32, Color.FromArgb(217, 119, 6));
 		this.cmdFilltip.Name = "cmdFilltip";
 		this.cmdFilltip.ShortcutText = "";
 		this.cmdFilltip.Text = "填表提示";
 		this.cmdFilltip.CheckedChanged += new C1.Win.C1Command.CheckedChangedEventHandler(cmdFilltip_CheckedChanged);
-		this.cmdValidate.Image = (System.Drawing.Image)resources.GetObject("cmdValidate.Image");
+		this.cmdValidate.Image = IconLibrary.CreateBitmap("check-circle", 32, Color.FromArgb(22, 163, 74));
 		this.cmdValidate.Name = "cmdValidate";
 		this.cmdValidate.ShortcutText = "";
 		this.cmdValidate.Text = "校验数据";
 		this.cmdValidate.Click += new C1.Win.C1Command.ClickEventHandler(cmdValidate_Click);
-		this.cmdHelpDoc.Image = Auditai.UI.LedgerView.Properties.Resources.HelpCenter;
+		this.cmdHelpDoc.Image = IconLibrary.CreateBitmap("question", 32, Color.FromArgb(59, 130, 246));
 		this.cmdHelpDoc.Name = "cmdHelpDoc";
 		this.cmdHelpDoc.ShortcutText = "";
 		this.cmdHelpDoc.Text = "帮助中心";
 		this.cmdHelpDoc.Click += new C1.Win.C1Command.ClickEventHandler(cmdHelpDoc_Click);
-		this.cmdReplace.Image = Auditai.UI.LedgerView.Properties.Resources.Replace;
+		this.cmdReplace.Image = IconLibrary.CreateBitmap("swap", 32, IconLibrary.DefaultColor);
 		this.cmdReplace.Name = "cmdReplace";
 		this.cmdReplace.ShortcutText = "";
 		this.cmdReplace.Text = "查找替换";
@@ -4633,7 +4706,7 @@ public class frmImport : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1330, 621);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmImport";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

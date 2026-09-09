@@ -7,7 +7,7 @@ public class AppCommandApplySelection : AppCommandToggleButton
 {
 	public override string Text => "选定区域";
 
-	public override Image LargeIcon => Resources.DocPrintSettingSelection;
+	public override Image LargeIcon => IconRes.DocPrintSettingSelection;
 
 	public override void GenerateRibbonItem()
 	{

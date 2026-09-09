@@ -7,7 +7,7 @@ public class AppGroupManageLedgers : AppCommandGroup
 {
 	public override string Text => "账套管理";
 
-	public override Image Image => Resources.OpenLedger;
+	public override Image Image => IconRes.OpenLedger;
 
 	public AppGroupManageLedgers()
 	{

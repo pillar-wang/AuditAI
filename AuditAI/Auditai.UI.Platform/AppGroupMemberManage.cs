@@ -7,7 +7,7 @@ public class AppGroupMemberManage : AppCommandGroup
 {
 	public override string Text => "同事及成员管理";
 
-	public override Image Image => Resources.Users;
+	public override Image Image => IconRes.Users;
 
 	public AppGroupMemberManage()
 	{

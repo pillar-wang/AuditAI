@@ -7,7 +7,7 @@ public class AppCommandTicketFormat : AppCommandMenu
 {
 	public override string Text => "数据格式";
 
-	public override Image LargeImage => Resources.DataFormat;
+	public override Image LargeImage => IconRes.DataFormat;
 
 	public AppCommandTicketFormat()
 		: base(new AppCommandBase[5]

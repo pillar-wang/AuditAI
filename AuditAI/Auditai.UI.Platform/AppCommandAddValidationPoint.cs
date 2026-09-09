@@ -13,7 +13,7 @@ public class AppCommandAddValidationPoint : AppCommandButton
 {
 	public override string Text => "添加校验点";
 
-	public override Image LargeIcon => Resources.Shield;
+	public override Image LargeIcon => IconRes.Shield;
 
 	protected override Func<Task> ClickedTask => delegate
 	{

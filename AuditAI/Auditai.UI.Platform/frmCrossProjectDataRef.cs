@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -577,10 +577,10 @@ public class frmCrossProjectDataRef : Form
         this._cmbStatusFilter = new C1ComboBox();
 
         // ---- 字体常量 ----
-        var fontTitle = new Font("Noto Sans SC", 11f, FontStyle.Bold);
-        var fontNormal = new Font("Noto Sans SC", 9f);
-        var fontBtn = new Font("Noto Sans SC", 9f);
-        var fontBtnBold = new Font("Noto Sans SC", 9f, FontStyle.Bold);
+        var fontTitle = new Font("微软雅黑", 11f, FontStyle.Bold);
+        var fontNormal = new Font("微软雅黑", 9f);
+        var fontBtn = new Font("微软雅黑", 9f);
+        var fontBtnBold = new Font("微软雅黑", 9f, FontStyle.Bold);
 
         // ---- 颜色常量（Google Blue 风格） ----
         var colorHeaderBg = AuditTheme.Brand;                      // 顶部标题栏 Google 蓝
@@ -675,7 +675,7 @@ public class frmCrossProjectDataRef : Form
         this._grid.Styles.Normal.Border.Style = BorderStyleEnum.Flat;
         this._grid.Styles.Normal.Border.Width = 1;
         this._grid.Styles.Normal.Border.Color = Color.FromArgb(234, 236, 240);
-        this._grid.Styles.Fixed.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
+        this._grid.Styles.Fixed.Font = new Font("微软雅黑", 9.5f, FontStyle.Bold);
         this._grid.Styles.Fixed.ForeColor = Color.FromArgb(50, 55, 65);
         this._grid.Styles.Fixed.BackColor = colorGridFixedBg;
         this._grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
@@ -962,14 +962,14 @@ internal class frmCrossProjectDataRefEditDialog : Form
 
             var treeView = new TreeView();
             treeView.Dock = DockStyle.Fill;
-            treeView.Font = new Font("Noto Sans SC", 9f);
+            treeView.Font = new Font("微软雅黑", 9f);
             tableForm.Controls.Add(treeView);
 
             var btnOk = new Button();
             btnOk.Text = "选择此表格";
             btnOk.Dock = DockStyle.Bottom;
             btnOk.Height = 36;
-            btnOk.Font = new Font("Noto Sans SC", 9f);
+            btnOk.Font = new Font("微软雅黑", 9f);
             btnOk.Click += (s, ev) =>
             {
                 if (treeView.SelectedNode?.Tag is TreeTableNode tableNode)
@@ -1131,20 +1131,20 @@ internal class frmCrossProjectDataRefEditDialog : Form
         this._btnOk = new C1Button();
         this._btnCancel = new C1Button();
 
-        var lblName = new Label { Text = "引用名称：", Location = new Point(15, 15), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(15, 56), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(15, 98), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(15, 139), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(15, 180), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(15, 221), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(15, 263), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(15, 304), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
-        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(15, 345), Size = new Size(125, 30), Font = new Font("Noto Sans SC", 9f) };
+        var lblName = new Label { Text = "引用名称：", Location = new Point(15, 15), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblSourceProject = new Label { Text = "来源项目：", Location = new Point(15, 56), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblSourceTable = new Label { Text = "来源表：", Location = new Point(15, 98), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblTargetTableId = new Label { Text = "目标表 ID：", Location = new Point(15, 139), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblRefMode = new Label { Text = "引用模式：", Location = new Point(15, 180), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblRefConfig = new Label { Text = "引用配置 JSON：", Location = new Point(15, 221), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblFilterConfig = new Label { Text = "筛选配置 JSON：", Location = new Point(15, 263), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblFormulaExpression = new Label { Text = "公式表达式：", Location = new Point(15, 304), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
+        var lblColumnMapping = new Label { Text = "列映射 JSON：", Location = new Point(15, 345), Size = new Size(125, 30), Font = new Font("微软雅黑", 9f) };
 
         //
         // _txtName
         //
-        this._txtName.Font = new Font("Noto Sans SC", 9f);
+        this._txtName.Font = new Font("微软雅黑", 9f);
         this._txtName.Location = new Point(148, 15);
         this._txtName.Name = "_txtName";
         this._txtName.Size = new Size(438, 30);
@@ -1153,7 +1153,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtSourceProject
         //
-        this._txtSourceProject.Font = new Font("Noto Sans SC", 9f);
+        this._txtSourceProject.Font = new Font("微软雅黑", 9f);
         this._txtSourceProject.Location = new Point(148, 56);
         this._txtSourceProject.Name = "_txtSourceProject";
         this._txtSourceProject.ReadOnly = true;
@@ -1164,7 +1164,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _btnSelectProject
         //
-        this._btnSelectProject.Font = new Font("Noto Sans SC", 9f);
+        this._btnSelectProject.Font = new Font("微软雅黑", 9f);
         this._btnSelectProject.Location = new Point(478, 55);
         this._btnSelectProject.Name = "_btnSelectProject";
         this._btnSelectProject.Size = new Size(113, 33);
@@ -1175,7 +1175,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtSourceTable
         //
-        this._txtSourceTable.Font = new Font("Noto Sans SC", 9f);
+        this._txtSourceTable.Font = new Font("微软雅黑", 9f);
         this._txtSourceTable.Location = new Point(148, 98);
         this._txtSourceTable.Name = "_txtSourceTable";
         this._txtSourceTable.ReadOnly = true;
@@ -1186,7 +1186,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _btnSelectTable
         //
-        this._btnSelectTable.Font = new Font("Noto Sans SC", 9f);
+        this._btnSelectTable.Font = new Font("微软雅黑", 9f);
         this._btnSelectTable.Location = new Point(478, 98);
         this._btnSelectTable.Name = "_btnSelectTable";
         this._btnSelectTable.Size = new Size(113, 33);
@@ -1197,7 +1197,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtTargetTableId
         //
-        this._txtTargetTableId.Font = new Font("Noto Sans SC", 9f);
+        this._txtTargetTableId.Font = new Font("微软雅黑", 9f);
         this._txtTargetTableId.Location = new Point(148, 139);
         this._txtTargetTableId.Name = "_txtTargetTableId";
         this._txtTargetTableId.ReadOnly = true;
@@ -1208,7 +1208,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _cmbRefMode
         //
         this._cmbRefMode.DropDownStyle = C1.Win.C1Input.DropDownStyle.DropDownList;
-        this._cmbRefMode.Font = new Font("Noto Sans SC", 9f);
+        this._cmbRefMode.Font = new Font("微软雅黑", 9f);
         this._cmbRefMode.Location = new Point(148, 180);
         this._cmbRefMode.Name = "_cmbRefMode";
         this._cmbRefMode.Size = new Size(438, 30);
@@ -1217,7 +1217,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtRefConfig
         //
-        this._txtRefConfig.Font = new Font("Noto Sans SC", 9f);
+        this._txtRefConfig.Font = new Font("微软雅黑", 9f);
         this._txtRefConfig.Location = new Point(148, 221);
         this._txtRefConfig.Name = "_txtRefConfig";
         this._txtRefConfig.Size = new Size(438, 30);
@@ -1226,7 +1226,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtFilterConfig
         //
-        this._txtFilterConfig.Font = new Font("Noto Sans SC", 9f);
+        this._txtFilterConfig.Font = new Font("微软雅黑", 9f);
         this._txtFilterConfig.Location = new Point(148, 263);
         this._txtFilterConfig.Name = "_txtFilterConfig";
         this._txtFilterConfig.Size = new Size(438, 30);
@@ -1235,7 +1235,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtFormulaExpression
         //
-        this._txtFormulaExpression.Font = new Font("Noto Sans SC", 9f);
+        this._txtFormulaExpression.Font = new Font("微软雅黑", 9f);
         this._txtFormulaExpression.Location = new Point(148, 304);
         this._txtFormulaExpression.Name = "_txtFormulaExpression";
         this._txtFormulaExpression.Size = new Size(438, 30);
@@ -1244,7 +1244,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         //
         // _txtColumnMapping
         //
-        this._txtColumnMapping.Font = new Font("Noto Sans SC", 9f);
+        this._txtColumnMapping.Font = new Font("微软雅黑", 9f);
         this._txtColumnMapping.Location = new Point(148, 345);
         this._txtColumnMapping.Name = "_txtColumnMapping";
         this._txtColumnMapping.Size = new Size(438, 30);
@@ -1254,7 +1254,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnOk
         //
         this._btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnOk.Font = new Font("Noto Sans SC", 9f);
+        this._btnOk.Font = new Font("微软雅黑", 9f);
         this._btnOk.Location = new Point(364, 394);
         this._btnOk.Name = "_btnOk";
         this._btnOk.Size = new Size(109, 41);
@@ -1304,7 +1304,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
         // _btnCancel
         //
         this._btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnCancel.Font = new Font("Noto Sans SC", 9f);
+        this._btnCancel.Font = new Font("微软雅黑", 9f);
         this._btnCancel.Location = new Point(480, 394);
         this._btnCancel.Name = "_btnCancel";
         this._btnCancel.Size = new Size(109, 41);
@@ -1334,7 +1334,7 @@ internal class frmCrossProjectDataRefEditDialog : Form
             lblColumnMapping, this._txtColumnMapping,
             this._btnOk, this._btnCancel
         });
-        this.Font = new Font("Noto Sans SC", 9f);
+        this.Font = new Font("微软雅黑", 9f);
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
         this.MaximizeBox = false;
         this.MinimizeBox = false;

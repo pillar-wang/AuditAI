@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandToggleFullscreenSmall : AppCommandToggleButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.Fullscreen_S;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.Fullscreen_S;
 
 	protected override string Tooltip => TipResource.全屏按钮;
 

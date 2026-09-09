@@ -9,7 +9,7 @@ public class AppCommandSubsidiaryLedger : AppCommandButton
 {
 	public override string Text => " 明细账 ";
 
-	public override Image LargeIcon => Resources.SubsidiaryLedger;
+	public override Image LargeIcon => IconRes.SubsidiaryLedger;
 
 	protected override void Clicked()
 	{

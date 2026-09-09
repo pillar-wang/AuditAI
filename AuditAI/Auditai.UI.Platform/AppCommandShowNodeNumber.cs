@@ -8,7 +8,7 @@ public class AppCommandShowNodeNumber : AppCommandToggleButton
 {
 	public override string Text => "索引号";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.IndexNumber;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.IndexNumber;
 
 	protected override string Tooltip => TipResource.显示设置菜单_索引号;
 

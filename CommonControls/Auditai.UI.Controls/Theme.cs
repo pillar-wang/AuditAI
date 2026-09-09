@@ -1,4 +1,4 @@
-﻿﻿﻿using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System;
@@ -357,21 +357,21 @@ public static class Theme
 			FormulaEditorBorderColor = Color.FromArgb(168, 200, 232),
 			ProgressBarColor = Color.FromArgb(74, 144, 217)
 		});
-		// Google 蓝 — Material / Google Workspace 风格
-		// 以小清新浅蓝的 C1 主题为基底，ThemeContext 替换为 Google Blue 配色
+		// 清新蓝 — 轻盈清新风格
+		// 以小清新浅蓝的 C1 主题为基底，ThemeContext 替换为清新蓝配色
 		RegisterTheme(Auditai.ThemeResource.Properties.Resource1.auditai_FreshLightBlue, "auditai_GoogleBlue", "Google 蓝", ThemeEnum.Typical, new ThemeContext
 		{
-			GradientColor = Color.FromArgb(232, 240, 254),      // #e8f0fe 品牌淡蓝
-			TileColor = Color.FromArgb(255, 26, 115, 232),      // #1a73e8 Google 蓝（带 Alpha=255）
+			GradientColor = Color.FromArgb(239, 246, 255),      // #eff6ff 品牌淡蓝
+			TileColor = Color.FromArgb(255, 59, 130, 246),      // #3b82f6 清新蓝（带 Alpha=255）
 			LargeImage = null,
 			SmallImage = null,
-			BackColor = Color.FromArgb(248, 250, 252),          // #f8fafc 表面淡灰
-			LineColor = Color.FromArgb(26, 115, 232),           // #1a73e8 品牌蓝
-			DarkColor = Color.FromArgb(21, 87, 176),            // #1557b0 深蓝
-			BulletColor = Color.FromArgb(255, 26, 115, 232),    // #1a73e8 品牌蓝
-			RibbonTabBorder = Color.FromArgb(226, 232, 240),    // #e2e8f0 边框色
-			FormulaEditorBorderColor = Color.FromArgb(203, 213, 225), // #cbd5e1 深边框
-			ProgressBarColor = Color.FromArgb(26, 115, 232)     // #1a73e8 品牌蓝
+			BackColor = Color.FromArgb(250, 251, 252),          // #fafbfc 表面淡灰
+			LineColor = Color.FromArgb(59, 130, 246),           // #3b82f6 品牌蓝
+			DarkColor = Color.FromArgb(29, 78, 216),            // #1d4ed8 深蓝
+			BulletColor = Color.FromArgb(255, 59, 130, 246),    // #3b82f6 品牌蓝
+			RibbonTabBorder = Color.FromArgb(229, 231, 235),    // #e5e7eb 边框色
+			FormulaEditorBorderColor = Color.FromArgb(209, 213, 219), // #d1d5db 深边框
+			ProgressBarColor = Color.FromArgb(59, 130, 246)     // #3b82f6 品牌蓝
 		});
 	}
 

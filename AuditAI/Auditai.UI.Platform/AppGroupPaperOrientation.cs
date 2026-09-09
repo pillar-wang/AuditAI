@@ -7,7 +7,7 @@ public class AppGroupPaperOrientation : AppCommandGroup
 {
 	public override string Text => "页面设置";
 
-	public override Image Image => Resources.Portrait;
+	public override Image Image => IconRes.Portrait;
 
 	public AppGroupPaperOrientation()
 	{

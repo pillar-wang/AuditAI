@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -269,7 +269,7 @@ public class TableNavGrid : ISetTheme
 		_cmdDeleteCurrentLevel = new C1Command
 		{
 			Text = "删除当前层级",
-			Image = ContextResources.ctxDelete
+			Image = IconRes.ctxDelete
 		};
 		_cmdDeleteCurrentLevel.Click += _cmdDeleteCurrentNode_Click;
 		_lnkDeleteCurrentLevel = new C1CommandLink(_cmdDeleteCurrentLevel)
@@ -662,7 +662,7 @@ public class TableNavGrid : ISetTheme
 		Point gridRowMoreMenuIconLeftTopPosition = GetGridRowMoreMenuIconLeftTopPosition(rowIndex);
 		int num = 3;
 		int num2 = 3;
-		return new Rectangle(gridRowMoreMenuIconLeftTopPosition.X - num, gridRowMoreMenuIconLeftTopPosition.Y - num2, Resources.menuMoreOperation.Width + num * 2, Resources.menuMoreOperation.Height + num2 * 2);
+		return new Rectangle(gridRowMoreMenuIconLeftTopPosition.X - num, gridRowMoreMenuIconLeftTopPosition.Y - num2, IconLibrary.LogicalWidth(IconRes.menuMoreOperation) + num * 2, IconLibrary.LogicalHeight(IconRes.menuMoreOperation) + num2 * 2);
 	}
 
 	private Point GetGridRowMoreMenuIconLeftTopPosition(int rowIndex)
@@ -674,7 +674,7 @@ public class TableNavGrid : ISetTheme
 		Rectangle cellRect = _grid.GetCellRect(rowIndex, 0);
 		int num = 25;
 		int x = cellRect.X + cellRect.Width - num;
-		int y = cellRect.Y + (cellRect.Height - Resources.menuMoreOperation.Height) / 2;
+		int y = cellRect.Y + (cellRect.Height - IconLibrary.LogicalHeight(IconRes.menuMoreOperation)) / 2;
 		return new Point(x, y);
 	}
 
@@ -717,11 +717,11 @@ public class TableNavGrid : ISetTheme
 					}
 					else if (row.Node.Collapsed)
 					{
-						e.Image = Resources.TicketNavTreeListCollapsed;
+						e.Image = IconRes.TicketNavTreeListCollapsed;
 					}
 					else
 					{
-						e.Image = Resources.TicketNavTreeListExpanded;
+						e.Image = IconRes.TicketNavTreeListExpanded;
 					}
 				}
 			}
@@ -750,7 +750,7 @@ public class TableNavGrid : ISetTheme
 				e.Graphics.FillRectangle(_gridMouseOverMoreMenuIconBrush, GetGridRowMoreMenuIconBackgroundRectangle(e.Row));
 			}
 			Point gridRowMoreMenuIconLeftTopPosition = GetGridRowMoreMenuIconLeftTopPosition(e.Row);
-			e.Graphics.DrawImage(image, gridRowMoreMenuIconLeftTopPosition);
+			e.Graphics.DrawImage(image, new Rectangle(gridRowMoreMenuIconLeftTopPosition, IconLibrary.LogicalSize(IconRes.menuMoreOperation)));
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -764,18 +764,18 @@ public class TableNavGrid : ISetTheme
 			isUseWhiteImage = false;
 			if (e.Style.Name != _grid.Styles.Highlight.Name)
 			{
-				return Resources.menuMoreOperation;
+				return IconRes.menuMoreOperation;
 			}
 			if (Theme.SelectedAuditaiTheme.ThemeContext.GridMoreMenuImageIndexOnHighLightRow == GridMoreMenuImageIndex.White)
 			{
 				if (_menuMoreOperationWhiteImage == null)
 				{
-					_menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(Resources.menuMoreOperation);
+					_menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(IconRes.menuMoreOperation);
 				}
 				isUseWhiteImage = true;
 				return _menuMoreOperationWhiteImage;
 			}
-			return Resources.menuMoreOperation;
+			return IconRes.menuMoreOperation;
 		}
 	}
 
@@ -837,7 +837,7 @@ public class TableNavGrid : ISetTheme
 			{
 				_grid.Row = _mouseRow;
 				PrepareToShowCtx(e);
-				_gridCtx.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(_gridCtx, _grid, e.Location);
 				return;
 			}
 			HitTestInfo hitTestInfo = _grid.HitTest();
@@ -853,7 +853,7 @@ public class TableNavGrid : ISetTheme
 		else if (e.Button == MouseButtons.Right)
 		{
 			PrepareToShowCtx(e);
-			_gridCtx.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(_gridCtx, _grid, e.Location);
 		}
 	}
 

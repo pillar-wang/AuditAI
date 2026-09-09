@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -116,7 +116,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowBatchPrinter()
 	{
 		Text = "批量打印文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchPrint16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchPrint16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -128,7 +128,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowBatchExporter()
 	{
 		Text = "批量导出文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchExport16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchExport16);
 		ckbExportExcel.Visible = true;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -140,7 +140,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowHideNode(int mode)
 	{
 		Text = "批量隐藏文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchHideNodes16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchHideNodes16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = true;
 		cboShowHideNodes.DropDownStyle = DropDownStyle.DropDownList;
@@ -151,8 +151,8 @@ public class frmNodeSelector : C1RibbonForm
 		Populate(mode);
 		PopulateShowHideCheck();
 		_grid.Cols["check"].Caption = "显示/隐藏";
-		_grid.Glyphs[GlyphEnum.Checked] = Resources.ShowNodes16;
-		_grid.Glyphs[GlyphEnum.Unchecked] = Resources.HideNodes16;
+		_grid.Glyphs[GlyphEnum.Checked] = IconRes.ShowNodes16;
+		_grid.Glyphs[GlyphEnum.Unchecked] = IconRes.HideNodes16;
 		_grid.CellChecked += GrdEditor_CellChecked_ShowHideNode;
 		_grid.MouseClick += _grid_MouseClick_Tooltip_ShowHideNode;
 		return ShowDialog();
@@ -161,13 +161,13 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowHide()
 	{
 		Text = "批量隐藏文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchHideNodes16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchHideNodes16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate(2);
 		PopulateRemoveNodesCheck();
 		_grid.Cols["check"].Caption = "隐藏";
-		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.Glyphs[GlyphEnum.Grayed] = IconRes.NoPermission;
 		_grid.CellChecked += GrdEditor_CellChecked;
 		_grid.MouseClick += _grid_MouseClick_Tooltip_RemoveNodes;
 		return ShowDialog();
@@ -176,13 +176,13 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowUnhide()
 	{
 		Text = "取消隐藏";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ShowNodes16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ShowNodes16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate(1);
 		PopulateRemoveNodesCheck();
 		_grid.Cols["check"].Caption = "取消隐藏";
-		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.Glyphs[GlyphEnum.Grayed] = IconRes.NoPermission;
 		_grid.CellChecked += GrdEditor_CellChecked;
 		_grid.MouseClick += _grid_MouseClick_Tooltip_ShowHideNode;
 		return ShowDialog();
@@ -191,10 +191,10 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowRemoveNodes()
 	{
 		Text = "批量删除文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchRemoveNodes16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchRemoveNodes16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
-		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.Glyphs[GlyphEnum.Grayed] = IconRes.NoPermission;
 		_grid.MouseClick += _grid_MouseClick_Tooltip_RemoveNodes;
 		Populate();
 		PopulateRemoveNodesCheck();
@@ -204,7 +204,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowBatchColumnDuplicate()
 	{
 		Text = "跨表批量复制列";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchColumnDuplicate16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchColumnDuplicate16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -214,7 +214,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowBatchColumnRemove()
 	{
 		Text = "跨表批量删除列";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchColumnRemove16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchColumnRemove16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -224,7 +224,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowBatchColumnRename()
 	{
 		Text = "跨表批量重命名列";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchColumnRename16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchColumnRename16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -234,7 +234,7 @@ public class frmNodeSelector : C1RibbonForm
 	public DialogResult ShowGenerateBatchFormula()
 	{
 		Text = "智能扩充跨表公式";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.GenerateBatchFormula16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.GenerateBatchFormula16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -254,7 +254,7 @@ public class frmNodeSelector : C1RibbonForm
 		_grid.Rows.DefaultSize = 33;
 		_grid.Font = new Font("微软雅黑", 10.5f);
 		_grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
-		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.Glyphs[GlyphEnum.Grayed] = IconRes.NoPermission;
 		_grid.Rows.Count = 1;
 		_grid.Rows.Fixed = 1;
 		_grid.Cols.Count = 0;
@@ -297,7 +297,7 @@ public class frmNodeSelector : C1RibbonForm
 		{
 			Owner = this
 		};
-		c1CommandHolder.SetC1ContextMenu(_grid, ctxMenu);
+		NativeMenuShim.Wire(_grid, ctxMenu);
 		txtSearch.TextChanged += TxtSearch_TextChanged;
 		txtSearch.KeyDown += TxtSearch_KeyDown;
 	}
@@ -521,7 +521,7 @@ public class frmNodeSelector : C1RibbonForm
 				Node node = _grid.Rows.AddNode(0);
 				node.Key = treeGroup;
 				node.Data = treeGroup.Name;
-				node.Image = ContextResources.TreeGroup;
+				node.Image = IconRes.TreeGroup;
 				foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
 				{
 					Node node2 = null;
@@ -535,27 +535,27 @@ public class frmNodeSelector : C1RibbonForm
 								{
 									if (rootNode is TreePdfNode treePdfNode)
 									{
-										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, Resources.TreePdf);
+										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, IconRes.TreePdf);
 									}
 								}
 								else
 								{
-									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, Resources.TreeImage);
+									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, IconRes.TreeImage);
 								}
 							}
 							else
 							{
-								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name, treeDocumentNode, Resources.TreeDoc);
+								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name, treeDocumentNode, IconRes.TreeDoc);
 							}
 						}
 						else
 						{
-							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, Resources.TreeTable);
+							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, IconRes.TreeTable);
 						}
 					}
 					else
 					{
-						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, IconRes.TreeDir);
 						AddDirectoryNode(treeDirectoryNode, node2);
 					}
 					if (PreSelectNodes != null && PreSelectNodes.Contains(rootNode.Id))
@@ -621,27 +621,27 @@ public class frmNodeSelector : C1RibbonForm
 							{
 								if (child is TreePdfNode treePdfNode2)
 								{
-									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, Resources.TreePdf);
+									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, IconRes.TreePdf);
 								}
 							}
 							else
 							{
-								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, Resources.TreeImage);
+								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, IconRes.TreeImage);
 							}
 						}
 						else
 						{
-							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, Resources.TreeDoc);
+							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, IconRes.TreeDoc);
 						}
 					}
 					else
 					{
-						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, Resources.TreeTable);
+						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, IconRes.TreeTable);
 					}
 				}
 				else
 				{
-					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode3.Number + " " + treeDirectoryNode3.Name, treeDirectoryNode3, Resources.TreeDir);
+					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode3.Number + " " + treeDirectoryNode3.Name, treeDirectoryNode3, IconRes.TreeDir);
 					AddDirectoryNode(treeDirectoryNode3, node3);
 				}
 				if (PreSelectNodes != null && PreSelectNodes.Contains(child.Id))
@@ -1203,7 +1203,7 @@ public class frmNodeSelector : C1RibbonForm
 		this._grid.Size = new System.Drawing.Size(532, 647);
 		this._grid.TabIndex = 3;
 		this.btnSearch.FlatAppearance.BorderSize = 0;
-		this.btnSearch.Image = Auditai.UI.Platform.Properties.Resources.btnSearch;
+		this.btnSearch.Image = Auditai.UI.Platform.IconRes.btnSearch;
 		this.btnSearch.Location = new System.Drawing.Point(-1, -1);
 		this.btnSearch.Name = "btnSearch";
 		this.btnSearch.Size = new System.Drawing.Size(34, 34);
@@ -1214,7 +1214,7 @@ public class frmNodeSelector : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(532, 732);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmNodeSelector";
 		base.ShowInTaskbar = false;

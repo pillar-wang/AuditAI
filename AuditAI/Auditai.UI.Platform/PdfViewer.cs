@@ -24,7 +24,7 @@ public class PdfViewer
 
 	private readonly C1Command cmdBack = new C1Command
 	{
-		Image = Resources.back32,
+		Image = IconRes.back32,
 		Text = "后退"
 	};
 
@@ -32,7 +32,7 @@ public class PdfViewer
 
 	private readonly C1Command cmdForward = new C1Command
 	{
-		Image = Resources.forward32,
+		Image = IconRes.forward32,
 		Text = "前进"
 	};
 
@@ -41,7 +41,7 @@ public class PdfViewer
 	private readonly C1Command cmdHideToolbar = new C1Command
 	{
 		Text = "隐藏侧边栏",
-		Image = Resources.HideSideToolbar
+		Image = IconRes.HideSideToolbar
 	};
 
 	private readonly C1CommandLink lnkZoomIn = new C1CommandLink();
@@ -49,7 +49,7 @@ public class PdfViewer
 	private readonly C1Command cmdZoomIn = new C1Command
 	{
 		Text = "放大显示",
-		Image = Resources.ZoomIn
+		Image = IconRes.ZoomIn
 	};
 
 	private readonly C1CommandLink lnkZoomOut = new C1CommandLink();
@@ -57,7 +57,7 @@ public class PdfViewer
 	private readonly C1Command cmdZoomOut = new C1Command
 	{
 		Text = "缩小显示",
-		Image = Resources.ZoomOut
+		Image = IconRes.ZoomOut
 	};
 
 	private readonly C1CommandLink lnkExportPdf = new C1CommandLink();
@@ -65,7 +65,7 @@ public class PdfViewer
 	private readonly C1Command cmdExportPdf = new C1Command
 	{
 		Text = "导出Pdf",
-		Image = Resources.PdfExport
+		Image = IconRes.PdfExport
 	};
 
 	private readonly C1CommandLink lnkHideToolbar = new C1CommandLink();

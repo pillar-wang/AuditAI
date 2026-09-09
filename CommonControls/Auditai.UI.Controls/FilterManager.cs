@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -758,7 +758,7 @@ public class FilterManager
 		_cmdFilter = new C1CommandMenu
 		{
 			Text = "筛选",
-			Image = Resources.ctxFilter
+			Image = IconRes.ctxFilter
 		};
 		_cmdFilter.CommandStateQuery += _cmdFilter_CommandStateQuery;
 		_cmdFilter.Popup += _cmdFilter_Popup;
@@ -1125,7 +1125,7 @@ public class FilterManager
 			{
 				e.Cancel = true;
 				_grid.Invalidate();
-				_ctxTopLeft.ShowContextMenu(_grid, new Point(drawImageRectangle.Left, drawImageRectangle.Bottom + 2));
+				NativeMenuShim.Show(_ctxTopLeft, _grid, new Point(drawImageRectangle.Left, drawImageRectangle.Bottom + 2));
 				return;
 			}
 		}
@@ -1174,16 +1174,16 @@ public class FilterManager
 				c1Command.Text = "取消本列筛选";
 				_ctxFilter.CommandLinks.Add(new C1CommandLink(c1Command));
 			}
-			_ctxFilter.ShowContextMenu(_grid, new Point(drawImageRectangle2.Left, drawImageRectangle2.Bottom + 2));
+			NativeMenuShim.Show(_ctxFilter, _grid, new Point(drawImageRectangle2.Left, drawImageRectangle2.Bottom + 2));
 		}
 	}
 
 	private Rectangle GetDrawImageRectangle(int col, bool isCancelAllIcon = false)
 	{
 		Rectangle cellRect = _grid.GetCellRect(_grid.Rows.Fixed - 1, col);
-		int x = ((!isCancelAllIcon) ? (cellRect.Right - Resources.Filter12.Width - 2) : ((!IsDrawCancelAllFilterOnLeft) ? ((cellRect.Width - Resources.Filter12.Width) / 2) : (cellRect.Left + 2)));
-		int y = cellRect.Top + (cellRect.Height - Resources.Filter12.Height) / 2;
-		return new Rectangle(new Point(x, y), Resources.Filter12.Size);
+		int x = ((!isCancelAllIcon) ? (cellRect.Right - IconLibrary.LogicalWidth(IconRes.Filter12) - 2) : ((!IsDrawCancelAllFilterOnLeft) ? ((cellRect.Width - IconLibrary.LogicalWidth(IconRes.Filter12)) / 2) : (cellRect.Left + 2)));
+		int y = cellRect.Top + (cellRect.Height - IconLibrary.LogicalHeight(IconRes.Filter12)) / 2;
+		return new Rectangle(new Point(x, y), IconLibrary.LogicalSize(IconRes.Filter12));
 	}
 
 	public void ResetGridColumnMergeRange()
@@ -1269,7 +1269,7 @@ public class FilterManager
 				region = e.Graphics.Clip;
 				e.Graphics.ResetClip();
 			}
-			e.Graphics.DrawImage(Resources.Filter12, drawImageRectangle3.Location);
+			e.Graphics.DrawImage(IconRes.Filter12, drawImageRectangle3);
 		}
 		if (!IsEditingColHeader)
 		{
@@ -1281,7 +1281,7 @@ public class FilterManager
 					region = e.Graphics.Clip;
 					e.Graphics.ResetClip();
 				}
-				e.Graphics.DrawImage(Resources.Filter12, drawImageRectangle4.Location);
+				e.Graphics.DrawImage(IconRes.Filter12, drawImageRectangle4);
 			}
 		}
 		if (region != null)

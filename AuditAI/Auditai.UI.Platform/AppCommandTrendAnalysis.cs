@@ -9,7 +9,7 @@ public class AppCommandTrendAnalysis : AppCommandButton
 {
 	public override string Text => "趋势分析";
 
-	public override Image LargeIcon => Resources.TrendAnalysis;
+	public override Image LargeIcon => IconRes.TrendAnalysis;
 
 	protected override void Clicked()
 	{

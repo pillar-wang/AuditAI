@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -42,7 +42,7 @@ public class TemplateUsersListSelector
 			_grid.DrawFormBorder(e1.Graphics);
 		};
 		_grid.MouseClick += _grid_MouseClick;
-		_grid.Font = new Font("Noto Sans SC", 9f);
+		_grid.Font = new Font("微软雅黑", 9f);
 		_grid.ExtendLastCol = true;
 		_grid.Resize += _grid_Resize;
 		_grid.Tree.Column = 0;

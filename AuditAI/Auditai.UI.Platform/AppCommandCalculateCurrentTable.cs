@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandCalculateCurrentTable : AppCommandButton
 {
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.CalculateTable;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.CalculateTable;
 
 	public override string Text => "当前表运算";
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -193,7 +193,7 @@ internal class frmParagraphComment : C1RibbonForm
 		this.tabEdit.TabIndex = 2;
 		this.tabEdit.Text = "编辑注释";
 		this.ctnCommentInput.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnCommentInput.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.ctnCommentInput.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.ctnCommentInput.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnCommentInput.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctnCommentInput.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -233,7 +233,7 @@ internal class frmParagraphComment : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(770, 545);
 		base.Controls.Add(this.ctnDock);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmParagraphComment";

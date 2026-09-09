@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AuditApiServer</RootNamespace>
+    <AssemblyName>AuditApiServer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="8.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.27.0" />
+  </ItemGroup>
+
+  <!-- 排除子项目（避免 SDK 默认包含子目录 .cs 文件导致 AssemblyInfo 特性重复和顶级语句冲突） -->
+  <ItemGroup>
+    <Compile Remove="SelfTest\**" />
+    <None Remove="SelfTest\**" />
+    <EmbeddedResource Remove="SelfTest\**" />
+    <Compile Remove="FixAdminPwd\**" />
+    <None Remove="FixAdminPwd\**" />
+    <EmbeddedResource Remove="FixAdminPwd\**" />
+    <Compile Remove="QueryAdmin\**" />
+    <None Remove="QueryAdmin\**" />
+    <EmbeddedResource Remove="QueryAdmin\**" />
+    <Compile Remove="FixAdminPwd2\**" />
+    <None Remove="FixAdminPwd2\**" />
+    <EmbeddedResource Remove="FixAdminPwd2\**" />
+    <Compile Remove="FixAdminPwd3\**" />
+    <None Remove="FixAdminPwd3\**" />
+    <EmbeddedResource Remove="FixAdminPwd3\**" />
+  </ItemGroup>
+
+  <!-- 系统模板源 .db 文件（SeedSystemTemplates 在 Data/Projects/_System/Templates/ 为空时从此目录复制兜底） -->
+  <!-- 2026-07-20 事故修复：publish tar 不含 Templates/ 源目录导致 Data 被清空后无法重新播种 -->
+  <ItemGroup>
+    <None Include="Templates\**\*.db" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections;
 using System.Drawing;
 using System.Windows.Forms;
@@ -125,21 +125,21 @@ public class FormSelectNode
 		{
 			Owner = _form
 		};
-		c1CommandHolder.SetC1ContextMenu(_projectTreeGrid.View, ctxMenu);
+		NativeMenuShim.Wire(_projectTreeGrid.View, ctxMenu);
 		Theme.SetCurrentTree(_form);
 	}
 
 	public DialogResult ShowImportTable()
 	{
 		_form.Text = "引用表格";
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Intelliref16);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Intelliref16);
 		return _form.ShowDialog();
 	}
 
 	public DialogResult ShowImportTicket()
 	{
 		_form.Text = "导入他表" + Program.MainForm.TicketDesignEditor.Table.Ticket.GetLevelString() + "样式";
-		_form.Icon = ((Program.MainForm.TicketDesignEditor.Table.Ticket.Level == TicketLevel.Report) ? Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.TicketReport16) : Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Ticket16));
+		_form.Icon = ((Program.MainForm.TicketDesignEditor.Table.Ticket.Level == TicketLevel.Report) ? Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.TicketReport16) : Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Ticket16));
 		return _form.ShowDialog();
 	}
 

@@ -1,4 +1,4 @@
-﻿﻿﻿using System.Drawing;
+﻿﻿using System.Drawing;
 using Auditai.UI.Platform.Properties;
 
 namespace Auditai.UI.Platform;
@@ -7,7 +7,7 @@ public class AppCommandRedo : AppCommandButton
 {
 	public override string Text => "重做";
 
-	public override Image LargeIcon => Resources.Redo;
+	public override Image LargeIcon => IconRes.Redo;
 
 	protected override void Clicked()
 	{

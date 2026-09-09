@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -342,7 +342,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 12f, FontStyle.Bold),
+            Font = new Font("微软雅黑", 12f, FontStyle.Bold),
             ForeColor = Color.Black,
             Location = new Point(16, 16),
             Name = "_lblTitle",
@@ -356,7 +356,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 10f),
+            Font = new Font("微软雅黑", 10f),
             ForeColor = Color.Gray,
             Location = new Point(16, 49),
             Name = "_lblStepInfo",
@@ -377,7 +377,7 @@ public class frmSelectProjectData : C1RibbonForm
         {
             AllowChecking = false,
             Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-            BackColor = Color.FromArgb(240, 240, 240),
+            BackColor = Color.FromArgb(243, 244, 246),
             CellWidth = 13,
             CellHeight = 13,
             Dock = DockStyle.Fill,
@@ -401,7 +401,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 10f),
+            Font = new Font("微软雅黑", 10f),
             ForeColor = Color.Black,
             Location = new Point(0, 7),
             Name = "_lblTableTitle",
@@ -445,7 +445,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 10f),
+            Font = new Font("微软雅黑", 10f),
             ForeColor = Color.Black,
             Location = new Point(0, 7),
             Size = new Size(195, 25),
@@ -478,7 +478,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 10f),
+            Font = new Font("微软雅黑", 10f),
             ForeColor = Color.Black,
             Location = new Point(0, 7),
             Size = new Size(260, 25),
@@ -512,7 +512,7 @@ public class frmSelectProjectData : C1RibbonForm
             AutoSize = true,
             BackColor = Color.Transparent,
             BorderStyle = BorderStyle.None,
-            Font = new Font("Noto Sans SC", 10f, FontStyle.Bold),
+            Font = new Font("微软雅黑", 10f, FontStyle.Bold),
             ForeColor = Color.Black,
             Location = new Point(0, 7),
             Size = new Size(260, 25),
@@ -640,7 +640,7 @@ public class frmSelectProjectData : C1RibbonForm
         _btnPrev = new C1Button
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-            Font = new Font("Noto Sans SC", 9f),
+            Font = new Font("微软雅黑", 9f),
             Location = new Point(660, 676),
             Name = "_btnPrev",
             Size = new Size(113, 43),
@@ -653,7 +653,7 @@ public class frmSelectProjectData : C1RibbonForm
         _btnNext = new C1Button
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-            Font = new Font("Noto Sans SC", 9f),
+            Font = new Font("微软雅黑", 9f),
             Location = new Point(781, 676),
             Name = "_btnNext",
             Size = new Size(113, 43),
@@ -666,7 +666,7 @@ public class frmSelectProjectData : C1RibbonForm
         _btnOk = new C1Button
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-            Font = new Font("Noto Sans SC", 9f),
+            Font = new Font("微软雅黑", 9f),
             Location = new Point(781, 676),
             Name = "_btnOk",
             Size = new Size(113, 43),
@@ -680,7 +680,7 @@ public class frmSelectProjectData : C1RibbonForm
         _btnCancel = new C1Button
         {
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
-            Font = new Font("Noto Sans SC", 9f),
+            Font = new Font("微软雅黑", 9f),
             Location = new Point(902, 676),
             Name = "_btnCancel",
             Size = new Size(113, 43),
@@ -703,7 +703,7 @@ public class frmSelectProjectData : C1RibbonForm
         this.Controls.Add(_btnNext);
         this.Controls.Add(_btnOk);
         this.Controls.Add(_btnCancel);
-        this.Font = new Font("Noto Sans SC", 9f);
+        this.Font = new Font("微软雅黑", 9f);
         this.Name = "frmSelectProjectData";
         this.StartPosition = FormStartPosition.CenterParent;
         this.Text = "跨项目数据引用";

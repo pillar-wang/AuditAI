@@ -9,7 +9,7 @@ public class AppGroupConsolidate : AppCommandGroup
 {
 	public override string Text => "合并报表";
 
-	public override System.Drawing.Image Image => Resources.ConsolidateStatements;
+	public override System.Drawing.Image Image => IconRes.ConsolidateStatements;
 
 	public AppGroupConsolidate()
 	{

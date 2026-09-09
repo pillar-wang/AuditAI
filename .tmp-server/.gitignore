@@ -1,0 +1,11 @@
+bin/
+obj/
+publish/
+*.db
+*.db-shm
+*.db-wal
+*.tar.gz
+*.tar
+!wwwroot/
+wwwroot/pages/.gitkeep
+bin2/

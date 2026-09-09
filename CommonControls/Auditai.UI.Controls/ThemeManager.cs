@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 
 namespace Auditai.UI.Controls;
 
@@ -34,6 +34,8 @@ public class ThemeManager
 
 	public void ApplyTheme()
 	{
+		// 主题切换后字体图标缓存按新色重建
+		IconLibrary.ClearCache();
 		foreach (ISetTheme setTheme in _setThemes)
 		{
 			setTheme.SetTheme();

@@ -9,7 +9,7 @@ public class AppCommandBatchExport : AppCommandButton
 {
 	public override string Text => "批量导出文件";
 
-	public override Image LargeIcon => Resources.BatchExport;
+	public override Image LargeIcon => IconRes.BatchExport;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

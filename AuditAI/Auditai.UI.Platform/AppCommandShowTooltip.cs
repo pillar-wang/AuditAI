@@ -8,7 +8,7 @@ public class AppCommandShowTooltip : AppCommandToggleButton
 {
 	public override string Text => "动态提示";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.EditComment;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.EditComment;
 
 	protected override string Tooltip => TipResource.显示设置菜单_动态提示;
 

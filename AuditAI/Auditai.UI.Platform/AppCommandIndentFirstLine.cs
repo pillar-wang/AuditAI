@@ -7,7 +7,7 @@ public class AppCommandIndentFirstLine : AppCommandButton
 {
 	public override string Text => "段首增缩进";
 
-	public override Image LargeIcon => Resources.Indent1stLine;
+	public override Image LargeIcon => IconRes.Indent1stLine;
 
 	protected override void Clicked()
 	{

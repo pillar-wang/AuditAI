@@ -1,4 +1,5 @@
-﻿﻿﻿﻿using System.Windows.Forms;
+﻿﻿﻿﻿﻿﻿using System.Drawing;
+using System.Windows.Forms;
 using C1.Win.C1Command;
 using C1.Win.C1SplitContainer;
 
@@ -21,24 +22,24 @@ public static class ComponentFactory
 		pnlSidebar.Width = 110;
 		pnlSidebar.Resizable = false;
 		pnlSidebar.Dock = PanelDockStyle.Right;
-		return new C1SplitContainer
+		C1SplitterPanel pnlContent = new C1SplitterPanel();
+		pnlContent.Controls.Add(grid);
+		pnlContent.Collapsible = false;
+		pnlContent.KeepRelativeSize = false;
+		pnlContent.SizeRatio = 100.0;
+		pnlContent.Resizable = false;
+		pnlContent.Dock = PanelDockStyle.Left;
+		// 精修：去分割条、统一白底，避免侧栏与内容区之间出现灰色竖条
+		C1SplitContainer container = new C1SplitContainer
 		{
-			Panels =
-			{
-				pnlSidebar,
-				new C1SplitterPanel
-				{
-					Controls = { grid },
-					Collapsible = false,
-					KeepRelativeSize = false,
-					SizeRatio = 100.0,
-					Resizable = false,
-					Dock = PanelDockStyle.Left
-				}
-			},
 			Dock = DockStyle.Fill,
-			FixedLineWidth = 0
+			FixedLineWidth = 0,
+			SplitterWidth = 0,
+			BackColor = Color.White
 		};
+		container.Panels.Add(pnlSidebar);
+		container.Panels.Add(pnlContent);
+		return container;
 	}
 
 	/// <summary>

@@ -8,7 +8,7 @@ public class AppGroupFillFromLedger : AppCommandGroup
 {
 	public override string Text => "智能填充";
 
-	public override Image Image => Resources.batchFill;
+	public override Image Image => IconRes.batchFill;
 
 	public AppGroupFillFromLedger()
 	{

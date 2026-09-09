@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -26,7 +26,7 @@ public class frmDownloadInstallPackage : C1RibbonForm
 
 
 		_isExistApplication = isExitApplication;
-		base.Icon = Resources.warningIcon16;
+		base.Icon = Auditai.UI.Controls.IconLibrary.CreateIcon("warning", 32, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		base.FormClosed += FrmDownloadInstallPackage_FormClosed;
 	}
 
@@ -78,20 +78,20 @@ public class frmDownloadInstallPackage : C1RibbonForm
 		this.linkLabel1 = new System.Windows.Forms.LinkLabel();
 		base.SuspendLayout();
 		this.label1.BackColor = System.Drawing.Color.Transparent;
-		this.label1.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.label1.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.label1.Location = new System.Drawing.Point(16, 17);
 		this.label1.Name = "label1";
 		this.label1.Size = new System.Drawing.Size(703, 30);
 		this.label1.TabIndex = 0;
 		this.label1.Text = "找不到更新程序AuditAIUpdater.exe，请登录官方网站下载安装包重新进行安装！";
 		this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.label2.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.label2.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.label2.Location = new System.Drawing.Point(207, 73);
 		this.label2.Name = "label2";
 		this.label2.Size = new System.Drawing.Size(91, 30);
 		this.label2.TabIndex = 1;
 		this.label2.Text = "下载地址:";
-		this.linkLabel1.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.linkLabel1.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.linkLabel1.LinkColor = System.Drawing.Color.FromArgb(0, 102, 204);
 		this.linkLabel1.Location = new System.Drawing.Point(296, 72);
 		this.linkLabel1.Name = "linkLabel1";

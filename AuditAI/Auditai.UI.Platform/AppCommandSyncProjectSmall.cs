@@ -8,7 +8,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandSyncProjectSmall : AppCommandButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.SyncProject_S;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.SyncProject_S;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

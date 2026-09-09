@@ -13,7 +13,7 @@ public class AppCommandRemoveValidationPoint : AppCommandButton
 {
 	public override string Text => "解除校验点";
 
-	public override Image LargeIcon => Resources.ReviewCancel;
+	public override Image LargeIcon => IconRes.ReviewCancel;
 
 	protected override Func<Task> ClickedTask => delegate
 	{

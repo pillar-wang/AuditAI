@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandTeamUsers : AppCommandButton
 {
-	public override Image LargeIcon => Resources.Users;
+	public override Image LargeIcon => IconRes.Users;
 
 	public override string Text => "增减同事";
 

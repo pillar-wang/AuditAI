@@ -7,7 +7,7 @@ public class AppCommandTicketNext : AppCommandButton
 {
 	public override string Text => "下一个表单";
 
-	public override Image LargeIcon => Resources.NextError;
+	public override Image LargeIcon => IconRes.NextError;
 
 	protected override void Clicked()
 	{

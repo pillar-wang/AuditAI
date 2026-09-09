@@ -15,13 +15,13 @@ public class AppEditionTax : AppEditionBase
 
 	public override string PlatformName => "AuditAI 审计协作平台";
 
-	public override Image ProjectTileIcon => Resources.tile;
+	public override Image ProjectTileIcon => ProjectCardIconProvider.Project;
 
-	public override Image SystemTemplateTileIcon => Resources.tileTemplate;
+	public override Image SystemTemplateTileIcon => ProjectCardIconProvider.SystemTemplate;
 
-	public override Image VipSystemTemplateTileIcon => Resources.vipTemplate;
+	public override Image VipSystemTemplateTileIcon => ProjectCardIconProvider.VipTemplate;
 
-	public override Image CustomTemplateTileIcon => Resources.customTemplate;
+	public override Image CustomTemplateTileIcon => ProjectCardIconProvider.CustomTemplate;
 
 	public override Image CurrentProjectIcon => Resources.CurrentProject;
 
@@ -29,5 +29,5 @@ public class AppEditionTax : AppEditionBase
 
 	public override Image CurrentCustomTemplateIcon => Resources.CurrentTemplate;
 
-	public override Image UseEmptyTemplateTileIcon => Resources.UseEmptyTemplate;
+	public override Image UseEmptyTemplateTileIcon => IconRes.UseEmptyTemplate;
 }

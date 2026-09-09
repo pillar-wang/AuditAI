@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -709,7 +709,7 @@ public class frmLedgerCollectFormulaEdit : Form
 		lnkOtherFunc.ButtonLook = ButtonLookFlags.Text;
 		tbrFunctions.CommandLinks.Add (lnkOtherFunc);
 		tabDockGrid.SelectedTabChanged += TabDockGrid_SelectedTabChanged;
-		c1CommandHolder1.SetC1ContextMenu (rtbFormulaInput, ctx1);
+		NativeMenuShim.Wire(rtbFormulaInput, ctx1);
 		AttachEvent ();
 		base.Shown += Form_Shown;
 		base.FormClosing += Form_FormClosing;
@@ -851,7 +851,7 @@ public class frmLedgerCollectFormulaEdit : Form
 			text = "[" + text + "]";
 		}
 		e.Text = text;
-		e.Image = Resources.ConfrimationCol;
+		e.Image = IconRes.ConfrimationCol;
 	}
 
 	public void PrepareToShow ()
@@ -915,7 +915,7 @@ public class frmLedgerCollectFormulaEdit : Form
 
 	private void CmdOtherFunc_Click (object sender, ClickEventArgs e)
 	{
-		ctxOtherFunc.ShowContextMenu (tbrFunctions, tbrFunctions.PointToClient (Cursor.Position));
+		NativeMenuShim.Show(ctxOtherFunc, tbrFunctions, tbrFunctions.PointToClient (Cursor.Position));
 	}
 
 	private void CmdVLookUp_Click (object sender, ClickEventArgs e)
@@ -1085,7 +1085,7 @@ public class frmLedgerCollectFormulaEdit : Form
 	private void _balanceGrid_MouseClick (object sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Right && _balanceGrid.HitTest (e.Location).Type == HitTestTypeEnum.Cell) {
-			_ctxCellBalaceGrid.ShowContextMenu (_balanceGrid, e.Location);
+			NativeMenuShim.Show(_ctxCellBalaceGrid, _balanceGrid, e.Location);
 		}
 	}
 
@@ -1397,7 +1397,7 @@ public class frmLedgerCollectFormulaEdit : Form
 	private void _voucherGrid_MouseClick (object sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Right && _voucherGrid.HitTest (e.Location).Type == HitTestTypeEnum.Cell) {
-			_ctxCellVoucherGrid.ShowContextMenu (_voucherGrid, e.Location);
+			NativeMenuShim.Show(_ctxCellVoucherGrid, _voucherGrid, e.Location);
 		}
 	}
 
@@ -2129,7 +2129,7 @@ public class frmLedgerCollectFormulaEdit : Form
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size (1248, 806);
 		base.Controls.Add (this.ctnAll);
-		this.Font = new System.Drawing.Font ("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font ("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.AcceptButton = this.btnConfirm;
 		base.CancelButton = this.btnCancle;
 		base.Margin = new System.Windows.Forms.Padding (3, 4, 3, 4);

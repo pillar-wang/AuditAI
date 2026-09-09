@@ -7,7 +7,7 @@ public class AppGroupPrintMisc : AppCommandGroup
 {
 	public override string Text => "其他设置";
 
-	public override Image Image => Resources.OtherSetup;
+	public override Image Image => IconRes.OtherSetup;
 
 	public AppGroupPrintMisc()
 	{

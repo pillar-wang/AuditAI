@@ -9,7 +9,7 @@ public class AppCommandVouchers : AppCommandButton
 {
 	public override string Text => "记账凭证";
 
-	public override Image LargeIcon => Resources.Vouchers;
+	public override Image LargeIcon => IconRes.Vouchers;
 
 	protected override void Clicked()
 	{

@@ -8,7 +8,7 @@ public class AppCommandTableExportXlsx : AppCommandButton
 {
 	public override string Text => "Excel文件";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ExportExcel;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ExportExcel;
 
 	protected override string Tooltip => TipResource.excel文件按钮;
 

@@ -13,9 +13,7 @@
     <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="Google.Protobuf">
       <HintPath>..\Libs\Google.Protobuf.dll</HintPath>
     </Reference>

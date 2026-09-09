@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandFormulaMap : AppCommandButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.FormulaMap16;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.FormulaMap16;
 
 	protected override string Tooltip => TipResource.Ribbon菜单_主窗体右上角配置栏_流程图;
 

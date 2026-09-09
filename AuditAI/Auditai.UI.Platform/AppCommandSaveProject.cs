@@ -8,7 +8,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandSaveProject : AppCommandButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.SaveProject;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.SaveProject;
 
 	protected override Func<Task> ClickedTask => () => Program.MainForm.SaveProjects();
 

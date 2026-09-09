@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -65,19 +65,19 @@ public class AdvanceFilterBox : C1RibbonForm
 		cmdAppendRow.Text = "新增行";
 		lnkAppendRow.Command = cmdAppendRow;
 		cmdAppendRow.Click += CmdAppendRow_Click;
-		cmdAppendRow.Image = Resources.ctxAppendRow;
+		cmdAppendRow.Image = IconRes.ctxAppendRow;
 		ctxCell.CommandLinks.Add(lnkAppendRow);
 		cmdDeleteRow.Text = "删除行";
 		lnkDeleteRow.Command = cmdDeleteRow;
 		cmdDeleteRow.Click += CmdDeleteRow_Click;
-		cmdDeleteRow.Image = Resources.ctxDeleteRow;
+		cmdDeleteRow.Image = IconRes.ctxDeleteRow;
 		ctxCell.CommandLinks.Add(lnkDeleteRow);
 		AdvanceGrid.MouseClick += AdvanceGrid_MouseClick;
 		AdvanceGrid.MouseDown += AdvanceGrid_MouseDown;
 		cmdAppendRow2.Text = "新增行";
 		lnkAppendRow2.Command = cmdAppendRow2;
 		cmdAppendRow2.Click += CmdAppendRow_Click;
-		cmdAppendRow2.Image = Resources.ctxAppendRow;
+		cmdAppendRow2.Image = IconRes.ctxAppendRow;
 		ctxEmpty.CommandLinks.Add(lnkAppendRow2);
 	}
 
@@ -96,7 +96,7 @@ public class AdvanceFilterBox : C1RibbonForm
 		}
 		catch (Exception ex)
 		{
-			System.Windows.Forms.MessageBox.Show(ex.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "错误");
 		}
 		finally
 		{
@@ -116,11 +116,11 @@ public class AdvanceFilterBox : C1RibbonForm
 		case HitTestTypeEnum.RowHeader:
 			if (AdvanceGrid.MouseRow >= AdvanceGrid.Rows.Fixed)
 			{
-				ctxCell.ShowContextMenu(AdvanceGrid, e.Location);
+				NativeMenuShim.Show(ctxCell, AdvanceGrid, e.Location);
 			}
 			break;
 		case HitTestTypeEnum.None:
-			ctxEmpty.ShowContextMenu(AdvanceGrid, e.Location);
+			NativeMenuShim.Show(ctxEmpty, AdvanceGrid, e.Location);
 			break;
 		}
 	}
@@ -246,7 +246,7 @@ public class AdvanceFilterBox : C1RibbonForm
 		this.AdvanceGrid.Size = new System.Drawing.Size(835, 404);
 		this.AdvanceGrid.TabIndex = 0;
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -280,7 +280,7 @@ public class AdvanceFilterBox : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(835, 477);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

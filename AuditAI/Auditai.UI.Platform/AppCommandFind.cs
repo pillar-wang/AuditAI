@@ -7,7 +7,7 @@ public class AppCommandFind : AppCommandButton
 {
 	public override string Text => "查找替换";
 
-	public override Image LargeIcon => Resources.Replace;
+	public override Image LargeIcon => IconRes.Replace;
 
 	protected override void Clicked()
 	{

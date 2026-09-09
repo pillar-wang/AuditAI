@@ -7,7 +7,7 @@ public class AppGroupInsert : AppCommandGroup
 {
 	public override string Text => "插入元素";
 
-	public override Image Image => Resources.InsertOther;
+	public override Image Image => IconRes.InsertOther;
 
 	public AppGroupInsert()
 	{

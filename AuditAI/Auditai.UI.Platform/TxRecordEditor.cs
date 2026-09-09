@@ -195,7 +195,7 @@ public class TxRecordEditor : IRecordEditor
 		_tx.Select(end, 0);
 		_tx.Selection.Text = $"{member.Name} {record.CreateTime}";
 		_tx.Select(end, GetEnd());
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = foreColor;
 		_tx.Selection.ParagraphFormat.Alignment = horzAlign;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;
@@ -228,7 +228,7 @@ public class TxRecordEditor : IRecordEditor
 			}
 		}
 		_tx.Select(end, GetEnd());
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = Color.Black;
 		_tx.Selection.ParagraphFormat.Alignment = horzAlign;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;
@@ -249,7 +249,7 @@ public class TxRecordEditor : IRecordEditor
 		_tx.Selection.Text = $"{member.Name} {record.CreateTime}";
 		int start = _tx.Selection.Start;
 		_tx.Select(0, start);
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = foreColor;
 		_tx.Selection.ParagraphFormat.Alignment = horizontal;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;
@@ -285,7 +285,7 @@ public class TxRecordEditor : IRecordEditor
 		}
 		start = _tx.Selection.Start;
 		_tx.Select(start2, start - start2);
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = Color.Black;
 		_tx.Selection.ParagraphFormat.Alignment = horizontal;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;
@@ -308,7 +308,7 @@ public class TxRecordEditor : IRecordEditor
 		_tx.Selection.Text = $"{member.Name} {record.CreateTime}";
 		int start = _tx.Selection.Start;
 		_tx.Select(0, start);
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = foreColor;
 		_tx.Selection.ParagraphFormat.Alignment = horizontal;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;
@@ -344,7 +344,7 @@ public class TxRecordEditor : IRecordEditor
 		}
 		start = _tx.Selection.Start;
 		_tx.Select(start2, start - start2);
-		_tx.Selection.FontName = "Noto Sans SC";
+		_tx.Selection.FontName = "微软雅黑";
 		_tx.Selection.ForeColor = Color.Black;
 		_tx.Selection.ParagraphFormat.Alignment = horizontal;
 		_tx.Selection.ParagraphFormat.LeftIndent = 200;

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -142,8 +142,11 @@ public class DocumentStructure : ISetTheme
 		View.Rows.Count = 0;
 		int pc = _tx.Paragraphs.Count;
 		List<NumberingHelper.Numbering> list = new List<NumberingHelper.Numbering>();
-		ProgressForm<object> progressForm = new ProgressForm<object>(delegate(IProgress<ProgressInfo> iProg)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, delegate
 		{
+			IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 			try
 			{
 				_de.DetachEvents();
@@ -194,10 +197,8 @@ public class DocumentStructure : ISetTheme
 				_de.AttachEvents();
 			}
 			View.Tree.Show(0);
-			return Task.FromResult<object>(null);
+			return Task.CompletedTask;
 		});
-		progressForm.ShowDialog();
-		await progressForm.Task;
 		View.EndUpdate();
 		_tx.Select(selStart, selLen);
 	}
@@ -344,16 +345,16 @@ public class DocumentStructure : ISetTheme
 	{
 		try
 		{
-			if (System.Windows.Forms.MessageBox.Show("将自动重排文档中所有编号，是否继续？", "自动编号",
-				MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+			if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, "将自动重排文档中所有编号，是否继续？",
+				MessageBoxButtons.YesNo, "自动编号") != DialogResult.Yes)
 			{
 				return;
 			}
 			int changed = AutoNumber();
 			if (changed == 0)
 			{
-				System.Windows.Forms.MessageBox.Show("编号已正确，无需调整。", "自动编号",
-					MessageBoxButtons.OK, MessageBoxIcon.Information);
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "编号已正确，无需调整。",
+					MessageBoxButtons.OK, "自动编号");
 			}
 			else
 			{
@@ -422,7 +423,7 @@ public class DocumentStructure : ISetTheme
 		}
 		if (e.Button == MouseButtons.Right)
 		{
-			ctx.ShowContextMenu(View, e.Location);
+			NativeMenuShim.Show(ctx, View, e.Location);
 		}
 	}
 
@@ -655,11 +656,10 @@ public class DocumentStructure : ISetTheme
 			e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(150, 51, 153, 255)), e.Bounds);
 			// 绘制标签
 			string label = isStart ? "起" : "止";
-			using (var brush = new SolidBrush(Color.White))
-			using (var font = new Font("Noto Sans SC", 9, FontStyle.Bold))
+			using (var font = new Font("微软雅黑", 9, FontStyle.Bold))
 			{
-				var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-				e.Graphics.DrawString(label, font, brush, e.Bounds, sf);
+				TextRenderer.DrawText(e.Graphics, label, font, e.Bounds, Color.White,
+					TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
 			}
 		}
 	}

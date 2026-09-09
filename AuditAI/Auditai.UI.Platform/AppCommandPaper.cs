@@ -41,7 +41,7 @@ public class AppCommandPaper : AppCommandMenu
 			base.Menu.LargeImage = Resources.pt_B5;
 			break;
 		case PaperKind.Custom:
-			base.Menu.LargeImage = Resources.PaperCustom;
+			base.Menu.LargeImage = IconRes.PaperCustom;
 			break;
 		}
 	}

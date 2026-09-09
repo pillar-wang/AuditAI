@@ -7,7 +7,7 @@ public class AppCommandExportDocx : AppCommandButton
 {
 	public override string Text => "Word文件";
 
-	public override Image LargeIcon => Resources.ExportDocx;
+	public override Image LargeIcon => IconRes.ExportDocx;
 
 	protected override void Clicked()
 	{

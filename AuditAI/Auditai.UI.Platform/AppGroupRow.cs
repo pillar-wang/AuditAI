@@ -7,7 +7,7 @@ public class AppGroupRow : AppCommandGroup
 {
 	public override string Text => "行操作";
 
-	public override Image Image => Resources.RowUp;
+	public override Image Image => IconRes.RowUp;
 
 	public AppGroupRow()
 	{

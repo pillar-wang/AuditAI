@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandShowSidebar : AppCommandButton
 {
-	public override Image SmallIcon => Resources.HideSideToolbar16;
+	public override Image SmallIcon => IconRes.HideSideToolbar16;
 
 	protected override void Clicked()
 	{

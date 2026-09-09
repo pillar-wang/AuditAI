@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandSystemMessage : AppCommandButton
 {
-	public override Image SmallIcon => Resources.SystemMessage;
+	public override Image SmallIcon => IconRes.SystemMessage;
 
 	protected override void Clicked()
 	{

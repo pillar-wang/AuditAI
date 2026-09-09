@@ -7,7 +7,7 @@ public class AppCommandTicketColumnMoveLeft : AppCommandButton
 {
 	public override string Text => "左移列";
 
-	public override Image LargeIcon => Resources.ColumnLeft;
+	public override Image LargeIcon => IconRes.ColumnLeft;
 
 	protected override void Clicked()
 	{

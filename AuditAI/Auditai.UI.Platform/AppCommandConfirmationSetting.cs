@@ -8,7 +8,7 @@ public class AppCommandConfirmationSetting : AppCommandButton
 {
 	public override string Text => "函证设置";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ConfirmationSet;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ConfirmationSet;
 
 	protected override string Tooltip => TipResource.高级功能菜单_文档_函证设置;
 

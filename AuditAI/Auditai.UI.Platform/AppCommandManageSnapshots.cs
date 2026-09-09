@@ -10,7 +10,7 @@ public class AppCommandManageSnapshots : AppCommandButton
 {
 	public override string Text => "历史版本";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.Snapshots;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.Snapshots;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

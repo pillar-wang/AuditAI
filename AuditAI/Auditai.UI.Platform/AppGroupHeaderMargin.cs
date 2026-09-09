@@ -7,7 +7,7 @@ public class AppGroupHeaderMargin : AppCommandGroup
 {
 	public override string Text => "页眉页脚边距";
 
-	public override Image Image => Resources.HFMargin;
+	public override Image Image => IconRes.HFMargin;
 
 	public AppGroupHeaderMargin()
 	{

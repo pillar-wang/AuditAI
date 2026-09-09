@@ -13,9 +13,9 @@ public class C1EditorRecordEditor : IRecordEditor
 {
 	private const string TEMPLETE_ROOT = "<html><body id='rootbody'></body></html>";
 
-	private const string TEMPLETE_RECORD_SELF = "<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{0}({1})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{2}</p>";
+	private const string TEMPLETE_RECORD_SELF = "<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{0}({1})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{2}</p>";
 
-	private const string TEMPLETE_RECORD_Member = "<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{0}({1})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{2}</p>";
+	private const string TEMPLETE_RECORD_Member = "<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{0}({1})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{2}</p>";
 
 	private C1Editor _editor;
 
@@ -60,22 +60,22 @@ public class C1EditorRecordEditor : IRecordEditor
 		{
 			try
 			{
-				xmlNode.InnerXml = $"<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{ToXml(member.Name)}({ToXml(record.CreateTime.ToString())})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{arg}</p>";
+				xmlNode.InnerXml = $"<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{ToXml(member.Name)}({ToXml(record.CreateTime.ToString())})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{arg}</p>";
 			}
 			catch (XmlException)
 			{
-				xmlNode.InnerXml = string.Format("<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{0}({1})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{2}</p>", ToXml(member.Name), ToXml(record.CreateTime.ToString()), ToXml("[消息包含特殊字符，不能正常显示]"));
+				xmlNode.InnerXml = string.Format("<p align='left' style='color:rgb(230,108,33);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{0}({1})</p><p align='left' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{2}</p>", ToXml(member.Name), ToXml(record.CreateTime.ToString()), ToXml("[消息包含特殊字符，不能正常显示]"));
 			}
 		}
 		else
 		{
 			try
 			{
-				xmlNode.InnerXml = $"<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{ToXml(member.Name)}({ToXml(record.CreateTime.ToString())})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{arg}</p>";
+				xmlNode.InnerXml = $"<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{ToXml(member.Name)}({ToXml(record.CreateTime.ToString())})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{arg}</p>";
 			}
 			catch (XmlException)
 			{
-				xmlNode.InnerXml = string.Format("<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{0}({1})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt Noto Sans SC'>{2}</p>", ToXml(member.Name), ToXml(record.CreateTime.ToString()), ToXml("[消息包含特殊字符，不能正常显示]"));
+				xmlNode.InnerXml = string.Format("<p align='right' style='color:rgb(40,131,243);line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{0}({1})</p><p align='right' style='line-height:1px;margin:0 auto;font: normal 10pt '微软雅黑''>{2}</p>", ToXml(member.Name), ToXml(record.CreateTime.ToString()), ToXml("[消息包含特殊字符，不能正常显示]"));
 			}
 		}
 		elementById.AppendChild(xmlNode);

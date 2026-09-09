@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System.Drawing;
+﻿﻿﻿using System.Drawing;
 using Auditai.UI.Platform.Properties;
 
 namespace Auditai.UI.Platform;
@@ -7,9 +7,9 @@ public class AppCommandShowDocumentNavigator : AppCommandToggleButton
 {
 	public override string Text => "文档结构图";
 
-	public override Image LargeIcon => Resources.DocumentStructure ?? CreateDefaultIcon();
+	public override Image LargeIcon => IconRes.DocumentStructure ?? CreateDefaultIcon();
 
-	public override Image SmallIcon => Resources.DocumentStructure ?? CreateSmallIcon();
+	public override Image SmallIcon => IconRes.DocumentStructure ?? CreateSmallIcon();
 
 	private static Image CreateDefaultIcon()
 	{

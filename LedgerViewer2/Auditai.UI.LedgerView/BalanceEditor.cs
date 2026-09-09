@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -90,8 +90,6 @@ internal class BalanceEditor : ISetTheme
 	private C1Label lblCurrency;
 
 	public C1FlexGridEx grdBalance;
-
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
 
 	private C1ToolBar toolBar = new C1ToolBar
 	{
@@ -222,7 +220,7 @@ internal class BalanceEditor : ISetTheme
 		btnBalanceBack.Image = Auditai.UI.LedgerView.Properties.Resources.back;
 		btnBalanceBack.FlatStyle = FlatStyle.Flat;
 		btnBalanceBack.FlatAppearance.BorderSize = 0;
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAccountName.TextDetached = true;
 		lblAccountName.BorderStyle = BorderStyle.None;
 		lblAccountName.Dock = DockStyle.Fill;
@@ -240,7 +238,7 @@ internal class BalanceEditor : ISetTheme
 		pnlBalanceTitle.SizeRatio = 4.815;
 		pnlBalanceTitle.Controls.Add(btnBalanceBack);
 		pnlBalanceTitle.Controls.Add(lblAccountName);
-		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblCurrency.TextDetached = true;
 		lblCurrency.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
 		lblCurrency.BorderStyle = BorderStyle.None;
@@ -324,7 +322,7 @@ internal class BalanceEditor : ISetTheme
 		C1Command c1Command = new C1Command();
 		c1Command.Name = "BalanceEditor+cmdShareLedger";
 		c1Command.Text = "分享账套";
-		c1Command.Image = Auditai.UI.LedgerView.Properties.Resources.sideShareLedger;
+		c1Command.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("share", 28, Color.FromArgb(59, 130, 246));
 		c1Command.Click += delegate
 		{
 			_owner._owner.OnAfterShare(new LedgerShareEventArgs
@@ -339,7 +337,7 @@ internal class BalanceEditor : ISetTheme
 		C1CommandLink c1CommandLink = new C1CommandLink();
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = "科目级次";
-		c1Command2.Image = Auditai.UI.LedgerView.Properties.Resources.sideDisplayLevel;
+		c1Command2.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("list-numbers", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command2.Click += delegate(object s1, ClickEventArgs e1)
 		{
 			C1ContextMenu c1ContextMenu = new C1ContextMenu();
@@ -361,14 +359,14 @@ internal class BalanceEditor : ISetTheme
 			c1Command7.CommandStateQuery += CmdLastLayer_CommandStateQuery;
 			c1CommandLink7.Command = c1Command7;
 			c1ContextMenu.CommandLinks.Add(c1CommandLink7);
-			c1ContextMenu.ShowContextMenu(toolBar, new Point(e1.CallerLink.Bounds.Left, e1.CallerLink.Bounds.Bottom));
+			NativeMenuShim.Show(c1ContextMenu, toolBar, new Point(e1.CallerLink.Bounds.Left, e1.CallerLink.Bounds.Bottom));
 		};
 		c1CommandLink.Command = c1Command2;
 		toolBar.CommandLinks.Add(c1CommandLink);
 		C1CommandLink c1CommandLink2 = new C1CommandLink();
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "切换样式";
-		c1Command3.Image = Auditai.UI.LedgerView.Properties.Resources.sideSwitchStyle;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("swap", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += delegate
 		{
 			if (_currentDisplayStyle == BalanceDisplayStyleEnum.HAVE_DIRECTION)
@@ -390,7 +388,7 @@ internal class BalanceEditor : ISetTheme
 		c1CommandLink2.Command = c1Command3;
 		toolBar.CommandLinks.Add(c1CommandLink2);
 		cmdSidebarModifyBegin.Text = "修改期初数";
-		cmdSidebarModifyBegin.Image = Auditai.UI.LedgerView.Properties.Resources.sideModifyBegin;
+		cmdSidebarModifyBegin.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("pencil", 28, Color.FromArgb(59, 130, 246));
 		cmdSidebarModifyBegin.Click += delegate
 		{
 			_owner.ModifyBeginBalance((grdBalance.Row < 0) ? null : grdBalance.Rows[grdBalance.Row].UserData);
@@ -400,7 +398,7 @@ internal class BalanceEditor : ISetTheme
 		C1CommandLink c1CommandLink3 = new C1CommandLink();
 		C1Command c1Command4 = new C1Command();
 		c1Command4.Text = "填充至底稿";
-		c1Command4.Image = Auditai.UI.LedgerView.Properties.Resources.sideFillToTable;
+		c1Command4.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("export", 28, Color.FromArgb(217, 119, 6));
 		c1Command4.Click += delegate
 		{
 			FillToTable();
@@ -416,13 +414,9 @@ internal class BalanceEditor : ISetTheme
 		c1CommandLink4.Delimiter = true;
 		C1Command c1Command5 = new C1Command();
 		c1Command5.Text = "隐藏侧边栏";
-		c1Command5.Image = Auditai.UI.LedgerView.Properties.Resources.sideHideSidebar;
+		c1Command5.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command5.Click += CmdHideSidebar_Click;
 		c1CommandLink4.Command = c1Command5;
-		foreach (C1CommandLink commandLink in toolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdBalance, toolBar, out pnlSidebar);
 		pnlBalanceGrid.HeaderLineColor = Color.Transparent;
 		pnlBalanceGrid.Height = 573;
@@ -451,7 +445,7 @@ internal class BalanceEditor : ISetTheme
 	{
 		if (e.Button == MouseButtons.Right)
 		{
-			modifyContextMenu.ShowContextMenu(lblCompanyName, e.Location);
+			NativeMenuShim.Show(modifyContextMenu, lblCompanyName, e.Location);
 		}
 	}
 
@@ -1207,15 +1201,6 @@ internal class BalanceEditor : ISetTheme
 		btnBalanceBack.FlatAppearance.MouseOverBackColor = Color.LightGray;
 		grdBalance.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdBalance.Styles.Fixed.Font = grdBalance.Font;
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	public void AttachTooltip(TooltipManager tooltipManager)
@@ -1736,13 +1721,13 @@ internal class BalanceEditor : ISetTheme
 			switch (grdBalance.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(grdBalance, e.Location);
+				NativeMenuShim.Show(ctxFixed, grdBalance, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(grdBalance, e.Location);
+				NativeMenuShim.Show(ctxEmpty, grdBalance, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(grdBalance, e.Location);
+				NativeMenuShim.Show(ctxCell, grdBalance, e.Location);
 				break;
 			}
 		}

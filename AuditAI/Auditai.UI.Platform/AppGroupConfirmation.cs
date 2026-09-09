@@ -7,7 +7,7 @@ public class AppGroupConfirmation : AppCommandGroup
 {
 	public override string Text => "函证设置";
 
-	public override Image Image => Resources.ConfirmationGenerate;
+	public override Image Image => IconRes.ConfirmationGenerate;
 
 	public AppGroupConfirmation()
 	{

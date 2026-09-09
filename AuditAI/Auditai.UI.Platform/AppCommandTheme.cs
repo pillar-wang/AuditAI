@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandTheme : AppCommandButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.Theme;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.Theme;
 
 	protected override string Tooltip => TipResource.主题设置按钮;
 

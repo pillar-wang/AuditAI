@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -40,7 +40,7 @@ public class FormTicketImportXlsx
 		_form.Size = new Size(800, 600);
 		_form.Text = "选择工作表";
 		_form.Shown += _form_Shown;
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ImportXlsx16);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ImportXlsx16);
 		C1SplitContainer c1SplitContainer = new C1SplitContainer
 		{
 			Dock = DockStyle.Fill

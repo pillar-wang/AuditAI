@@ -23,9 +23,6 @@
     <EmbeddedResource Include="CrawlerForm_net20.exe.licenses" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CrawlerModel">
-      <HintPath>..\Libs\CrawlerModel.dll</HintPath>
-    </Reference>
     <Reference Include="C1.Win.C1Command.2">
       <HintPath>..\Libs\C1.Win.C1Command.2.dll</HintPath>
     </Reference>
@@ -51,8 +48,9 @@
     <Reference Include="C1.Win.2">
       <HintPath>..\Libs\C1.Win.2.dll</HintPath>
     </Reference>
-    <Reference Include="DbAccess">
-      <HintPath>..\Libs\DbAccess.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerModel\CrawlerModel.csproj" />
+    <ProjectReference Include="..\CrawlerForm_DbAccess\DbAccess.csproj" />
   </ItemGroup>
 </Project>

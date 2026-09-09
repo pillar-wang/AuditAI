@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandBatchColumnRemove : AppCommandButton
 {
-	public override Image LargeIcon => Resources.BatchColumnRemove;
+	public override Image LargeIcon => IconRes.BatchColumnRemove;
 
 	public override string Text => "跨表批量删除列";
 

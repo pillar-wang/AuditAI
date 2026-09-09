@@ -8,7 +8,7 @@ public class AppCommandPortrait : AppCommandButton
 {
 	public override string Text => "纵向";
 
-	public override System.Drawing.Image LargeIcon => Resources.Portrait16;
+	public override System.Drawing.Image LargeIcon => IconRes.Portrait16;
 
 	protected override void Clicked()
 	{

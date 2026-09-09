@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -116,7 +116,7 @@ public class frmCellCollect : C1RibbonForm
 
 	private void FrmCellCollect_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.CellCollect16);
+		base.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.CellCollect16);
 	}
 
 	public new DialogResult ShowDialog()
@@ -288,7 +288,7 @@ public class frmCellCollect : C1RibbonForm
 			{
 				if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && DictionarySync.CellCollector.Version == 0)
 				{
-					System.Windows.Forms.MessageBox.Show("因网络问题，字典更新失败！");
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "因网络问题，字典更新失败！", MessageBoxButtons.OK, "错误");
 				}
 			}
 			catch (TimeoutException)
@@ -686,7 +686,7 @@ public class frmCellCollect : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1014, 535);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.MinimumSize = new System.Drawing.Size(500, 300);
 		base.Name = "frmCellCollect";

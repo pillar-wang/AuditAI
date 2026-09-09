@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// CrossProjectRefIntegrationTests.cs
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// CrossProjectRefIntegrationTests.cs
 // 跨项目数据引用集成测试
 // 测试 CrossProjectDataRefManager、CrossProjectRefCache、CrossProjectDataRefStore、
 //       CrossProjectRefAuthProvider、CrossProjectRefSyncNotifier
@@ -180,41 +180,14 @@ namespace CrossProjectRefIntegrationTests
             // 删除旧文件（如有）
             if (File.Exists(dbPath)) File.Delete(dbPath);
 
+            // 通过 ProjectDAL 走标准建库路径（CreateConfig + MigrateSchema），
+            // 保证测试库 schema 与生产代码始终一致。
+            // （此前为手抄精简结构，DTO 迁移链新增无保护 ALTER 后会产生
+            //   duplicate column / no such column 等结构性失败）
+            using var dal = new ProjectDAL(dbPath);
+
             using var conn = new SQLiteConnection($"Data Source={dbPath};Version=3;");
             conn.Open();
-
-            // 创建标准项目表
-            using (var cmd = conn.CreateCommand())
-            {
-                cmd.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS [Table] (
-                        Id INTEGER PRIMARY KEY,
-                        Name TEXT,
-                        Caption TEXT
-                    );
-                    CREATE TABLE IF NOT EXISTS [Column] (
-                        Id INTEGER PRIMARY KEY,
-                        TableId INTEGER NOT NULL,
-                        Caption TEXT,
-                        [Index] INTEGER NOT NULL DEFAULT 0,
-                        Role INTEGER NOT NULL DEFAULT 0
-                    );
-                    CREATE TABLE IF NOT EXISTS [Row] (
-                        Id INTEGER PRIMARY KEY,
-                        TableId INTEGER NOT NULL,
-                        [Index] INTEGER NOT NULL DEFAULT 0,
-                        Role INTEGER NOT NULL DEFAULT 0
-                    );
-                    CREATE TABLE IF NOT EXISTS [Cell] (
-                        Id INTEGER PRIMARY KEY,
-                        RowId INTEGER NOT NULL,
-                        ColumnId INTEGER NOT NULL,
-                        Value BLOB,
-                        Dirty INTEGER NOT NULL DEFAULT 0
-                    );
-                ";
-                cmd.ExecuteNonQuery();
-            }
 
             if (isSource)
             {
@@ -235,24 +208,20 @@ namespace CrossProjectRefIntegrationTests
         {
             // 表
             _sourceTableId = new Id64(1000, 1);
-            ExecSql(conn, "INSERT INTO [Table] (Id, Name, Caption) VALUES (@p, @p2, @p3)",
-                ("@p", (long)_sourceTableId.Value), ("@p2", "来源表"), ("@p3", "来源表"));
+            ExecSql(conn, "INSERT INTO [Table] (Id, Title, PageSetup, Note, Dirty, DefaultStyleId) VALUES (@p, @p2, @p3, @p4, 0, 0)",
+                ("@p", (long)_sourceTableId.Value), ("@p2", "来源表"), ("@p3", ""), ("@p4", ""));
 
             // 列
             _sourceCol1Id = new Id64(1000, 10);
             _sourceCol2Id = new Id64(1000, 11);
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_sourceCol1Id.Value), ("@p2", _sourceTableId.Value), ("@p3", "金额_A"), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_sourceCol2Id.Value), ("@p2", _sourceTableId.Value), ("@p3", "金额_B"), ("@p4", 1L));
+            InsertColumn(conn, _sourceCol1Id, _sourceTableId, "金额_A", 0);
+            InsertColumn(conn, _sourceCol2Id, _sourceTableId, "金额_B", 1);
 
             // 行（Role=0 表示 Normal）
             _sourceRow1Id = new Id64(1000, 20);
             _sourceRow2Id = new Id64(1000, 21);
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_sourceRow1Id.Value), ("@p2", _sourceTableId.Value), ("@p3", 0L), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_sourceRow2Id.Value), ("@p2", _sourceTableId.Value), ("@p3", 1L), ("@p4", 0L));
+            InsertRow(conn, _sourceRow1Id, _sourceTableId, 0);
+            InsertRow(conn, _sourceRow2Id, _sourceTableId, 1);
 
             // 单元格: Row1-Col1=100, Row1-Col2=200, Row2-Col1=300, Row2-Col2=400
             _sourceCell1Id = new Id64(1000, 30);
@@ -275,28 +244,27 @@ namespace CrossProjectRefIntegrationTests
         {
             // 表
             _targetTableId = new Id64(2000, 1);
-            ExecSql(conn, "INSERT INTO [Table] (Id, Name, Caption) VALUES (@p, @p2, @p3)",
-                ("@p", (long)_targetTableId.Value), ("@p2", "目标表"), ("@p3", "目标表"));
+            ExecSql(conn, "INSERT INTO [Table] (Id, Title, PageSetup, Note, Dirty, DefaultStyleId) VALUES (@p, @p2, @p3, @p4, 0, 0)",
+                ("@p", (long)_targetTableId.Value), ("@p2", "目标表"), ("@p3", ""), ("@p4", ""));
 
             // 列
             _targetCol1Id = new Id64(2000, 10);
             _targetCol2Id = new Id64(2000, 11);
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_targetCol1Id.Value), ("@p2", _targetTableId.Value), ("@p3", "结果_A"), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Column] (Id, TableId, Caption, [Index]) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_targetCol2Id.Value), ("@p2", _targetTableId.Value), ("@p3", "结果_B"), ("@p4", 1L));
+            InsertColumn(conn, _targetCol1Id, _targetTableId, "结果_A", 0);
+            InsertColumn(conn, _targetCol2Id, _targetTableId, "结果_B", 1);
 
             // 行
             _targetRow1Id = new Id64(2000, 20);
             _targetRow2Id = new Id64(2000, 21);
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_targetRow1Id.Value), ("@p2", _targetTableId.Value), ("@p3", 0L), ("@p4", 0L));
-            ExecSql(conn, "INSERT INTO [Row] (Id, TableId, [Index], Role) VALUES (@p, @p2, @p3, @p4)",
-                ("@p", (long)_targetRow2Id.Value), ("@p2", _targetTableId.Value), ("@p3", 1L), ("@p4", 0L));
+            InsertRow(conn, _targetRow1Id, _targetTableId, 0);
+            InsertRow(conn, _targetRow2Id, _targetTableId, 1);
 
-            // 目标单元格（用于 CellRef）
+            // 目标单元格网格（ColumnRef/AreaRef 为 UPDATE-only 写入，目标位置必须已有 Cell）
             _targetCell1Id = new Id64(2000, 30);
             InsertCell(conn, _targetCell1Id, _targetRow1Id, _targetCol1Id, 0.0);
+            InsertCell(conn, new Id64(2000, 31), _targetRow1Id, _targetCol2Id, 0.0);
+            InsertCell(conn, new Id64(2000, 32), _targetRow2Id, _targetCol1Id, 0.0);
+            InsertCell(conn, new Id64(2000, 33), _targetRow2Id, _targetCol2Id, 0.0);
 
             Console.WriteLine("目标数据库填充完成: 1表2列2行1单元格");
         }
@@ -349,6 +317,28 @@ namespace CrossProjectRefIntegrationTests
         }
 
         /// <summary>
+        /// 插入列（适配 ProjectDAL 标准 schema：NOT NULL 列全部显式赋值）
+        /// </summary>
+        private static void InsertColumn(SQLiteConnection conn, Id64 colId, Id64 tableId, string caption, int index)
+        {
+            ExecSql(conn,
+                "INSERT INTO [Column] (Id, TableId, [Index], ServerIndex, Caption, CaptionStyle, Width, Visible, Dirty, Status) " +
+                "VALUES (@p, @t, @i, 0, @c, '', 80, 1, 0, 0)",
+                ("@p", colId.Value), ("@t", tableId.Value), ("@i", (long)index), ("@c", caption));
+        }
+
+        /// <summary>
+        /// 插入行（适配 ProjectDAL 标准 schema：NOT NULL 列全部显式赋值）
+        /// </summary>
+        private static void InsertRow(SQLiteConnection conn, Id64 rowId, Id64 tableId, int index)
+        {
+            ExecSql(conn,
+                "INSERT INTO [Row] (Id, TableId, [Index], ServerIndex, Height, Visible, Dirty, Status, Role) " +
+                "VALUES (@p, @t, @i, 0, 24, 1, 0, 0, 0)",
+                ("@p", rowId.Value), ("@t", tableId.Value), ("@i", (long)index));
+        }
+
+        /// <summary>
         /// 插入单元格（Value 使用 BinaryValue 编码为 BLOB）
         /// </summary>
         private static void InsertCell(SQLiteConnection conn, Id64 cellId, Id64 rowId, Id64 colId, double value)
@@ -357,7 +347,7 @@ namespace CrossProjectRefIntegrationTests
             byte[] blob = binaryValue.GetBytes();
 
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "INSERT INTO [Cell] (Id, RowId, ColumnId, Value, Dirty) VALUES (@Id, @RowId, @ColId, @Value, 0)";
+            cmd.CommandText = "INSERT INTO [Cell] (Id, RowId, ColumnId, Value, Dirty, Status) VALUES (@Id, @RowId, @ColId, @Value, 0, 0)";
             cmd.Parameters.AddWithValue("@Id", cellId.Value);
             cmd.Parameters.AddWithValue("@RowId", rowId.Value);
             cmd.Parameters.AddWithValue("@ColId", colId.Value);
@@ -562,13 +552,13 @@ namespace CrossProjectRefIntegrationTests
         {
             Console.WriteLine("--- Test04: AreaRef 执行测试 ---");
 
-            // 准备: AreaRef 配置 —— 读取来源 0~1 行、0~1 列
+            // 准备: AreaRef 配置 —— 读取来源 0~1 行、0~1 列（字段名须与 AreaRefConfig 定义一致）
             var areaRefConfig = JsonConvert.SerializeObject(new
             {
-                StartRow = 0,
-                EndRow = 1,
-                StartCol = 0,
-                EndCol = 1,
+                SourceStartRow = 0,
+                SourceEndRow = 1,
+                SourceStartCol = 0,
+                SourceEndCol = 1,
                 TargetStartRow = 0,
                 TargetStartCol = 0
             });

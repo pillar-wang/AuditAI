@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -70,7 +70,7 @@ public class frmBatchApplyRange : Form
 			Text = "批量应用表格样式向导",
 			Location = new Point(20, y),
 			Size = new Size(754, 33),
-			Font = new Font("Noto Sans SC", 12, FontStyle.Bold)
+			Font = new Font("微软雅黑", 12, FontStyle.Bold)
 		};
 		y += 45;
 
@@ -91,7 +91,7 @@ public class frmBatchApplyRange : Form
 			Checked = true,
 			BackColor = Color.FromArgb(230, 240, 255),
 			FlatStyle = FlatStyle.Standard,
-			Font = new Font("Noto Sans SC", 9, FontStyle.Bold)
+			Font = new Font("微软雅黑", 9, FontStyle.Bold)
 		};
 		grpRange.Controls.Add(_rbSetStart);
 
@@ -102,7 +102,7 @@ public class frmBatchApplyRange : Form
 			Size = new Size(143, 29),
 			BackColor = Color.FromArgb(255, 235, 235),
 			FlatStyle = FlatStyle.Standard,
-			Font = new Font("Noto Sans SC", 9, FontStyle.Bold)
+			Font = new Font("微软雅黑", 9, FontStyle.Bold)
 		};
 		grpRange.Controls.Add(_rbSetEnd);
 
@@ -382,7 +382,7 @@ public class frmBatchApplyRange : Form
 
 		if (_tableCountInRange == 0)
 		{
-			MessageBox.Show("所选范围内未找到表格", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "所选范围内未找到表格", MessageBoxButtons.OK, "提示");
 		}
 
 		UpdateApplyButton();
@@ -406,12 +406,11 @@ public class frmBatchApplyRange : Form
 		{
 			e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(120, 51, 153, 255)), e.Bounds);
 			string label = isStart ? "起" : "止";
-			using (var brush = new SolidBrush(Color.White))
-			using (var font = new Font("Noto Sans SC", 9, FontStyle.Bold))
+			using (var font = new Font("微软雅黑", 9, FontStyle.Bold))
 			{
-				var sf = new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center };
 				var labelBounds = new Rectangle(e.Bounds.Right - 30, e.Bounds.Top, 30, e.Bounds.Height);
-				e.Graphics.DrawString(label, font, brush, labelBounds, sf);
+				TextRenderer.DrawText(e.Graphics, label, font, labelBounds, Color.White,
+					TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
 			}
 		}
 	}
@@ -445,7 +444,7 @@ public class frmBatchApplyRange : Form
 		var tables = _docStructure.GetTablesInRange(_startPos, _endPos);
 		if (tables.Count == 0)
 		{
-			MessageBox.Show("所选范围内未找到表格", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "所选范围内未找到表格", MessageBoxButtons.OK, "提示");
 			return;
 		}
 
@@ -466,7 +465,7 @@ public class frmBatchApplyRange : Form
 		_lblProgress.Text = $"完成: 成功应用 {successCount}/{tables.Count} 个表格";
 		_btnApply.Enabled = true;
 
-		MessageBox.Show($"批量应用完成！\n成功: {successCount}/{tables.Count}", "完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, $"批量应用完成！\n成功: {successCount}/{tables.Count}", MessageBoxButtons.OK, "完成");
 	}
 
 	private void UpdateApplyButton()

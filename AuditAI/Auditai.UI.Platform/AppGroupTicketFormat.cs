@@ -7,7 +7,7 @@ public class AppGroupTicketFormat : AppCommandGroup
 {
 	public override string Text => "数据格式";
 
-	public override Image Image => Resources.DataFormat;
+	public override Image Image => IconRes.DataFormat;
 
 	public AppGroupTicketFormat()
 	{

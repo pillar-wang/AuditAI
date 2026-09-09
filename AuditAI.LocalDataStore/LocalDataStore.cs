@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -1648,6 +1648,22 @@ namespace Auditai.LocalDataStore
             return string.IsNullOrEmpty(result)
                 ? new JObject()
                 : JObject.Parse(result);
+        }
+
+        /// <summary>
+        /// 标准科目字典：从本地 Data\DataSource\StandardAccountDic.json 读取
+        /// 文件不存在时返回 Version=0、空 Accounts 的 JObject
+        /// </summary>
+        public static async Task<JObject> GetStandardAccountDic(int version = 0)
+        {
+            string path = Path.Combine("Data", "DataSource", "StandardAccountDic.json");
+            if (!File.Exists(path))
+                return new JObject
+                {
+                    ["Version"] = 0,
+                    ["Accounts"] = new JArray()
+                };
+            return JObject.Parse(File.ReadAllText(path));
         }
 
         // =============================================

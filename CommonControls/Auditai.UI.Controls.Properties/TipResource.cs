@@ -1,4 +1,4 @@
-using Auditai.Model;
+﻿using Auditai.Model;
 
 namespace Auditai.UI.Controls.Properties;
 
@@ -213,8 +213,6 @@ public static class TipResource
 	public static string Ribbon菜单_主窗体右上角配置栏_重新载入 = "重新载入功能说明[|]此按钮为文件的重新载入快捷按钮，用于重新打开当前文件，一般在拟放弃当前文件的编辑修改时使用。";
 
 	public static string Ribbon菜单_主窗体右上角配置栏_增减成员 = "增减项目成员[|]点击此处可弹出项目成员窗体，可以向当前项目中添加新成员或者删除现有成员。";
-
-	public static string Ribbon菜单_主窗体右上角配置栏_联系方式 = "联系方式[|]点击此处可以查看 AuditAI 的联系方式。";
 
 	public static string 其他 = "[|]";
 

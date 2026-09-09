@@ -8,7 +8,7 @@ public class AppCommandUserInfo : AppCommandButton
 {
 	public override string Text => "用户资料";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.SwitchUser;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.SwitchUser;
 
 	protected override string Tooltip => TipResource.用户资料按钮;
 

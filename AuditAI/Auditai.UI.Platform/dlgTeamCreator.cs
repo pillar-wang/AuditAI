@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net.Http;
@@ -83,7 +83,7 @@ public class dlgTeamCreator : C1RibbonForm
 
 	private void DlgTeamCreator_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.toolCreateTeam);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.toolCreateTeam);
 	}
 
 	private void InitializeModule(C1.Win.C1Tile.Group group)
@@ -122,7 +122,7 @@ public class dlgTeamCreator : C1RibbonForm
 		C1.Win.C1Tile.TextElement textElement = new C1.Win.C1Tile.TextElement();
 		textElement.ForeColor = Color.Black;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(panelElement2);
@@ -228,19 +228,22 @@ public class dlgTeamCreator : C1RibbonForm
 	private async Task<Guid?> CreateTeam(string teamName, int type)
 	{
 		Guid? createId = null;
-		ProgressForm<JObject> progressForm = new ProgressForm<JObject>(async delegate(IProgress<ProgressInfo> iProg)
+		JObject createdTeam = null;
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 			iProg.Report(new ProgressInfo
 			{
 				MainProgress = 100,
 				MainCaption = "正在创建组织，请稍候..."
 			});
-			return await WebApiClient.CreateTeam(teamName, type);
+			createdTeam = await WebApiClient.CreateTeam(teamName, type);
 		});
-		progressForm.ShowDialog();
 		try
 		{
-			JObject result = await progressForm.Task;
+			JObject result = createdTeam;
 			result.Value<DateTime>("ExpireDate");
 			result.Value<int>("TrialPeriod");
 			await SignalRClient.ChangeTeamMember(Auditai.Model.User.Current.Id.ToString(), Guid.NewGuid().ToString(), Auditai.Model.User.Current.TeamId.ToString());
@@ -354,7 +357,7 @@ public class dlgTeamCreator : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.btnConfirm).BeginInit();
 		base.SuspendLayout();
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -426,7 +429,7 @@ public class dlgTeamCreator : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(564, 153);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "dlgTeamCreator";
 		this.Text = "创建组织";

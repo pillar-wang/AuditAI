@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -47,7 +47,7 @@ public class TreeListDropDownForm : ListDropDownFormBase
 			AllowMerging = AllowMergingEnum.None,
 			AllowMergingFixed = AllowMergingEnum.None,
 			AllowSorting = AllowSortingEnum.None,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			ExtendLastCol = true
 		};
 		Grid.Cols.Count = 1;
@@ -70,11 +70,11 @@ public class TreeListDropDownForm : ListDropDownFormBase
 		{
 			if (row.Node.Collapsed)
 			{
-				e.Image = Resources.TreeListCollapsed;
+				e.Image = IconRes.TreeListCollapsed;
 			}
 			else
 			{
-				e.Image = Resources.TreeListExpanded;
+				e.Image = IconRes.TreeListExpanded;
 			}
 		}
 	}
@@ -167,7 +167,7 @@ public class TreeListDropDownForm : ListDropDownFormBase
 					AddNode(child);
 					level--;
 				}
-				node2.Image = Resources.TreeListCollapsed;
+				node2.Image = IconRes.TreeListCollapsed;
 				node2.Collapsed = true;
 			}
 			else
@@ -219,7 +219,7 @@ public class TreeListDropDownForm : ListDropDownFormBase
 			_leaves.Add(n, node.Row.Index);
 			return;
 		}
-		node.Image = Resources.TreeListCollapsed;
+		node.Image = IconRes.TreeListCollapsed;
 		foreach (TreeListNode child in n.Children)
 		{
 			AddNode(node, child);

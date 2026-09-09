@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -67,8 +67,6 @@ public class TrendencyEditor : ISetTheme
 
 	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private C1ContextMenu ctxCell = new C1ContextMenu();
 
 	private C1ContextMenu ctxFixed = new C1ContextMenu();
@@ -123,7 +121,7 @@ public class TrendencyEditor : ISetTheme
 		grdTrendTable = new C1FlexGridEx();
 		grdTrendTable.Name = "grdTrendTable";
 		TrendChart = new FlexChart();
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblTrendTitle.TextDetached = true;
 		lblTrendTitle.BorderStyle = BorderStyle.None;
 		lblTrendTitle.Dock = DockStyle.Fill;
@@ -167,7 +165,7 @@ public class TrendencyEditor : ISetTheme
 		ctxSidebarAnalyzeMethod.CommandLinks.Add(c1CommandLink3);
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "分析间隔";
-		c1Command3.Image = Resources.sidebarAnalyzyInterval;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("calendar", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += CmdSidebarAnalyzyMethod_Click1;
 		c1CommandLink.Command = c1Command3;
 		c1ToolBar.CommandLinks.Add(c1CommandLink);
@@ -198,37 +196,33 @@ public class TrendencyEditor : ISetTheme
 		C1CommandLink c1CommandLink7 = new C1CommandLink();
 		C1Command c1Command7 = new C1Command();
 		c1Command7.Text = "分析选项";
-		c1Command7.Image = Resources.sidebarAnalyzyProject;
+		c1Command7.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command7.Click += CmdSidebarAnalyzyProject_Click1;
 		c1CommandLink7.Command = c1Command7;
 		c1ToolBar.CommandLinks.Add(c1CommandLink7);
 		C1CommandLink c1CommandLink8 = new C1CommandLink();
 		C1Command c1Command8 = new C1Command();
 		c1Command8.Text = "切换样式";
-		c1Command8.Image = Resources.sideSwitchStyle;
+		c1Command8.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("swap", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command8.Click += CmdChartType_Click;
 		c1CommandLink8.Command = c1Command8;
 		c1ToolBar.CommandLinks.Add(c1CommandLink8);
 		C1CommandLink c1CommandLink9 = new C1CommandLink();
 		C1Command c1Command9 = new C1Command();
 		c1Command9.Text = "窗体布局";
-		c1Command9.Image = Resources.sidebarViewLayout;
+		c1Command9.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("layout", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command9.Click += CmdViewStyle_Click1;
 		c1CommandLink9.Command = c1Command9;
 		C1CommandLink c1CommandLink10 = new C1CommandLink();
 		c1CommandLink10.Delimiter = true;
 		C1Command c1Command10 = new C1Command();
 		c1Command10.Text = "隐藏侧边栏";
-		c1Command10.Image = Resources.sideHideSidebar;
+		c1Command10.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command10.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
 		};
 		c1CommandLink10.Command = c1Command10;
-		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		pnlTrendGrid.Height = 278;
 		pnlTrendGrid.Location = new Point(0, 0);
 		pnlTrendGrid.MinHeight = 0;
@@ -276,7 +270,7 @@ public class TrendencyEditor : ISetTheme
 		pnlTrendContent.SizeRatio = 95.0;
 		pnlTrendContent.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -348,12 +342,12 @@ public class TrendencyEditor : ISetTheme
 
 	private void CmdSidebarAnalyzyProject_Click1(object sender, ClickEventArgs e)
 	{
-		ctxSidebarAnalyzyProject.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxSidebarAnalyzyProject, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdSidebarAnalyzyMethod_Click1(object sender, ClickEventArgs e)
 	{
-		ctxSidebarAnalyzeMethod.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxSidebarAnalyzeMethod, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdSidebarAnalyzyProject_Click(object sender, ClickEventArgs e)
@@ -413,15 +407,6 @@ public class TrendencyEditor : ISetTheme
 			pnlTrendChart.BackColor = Color.FromArgb(250, 250, 250);
 			break;
 		}
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	public void SetStatus()
@@ -584,13 +569,13 @@ public class TrendencyEditor : ISetTheme
 			switch (grdTrendTable.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(grdTrendTable, e.Location);
+				NativeMenuShim.Show(ctxFixed, grdTrendTable, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(grdTrendTable, e.Location);
+				NativeMenuShim.Show(ctxEmpty, grdTrendTable, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(grdTrendTable, e.Location);
+				NativeMenuShim.Show(ctxCell, grdTrendTable, e.Location);
 				break;
 			}
 		}

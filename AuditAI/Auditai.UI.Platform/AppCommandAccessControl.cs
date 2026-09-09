@@ -10,7 +10,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandAccessControl : AppCommandButton
 {
-	public override System.Drawing.Image LargeIcon => Auditai.UI.Platform.Properties.Resources.AccessControl;
+	public override System.Drawing.Image LargeIcon => Auditai.UI.Platform.IconRes.AccessControl;
 
 	public override string Text => "权限控制";
 

@@ -7,7 +7,7 @@ public class AppCommandTicketDelete : AppCommandButton
 {
 	public override string Text => "删除表单";
 
-	public override Image LargeIcon => Resources.RemoveProject;
+	public override Image LargeIcon => IconRes.RemoveProject;
 
 	protected override void Clicked()
 	{

@@ -7,7 +7,7 @@ public class AppCommandShowVerticalRuler : AppCommandToggleButton
 {
 	public override string Text => "纵向标尺";
 
-	public override Image LargeIcon => Resources.ToggleVertRuler;
+	public override Image LargeIcon => IconRes.ToggleVertRuler;
 
 	protected override void Pressed()
 	{

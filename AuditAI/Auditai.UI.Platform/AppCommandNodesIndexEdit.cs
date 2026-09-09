@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandNodesIndexEdit : AppCommandButton
 {
-	public override Image LargeIcon => Resources.EditNodesNumber;
+	public override Image LargeIcon => IconRes.EditNodesNumber;
 
 	public override string Text => "批量编辑索引号";
 

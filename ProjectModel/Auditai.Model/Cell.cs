@@ -194,6 +194,12 @@ public class Cell
 		}
 	}
 
+	/// <summary>
+	/// 默认无衬线字体——确保表格文字清晰锐利。
+	/// 优先使用 Win10+ 优化过的 Microsoft YaHei UI，其次回退到微软雅黑。
+	/// </summary>
+	private const string DefaultSansFont = "Microsoft YaHei UI";
+
 	public string DisplayFontFamily
 	{
 		get
@@ -206,6 +212,11 @@ public class Cell
 			if (text == null)
 			{
 				text = _Table.DefaultStyle.FontFamily;
+			}
+			// 确保最终字体是清晰的无衬线字体，避免宋体等点阵字体导致的模糊
+			if (string.IsNullOrEmpty(text) || text.Equals("宋体", StringComparison.Ordinal) || text.Equals("SimSun", StringComparison.OrdinalIgnoreCase))
+			{
+				text = DefaultSansFont;
 			}
 			return text;
 		}
@@ -258,7 +269,10 @@ public class Cell
 			{
 				num = _Table.DefaultStyle.FontSize;
 			}
-			return num.Value;
+			float value = num.Value;
+			// 字号最小值保护：小于 9pt 会导致文字发虚看不清
+			if (value < 9f) value = 10f;
+			return value;
 		}
 	}
 

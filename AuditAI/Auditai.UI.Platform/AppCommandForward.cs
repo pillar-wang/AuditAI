@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandForward : AppCommandButton
 {
-	public override Image SmallIcon => Auditai.UI.Platform.Properties.Resources.forward;
+	public override Image SmallIcon => Auditai.UI.Platform.IconRes.forward;
 
 	protected override string Tooltip => TipResource.Ribbon菜单_主窗体右上角配置栏_前进;
 

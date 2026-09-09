@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuditAI 管理后台 - 登录</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        /* 登录页专属样式：清新蓝渐变背景 + 居中卡片 */
+        body.login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #eff6ff 0%, #fafbfc 50%, #dbeafe 100%);
+            min-width: 0;
+        }
+
+        .login-card {
+            width: 400px;
+            max-width: calc(100vw - 40px);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px -8px rgba(17, 24, 39, 0.08), 0 4px 8px -2px rgba(17, 24, 39, 0.04);
+            padding: 40px 36px 28px;
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-title .title-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%);
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .login-title .title-icon .icon {
+            width: 28px;
+            height: 28px;
+            color: #fff;
+        }
+
+        .login-title .title-text {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .login-form .form-group {
+            margin-bottom: 18px;
+        }
+
+        .login-form .input-wrap {
+            position: relative;
+        }
+
+        .login-form .input-wrap .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        .login-form .input-wrap .input-icon .icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .login-form .input-wrap input {
+            padding-left: 40px;
+        }
+
+        .login-form input {
+            padding: 10px 14px;
+            font-size: var(--text-base);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 11px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.02em;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 22px;
+            font-size: var(--text-xs);
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-title">
+            <div class="title-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1 7-2.5C14.5 4 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <span class="title-text">AuditAI 管理后台</span>
+        </div>
+
+        <form class="login-form" id="loginForm" autocomplete="off">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <div class="input-wrap">
+                    <span class="input-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <div class="input-wrap">
+                    <span class="input-icon"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary login-btn" id="loginBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><path d="M15 12H3"/></svg>登 录</button>
+        </form>
+
+        <div class="login-footer">仅系统管理员可登录</div>
+    </div>
+
+    <script src="/js/common.js?v=20260703b"></script>
+    <script src="/js/login.js"></script>
+</body>
+</html>

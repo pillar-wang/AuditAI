@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -91,7 +91,7 @@ public class frmAccessManage : C1RibbonForm
 
 	private void FrmAccessManage_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.AccessControl);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.AccessControl);
 	}
 
 	public new void Show()
@@ -440,7 +440,7 @@ public class frmAccessManage : C1RibbonForm
 		{
 			Owner = this
 		};
-		c1CommandHolder.SetC1ContextMenu(_grid, ctxMenu);
+		NativeMenuShim.Wire(_grid, ctxMenu);
 		txbSearch.TextChanged += TxbSearch_TextChanged;
 		picSearchIcon.Size = new Size(txbSearch.Height, txbSearch.Height);
 		pnlSearchIcon.Width = picSearchIcon.Width;
@@ -594,7 +594,7 @@ public class frmAccessManage : C1RibbonForm
 				Node node = _grid.Rows.AddNode(0);
 				node.Key = treeGroup;
 				node.Data = treeGroup.Name;
-				node.Image = ContextResources.TreeGroup;
+				node.Image = IconRes.TreeGroup;
 				Permissions groupPermissions = GetGroupPermissions(treeGroup);
 				node.Row["view"] = new CellValue(node, "view", groupPermissions.Read);
 				node.Row["editor"] = new CellValue(node, "editor", groupPermissions.Write);
@@ -612,22 +612,22 @@ public class frmAccessManage : C1RibbonForm
 								{
 									if (rootNode is TreePdfNode treePdfNode)
 									{
-										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, Resources.TreePdf);
+										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, IconRes.TreePdf);
 									}
 								}
 								else
 								{
-									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, Resources.TreeImage);
+									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, IconRes.TreeImage);
 								}
 							}
 							else
 							{
-								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name + " ", treeDocumentNode, Resources.TreeDoc);
+								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name + " ", treeDocumentNode, IconRes.TreeDoc);
 							}
 						}
 						else
 						{
-							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, Resources.TreeTable);
+							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, IconRes.TreeTable);
 							node2.Row["rowwrite"] = treeTableNode.RowWrite;
 							node2.Row["rowread"] = treeTableNode.RowRead;
 						}
@@ -640,7 +640,7 @@ public class frmAccessManage : C1RibbonForm
 					}
 					else
 					{
-						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, IconRes.TreeDir);
 						AddDirectoryNode(treeDirectoryNode, node2);
 						Permissions directoryPermissions = GetDirectoryPermissions(treeDirectoryNode);
 						node2.Row["view"] = new CellValue(node2, "view", directoryPermissions.Read);
@@ -677,22 +677,22 @@ public class frmAccessManage : C1RibbonForm
 							{
 								if (child is TreePdfNode treePdfNode2)
 								{
-									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, Resources.TreePdf);
+									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, IconRes.TreePdf);
 								}
 							}
 							else
 							{
-								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, Resources.TreeImage);
+								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, IconRes.TreeImage);
 							}
 						}
 						else
 						{
-							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, Resources.TreeDoc);
+							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, IconRes.TreeDoc);
 						}
 					}
 					else
 					{
-						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, Resources.TreeTable);
+						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, IconRes.TreeTable);
 						node3.Row["rowwrite"] = treeTableNode2.RowWrite;
 						node3.Row["rowread"] = treeTableNode2.RowRead;
 					}
@@ -705,7 +705,7 @@ public class frmAccessManage : C1RibbonForm
 				}
 				else
 				{
-					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Number + " " + treeDirectoryNode2.Name, treeDirectoryNode2, Resources.TreeDir);
+					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Number + " " + treeDirectoryNode2.Name, treeDirectoryNode2, IconRes.TreeDir);
 					AddDirectoryNode(treeDirectoryNode2, node3);
 					Permissions directoryPermissions2 = GetDirectoryPermissions(treeDirectoryNode2);
 					node3.Row["view"] = new CellValue(node3, "view", directoryPermissions2.Read);
@@ -779,7 +779,7 @@ public class frmAccessManage : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this._grid).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -825,7 +825,7 @@ public class frmAccessManage : C1RibbonForm
 		this.pnlSearchIcon.Size = new System.Drawing.Size(52, 27);
 		this.pnlSearchIcon.TabIndex = 0;
 		this.pnlSearchIcon.Width = 52;
-		this.picSearchIcon.Image = Auditai.UI.Platform.Properties.Resources.btnSearch;
+		this.picSearchIcon.Image = Auditai.UI.Platform.IconRes.btnSearch;
 		this.picSearchIcon.Location = new System.Drawing.Point(0, 0);
 		this.picSearchIcon.Name = "picSearchIcon";
 		this.picSearchIcon.Size = new System.Drawing.Size(52, 27);
@@ -865,7 +865,7 @@ public class frmAccessManage : C1RibbonForm
 		this.c1SuperLabel1.TabIndex = 2;
 		this.c1SuperLabel1.UseMnemonic = true;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(980, 12);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -875,7 +875,7 @@ public class frmAccessManage : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnCertain.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCertain.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCertain.Location = new System.Drawing.Point(867, 12);
 		this.btnCertain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCertain.Name = "btnCertain";
@@ -907,7 +907,7 @@ public class frmAccessManage : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1095, 824);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmAccessManage";
 		base.ShowInTaskbar = false;

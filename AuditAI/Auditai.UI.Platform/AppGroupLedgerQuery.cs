@@ -7,7 +7,7 @@ public class AppGroupLedgerQuery : AppCommandGroup
 {
 	public override string Text => "账务查询";
 
-	public override Image Image => Resources.AccountBalance;
+	public override Image Image => IconRes.AccountBalance;
 
 	public AppGroupLedgerQuery()
 	{

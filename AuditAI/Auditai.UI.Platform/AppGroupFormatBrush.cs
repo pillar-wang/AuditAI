@@ -7,7 +7,7 @@ public class AppGroupFormatBrush : AppCommandGroup
 {
 	public override string Text => "格式和样式刷";
 
-	public override Image Image => Resources.FormatPainter;
+	public override Image Image => IconRes.FormatPainter;
 
 	public AppGroupFormatBrush()
 	{

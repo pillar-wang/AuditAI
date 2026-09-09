@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -82,7 +82,7 @@ public class TemplateUsersTileSelector
 		c1CommandLink2.Command = c1Command2;
 		contextMenu.CommandLinks.Add(c1CommandLink);
 		contextMenu.CommandLinks.Add(c1CommandLink2);
-		contextMenu.ShowContextMenu(_tileControl, new Point(e.Tile.Group.X + e.Tile.X, e.Tile.Group.Y + e.Tile.Y + tile.Height + _tileControl.ScrollOffset));
+		NativeMenuShim.Show(contextMenu, _tileControl, new Point(e.Tile.Group.X + e.Tile.X, e.Tile.Group.Y + e.Tile.Y + tile.Height + _tileControl.ScrollOffset));
 	}
 
 	private void CmdUserRole_Click(object sender, ClickEventArgs e)
@@ -161,7 +161,7 @@ public class TemplateUsersTileSelector
 			};
 			tt.Paint += delegate(object s1, PaintEventArgs e1)
 			{
-				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, new Font("Noto Sans SC", 9f));
+				SizeF sizeF = e1.Graphics.MeasureString(tt.Text, new Font("微软雅黑", 9f));
 				e1.Graphics.DrawLine(new Pen(Color.FromArgb(0, 73, 92), 1f), new Point(8, tt.Height - 9), new Point(8 + (int)sizeF.Width, tt.Height - 9));
 			};
 			group2.Tiles.Add(tt);
@@ -302,7 +302,7 @@ public class TemplateUsersTileSelector
 		TextElement textElement = new TextElement();
 		textElement.ForeColor = Color.Black;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(textElement);
@@ -338,7 +338,7 @@ public class TemplateUsersTileSelector
 		textElement.SingleLine = true;
 		textElement.FixedHeight = 18;
 		textElement.FixedWidth = 130;
-		textElement.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
+		textElement.Font = new Font("微软雅黑", 8.5f, FontStyle.Regular);
 		textElement.TextSelector = TextSelector.Text1;
 		panelElement2.Children.Add(textElement);
 		panelElement2.Dock = DockStyle.Bottom;
@@ -352,7 +352,7 @@ public class TemplateUsersTileSelector
 		textElement2.SingleLine = true;
 		textElement2.FixedHeight = 18;
 		textElement2.FixedWidth = 130;
-		textElement2.Font = new Font("Noto Sans SC", 8.5f, FontStyle.Regular);
+		textElement2.Font = new Font("微软雅黑", 8.5f, FontStyle.Regular);
 		textElement2.TextSelector = TextSelector.Text2;
 		panelElement3.Children.Add(textElement2);
 		panelElement3.Dock = DockStyle.Bottom;

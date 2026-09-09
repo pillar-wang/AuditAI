@@ -7,7 +7,7 @@ public class AppGroupTicketIndent : AppCommandGroup
 {
 	public override string Text => "缩进";
 
-	public override Image Image => Resources.UnindentCell;
+	public override Image Image => IconRes.UnindentCell;
 
 	public AppGroupTicketIndent()
 	{

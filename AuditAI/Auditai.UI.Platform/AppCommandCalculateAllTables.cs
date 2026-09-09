@@ -10,7 +10,7 @@ public class AppCommandCalculateAllTables : AppCommandButton
 {
 	public override string Text => "全部表运算";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.CalculateAllTables;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.CalculateAllTables;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

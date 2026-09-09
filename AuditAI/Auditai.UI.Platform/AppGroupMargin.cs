@@ -7,7 +7,7 @@ public class AppGroupMargin : AppCommandGroup
 {
 	public override string Text => "页面边距";
 
-	public override Image Image => Resources.PageMargin;
+	public override Image Image => IconRes.PageMargin;
 
 	public AppGroupMargin()
 	{

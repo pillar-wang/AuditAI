@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -51,7 +51,7 @@ public class FormSelectTemplate
 		_tileControl = new C1TileControlEx
 		{
 			CellWidth = 180,
-			CellHeight = 120,
+			CellHeight = 180,
 			CellSpacing = 20,
 			Padding = Padding.Empty,
 			Orientation = LayoutOrientation.Vertical,
@@ -87,7 +87,7 @@ public class FormSelectTemplate
 		_ckbSearch = new C1CheckBox
 		{
 			BackColor = Color.Transparent,
-			BackgroundImage = Resources.btnSearch,
+			BackgroundImage = IconRes.btnSearch,
 			BackgroundImageLayout = ImageLayout.Center,
 			Appearance = Appearance.Button,
 			FlatStyle = FlatStyle.Flat
@@ -167,7 +167,7 @@ public class FormSelectTemplate
 				VerticalSize = 1,
 				Text = template.Name,
 				Template = _tplTile,
-				Image1 = Program.MainForm.CurrentEdition.CustomTemplateTileIcon
+				Image1 = ProjectCardIconProvider.CustomTemplate
 			};
 			_tg.Tiles.Add(tile);
 			if (SoftwareLicenseManager.IsTemplateTileShowRightTopImage())
@@ -184,13 +184,13 @@ public class FormSelectTemplate
 		panelElement.Alignment = ContentAlignment.TopCenter;
 		ImageElement imageElement = new ImageElement();
 		imageElement.AlignmentOfContents = ContentAlignment.TopCenter;
-		imageElement.FixedHeight = 50;
-		imageElement.FixedWidth = 50;
+		imageElement.FixedHeight = 60;
+		imageElement.FixedWidth = 60;
 		imageElement.ImageSelector = ImageSelector.Image1;
 		panelElement.Children.Add(imageElement);
-		panelElement.FixedHeight = 50;
-		panelElement.FixedWidth = 50;
-		panelElement.Margin = new Padding(0, 30, 0, 0);
+		panelElement.FixedHeight = 60;
+		panelElement.FixedWidth = 60;
+		panelElement.Margin = new Padding(0, 56, 0, 0);
 		PanelElement panelElement2 = new PanelElement();
 		panelElement2.Alignment = ContentAlignment.MiddleRight;
 		ImageElement imageElement2 = new ImageElement();
@@ -208,11 +208,12 @@ public class FormSelectTemplate
 		textElement.AlignmentOfContents = ContentAlignment.TopCenter;
 		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.SingleLine = false;
-		textElement.FixedHeight = 50;
-		textElement.FixedWidth = 150;
+		textElement.FixedHeight = 52;
+		textElement.FixedWidth = 160;
 		panelElement3.Children.Add(textElement);
-		panelElement3.FixedHeight = 50;
-		panelElement3.FixedWidth = 150;
+		panelElement3.FixedHeight = 52;
+		panelElement3.FixedWidth = 160;
+		panelElement3.Margin = new Padding(0, 0, 0, 8);
 		template.Elements.Add(panelElement);
 		template.Elements.Add(panelElement2);
 		template.Elements.Add(panelElement3);
@@ -222,7 +223,7 @@ public class FormSelectTemplate
 	private async void _form_Load(object sender, EventArgs e)
 	{
 		Theme.SetCurrentTree(_form);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Templates);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Templates);
 		_tileControl.TileBorderColor = Color.Transparent;
 		_szMain.Grid.Rows[0].Size = _ckbSearch.BackgroundImage.Height;
 		_szSearch.Grid.Columns[0].Size = _ckbSearch.BackgroundImage.Width;

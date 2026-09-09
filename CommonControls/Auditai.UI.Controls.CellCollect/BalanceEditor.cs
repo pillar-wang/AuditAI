@@ -285,19 +285,19 @@ internal class BalanceEditor
 		cmdAppendRow.Text = "新增行";
 		lnkAppendRow.Command = cmdAppendRow;
 		cmdAppendRow.Click += CmdAppendRow_Click;
-		cmdAppendRow.Image = Resources.ctxAppendRow;
+		cmdAppendRow.Image = IconRes.ctxAppendRow;
 		ctxCell.CommandLinks.Add(lnkAppendRow);
 		cmdDeleteRow.Text = "删除行";
 		lnkDeleteRow.Command = cmdDeleteRow;
 		cmdDeleteRow.Click += CmdDeleteRow_Click;
-		cmdDeleteRow.Image = Resources.ctxDeleteRow;
+		cmdDeleteRow.Image = IconRes.ctxDeleteRow;
 		ctxCell.CommandLinks.Add(lnkDeleteRow);
 		_owner.grdBalance.MouseClick += GrdBalance_MouseClick;
 		_owner.grdBalance.MouseDown += GrdBalance_MouseDown;
 		cmdAppendRow2.Text = "新增行";
 		lnkAppendRow2.Command = cmdAppendRow2;
 		cmdAppendRow2.Click += CmdAppendRow_Click;
-		cmdAppendRow2.Image = Resources.ctxAppendRow;
+		cmdAppendRow2.Image = IconRes.ctxAppendRow;
 		ctxEmpty.CommandLinks.Add(lnkAppendRow2);
 		_owner.comboStartMonth.Text = "1";
 		_owner.comboEndMonth.Text = "12";
@@ -350,11 +350,11 @@ internal class BalanceEditor
 		case HitTestTypeEnum.RowHeader:
 			if (grdBalance.MouseRow >= grdBalance.Rows.Fixed)
 			{
-				ctxCell.ShowContextMenu(grdBalance, e.Location);
+				NativeMenuShim.Show(ctxCell, grdBalance, e.Location);
 			}
 			break;
 		case HitTestTypeEnum.None:
-			ctxEmpty.ShowContextMenu(grdBalance, e.Location);
+			NativeMenuShim.Show(ctxEmpty, grdBalance, e.Location);
 			break;
 		}
 	}

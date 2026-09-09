@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandShowTooltipSmall : AppCommandToggleButton
 {
-	public override Image SmallIcon => ContextResources.ctxParagraphComment;
+	public override Image SmallIcon => IconRes.ctxParagraphComment;
 
 	protected override string Tooltip => TipResource.Ribbon菜单_主窗体右上角配置栏_动态提示;
 

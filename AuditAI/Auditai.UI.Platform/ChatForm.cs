@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -189,7 +189,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 
 	private void ChatForm_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.chat);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.chat);
 	}
 
 	private void ChatForm_RePopulate(object sender, EventArgs e)
@@ -653,23 +653,23 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		base.StartPosition = FormStartPosition.CenterScreen;
 		tlbSendToolbar.CommandLinks.Clear();
 		cmdEmotion.Text = "表情";
-		cmdEmotion.Image = Resources.smile;
+		cmdEmotion.Image = IconRes.smile;
 		cmdEmotion.Click += CmdEmotion_Click;
 		lnkEmotion.Command = cmdEmotion;
 		tlbSendToolbar.CommandLinks.Add(lnkEmotion);
 		cmdFile.Text = "发送文件";
-		cmdFile.Image = Resources.transFile;
+		cmdFile.Image = IconRes.transFile;
 		cmdFile.Click += CmdFile_Click;
 		lnkFile.Command = cmdFile;
 		// 修复：原 lnkFile 创建并绑定命令后从未 Add 到工具栏，按钮不显示，CmdFile_Click 成死代码。
 		tlbSendToolbar.CommandLinks.Add(lnkFile);
 		cmdPush.Text = "推送在线云文件";
-		cmdPush.Image = Resources.transPush;
+		cmdPush.Image = IconRes.transPush;
 		cmdPush.Click += CmdPush_Click;
 		lnkPush.Command = cmdPush;
 		tlbSendToolbar.CommandLinks.Add(lnkPush);
 		cmdHistory.Text = "聊天记录";
-		cmdHistory.Image = Resources.chatHistory;
+		cmdHistory.Image = IconRes.chatHistory;
 		cmdHistory.Click += CmdHistory_Click;
 		lnkHistory.Command = cmdHistory;
 		// 修复：原 lnkHistory 创建并绑定命令后从未 Add 到工具栏，按钮不显示，CmdHistory_Click 成死代码。
@@ -695,12 +695,12 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		cmdRefreshProjectMembers.Click += CmdRefreshProjectMembers_Click;
 		lnkRefreshProjectMembers.Command = cmdRefreshProjectMembers;
 		ctxProject.CommandLinks.Add(lnkRefreshProjectMembers);
-		c1CommandHolder1.SetC1ContextMenu(grdProjectMembers, ctxProject);
+		NativeMenuShim.Wire(grdProjectMembers, ctxProject);
 		cmdRefreshTeamMembers.Text = "刷新";
 		cmdRefreshTeamMembers.Click += CmdRefreshTeamMembers_Click;
 		lnkRefreshTeamMembers.Command = cmdRefreshTeamMembers;
 		ctxTeam.CommandLinks.Add(lnkRefreshTeamMembers);
-		c1CommandHolder1.SetC1ContextMenu(grdTeamMembers, ctxTeam);
+		NativeMenuShim.Wire(grdTeamMembers, ctxTeam);
 		emojiManager = new EmojiManager(10, 8);
 		emojiManager.Width = 10;
 		emojiManager.EmojiSelected += EmojiManager_EmojiSelected;
@@ -1008,7 +1008,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.c1DockingTab1.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.tabProjectMembers.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
 		this.tabProjectMembers.Controls.Add(this.grdProjectMembers);
-		this.tabProjectMembers.Image = Auditai.UI.Platform.Properties.Resources.member;
+		this.tabProjectMembers.Image = Auditai.UI.Platform.IconRes.member;
 		this.tabProjectMembers.Location = new System.Drawing.Point(62, 0);
 		this.tabProjectMembers.Name = "tabProjectMembers";
 		this.tabProjectMembers.Size = new System.Drawing.Size(234, 672);
@@ -1016,7 +1016,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.grdProjectMembers.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdProjectMembers.ColumnInfo = "0,0,0,0,0,100,Columns:";
 		this.grdProjectMembers.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.grdProjectMembers.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdProjectMembers.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdProjectMembers.Location = new System.Drawing.Point(0, 0);
 		this.grdProjectMembers.Name = "grdProjectMembers";
 		this.grdProjectMembers.Rows.Count = 0;
@@ -1026,7 +1026,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.grdProjectMembers.StyleInfo = resources.GetString("grdProjectMembers.StyleInfo");
 		this.grdProjectMembers.TabIndex = 1;
 		this.tabTeamMembers.Controls.Add(this.grdTeamMembers);
-		this.tabTeamMembers.Image = Auditai.UI.Platform.Properties.Resources.group;
+		this.tabTeamMembers.Image = Auditai.UI.Platform.IconRes.group;
 		this.tabTeamMembers.Location = new System.Drawing.Point(62, 0);
 		this.tabTeamMembers.Name = "tabTeamMembers";
 		this.tabTeamMembers.Size = new System.Drawing.Size(234, 672);
@@ -1034,7 +1034,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.grdTeamMembers.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this.grdTeamMembers.ColumnInfo = "0,0,0,0,0,100,Columns:";
 		this.grdTeamMembers.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.grdTeamMembers.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdTeamMembers.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdTeamMembers.Location = new System.Drawing.Point(0, 0);
 		this.grdTeamMembers.Name = "grdTeamMembers";
 		this.grdTeamMembers.Rows.Count = 0;
@@ -1085,7 +1085,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.lblSelfName.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
 		this.lblSelfName.BackColor = System.Drawing.Color.Transparent;
 		this.lblSelfName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblSelfName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblSelfName.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblSelfName.ForeColor = System.Drawing.Color.Black;
 		this.lblSelfName.Location = new System.Drawing.Point(462, 4);
 		this.lblSelfName.Name = "lblSelfName";
@@ -1104,7 +1104,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.btnChangeHeader.TabStop = false;
 		this.lblchatName.BackColor = System.Drawing.Color.Transparent;
 		this.lblchatName.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblchatName.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblchatName.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblchatName.ForeColor = System.Drawing.Color.Black;
 		this.lblchatName.Location = new System.Drawing.Point(51, 3);
 		this.lblchatName.Name = "lblchatName";
@@ -1159,7 +1159,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.c1ToolBar1.CommandHolder = this.c1CommandHolder1;
 		this.c1ToolBar1.CommandLinks.AddRange(new C1.Win.C1Command.C1CommandLink[3] { this.c1CommandLink4, this.c1CommandLink5, this.c1CommandLink6 });
 		this.c1ToolBar1.Dock = System.Windows.Forms.DockStyle.Right;
-		this.c1ToolBar1.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.c1ToolBar1.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1ToolBar1.Location = new System.Drawing.Point(701, 0);
 		this.c1ToolBar1.Movable = false;
 		this.c1ToolBar1.Name = "c1ToolBar1";
@@ -1198,7 +1198,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.pnlSendButton.SizeRatio = 27.778;
 		this.pnlSendButton.TabIndex = 1;
 		this.btnSend.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnSend.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnSend.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnSend.Location = new System.Drawing.Point(671, 18);
 		this.btnSend.Name = "btnSend";
 		this.btnSend.Size = new System.Drawing.Size(98, 30);
@@ -1215,7 +1215,7 @@ public class ChatForm : C1RibbonForm, ISetTheme
 		this.pnlSendContent.TabIndex = 0;
 		this.txtMessage.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.txtMessage.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.txtMessage.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtMessage.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtMessage.Location = new System.Drawing.Point(0, 0);
 		this.txtMessage.Multiline = true;
 		this.txtMessage.Name = "txtMessage";

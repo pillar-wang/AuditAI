@@ -7,7 +7,7 @@ public class AppGroupMakeLedger : AppCommandGroup
 {
 	public override string Text => "数据采集";
 
-	public override Image Image => Resources.Crawl;
+	public override Image Image => IconRes.Crawl;
 
 	public AppGroupMakeLedger()
 	{

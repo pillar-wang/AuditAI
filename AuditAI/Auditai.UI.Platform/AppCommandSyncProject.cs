@@ -10,7 +10,7 @@ public class AppCommandSyncProject : AppCommandButton
 {
 	public override string Text => "同步数据";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.SyncProject;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.SyncProject;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

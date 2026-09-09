@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandTicketAlignTopRight : AppCommandButton
 {
-	public override System.Drawing.Image SmallIcon => Resources.tb_AlignTopRight;
+	public override System.Drawing.Image SmallIcon => IconRes.tb_AlignTopRight;
 
 	protected override void Clicked()
 	{

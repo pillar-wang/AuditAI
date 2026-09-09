@@ -7,7 +7,7 @@ public class AppGroupSystem : AppCommandGroup
 {
 	public override string Text => "系统";
 
-	public override Image Image => Resources.Quit;
+	public override Image Image => IconRes.Quit;
 
 	public AppGroupSystem()
 	{

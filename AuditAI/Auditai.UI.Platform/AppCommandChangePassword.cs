@@ -8,7 +8,7 @@ public class AppCommandChangePassword : AppCommandButton
 {
 	public override string Text => "修改密码";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.PwdEdit;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.PwdEdit;
 
 	protected override string Tooltip => TipResource.密码修改按钮;
 

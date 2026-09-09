@@ -7,7 +7,7 @@ public class AppCommandTicketImportExcel : AppCommandButton
 {
 	public override string Text => "导入Excel单据样式";
 
-	public override Image LargeIcon => Resources.ExportExcel;
+	public override Image LargeIcon => IconRes.ExportExcel;
 
 	protected override void Clicked()
 	{

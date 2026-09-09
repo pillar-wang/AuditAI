@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿namespace Auditai.UI.Platform;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Auditai.UI.Platform;
 
 public static class AppCommands
 {
@@ -814,6 +814,9 @@ public static class AppCommands
 	public static AppCommandSystemSettings SystemSettings { get; } = new AppCommandSystemSettings();
 
 
+	public static AppCommandStandardAccountDic StandardAccountDic { get; } = new AppCommandStandardAccountDic();
+
+
 	public static AppCommandCheckUpdate CheckUpdate { get; } = new AppCommandCheckUpdate();
 
 
@@ -864,14 +867,7 @@ public static class AppCommands
 
 	public static AppCommandTheme Theme { get; } = new AppCommandTheme();
 
-
-	public static AppCommandContactWay ContactWay { get; } = new AppCommandContactWay();
-
-
 	public static AppCommandShowSidebar ShowSidebar { get; } = new AppCommandShowSidebar();
-
-
-	public static AppCommandTest Test { get; } = new AppCommandTest();
 
 
 	public static AppCommandFormulaTip1 FormulaTip1 { get; } = new AppCommandFormulaTip1();

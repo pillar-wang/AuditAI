@@ -18,11 +18,10 @@ public class C1TileControlEx : C1TileControl
 		public Point Offset;
 	}
 
-	private static readonly Image _imgClose = Resources.tileClose;
-
-	private static readonly Image _imgCloseHover = Resources.tileCloseSlide;
-
-	private static readonly Image _imgCloseDown = Resources.tileCloseDown;
+	// 最原始的关闭按钮样式：透明底灰色"×"（语义名 x，16px），普通/悬停/按下仅色差
+	private static readonly Image _imgClose = IconLibrary.CreateBitmap("x", 16, Color.FromArgb(150, 150, 150));
+	private static readonly Image _imgCloseHover = IconLibrary.CreateBitmap("x", 16, Color.FromArgb(80, 80, 80));
+	private static readonly Image _imgCloseDown = IconLibrary.CreateBitmap("x", 16, Color.FromArgb(40, 40, 40));
 
 	private bool _allowCloseButton;
 
@@ -34,7 +33,7 @@ public class C1TileControlEx : C1TileControl
 
 	private Size _mouseCloseButtonMargin = new Size(3, 3);
 
-	private static readonly Image _imgCheckedMark = Resources.Checked;
+	private static readonly Image _imgCheckedMark = IconRes.Checked;
 
 	private Tile _previousClickedTile;
 

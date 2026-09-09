@@ -7,7 +7,7 @@ public class AppCommandCut : AppCommandButton
 {
 	public override string Text => "剪切";
 
-	public override Image LargeIcon => Resources.Cut;
+	public override Image LargeIcon => IconRes.Cut;
 
 	protected override void Clicked()
 	{

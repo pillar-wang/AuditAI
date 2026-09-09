@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
@@ -392,14 +392,14 @@ public class ProgressForm2 : C1RibbonForm
 	}
 
 	/// <summary>
-	/// 优先使用系统已安装的 Noto Sans SC，缺失时回退到原字体族
+	/// 优先使用系统已安装的 微软雅黑，缺失时回退到原字体族
 	/// </summary>
 	private static Font CombinedFont(float size, bool bold = false)
 	{
 		var style = bold ? FontStyle.Bold : FontStyle.Regular;
 		try
 		{
-			using var f = new Font("Noto Sans SC", size, style);
+			using var f = new Font("微软雅黑", size, style);
 			return new Font(f.FontFamily, size, style);
 		}
 		catch
@@ -586,6 +586,49 @@ public class ProgressForm2 : C1RibbonForm
 		_progressValueUpdateTimer.Start();
 		ShowDialog();
 		CaseCloseException?.Throw();
+	}
+
+	/// <summary>
+	/// UI 线程任务版进度窗：task 在调用线程（UI 线程）启动并执行到第一个 await，
+	/// 后续延续借模态消息循环继续跑，进度刷新依赖任务内的 Application.DoEvents()。
+	/// 适用于任务内部需要访问 UI 控件（C1FlexGrid/TXTextControl/打印等）的场景，
+	/// 行为与旧版 ProgressForm&lt;T&gt;（Shown 事件里启动任务）完全一致，仅替换窗体外观。
+	/// 任务异常通过 CaseCloseException 在 ShowDialog 返回后重抛。
+	/// </summary>
+	public DialogResult ShowDialogOnUiThread(ProgressRuntimeData progressRuntimeData, Func<Task> task)
+	{
+		try
+		{
+			Color backColor = Theme.SelectedAuditaiTheme.ThemeContext.BackColor;
+			c1SplitContainer1.BackColor = backColor;
+			pnlHeader.BackColor = backColor;
+			pnlGauge.BackColor = backColor;
+			_progressValueLabel.TextColor = Theme.SelectedAuditaiTheme.ThemeContext.ProgressBarColor;
+		}
+		catch
+		{
+		}
+		_progressRuntimeData = progressRuntimeData;
+		_isDelayToShow = false;
+		StartRotateImage();
+		InitLableDisplayValue(progressRuntimeData);
+		IsTaskThreadEnd = false;
+		// UI 线程上启动任务：同步执行到第一个 await，延续经 UI SynchronizationContext 回到模态消息循环
+		Task uiTask = task() ?? Task.CompletedTask;
+		uiTask.ContinueWith(delegate(Task t)
+		{
+			if (t.IsFaulted)
+			{
+				Exception baseException = t.Exception?.GetBaseException() ?? new Exception("进度任务执行失败");
+				CloseWithException(baseException);
+				return;
+			}
+			IsTaskThreadEnd = true;
+		}, TaskScheduler.FromCurrentSynchronizationContext());
+		_progressValueUpdateTimer.Start();
+		DialogResult result = ShowDialog();
+		CaseCloseException?.Throw();
+		return result;
 	}
 
 	public DialogResult ShowDialog_RunCallbackInMainThread(Form mainForm, ProgressRuntimeData progressRuntimeData, Func<IEnumerator> callback)

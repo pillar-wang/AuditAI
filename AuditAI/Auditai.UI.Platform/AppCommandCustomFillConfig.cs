@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Auditai.UI.Controls.Properties;
@@ -10,7 +10,7 @@ public class AppCommandCustomFillConfig : AppCommandButton
 {
 	public override string Text => "填充配置";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.TableCollect;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.TableCollect;
 
 	protected override Func<Task> ClickedTask => delegate
 	{

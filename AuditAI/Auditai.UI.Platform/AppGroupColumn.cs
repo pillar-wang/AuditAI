@@ -7,7 +7,7 @@ public class AppGroupColumn : AppCommandGroup
 {
 	public override string Text => "列操作";
 
-	public override Image Image => Resources.ColumnLeft;
+	public override Image Image => IconRes.ColumnLeft;
 
 	public AppGroupColumn()
 	{

@@ -7,7 +7,7 @@ public class AppGroupExport : AppCommandGroup
 {
 	public override string Text => "导出";
 
-	public override Image Image => Resources.ExportExcel;
+	public override Image Image => IconRes.ExportExcel;
 
 	public AppGroupExport()
 	{

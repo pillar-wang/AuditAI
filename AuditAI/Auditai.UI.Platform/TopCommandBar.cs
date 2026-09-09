@@ -1,11 +1,11 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Drawing.Text;
 using System.Linq;
 using System.Windows.Forms;
+using Auditai.UI.Controls;
 
 namespace Auditai.UI.Platform;
 
@@ -45,11 +45,14 @@ public class TopCommandBar : UserControl
 
 	private const int ButtonMinWidthBase = 72;
 
-	private const int IconSizeBase = 40;
+	private const int IconSizeBase = 46;
 
-	private const int GroupCaptionHeightBase = 18;
+	private const int GroupCaptionHeightBase = 20;
 
 	private const float AnimStep = 0.28f;
+
+	/// <summary>GDI 文本渲染格式（TextRenderer 走系统 GDI 通道，雅黑 hinting 下笔画更饱满清晰）。</summary>
+	private const TextFormatFlags TextFlags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
 
 	/// <summary>按当前 DPI 缩放 96dpi 基准像素值。</summary>
 	private int S(int value)
@@ -90,11 +93,11 @@ public class TopCommandBar : UserControl
 
 	private int _contentWidth;
 
-	private Color _backColor = Color.FromArgb(232, 243, 251);
+	private Color _backColor = Color.FromArgb(248, 250, 252);
 
-	private Color _hoverColor = Color.FromArgb(214, 234, 247);
+	private Color _hoverColor = Color.FromArgb(239, 246, 255);
 
-	private Color _textColor = Color.FromArgb(52, 64, 84);
+	private Color _textColor = Color.FromArgb(71, 85, 105);
 
 	private Color _captionColor = Color.FromArgb(122, 138, 158);
 
@@ -128,8 +131,8 @@ public class TopCommandBar : UserControl
 	{
 		_textFont?.Dispose();
 		_captionFont?.Dispose();
-		_textFont = new Font("Noto Sans SC", S(12), GraphicsUnit.Pixel);
-		_captionFont = new Font("Noto Sans SC", S(11), GraphicsUnit.Pixel);
+		_textFont = new Font("微软雅黑", S(12), GraphicsUnit.Pixel);
+		_captionFont = new Font("微软雅黑", S(13), GraphicsUnit.Pixel);
 	}
 
 	private void UpdateDpi()
@@ -139,6 +142,8 @@ public class TopCommandBar : UserControl
 			return;
 		}
 		_dpi = DeviceDpi;
+		// 跨显示器拖动时按新 DPI 提升图标位图生成分辨率（取到过最大，保证任意屏位图足够清晰）
+		Auditai.UI.Controls.IconLibrary.DpiScale = Math.Max(Auditai.UI.Controls.IconLibrary.DpiScale, DeviceDpi / 96f);
 		int height = BarHeight;
 		if (Height != height)
 		{
@@ -170,6 +175,17 @@ public class TopCommandBar : UserControl
 	/// </summary>
 	public void AddCommand(string moduleName, string groupName, string cmdName, string text, Image icon, EventHandler onClick, string groupText = null)
 	{
+		AddCommand(moduleName, groupName, cmdName, text, icon, null, onClick, groupText);
+	}
+
+	/// <summary>字体图标语义名版本：命令图标随主题色矢量渲染。</summary>
+	public void AddCommand(string moduleName, string groupName, string cmdName, string text, string iconName, EventHandler onClick, string groupText = null)
+	{
+		AddCommand(moduleName, groupName, cmdName, text, null, iconName, onClick, groupText);
+	}
+
+	private void AddCommand(string moduleName, string groupName, string cmdName, string text, Image icon, string iconName, EventHandler onClick, string groupText)
+	{
 		ModuleModel module = _modules.FirstOrDefault((ModuleModel m) => m.Name == moduleName);
 		if (module == null)
 		{
@@ -185,6 +201,7 @@ public class TopCommandBar : UserControl
 			{
 				Text = text,
 				Image = icon,
+				IconName = iconName,
 				ClickHandler = onClick
 			};
 			command.Changed = Invalidate;
@@ -256,7 +273,7 @@ public class TopCommandBar : UserControl
 		_backColor = back;
 		_hoverColor = hover;
 		_textColor = text;
-		_captionColor = Color.FromArgb(150, text.R, text.G, text.B);
+		_captionColor = Color.FromArgb(200, text.R, text.G, text.B);
 		_disabledTextColor = Color.FromArgb(125, text.R, text.G, text.B);
 		_separatorColor = Color.FromArgb(46, text.R, text.G, text.B);
 		BackColor = back;
@@ -268,7 +285,6 @@ public class TopCommandBar : UserControl
 		base.OnPaint(e);
 		Graphics g = e.Graphics;
 		g.SmoothingMode = SmoothingMode.AntiAlias;
-		g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 		_btnRects.Clear();
 		g.Clear(_backColor);
 		ModuleModel module = CurrentModuleModel;
@@ -305,7 +321,16 @@ public class TopCommandBar : UserControl
 					{
 						DrawBtnBack(g, rect, item.Hover);
 						Rectangle iconRect = new Rectangle(rect.X + (rect.Width - IconSize) / 2, rect.Y + S(5), IconSize, IconSize);
-						DrawIcon(g, command.Image, iconRect, command.Enabled);
+						if (!string.IsNullOrEmpty(command.IconName))
+						{
+							// 彩色瓦片图标：圆角彩底 + 白色字形，有层次有细节；禁用态用灰色瓦片
+							Color semantic = IconPalette.Get(command.IconName);
+							DrawTileIcon(g, command.IconName, iconRect, command.Enabled ? semantic : Color.FromArgb(150, 152, 158));
+						}
+						else
+						{
+							DrawIcon(g, command.Image, iconRect, command.Enabled);
+						}
 						DrawText(g, command.Text, _textFont, new Rectangle(rect.X + S(2), rect.Y + S(5) + IconSize + S(2), rect.Width - S(4), rect.Height - S(5) - IconSize - S(6)), command.Enabled ? _textColor : _disabledTextColor);
 						_btnRects.Add(Tuple.Create(item, rect));
 					}
@@ -356,7 +381,7 @@ public class TopCommandBar : UserControl
 		{
 			return 0;
 		}
-		return (int)Math.Ceiling(g.MeasureString(text, font).Width);
+		return (int)Math.Ceiling((float)TextRenderer.MeasureText(text, font, new Size(short.MaxValue, short.MaxValue), TextFlags).Width);
 	}
 
 	protected override void OnMouseMove(MouseEventArgs e)
@@ -509,15 +534,51 @@ public class TopCommandBar : UserControl
 		{
 			return;
 		}
-		using SolidBrush brush = new SolidBrush(color);
-		using StringFormat format = new StringFormat
+		TextRenderer.DrawText(g, text, font, rect, color, TextFlags);
+	}
+
+	/// <summary>
+	/// 彩色瓦片图标：竖向高光→主色渐变圆角底 + 居中白色字形，替代单色剪影。
+	/// 语义色主色调，白色字形保证对比度，瓦片圆角与渐变提供层次细节。
+	/// </summary>
+	private void DrawTileIcon(Graphics g, string iconName, Rectangle rect, Color color)
+	{
+		if (rect.Width <= 0 || rect.Height <= 0)
 		{
-			Alignment = StringAlignment.Center,
-			LineAlignment = StringAlignment.Center,
-			FormatFlags = StringFormatFlags.NoWrap,
-			Trimming = StringTrimming.EllipsisCharacter
-		};
-		g.DrawString(text, font, brush, rect, format);
+			return;
+		}
+		int radius = Math.Max(6, rect.Height * 2 / 7);
+		using (GraphicsPath path = CreateRounded(rect, radius))
+		{
+			Color hi = Lighten(color, 0.30f);
+			Color lo = Darken(color, 0.20f);
+			using (var brush = new LinearGradientBrush(rect, hi, lo, LinearGradientMode.Vertical))
+			{
+				g.FillPath(brush, path);
+			}
+			using (Pen pen = new Pen(Color.FromArgb(46, Color.Black)))
+			{
+				g.DrawPath(pen, path);
+			}
+		}
+		// 白色字形居中，四周略收内边距保证瓦片边缘裁切美观
+		Rectangle glyphRect = Rectangle.Inflate(rect, -Math.Max(3, rect.Width / 7), -Math.Max(3, rect.Height / 7));
+		IconLibrary.DrawGlyph(g, iconName, glyphRect, Color.White, IconLibrary.StyleFill);
+	}
+
+	private static Color Lighten(Color c, float f)
+	{
+		return Color.FromArgb(c.A, Clamp(c.R + (255 - c.R) * f), Clamp(c.G + (255 - c.G) * f), Clamp(c.B + (255 - c.B) * f));
+	}
+
+	private static Color Darken(Color c, float f)
+	{
+		return Color.FromArgb(c.A, Clamp(c.R * (1f - f)), Clamp(c.G * (1f - f)), Clamp(c.B * (1f - f)));
+	}
+
+	private static int Clamp(float v)
+	{
+		return Math.Max(0, Math.Min(255, (int)v));
 	}
 
 	private static GraphicsPath CreateRounded(Rectangle rect, int radius)

@@ -7,7 +7,7 @@ public class AppCommandShowParagraphMarkers : AppCommandToggleButton
 {
 	public override string Text => "段落标记";
 
-	public override Image LargeIcon => Resources.ToggleMarker;
+	public override Image LargeIcon => IconRes.ToggleMarker;
 
 	protected override void Pressed()
 	{

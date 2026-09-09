@@ -19,9 +19,9 @@ public class AppEditionAudit : AppEditionBase
 
 	public override Image SystemTemplateTileIcon => Resources.tileTemplate;
 
-	public override Image VipSystemTemplateTileIcon => Resources.vipTemplate;
+	public override Image VipSystemTemplateTileIcon => IconRes.vipTemplate;
 
-	public override Image CustomTemplateTileIcon => Resources.customTemplate;
+	public override Image CustomTemplateTileIcon => IconRes.customTemplate;
 
 	public override Image CurrentProjectIcon => Resources.CurrentProject;
 
@@ -29,5 +29,5 @@ public class AppEditionAudit : AppEditionBase
 
 	public override Image CurrentCustomTemplateIcon => Resources.CurrentTemplate;
 
-	public override Image UseEmptyTemplateTileIcon => Resources.UseEmptyTemplate;
+	public override Image UseEmptyTemplateTileIcon => IconRes.UseEmptyTemplate;
 }

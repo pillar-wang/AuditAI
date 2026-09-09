@@ -7,7 +7,7 @@ public class AppCommandTitleIncreaseRowHeight : AppCommandButton
 {
 	public override string Text => "增加行高";
 
-	public override Image LargeIcon => Resources.IncreaseRowHeight;
+	public override Image LargeIcon => IconRes.IncreaseRowHeight;
 
 	protected override void Clicked()
 	{

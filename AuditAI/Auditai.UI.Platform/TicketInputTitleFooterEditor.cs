@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -188,7 +188,7 @@ public class TicketInputTitleFooterEditor : ISetTheme
 		_ctxCell = new C1ContextMenu();
 		C1Command c1Command = new C1Command();
 		c1Command.Text = "复制";
-		c1Command.Image = ContextResources.ctxCopy;
+		c1Command.Image = IconRes.ctxCopy;
 		c1Command.Click += _cmdCopy_Click;
 		c1Command.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -197,7 +197,7 @@ public class TicketInputTitleFooterEditor : ISetTheme
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command));
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = "剪切";
-		c1Command2.Image = ContextResources.ctxCut;
+		c1Command2.Image = IconRes.ctxCut;
 		c1Command2.Click += _cmdCut_Click;
 		c1Command2.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -206,7 +206,7 @@ public class TicketInputTitleFooterEditor : ISetTheme
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command2));
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "粘贴";
-		c1Command3.Image = ContextResources.ctxPaste;
+		c1Command3.Image = IconRes.ctxPaste;
 		c1Command3.Click += _cmdPaste_Click;
 		c1Command3.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -2005,9 +2005,9 @@ public class TicketInputTitleFooterEditor : ISetTheme
 
 	private Rectangle GetCancelManualInputIconArea(Rectangle cellRect, out bool isIconOutOfRange)
 	{
-		Rectangle result = new Rectangle(cellRect.X + 2, cellRect.Y + 2, Resources.CancelManualInput.Width, Resources.CancelManualInput.Height);
+		Rectangle result = new Rectangle(cellRect.X + 2, cellRect.Y + 2, IconLibrary.LogicalWidth(IconRes.CancelManualInput), IconLibrary.LogicalHeight(IconRes.CancelManualInput));
 		isIconOutOfRange = false;
-		if (result.X - 2 + Resources.CancelManualInput.Width + 4 >= cellRect.Right || result.Y - 2 + Resources.CancelManualInput.Height + 4 >= cellRect.Bottom)
+		if (result.X - 2 + IconLibrary.LogicalWidth(IconRes.CancelManualInput) + 4 >= cellRect.Right || result.Y - 2 + IconLibrary.LogicalHeight(IconRes.CancelManualInput) + 4 >= cellRect.Bottom)
 		{
 			isIconOutOfRange = true;
 		}
@@ -2052,12 +2052,12 @@ public class TicketInputTitleFooterEditor : ISetTheme
 					else if (format.FormatType == DataFormatType.BoolOnOff)
 					{
 						e.Text = "";
-						e.Image = (cellVM.Value.Equals(true) ? Resources.On : Resources.Off);
+						e.Image = (cellVM.Value.Equals(true) ? IconRes.On : IconRes.Off);
 						styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cellVM.Align);
 					}
 					else if (cellVM.Attachments != null)
 					{
-						e.Image = Resources.CellAttachment;
+						e.Image = IconRes.CellAttachment;
 						e.Text = ((cellVM.TempCell.DisplayAlign == CellTextAlign.MiddleCenter) ? "\n\n" : "") + $"({cellVM.Attachments.Attachments.Count}个附件)";
 						styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cellVM.TempCell.DisplayAlign);
 					}
@@ -2217,7 +2217,7 @@ public class TicketInputTitleFooterEditor : ISetTheme
 					_cancelManualInputBackgroundBrush.Color = Auditai.UI.Controls.Util.DarkenColor(_grid.Styles.Highlight.BackColor, 0.1);
 					e.Graphics.FillRectangle(_cancelManualInputBackgroundBrush, rect);
 				}
-				e.Graphics.DrawImage(Resources.CancelManualInput, cancelManualInputIconArea.X, cancelManualInputIconArea.Y);
+				e.Graphics.DrawImage(IconRes.CancelManualInput, cancelManualInputIconArea);
 			}
 		}
 	}
@@ -2697,7 +2697,7 @@ public class TicketInputTitleFooterEditor : ISetTheme
 	{
 		if (Table?.IsLocked != true && e.Button == MouseButtons.Right)
 		{
-			_ctxCell.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(_ctxCell, _grid, e.Location);
 		}
 	}
 

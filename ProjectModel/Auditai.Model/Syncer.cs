@@ -534,7 +534,8 @@ public static class Syncer
 					Op = formula.Operator.Code,
 					RightExpr = formula.RightExpr,
 					Note = formula.Note,
-					TableId = formula.TableId
+					TableId = formula.TableId,
+					DocumentFieldId = formula.DocumentFieldId
 				}));
 			}
 			else if (formula.Status == SyncStatus.Synced && formula.IsDirty)
@@ -547,7 +548,8 @@ public static class Syncer
 					Op = formula.Operator.Code,
 					RightExpr = formula.RightExpr,
 					Note = formula.Note,
-					TableId = formula.TableId
+					TableId = formula.TableId,
+					DocumentFieldId = formula.DocumentFieldId
 				}));
 			}
 		}
@@ -2574,7 +2576,8 @@ public static class Syncer
 			Op = item.Value<int>("Op"),
 			RightExpr = item.Value<string>("RightExpr"),
 			Note = item.Value<string>("Note"),
-			TableId = new Id64(item.Value<long>("TableId"))
+			TableId = new Id64(item.Value<long>("TableId")),
+			DocumentFieldId = new Id64(item.Value<long?>("DocumentFieldId") ?? 0)
 		}))
 		{
 			dictionary.Add(item14.Id, new ValidationFormula
@@ -2586,6 +2589,7 @@ public static class Syncer
 				Note = item14.Note,
 				RightExpr = item14.RightExpr,
 				TableId = item14.TableId,
+				DocumentFieldId = item14.DocumentFieldId,
 				Status = SyncStatus.Synced
 			});
 		}
@@ -2596,7 +2600,8 @@ public static class Syncer
 			Op = item.Value<int>("Op"),
 			RightExpr = item.Value<string>("RightExpr"),
 			Note = item.Value<string>("Note"),
-			TableId = new Id64(item.Value<long>("TableId"))
+			TableId = new Id64(item.Value<long>("TableId")),
+			DocumentFieldId = new Id64(item.Value<long?>("DocumentFieldId") ?? 0)
 		}))
 		{
 			if (dictionary.TryGetValue(item15.Id, out var value4) && !value4.IsDirty)
@@ -2606,6 +2611,7 @@ public static class Syncer
 				value4.RightExpr = item15.RightExpr;
 				value4.Note = item15.Note;
 				value4.TableId = item15.TableId;
+				value4.DocumentFieldId = item15.DocumentFieldId;
 				value4.Status = SyncStatus.Synced;
 			}
 		}

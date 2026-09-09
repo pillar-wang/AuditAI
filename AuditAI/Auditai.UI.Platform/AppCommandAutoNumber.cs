@@ -11,9 +11,9 @@ public class AppCommandAutoNumber : AppCommandButton
 {
 	public override string Text => "自动编号";
 
-	public override Image LargeIcon => Resources.IndexNumber;
+	public override Image LargeIcon => IconRes.IndexNumber;
 
-	public override Image SmallIcon => Resources.IndexNumber;
+	public override Image SmallIcon => IconRes.IndexNumber;
 
 	protected override string Tooltip => "自动重排文档中所有编号";
 
@@ -24,9 +24,9 @@ public class AppCommandAutoNumber : AppCommandButton
 			var editor = Program.MainForm?.CurrentDocumentEditor;
 			if (editor == null) return;
 
-			if (System.Windows.Forms.MessageBox.Show(
-				"将自动重排文档中所有编号，是否继续？", "自动编号",
-				MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+			if (Auditai.UI.Controls.MessageBox.Show(
+				MessageBoxIcon.Question, "将自动重排文档中所有编号，是否继续？",
+				MessageBoxButtons.YesNo, "自动编号") != DialogResult.Yes)
 			{
 				return;
 			}
@@ -35,9 +35,9 @@ public class AppCommandAutoNumber : AppCommandButton
 			int changed = structure.AutoNumber();
 			if (changed == 0)
 			{
-				System.Windows.Forms.MessageBox.Show(
-					"编号已正确，无需调整。", "自动编号",
-					MessageBoxButtons.OK, MessageBoxIcon.Information);
+				Auditai.UI.Controls.MessageBox.Show(
+					MessageBoxIcon.Information, "编号已正确，无需调整。",
+					MessageBoxButtons.OK, "自动编号");
 			}
 			else
 			{

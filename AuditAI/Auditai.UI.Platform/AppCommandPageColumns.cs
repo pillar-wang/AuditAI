@@ -7,7 +7,7 @@ public class AppCommandPageColumns : AppCommandMenu
 {
 	public override string Text => "页面分栏";
 
-	public override Image LargeImage => Resources.DocPageColumns;
+	public override Image LargeImage => IconRes.DocPageColumns;
 
 	public AppCommandPageColumns()
 		: base(new AppCommandBase[4]

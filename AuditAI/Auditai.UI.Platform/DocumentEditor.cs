@@ -254,49 +254,49 @@ public class DocumentEditor : UserControl
 		var imageProcess = MainForm.ImageProcess;
 
 		// 引用表格
-		cmdRefTable.Image = Resources.DocWholeRefresh;
+		cmdRefTable.Image = IconRes.DocWholeRefresh;
 		cmdRefTable.CommandStateQuery += (s, e) => cmdRefTable.Text = "引用表格";
 		cmdRefTable.Click += (s, e) => InsertRefTable();
 		lnkRefTable.Command = cmdRefTable;
 		_toolbar.CommandLinks.Add(lnkRefTable);
 
 		// 插入变量
-		cmdInsertVar.Image = Resources.DocWholeRefresh;
+		cmdInsertVar.Image = IconRes.DocWholeRefresh;
 		cmdInsertVar.CommandStateQuery += (s, e) => cmdInsertVar.Text = "插入变量";
 		cmdInsertVar.Click += (s, e) => InsertVariable();
 		lnkInsertVar.Command = cmdInsertVar;
 		_toolbar.CommandLinks.Add(lnkInsertVar);
 
 		// 智能排版
-		cmdSmartLayout.Image = Resources.DocWholeRefresh;
+		cmdSmartLayout.Image = IconRes.DocWholeRefresh;
 		cmdSmartLayout.CommandStateQuery += (s, e) => cmdSmartLayout.Text = "智能排版";
 		cmdSmartLayout.Click += (s, e) => SmartLayout();
 		lnkSmartLayout.Command = cmdSmartLayout;
 		_toolbar.CommandLinks.Add(lnkSmartLayout);
 
 		// 全文刷新
-		cmdRefreshAll.Image = Resources.DocWholeRefresh;
+		cmdRefreshAll.Image = IconRes.DocWholeRefresh;
 		cmdRefreshAll.CommandStateQuery += (s, e) => cmdRefreshAll.Text = "全文刷新";
 		cmdRefreshAll.Click += (s, e) => RefreshDocumentAll();
 		lnkRefreshAll.Command = cmdRefreshAll;
 		_toolbar.CommandLinks.Add(lnkRefreshAll);
 
 		// 全表刷新
-		cmdRefreshAllTables.Image = Resources.TableWholeReflush;
+		cmdRefreshAllTables.Image = IconRes.TableWholeReflush;
 		cmdRefreshAllTables.CommandStateQuery += (s, e) => cmdRefreshAllTables.Text = "全表刷新";
 		cmdRefreshAllTables.Click += (s, e) => RefreshAllTables();
 		lnkRefreshAllTables.Command = cmdRefreshAllTables;
 		_toolbar.CommandLinks.Add(lnkRefreshAllTables);
 
 		// 全域刷新
-		cmdRefreshAllFields.Image = Resources.DocWholeRefresh;
+		cmdRefreshAllFields.Image = IconRes.DocWholeRefresh;
 		cmdRefreshAllFields.CommandStateQuery += (s, e) => cmdRefreshAllFields.Text = "全域刷新";
 		cmdRefreshAllFields.Click += (s, e) => RefreshAllFields();
 		lnkRefreshAllFields.Command = cmdRefreshAllFields;
 		_toolbar.CommandLinks.Add(lnkRefreshAllFields);
 
 		// 全文校验
-		cmdValidate.Image = Resources.ValidateDocument;
+		cmdValidate.Image = IconRes.ValidateDocument;
 		cmdValidate.CommandStateQuery += (s, e) => cmdValidate.Text = "全文校验";
 		cmdValidate.Click += (s, e) => StartValidate();
 		lnkValidate.Command = cmdValidate;
@@ -304,7 +304,7 @@ public class DocumentEditor : UserControl
 		_toolbar.CommandLinks.Add(lnkValidate);
 
 		// 校验域管理
-		cmdValidationMgmt.Image = Resources.ValidationSettings;
+		cmdValidationMgmt.Image = IconRes.ValidationSettings;
 		cmdValidationMgmt.CommandStateQuery += (s, e) => cmdValidationMgmt.Text = "校验域管理";
 		cmdValidationMgmt.Click += (s, e) =>
 		{
@@ -315,7 +315,7 @@ public class DocumentEditor : UserControl
 		_toolbar.CommandLinks.Add(lnkValidationMgmt);
 
 		// 导出文档
-		cmdExportDoc.Image = Resources.DocWholeRefresh;
+		cmdExportDoc.Image = IconRes.DocWholeRefresh;
 		cmdExportDoc.CommandStateQuery += (s, e) => cmdExportDoc.Text = "导出文档";
 		cmdExportDoc.Click += (s, e) => ExportDocumentDialog();
 		lnkExportDoc.Command = cmdExportDoc;
@@ -4646,8 +4646,11 @@ public class DocumentEditor : UserControl
 
 			try
 			{
-				new ProgressForm<object>(async delegate(IProgress<Auditai.DTO.ProgressInfo> iProg)
+				ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+				ProgressForm2 progressForm = new ProgressForm2();
+				progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 				{
+					IProgress<Auditai.DTO.ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 					// Step 1: 全表刷新
 					int count = _textControl.Tables.Count;
 					TXTextControl.Table[] tables = new TXTextControl.Table[count];
@@ -4698,8 +4701,7 @@ public class DocumentEditor : UserControl
 						MainCaption = "全文刷新完成",
 						MainProgress = 100
 					});
-					return (object)null;
-				}).ShowDialog();
+				});
 			}
 			finally
 			{

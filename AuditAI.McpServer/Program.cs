@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Configuration;
 
 namespace AuditAI.McpServer
@@ -20,6 +20,8 @@ namespace AuditAI.McpServer
             Auditai.Model.StringConstBase.Current = Auditai.Model.StringConstEditions.Audit;
 
             // 初始化本地存储模式
+            // Server 模式下启用云端同步（Syncer 默认 Disabled=true，解耦自 StorageRouter）
+            Auditai.LocalDataStore.StorageRouter.OnServerModeActivated = () => Auditai.Model.Syncer.Disabled = false;
             Auditai.LocalDataStore.StorageRouter.Initialize();
 
             // 加载管理后台基地址（Task 1：管理后台上下文，端口 8958）

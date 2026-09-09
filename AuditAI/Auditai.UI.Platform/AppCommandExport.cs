@@ -9,7 +9,7 @@ public class AppCommandExport : AppCommandButton
 {
 	public override string Text => "Excel文件";
 
-	public override Image LargeIcon => Resources.ExportExcel;
+	public override Image LargeIcon => IconRes.ExportExcel;
 
 	protected override void Clicked()
 	{

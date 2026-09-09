@@ -18,9 +18,6 @@
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CrawlerModel">
-      <HintPath>..\Libs\CrawlerModel.dll</HintPath>
-    </Reference>
     <Reference Include="INIFileParser">
       <HintPath>..\Libs\INIFileParser.dll</HintPath>
     </Reference>
@@ -31,5 +28,8 @@
     <Reference Include="NeoSmart.Stream.CopyTo">
       <HintPath>..\Libs\NeoSmart.Stream.CopyTo.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerModel\CrawlerModel.csproj" />
   </ItemGroup>
 </Project>

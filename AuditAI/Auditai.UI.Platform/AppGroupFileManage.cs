@@ -7,7 +7,7 @@ public class AppGroupFileManage : AppCommandGroup
 {
 	public override string Text => "文件管理";
 
-	public override Image Image => Resources.HideNodes;
+	public override Image Image => IconRes.HideNodes;
 
 	public AppGroupFileManage()
 	{

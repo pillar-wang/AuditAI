@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -83,7 +83,7 @@ public class FormAdvancedPaste
 		Form = FormFactory.Create();
 		Form.Size = new Size(800, 750);
 		Form.ShowInTaskbar = false;
-		Form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Paste);
+		Form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Paste);
 		Form.Shown += Form_Shown;
 		Form.FormClosing += Form_FormClosing;
 		_szMain = new C1Sizer

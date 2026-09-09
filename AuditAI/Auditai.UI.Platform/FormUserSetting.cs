@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -17,7 +17,7 @@ namespace Auditai.UI.Platform;
 
 public class FormUserSetting
 {
-	private const string DefaultFontFamily = "Noto Sans SC";
+	private const string DefaultFontFamily = "微软雅黑";
 
 	private readonly int DefaultHeight = 26;
 
@@ -238,7 +238,7 @@ public class FormUserSetting
 		form = FormFactory.Create();
 		form.MinimizeBox = false;
 		form.MaximizeBox = false;
-		form.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Settings);
+		form.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Settings);
 		form.Size = new Size(750, 630);
 		form.AcceptButton = btnConfirm;
 		form.Text = "系统设置";
@@ -262,7 +262,7 @@ public class FormUserSetting
 			Size = new Size(800, 350),
 			TabsSpacing = 10,
 			ShowTabList = false,
-			Font = new Font("Noto Sans SC", 10f),
+			Font = new Font("微软雅黑", 10f),
 			TabsShowFocusCues = false,
 			Indent = 0
 		};
@@ -270,7 +270,7 @@ public class FormUserSetting
 		{
 			BasicSettingPage = new C1DockingTabPage();
 			BasicSettingPage.Text = "基本设置";
-			BasicSettingPage.Font = new Font("Noto Sans SC", 9f);
+			BasicSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -279,7 +279,7 @@ public class FormUserSetting
 		{
 			MenuSettingPage = new C1DockingTabPage();
 			MenuSettingPage.Text = "菜单设置";
-			MenuSettingPage.Font = new Font("Noto Sans SC", 9f);
+			MenuSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -288,7 +288,7 @@ public class FormUserSetting
 		{
 			TableSettingPage = new C1DockingTabPage();
 			TableSettingPage.Text = "表格样式";
-			TableSettingPage.Font = new Font("Noto Sans SC", 9f);
+			TableSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -297,7 +297,7 @@ public class FormUserSetting
 		{
 			LedgerSettingPage = new C1DockingTabPage();
 			LedgerSettingPage.Text = "账套设置";
-			LedgerSettingPage.Font = new Font("Noto Sans SC", 9f);
+			LedgerSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -306,7 +306,7 @@ public class FormUserSetting
 		{
 			DocSettingPage = new C1DockingTabPage();
 			DocSettingPage.Text = "文档设置";
-			DocSettingPage.Font = new Font("Noto Sans SC", 9f);
+			DocSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -315,7 +315,7 @@ public class FormUserSetting
 		{
 			SignSettingPage = new C1DockingTabPage();
 			SignSettingPage.Text = "签名设置";
-			SignSettingPage.Font = new Font("Noto Sans SC", 9f);
+			SignSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -324,7 +324,7 @@ public class FormUserSetting
 		{
 			CollectSettingPage = new C1DockingTabPage();
 			CollectSettingPage.Text = "智能填充";
-			CollectSettingPage.Font = new Font("Noto Sans SC", 9f);
+			CollectSettingPage.Font = new Font("微软雅黑", 9f);
 		}
 		catch (NullReferenceException)
 		{
@@ -337,14 +337,14 @@ public class FormUserSetting
 		btnConfirm = new C1Button
 		{
 			Location = new Point(550, 8),
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Size = new Size(70, 26),
 			Text = "确定"
 		};
 		btnCancel = new C1Button
 		{
 			Location = new Point(650, 8),
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Size = new Size(70, 26),
 			Text = "取消"
 		};
@@ -753,7 +753,7 @@ public class FormUserSetting
 		TableSettingPanel = new C1InputPanel
 		{
 			AutoSizeElement = AutoSizeElement.Both,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			ChildSpacing = new Size(4, 10),
 			Dock = DockStyle.Fill
 		};
@@ -963,7 +963,7 @@ public class FormUserSetting
 		return new C1InputPanel
 		{
 			AutoSizeElement = AutoSizeElement.Both,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			ChildSpacing = new Size(2, 10),
 			Dock = DockStyle.Fill,
 			BorderColor = Color.Transparent,
@@ -979,7 +979,7 @@ public class FormUserSetting
 			Text = text,
 			Width = width,
 			Break = breakType,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -992,7 +992,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Text = text,
 			Break = breakType,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -1005,7 +1005,7 @@ public class FormUserSetting
 			DropDownStyle = InputComboBoxStyle.DropDownList,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Width = width,
 			Height = DefaultHeight
 		};
@@ -1027,7 +1027,7 @@ public class FormUserSetting
 		{
 			HorizontalAlign = InputContentAlignment.Far,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Text = text,
 			Height = DefaultHeight
 		};
@@ -1042,7 +1042,7 @@ public class FormUserSetting
 	{
 		return new InputGroupHeader
 		{
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Collapsible = true,
 			Collapsed = collapsed,
 			Text = text,
@@ -1057,7 +1057,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -1070,7 +1070,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
 			Text = string.Empty
@@ -1084,7 +1084,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
 			Text = text
@@ -1098,7 +1098,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Break = breakType,
 			Width = width
 		};
@@ -1111,7 +1111,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Break = breakType,
 			Width = width
 		};

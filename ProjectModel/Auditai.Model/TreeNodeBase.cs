@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -453,6 +453,11 @@ public abstract class TreeNodeBase
 
 	public bool HasSchemaPermission()
 	{
+		// 审批只读会话：禁止结构编辑
+		if (Project.IsReadonlyOpenSession)
+		{
+			return false;
+		}
 		if (Project.Current.Creator.Id == User.Current.Id)
 		{
 			return true;
@@ -470,6 +475,11 @@ public abstract class TreeNodeBase
 
 	public bool HasReadPermission()
 	{
+		// 审批只读会话：审批人（可能非项目成员）可查看全部节点
+		if (Project.IsReadonlyOpenSession)
+		{
+			return true;
+		}
 		if (this is TreeDirectoryNode)
 		{
 			return true;
@@ -491,6 +501,11 @@ public abstract class TreeNodeBase
 
 	public bool HasWritePermission()
 	{
+		// 审批只读会话：禁止一切写操作（成员身份的审批人也只读）
+		if (Project.IsReadonlyOpenSession)
+		{
+			return false;
+		}
 		if (Project.Current.Creator.Id == User.Current.Id)
 		{
 			return true;

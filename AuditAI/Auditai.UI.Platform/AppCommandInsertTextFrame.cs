@@ -7,7 +7,7 @@ public class AppCommandInsertTextFrame : AppCommandButton
 {
 	public override string Text => "插入文本框";
 
-	public override Image SmallIcon => ContextResources.ctxInsertFrame;
+	public override Image SmallIcon => IconRes.ctxInsertFrame;
 
 	protected override void Clicked()
 	{

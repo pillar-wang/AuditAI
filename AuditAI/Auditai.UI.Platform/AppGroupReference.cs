@@ -7,7 +7,7 @@ public class AppGroupReference : AppCommandGroup
 {
 	public override string Text => "数据引用";
 
-	public override Image Image => Resources.Intelliref;
+	public override Image Image => IconRes.Intelliref;
 
 	public AppGroupReference()
 	{

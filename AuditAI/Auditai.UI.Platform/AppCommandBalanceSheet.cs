@@ -9,7 +9,7 @@ public class AppCommandBalanceSheet : AppCommandButton
 {
 	public override string Text => "科目余额表";
 
-	public override Image LargeIcon => Resources.AccountBalance;
+	public override Image LargeIcon => IconRes.AccountBalance;
 
 	protected override void Clicked()
 	{

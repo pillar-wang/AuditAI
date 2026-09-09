@@ -7,7 +7,7 @@ public class AppGroupDocumentLock : AppCommandGroup
 {
 	public override string Text => "文档锁定";
 
-	public override Image Image => Resources.ToggleDocLock;
+	public override Image Image => IconRes.ToggleDocLock;
 
 	public AppGroupDocumentLock()
 	{

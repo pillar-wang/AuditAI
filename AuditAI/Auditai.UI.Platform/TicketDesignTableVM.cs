@@ -526,7 +526,7 @@ public class TicketDesignTableVM
 						{
 							Width = 1
 						},
-						FontFamily = "Noto Sans SC",
+						FontFamily = "微软雅黑",
 						FontSize = 10.5f,
 						ForeColor = Color.Black,
 						BackColor = Color.White,
@@ -672,7 +672,7 @@ public class TicketDesignTableVM
 					{
 						Width = 1
 					},
-					FontFamily = "Noto Sans SC",
+					FontFamily = "微软雅黑",
 					FontSize = 10.5f,
 					ForeColor = Color.Black,
 					BackColor = Color.White,

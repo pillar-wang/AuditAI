@@ -21,9 +21,6 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
     <Reference Include="Google.Protobuf">
       <HintPath>..\Libs\Google.Protobuf.dll</HintPath>
     </Reference>
@@ -32,5 +29,8 @@
       <HintPath>..\Libs\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
   </ItemGroup>
 </Project>

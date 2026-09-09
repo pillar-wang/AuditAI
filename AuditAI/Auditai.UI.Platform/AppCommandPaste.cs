@@ -7,7 +7,7 @@ public class AppCommandPaste : AppCommandButton
 {
 	public override string Text => "粘贴";
 
-	public override Image LargeIcon => Resources.Paste;
+	public override Image LargeIcon => IconRes.Paste;
 
 	protected override void Clicked()
 	{

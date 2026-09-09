@@ -7,7 +7,7 @@ public class AppCommandTicketBorderTop : AppCommandButton
 {
 	public override string Text => " 上边框 ";
 
-	public override Image LargeIcon => Resources.TicketBorderTop;
+	public override Image LargeIcon => IconRes.TicketBorderTop;
 
 	protected override void Clicked()
 	{

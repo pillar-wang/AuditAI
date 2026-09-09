@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -63,8 +63,6 @@ internal class SummaryEditor : ISetTheme
 
 	private C1ContextMenu ctxSidebarAnalyzyProject = new C1ContextMenu();
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
 
 	private Ledger Ledger => _owner.Ledger;
@@ -117,7 +115,7 @@ internal class SummaryEditor : ISetTheme
 		lblMonthAccount = new C1Label();
 		grdMonthSummary = new C1FlexGridEx();
 		grdMonthSummary.Name = "grdMonthSummary";
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblSummaryTitle.TextDetached = true;
 		lblSummaryTitle.BorderStyle = BorderStyle.None;
 		lblSummaryTitle.Dock = DockStyle.Fill;
@@ -132,7 +130,7 @@ internal class SummaryEditor : ISetTheme
 		pnlMonthTitle.Size = new Size(927, 39);
 		pnlMonthTitle.SizeRatio = 4.769;
 		pnlMonthTitle.Controls.Add(lblSummaryTitle);
-		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblMonthAccount.TextDetached = true;
 		lblMonthAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblMonthAccount.BorderStyle = BorderStyle.None;
@@ -184,14 +182,14 @@ internal class SummaryEditor : ISetTheme
 		C1CommandLink c1CommandLink3 = new C1CommandLink();
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "分析选项";
-		c1Command3.Image = Resources.sidebarAnalyzyProject;
+		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command3.Click += CmdSidebarAnalyzyProject_Click1;
 		c1CommandLink3.Command = c1Command3;
 		c1ToolBar.CommandLinks.Add(c1CommandLink3);
 		C1CommandLink c1CommandLink4 = new C1CommandLink();
 		C1Command c1Command4 = new C1Command();
 		c1Command4.Text = "切换样式";
-		c1Command4.Image = Resources.sideSwitchStyle;
+		c1Command4.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("swap", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command4.Click += CmdDirection_Click;
 		c1CommandLink4.Command = c1Command4;
 		c1ToolBar.CommandLinks.Add(c1CommandLink4);
@@ -199,23 +197,19 @@ internal class SummaryEditor : ISetTheme
 		c1CommandLink5.Delimiter = true;
 		C1Command c1Command5 = new C1Command();
 		c1Command5.Text = "隐藏侧边栏";
-		c1Command5.Image = Resources.sideHideSidebar;
+		c1Command5.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command5.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
 		};
 		c1CommandLink5.Command = c1Command5;
-		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdMonthSummary, c1ToolBar, out pnlSidebar);
 		pnlMonthGrid.Height = 573;
 		pnlMonthGrid.KeepRelativeSize = true;
 		pnlMonthGrid.SizeRatio = 100.0;
 		pnlMonthGrid.Controls.Add(value);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -232,7 +226,7 @@ internal class SummaryEditor : ISetTheme
 
 	private void CmdSidebarAnalyzyProject_Click1(object sender, ClickEventArgs e)
 	{
-		ctxSidebarAnalyzyProject.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxSidebarAnalyzyProject, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdSidebarAnalyzyProject_Click(object sender, ClickEventArgs e)
@@ -301,15 +295,6 @@ internal class SummaryEditor : ISetTheme
 		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		grdMonthSummary.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdMonthSummary.Styles.Fixed.Font = grdMonthSummary.Font;
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	private void CmdCopy_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -383,13 +368,13 @@ internal class SummaryEditor : ISetTheme
 			switch (grdMonthSummary.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(grdMonthSummary, e.Location);
+				NativeMenuShim.Show(ctxFixed, grdMonthSummary, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(grdMonthSummary, e.Location);
+				NativeMenuShim.Show(ctxEmpty, grdMonthSummary, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(grdMonthSummary, e.Location);
+				NativeMenuShim.Show(ctxCell, grdMonthSummary, e.Location);
 				break;
 			}
 		}

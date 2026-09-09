@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凭证序时簿</title>
+    <style id="theme-vars">
+/* ============================================================
+   AuditAI 账务数据页面 · 轻盈清新风 Design Tokens
+   brand prefix: audit
+   ============================================================ */
+:root {
+  /* ---- Semantic aliases (head contract) ---- */
+  --audit-background: #fafbfc;
+  --audit-foreground: #111827;
+  --audit-card: #ffffff;
+  --audit-card-foreground: #111827;
+  --audit-popover: #ffffff;
+  --audit-popover-foreground: #111827;
+  --audit-primary: #3b82f6;
+  --audit-primary-foreground: #ffffff;
+  --audit-muted: #f3f4f6;
+  --audit-muted-foreground: #6b7280;
+  --audit-border: #e5e7eb;
+  --audit-input: #d1d5db;
+  --audit-ring: #3b82f6;
+  --audit-radius-sm: 6px;
+  --audit-radius-md: 8px;
+  --audit-radius-lg: 12px;
+
+  /* ---- Brand scale (清新蓝) ---- */
+  --audit-brand: #3b82f6;
+  --audit-brand-hover: #2563eb;
+  --audit-brand-active: #1d4ed8;
+  --audit-brand-subtle: #eff6ff;
+  --audit-brand-border: #bfdbfe;
+  --audit-brand-foreground: #ffffff;
+
+  /* ---- State colors (status only) ---- */
+  --audit-success: #10b981;
+  --audit-success-hover: #059669;
+  --audit-success-subtle: #ecfdf5;
+  --audit-success-border: #a7f3d0;
+  --audit-success-foreground: #065f46;
+
+  --audit-warning: #f59e0b;
+  --audit-warning-hover: #d97706;
+  --audit-warning-subtle: #fffbeb;
+  --audit-warning-border: #fde68a;
+  --audit-warning-foreground: #92400e;
+
+  --audit-error: #ef4444;
+  --audit-error-hover: #dc2626;
+  --audit-error-subtle: #fef2f2;
+  --audit-error-border: #fecaca;
+  --audit-error-foreground: #991b1b;
+
+  --audit-info: #06b6d4;
+  --audit-info-subtle: #ecfeff;
+  --audit-info-border: #a5f3fc;
+  --audit-info-foreground: #155e75;
+
+  /* ---- Surfaces ---- */
+  --audit-surface: #ffffff;
+  --audit-surface-muted: #fafbfc;
+  --audit-surface-subtle: #f3f4f6;
+  --audit-surface-hover: #f9fafb;
+  --audit-surface-selected: #eff6ff;
+
+  /* ---- Text ---- */
+  --audit-text: #0f172a;
+  --audit-text-secondary: #1e293b;
+  --audit-text-tertiary: #475569;
+  --audit-text-muted: #94a3b8;
+  --audit-text-disabled: #cbd5e1;
+  --audit-text-on-brand: #ffffff;
+
+  /* ---- Borders ---- */
+  --audit-border-subtle: #f3f4f6;
+  --audit-border-strong: #d1d5db;
+
+  /* ---- Sidebar ---- */
+  --audit-sidebar-bg: #fafbfc;
+  --audit-sidebar-item-hover: #f3f4f6;
+  --audit-sidebar-item-active: #eff6ff;
+  --audit-sidebar-text: #374151;
+  --audit-sidebar-text-active: #1d4ed8;
+
+  /* ---- Typography ---- */
+  --audit-font-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --audit-font-mono: "Consolas", "SF Mono", "Cascadia Code", Monaco, "Courier New", monospace;
+
+  --audit-fs-display: 24px;
+  --audit-fs-h1: 20px;
+  --audit-fs-h2: 16px;
+  --audit-fs-h3: 14px;
+  --audit-fs-body: 14px;
+  --audit-fs-caption: 13px;
+  --audit-fs-tiny: 12px;
+
+  --audit-fw-normal: 400;
+  --audit-fw-medium: 500;
+  --audit-fw-semibold: 600;
+  --audit-fw-bold: 700;
+
+  /* ---- Font rendering (sharpness tuning) ---- */
+  --audit-font-smoothing: antialiased;
+  --audit-text-rendering: optimizeLegibility;
+
+  /* ---- Shadows (static alpha <= 0.05) ---- */
+  --audit-shadow-xs: 0 1px 2px 0 rgba(17, 24, 39, 0.04);
+  --audit-shadow-sm: 0 1px 3px 0 rgba(17, 24, 39, 0.05), 0 1px 2px -1px rgba(17, 24, 39, 0.03);
+  --audit-shadow-float: 0 8px 24px -6px rgba(17, 24, 39, 0.12), 0 2px 6px -2px rgba(17, 24, 39, 0.06);
+
+  /* ---- Layout ---- */
+  --audit-sidebar-width: 232px;
+  --audit-topbar-height: 56px;
+  --audit-statusbar-height: 32px;
+  --audit-content-padding: 20px;
+
+  /* ---- Motion ---- */
+  --audit-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --audit-dur-fast: 120ms;
+  --audit-dur-base: 160ms;
+}
+
+    
+  /* ========== Icon System ========== */
+  .icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    vertical-align: middle;
+    stroke: currentColor;
+  }
+  .icon--xs { width: 14px; height: 14px; }
+  .icon--sm { width: 16px; height: 16px; }
+  .icon--md { width: 20px; height: 20px; }
+  .icon--lg { width: 24px; height: 24px; }
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--audit-background);
+    --color-foreground: var(--audit-foreground);
+    --color-card: var(--audit-card);
+    --color-card-foreground: var(--audit-card-foreground);
+    --color-popover: var(--audit-popover);
+    --color-popover-foreground: var(--audit-popover-foreground);
+    --color-primary: var(--audit-primary);
+    --color-primary-foreground: var(--audit-primary-foreground);
+    --color-muted: var(--audit-muted);
+    --color-muted-foreground: var(--audit-muted-foreground);
+    --color-border: var(--audit-border);
+    --color-input: var(--audit-input);
+    --color-ring: var(--audit-ring);
+    --radius-sm: var(--audit-radius-sm);
+    --radius-md: var(--audit-radius-md);
+    --radius-lg: var(--audit-radius-lg);
+  }
+  @layer base {
+    body { background: var(--audit-background); color: var(--audit-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--audit-background); }
+      .text-background { color: var(--audit-background); }
+      .border-background { border-color: var(--audit-background); }
+      .ring-background { --tw-ring-color: var(--audit-background); }
+      .bg-foreground { background-color: var(--audit-foreground); }
+      .text-foreground { color: var(--audit-foreground); }
+      .border-foreground { border-color: var(--audit-foreground); }
+      .ring-foreground { --tw-ring-color: var(--audit-foreground); }
+      .bg-card { background-color: var(--audit-card); }
+      .text-card { color: var(--audit-card); }
+      .border-card { border-color: var(--audit-card); }
+      .ring-card { --tw-ring-color: var(--audit-card); }
+      .bg-card-foreground { background-color: var(--audit-card-foreground); }
+      .text-card-foreground { color: var(--audit-card-foreground); }
+      .border-card-foreground { border-color: var(--audit-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--audit-card-foreground); }
+      .bg-popover { background-color: var(--audit-popover); }
+      .text-popover { color: var(--audit-popover); }
+      .border-popover { border-color: var(--audit-popover); }
+      .ring-popover { --tw-ring-color: var(--audit-popover); }
+      .bg-popover-foreground { background-color: var(--audit-popover-foreground); }
+      .text-popover-foreground { color: var(--audit-popover-foreground); }
+      .border-popover-foreground { border-color: var(--audit-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--audit-popover-foreground); }
+      .bg-primary { background-color: var(--audit-primary); }
+      .text-primary { color: var(--audit-primary); }
+      .border-primary { border-color: var(--audit-primary); }
+      .ring-primary { --tw-ring-color: var(--audit-primary); }
+      .bg-primary-foreground { background-color: var(--audit-primary-foreground); }
+      .text-primary-foreground { color: var(--audit-primary-foreground); }
+      .border-primary-foreground { border-color: var(--audit-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--audit-primary-foreground); }
+      .bg-muted { background-color: var(--audit-muted); }
+      .text-muted { color: var(--audit-muted); }
+      .border-muted { border-color: var(--audit-muted); }
+      .ring-muted { --tw-ring-color: var(--audit-muted); }
+      .bg-muted-foreground { background-color: var(--audit-muted-foreground); }
+      .text-muted-foreground { color: var(--audit-muted-foreground); }
+      .border-muted-foreground { border-color: var(--audit-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--audit-muted-foreground); }
+      .bg-border { background-color: var(--audit-border); }
+      .text-border { color: var(--audit-border); }
+      .border-border { border-color: var(--audit-border); }
+      .ring-border { --tw-ring-color: var(--audit-border); }
+      .bg-input { background-color: var(--audit-input); }
+      .text-input { color: var(--audit-input); }
+      .border-input { border-color: var(--audit-input); }
+      .ring-input { --tw-ring-color: var(--audit-input); }
+      .bg-ring { background-color: var(--audit-ring); }
+      .text-ring { color: var(--audit-ring); }
+      .border-ring { border-color: var(--audit-ring); }
+      .ring-ring { --tw-ring-color: var(--audit-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      /* Sharp icon rendering — align to pixel grid, use geometric precision */
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="font-sans subpixel-antialiased overflow-hidden" style="text-rendering: optimizeLegibility; -webkit-text-size-adjust: 100%;">
+    <div data-viewport-mode="app-shell" class="flex h-screen overflow-hidden" style="font-family: var(--audit-font-sans); font-size: var(--audit-fs-body);">
+        <!-- 侧边栏 -->
+        <aside class="flex flex-col border-r border-[var(--audit-border)] bg-[var(--audit-sidebar-bg)]" style="width: var(--audit-sidebar-width);">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 px-4 border-b border-[var(--audit-border)]" style="height: var(--audit-topbar-height);">
+                <div class="w-7 h-7 rounded-md bg-[var(--audit-brand)] flex items-center justify-center text-white">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" /></svg>
+                </div>
+                <span class="font-semibold text-[15px] text-[var(--audit-text)]">AuditAI</span>
+            </div>
+            <!-- 导航 -->
+            <nav class="flex-1 overflow-y-auto py-3 px-2 no-scrollbar">
+                <div class="mb-1">
+                    <div class="px-3 py-1.5 text-[11px] font-medium text-[var(--audit-text-tertiary)] uppercase tracking-wider">账务数据</div>
+                    <a href="#" id="nav-journal" class="$114px] bg-[var(--audit-sidebar-item-active)] text-[var(--audit-sidebar-text-active)] font-medium">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 16H8" /> <path d="M14 8H8" /> <path d="M16 12H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></svg>
+                        <span>凭证序时簿</span>
+                    </a>
+                    <a href="#" id="nav-ledger" data-dom-id="nav-ledger" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16" /> <path d="M16 13h2" /> <path d="M16 9h2" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> <path d="M6 13h2" /> <path d="M6 9h2" /></svg>
+                        <span>明细账</span>
+                    </a>
+                    <a href="#" id="nav-general" data-dom-id="nav-general" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v8l3-3 3 3V2" /> <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" /></svg>
+                        <span>总账</span>
+                    </a>
+                    <a href="#" id="nav-trial" data-dom-id="nav-trial" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></svg>
+                        <span>科目余额表</span>
+                    </a>
+                    <a href="#" id="nav-aux" data-dom-id="nav-aux" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></svg>
+                        <span>辅助核算</span>
+                    </a>
+                    <a href="#" id="nav-aging" data-dom-id="nav-aging" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="14" y1="2" y2="2" /> <line x1="12" x2="15" y1="14" y2="11" /> <circle cx="12" cy="14" r="8" /></svg>
+                        <span>账龄分析</span>
+                    </a>
+                </div>
+                <div class="mb-1 mt-4">
+                    <div class="px-3 py-1.5 text-[11px] font-medium text-[var(--audit-text-tertiary)] uppercase tracking-wider">审计工具</div>
+                    <a href="#" id="nav-check" data-dom-id="nav-check" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="m9 14 2 2 4-4" /></svg>
+                        <span>凭证抽查</span>
+                    </a>
+                    <a href="#" id="nav-analysis" data-dom-id="nav-analysis" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></svg>
+                        <span>报表分析</span>
+                    </a>
+                </div>
+                <div class="mt-4">
+                    <div class="px-3 py-1.5 text-[11px] font-medium text-[var(--audit-text-tertiary)] uppercase tracking-wider">系统</div>
+                    <a href="#" id="nav-settings" data-dom-id="nav-settings" class="$114px] text-[var(--audit-sidebar-text)] hover:bg-[var(--audit-sidebar-item-hover)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></svg>
+                        <span>设置</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- 顶部栏 -->
+            <header class="flex items-center justify-between border-b border-[var(--audit-border)] bg-white px-5" style="height: var(--audit-topbar-height);">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[14px] font-medium text-[var(--audit-text)]">2024年 · 北京星辰科技有限公司</span>
+                        <button class="flex items-center gap-1 text-[var(--audit-text-tertiary)] hover:text-[var(--audit-text)] transition-colors">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                    </div>
+                    <div class="h-4 w-px bg-[var(--audit-border)]"></div>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[var(--audit-border)] bg-white cursor-pointer hover:border-[var(--audit-brand-border)] transition-colors">
+                        <svg class="icon icon--sm text-[var(--audit-text-tertiary)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3" /> <path d="M16 2v3" /> <rect x="3" y="3" width="18" height="18" rx="2" /> <path d="M3 9h18" /></svg>
+                        <span class="text-[12px] text-[var(--audit-text-secondary)]">2024年12月</span>
+                        <svg class="icon icon--sm text-[var(--audit-text-tertiary)]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="p-2 rounded-md text-[var(--audit-text-tertiary)] hover:bg-[var(--audit-surface-subtle)] hover:text-[var(--audit-text)] transition-colors">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></svg>
+                    </button>
+                    <button class="p-2 rounded-md text-[var(--audit-text-tertiary)] hover:bg-[var(--audit-surface-subtle)] hover:text-[var(--audit-text)] transition-colors relative">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg>
+                        <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--audit-error)] rounded-full"></span>
+                    </button>
+                    <div class="h-4 w-px bg-[var(--audit-border)]"></div>
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <div class="w-7 h-7 rounded-full bg-[var(--audit-brand-subtle)] flex items-center justify-center text-[var(--audit-brand)] text-[12px] font-medium">
+                            张
+                        </div>
+                        <span class="text-[13px] text-[var(--audit-text-secondary)]">张会计</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 内容区 -->
+            <main data-scroll-region="primary" class="flex-1 overflow-y-auto" style="padding: var(--audit-content-padding); background: var(--audit-background);">
+                <!-- 页面标题区 -->
+                <div id="page-header" class="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 class="text-[20px] font-semibold text-[var(--audit-text)] leading-tight">凭证序时簿</h1>
+                        <p class="text-[12px] text-[var(--audit-text-tertiary)] mt-1">按时间顺序排列的凭证记录 · 2024年12月</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[var(--audit-border)] bg-white text-[13px] text-[var(--audit-text-secondary)] hover:bg-[var(--audit-surface-subtle)] transition-colors">
+                            <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" /></svg>
+                            <span>筛选</span>
+                        </button>
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[var(--audit-border)] bg-white text-[13px] text-[var(--audit-text-secondary)] hover:bg-[var(--audit-surface-subtle)] transition-colors">
+                            <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></svg>
+                            <span>导出</span>
+                        </button>
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[var(--audit-border)] bg-white text-[13px] text-[var(--audit-text-secondary)] hover:bg-[var(--audit-surface-subtle)] transition-colors">
+                            <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                            <span>批量审核</span>
+                        </button>
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--audit-brand)] text-white text-[13px] hover:bg-[var(--audit-brand-hover)] transition-colors">
+                            <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>
+                            <span>新增凭证</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 筛选条件卡 -->
+                <div id="filter-card" class="bg-white border border-[var(--audit-border)] rounded-md p-4 mb-4">
+                    <div class="grid grid-cols-6 gap-4 items-end">
+                        <div>
+                            <label class="block text-[12px] text-[var(--audit-text-tertiary)] mb-1.5">日期范围</label>
+                            <div class="flex items-center gap-1.5">
+                                <input type="text" value="2024.12.01" class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors" />
+                                <span class="text-[var(--audit-text-tertiary)]">至</span>
+                                <input type="text" value="2024.12.31" class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-[var(--audit-text-tertiary)] mb-1.5">凭证字</label>
+                            <select class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors appearance-none cursor-pointer">
+                                <option>全部</option>
+                                <option>记</option>
+                                <option>收</option>
+                                <option>付</option>
+                                <option>转</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-[var(--audit-text-tertiary)] mb-1.5">凭证号</label>
+                            <div class="flex items-center gap-1.5">
+                                <input type="text" placeholder="从" class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors" />
+                                <span class="text-[var(--audit-text-tertiary)]">至</span>
+                                <input type="text" placeholder="到" class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-[var(--audit-text-tertiary)] mb-1.5">制单人</label>
+                            <select class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors appearance-none cursor-pointer">
+                                <option>全部</option>
+                                <option>张敏</option>
+                                <option>李敏</option>
+                                <option>王磊</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[12px] text-[var(--audit-text-tertiary)] mb-1.5">审核状态</label>
+                            <select class="w-full px-2.5 py-1.5 text-[13px] border border-[var(--audit-border)] rounded-md bg-white focus:outline-none focus:border-[var(--audit-brand)] focus:ring-1 focus:ring-[var(--audit-brand)]/20 transition-colors appearance-none cursor-pointer">
+                                <option>全部</option>
+                                <option>已审核</option>
+                                <option>未审核</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="flex-1 px-3 py-1.5 rounded-md bg-[var(--audit-brand)] text-white text-[13px] hover:bg-[var(--audit-brand-hover)] transition-colors">查询</button>
+                            <button class="flex-1 px-3 py-1.5 rounded-md border border-[var(--audit-border)] bg-white text-[13px] text-[var(--audit-text-secondary)] hover:bg-[var(--audit-surface-subtle)] transition-colors">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 凭证统计指标行 -->
+                <div class="grid grid-cols-4 gap-4 mb-4">
+                    <div class="bg-white border border-[var(--audit-border)] rounded-md p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-[12px] text-[var(--audit-text-tertiary)] mb-1">凭证总数</div>
+                                <div class="text-[22px] font-semibold text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">86 <span class="text-[13px] font-normal text-[var(--audit-text-tertiary)]">张</span></div>
+                            </div>
+                            <div class="w-9 h-9 rounded-md bg-[var(--audit-brand-subtle)] flex items-center justify-center text-[var(--audit-brand)]">
+                                <svg class="icon icon--md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 16H8" /> <path d="M14 8H8" /> <path d="M16 12H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-[var(--audit-border)] rounded-md p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-[12px] text-[var(--audit-text-tertiary)] mb-1">已审核</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-[22px] font-semibold text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">72 <span class="text-[13px] font-normal text-[var(--audit-text-tertiary)]">张</span></div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                </div>
+                            </div>
+                            <div class="w-9 h-9 rounded-md bg-[var(--audit-success-subtle)] flex items-center justify-center text-[var(--audit-success)]">
+                                <svg class="icon icon--md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-[var(--audit-border)] rounded-md p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-[12px] text-[var(--audit-text-tertiary)] mb-1">未审核</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-[22px] font-semibold text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">14 <span class="text-[13px] font-normal text-[var(--audit-text-tertiary)]">张</span></div>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-warning-subtle)] text-[var(--audit-warning-foreground)]">未审核</span>
+                                </div>
+                            </div>
+                            <div class="w-9 h-9 rounded-md bg-[var(--audit-warning-subtle)] flex items-center justify-center text-[var(--audit-warning)]">
+                                <svg class="icon icon--md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-[var(--audit-border)] rounded-md p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-[12px] text-[var(--audit-text-tertiary)] mb-1">借方合计</div>
+                                <div class="text-[22px] font-semibold text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">¥ 5,682,450.00</div>
+                            </div>
+                            <div class="w-9 h-9 rounded-md bg-[var(--audit-brand-subtle)] flex items-center justify-center text-[var(--audit-brand)]">
+                                <svg class="icon icon--md" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6" /> <path d="m22 7-8.5 8.5-5-5L2 17" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 凭证序时簿主数据表 -->
+                <div class="bg-white border border-[var(--audit-border)] rounded-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table id="voucher-journal-table" class="w-full text-[13px]" style="border-collapse: collapse;">
+                            <thead>
+                                <tr style="height: 36px; background: var(--audit-surface-muted); position: sticky; top: 0; z-index: 1;">
+                                    <th class="text-left font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 90px;">日期</th>
+                                    <th class="text-left font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 80px;">凭证号</th>
+                                    <th class="text-left font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 200px;">摘要</th>
+                                    <th class="text-left font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 220px;">科目</th>
+                                    <th class="text-right font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 130px;">借方金额</th>
+                                    <th class="text-right font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 130px;">贷方金额</th>
+                                    <th class="text-left font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 70px;">制单人</th>
+                                    <th class="text-center font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 80px;">审核状态</th>
+                                    <th class="text-center font-medium text-[var(--audit-text-secondary)] px-3 border-b border-[var(--audit-border)]" style="width: 100px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 凭证1: 记-0003 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-02</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0003</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">收到华瑞公司货款</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">银行存款-工行</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">350,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">张敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-华瑞公司</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">350,000.00</td>
+                                </tr>
+                                <!-- 凭证2: 记-0005 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-03</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0005</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">支付办公费</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">管理费用-办公费</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">8,500.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">李敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">银行存款-工行</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">8,500.00</td>
+                                </tr>
+                                <!-- 凭证3: 记-0012 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-05</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0012</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">销售星辰A产品</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-天盛公司</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">580,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">王磊</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">主营业务收入</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">580,000.00</td>
+                                </tr>
+                                <!-- 凭证4: 记-0025 未审核 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-08</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0025</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">收到天盛公司回款</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">银行存款-工行</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">280,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">张敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-warning-subtle)] text-[var(--audit-warning-foreground)]">未审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-天盛公司</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">280,000.00</td>
+                                </tr>
+                                <!-- 凭证5: 记-0032 计提工资 3条分录 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">2024-12-10</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">记-0032</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="3">计提工资</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">管理费用-工资</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">120,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">李敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="3">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">销售费用-工资</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">85,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                </tr>
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应付职工薪酬</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">205,000.00</td>
+                                </tr>
+                                <!-- 凭证6: 记-0041 -->
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-12</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0041</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">销售B产品</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-恒信集团</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">720,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">王磊</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">主营业务收入</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">720,000.00</td>
+                                </tr>
+                                <!-- 凭证7: 记-0058 未审核 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-15</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0058</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">收到恒信货款</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">银行存款-工行</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">350,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">张敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-warning-subtle)] text-[var(--audit-warning-foreground)]">未审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-恒信集团</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">350,000.00</td>
+                                </tr>
+                                <!-- 凭证8: 记-0065 采购原材料 3条分录 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">2024-12-18</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">记-0065</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="3">采购原材料</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">原材料-A材料</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">280,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="3">李敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="3">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="3">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应交税费-进项税额</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">36,400.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                </tr>
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应付账款-供应商</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">316,400.00</td>
+                                </tr>
+                                <!-- 凭证9: 记-0076 赊销C产品 未审核 -->
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-20</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0076</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">赊销C产品</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">应收账款-华瑞公司</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">520,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">王磊</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-warning-subtle)] text-[var(--audit-warning-foreground)]">未审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">主营业务收入</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">520,000.00</td>
+                                </tr>
+                                <!-- 凭证10: 记-0088 支付房租 -->
+                                <tr style="height: 32px;">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">2024-12-25</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">记-0088</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text)]" rowspan="2">支付房租</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">管理费用-房租</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">45,000.00</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]" rowspan="2">李敏</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--audit-success-subtle)] text-[var(--audit-success-foreground)]">已审核</span>
+                                    </td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-center" rowspan="2">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-brand)] hover:bg-[var(--audit-brand-subtle)] transition-colors" title="查看">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-success)] hover:bg-[var(--audit-success-subtle)] transition-colors" title="审核">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></svg>
+                                            </button>
+                                            <button class="p-1 rounded text-[var(--audit-text-tertiary)] hover:text-[var(--audit-error)] hover:bg-[var(--audit-error-subtle)] transition-colors" title="作废">
+                                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 32px; background: var(--audit-surface-muted);">
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-[var(--audit-text-secondary)]">银行存款-工行</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text-tertiary)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">-</td>
+                                    <td class="px-3 border-b border-[var(--audit-border-subtle)] text-right text-[var(--audit-text)]" style="font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums;">45,000.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 分页器 -->
+                    <div class="flex items-center justify-between px-4 py-2.5 border-t border-[var(--audit-border)] bg-white">
+                        <div class="text-[12px] text-[var(--audit-text-tertiary)]">
+                            共 <span class="text-[var(--audit-text-secondary)] font-medium">86</span> 张凭证 / <span class="text-[var(--audit-text-secondary)] font-medium">258</span> 条分录
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-tertiary)] hover:bg-[var(--audit-surface-subtle)] hover:text-[var(--audit-text)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                            </button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-[var(--audit-brand)] text-white text-[12px] font-medium">1</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] text-[12px] hover:bg-[var(--audit-surface-subtle)] transition-colors">2</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] text-[12px] hover:bg-[var(--audit-surface-subtle)] transition-colors">3</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] text-[12px] hover:bg-[var(--audit-surface-subtle)] transition-colors">4</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] text-[12px] hover:bg-[var(--audit-surface-subtle)] transition-colors">5</button>
+                            <span class="px-1 text-[var(--audit-text-tertiary)]">...</span>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] text-[12px] hover:bg-[var(--audit-surface-subtle)] transition-colors">13</button>
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md border border-[var(--audit-border)] text-[var(--audit-text-secondary)] hover:bg-[var(--audit-surface-subtle)] hover:text-[var(--audit-text)] transition-colors">
+                                <svg class="icon icon--sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                            </button>
+                            <div class="h-4 w-px bg-[var(--audit-border)] mx-1"></div>
+                            <select class="h-7 px-2 text-[12px] border border-[var(--audit-border)] rounded-md bg-white text-[var(--audit-text-secondary)] focus:outline-none cursor-pointer appearance-none">
+                                <option>20条/页</option>
+                                <option>50条/页</option>
+                                <option>100条/页</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 底部状态栏 -->
+            <footer class="flex items-center justify-between px-5 border-t border-[var(--audit-border)] bg-white" style="height: var(--audit-statusbar-height);">
+                <div class="flex items-center gap-4 text-[11px] text-[var(--audit-text-tertiary)]">
+                    <span class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--audit-success)]"></span>
+                        账套已连接
+                    </span>
+                    <span>数据更新于 2024-12-31 23:59</span>
+                </div>
+                <div class="flex items-center gap-4 text-[11px] text-[var(--audit-text-tertiary)]">
+                    <span>AuditAI v2.4.1</span>
+                    <span>第 1 页 / 共 13 页</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>

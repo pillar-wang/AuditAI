@@ -7,7 +7,7 @@ public class AppCommandTicketBorderRight : AppCommandButton
 {
 	public override string Text => " 右边框 ";
 
-	public override Image LargeIcon => Resources.TicketBorderRight;
+	public override Image LargeIcon => IconRes.TicketBorderRight;
 
 	protected override void Clicked()
 	{

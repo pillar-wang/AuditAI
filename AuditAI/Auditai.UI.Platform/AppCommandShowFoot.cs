@@ -8,7 +8,7 @@ public class AppCommandShowFoot : AppCommandToggleButton
 {
 	public override string Text => "表底签名";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.TableFoot;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.TableFoot;
 
 	protected override string Tooltip => TipResource.显示设置菜单_表底尾注;
 

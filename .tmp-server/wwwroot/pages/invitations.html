@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邀请管理 - AuditAI 管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="content-body">
+        <div class="page-header">
+            <div>
+                <div class="page-title">邀请管理</div>
+                <div class="text-gray mt-8">管理所有待接受的团队邀请</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>团队名</th>
+                            <th>邀请人</th>
+                            <th>被邀请邮箱</th>
+                            <th>被邀请手机</th>
+                            <th>角色</th>
+                            <th>到期时间</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invitationBody">
+                        <tr>
+                            <td colspan="10" class="text-center text-gray">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="pagination"></div>
+        </div>
+    </div>
+
+    <script src="/js/common.js?v=20260703b"></script>
+    <script src="/js/invitations.js"></script>
+</body>
+</html>

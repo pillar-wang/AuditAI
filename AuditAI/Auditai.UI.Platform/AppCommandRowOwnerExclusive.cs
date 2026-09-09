@@ -7,7 +7,7 @@ public class AppCommandRowOwnerExclusive : AppCommandToggleButton
 {
 	public override string Text => "增行独占编辑保护";
 
-	public override Image LargeIcon => Resources.RowOwnerExclusive;
+	public override Image LargeIcon => IconRes.RowOwnerExclusive;
 
 	protected override void Pressed()
 	{

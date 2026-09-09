@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -178,7 +178,7 @@ public class frmAuxEdit : Form
 		btnCancle.ForeColor = Color.FromArgb(30, 41, 59);
 		btnCancle.FlatStyle = FlatStyle.Flat;
 		btnCancle.FlatAppearance.BorderSize = 1;
-		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
 	}
 
 	private TextBoxBase ActiveTextBox()
@@ -318,7 +318,7 @@ public class frmAuxEdit : Form
 
 	private void CmdOtherFunc_Click(object sender, ClickEventArgs e)
 	{
-		ctxOtherFunc.ShowContextMenu(tbrFunctions, tbrFunctions.PointToClient(Cursor.Position));
+		NativeMenuShim.Show(ctxOtherFunc, tbrFunctions, tbrFunctions.PointToClient(Cursor.Position));
 	}
 
 	private void CmdPaste_Click(object sender, ClickEventArgs e)
@@ -521,9 +521,9 @@ public class frmAuxEdit : Form
 		ctx3.CommandLinks.Add(lnkPaste3);
 		ctx3.CommandLinks.Add(lnkInsertVariable3);
 
-		c1CommandHolder1.SetC1ContextMenu(rtbDropInput, ctx1);
-		c1CommandHolder1.SetC1ContextMenu(txbCommentInput, ctx2);
-		c1CommandHolder1.SetC1ContextMenu(txbDefaultInput, ctx3);
+		NativeMenuShim.Wire(rtbDropInput, ctx1);
+		NativeMenuShim.Wire(txbCommentInput, ctx2);
+		NativeMenuShim.Wire(txbDefaultInput, ctx3);
 		AttachEvent();
 		Shown += FrmAuxEdit_Shown;
 		FormClosing += FrmAuxEdit_FormClosing;
@@ -639,7 +639,7 @@ public class frmAuxEdit : Form
 		ctnDock.CollapsingAreaColor = Color.FromArgb(221, 231, 238);
 		ctnDock.Dock = DockStyle.Fill;
 		// 统一设计语言：固定线由旧深蓝改为浅灰
-		ctnDock.FixedLineColor = Color.FromArgb(208, 215, 222);
+		ctnDock.FixedLineColor = Color.FromArgb(229, 231, 235);
 		// 统一设计语言：前景文字由旧深蓝改为深灰蓝
 		ctnDock.ForeColor = Color.FromArgb(30, 41, 59);
 		ctnDock.HeaderHeight = 27;
@@ -650,7 +650,7 @@ public class frmAuxEdit : Form
 		ctnDock.Panels.Add(pnlInputBox);
 		ctnDock.Size = new Size(1030, 740);
 		// 统一设计语言：分隔条颜色同步为浅灰
-		ctnDock.SplitterColor = Color.FromArgb(208, 215, 222);
+		ctnDock.SplitterColor = Color.FromArgb(229, 231, 235);
 		ctnDock.SplitterWidth = 0;
 		ctnDock.TabIndex = 1;
 		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
@@ -677,12 +677,12 @@ public class frmAuxEdit : Form
 		btnCancle.Text = "取消";
 		btnCancle.FlatStyle = FlatStyle.Flat;
 		btnCancle.FlatAppearance.BorderSize = 1;
-		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnCancle.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
 		btnCancle.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
 		btnCancle.ForeColor = Color.FromArgb(30, 41, 59);
 		btnCancle.BackColor = Color.White;
 		btnCancle.UseVisualStyleBackColor = false;
-		btnCancle.Font = new Font("Noto Sans SC", 9.5f);
+		btnCancle.Font = new Font("微软雅黑", 9.5f);
 		btnCancle.Click += btnCancle_Click;
 
 		// 统一设计语言：主按钮（品牌蓝底白字、无边框），高度 40 与取消按钮对齐
@@ -700,7 +700,7 @@ public class frmAuxEdit : Form
 		btnConfirm.ForeColor = Color.White;
 		btnConfirm.BackColor = AuditTheme.Brand;
 		btnConfirm.UseVisualStyleBackColor = false;
-		btnConfirm.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
+		btnConfirm.Font = new Font("微软雅黑", 9.5f, FontStyle.Bold);
 		btnConfirm.Click += btnConfirm_Click;
 
 		pnlInputBox.Controls.Add(DockingTab);
@@ -737,7 +737,7 @@ public class frmAuxEdit : Form
 		tabDropList.Text = "下拉列表";
 
 		ctnDropInput.AutoSizeElement = AutoSizeElement.Both;
-		ctnDropInput.BackColor = Color.FromArgb(240, 240, 240);
+		ctnDropInput.BackColor = Color.FromArgb(243, 244, 246);
 		ctnDropInput.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		ctnDropInput.Dock = DockStyle.Fill;
 		ctnDropInput.ForeColor = Color.FromArgb(0, 0, 0);
@@ -853,7 +853,7 @@ public class frmAuxEdit : Form
 		tabEdit.Text = "编辑注释";
 
 		ctnCommentInput.AutoSizeElement = AutoSizeElement.Both;
-		ctnCommentInput.BackColor = Color.FromArgb(240, 240, 240);
+		ctnCommentInput.BackColor = Color.FromArgb(243, 244, 246);
 		ctnCommentInput.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		ctnCommentInput.Dock = DockStyle.Fill;
 		ctnCommentInput.ForeColor = Color.FromArgb(0, 0, 0);
@@ -890,7 +890,7 @@ public class frmAuxEdit : Form
 		tabDefault.Text = "默认内容";
 
 		ctnDefaultInput.AutoSizeElement = AutoSizeElement.Both;
-		ctnDefaultInput.BackColor = Color.FromArgb(240, 240, 240);
+		ctnDefaultInput.BackColor = Color.FromArgb(243, 244, 246);
 		ctnDefaultInput.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		ctnDefaultInput.Dock = DockStyle.Fill;
 		ctnDefaultInput.ForeColor = Color.FromArgb(0, 0, 0);
@@ -923,7 +923,7 @@ public class frmAuxEdit : Form
 		AutoScaleMode = AutoScaleMode.Font;
 		ClientSize = new Size(1030, 740);
 		Controls.Add(ctnDock);
-		Font = new Font("Noto Sans SC", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		Margin = new Padding(4, 5, 4, 5);
 		Name = "frmAuxEdit";
 		ShowInTaskbar = false;

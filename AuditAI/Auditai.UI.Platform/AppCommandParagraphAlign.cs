@@ -7,7 +7,7 @@ public class AppCommandParagraphAlign : AppCommandMenu
 {
 	public override string Text => "段落对齐";
 
-	public override Image LargeImage => Resources.Align;
+	public override Image LargeImage => IconRes.Align;
 
 	public AppCommandParagraphAlign()
 		: base(new AppCommandBase[4]

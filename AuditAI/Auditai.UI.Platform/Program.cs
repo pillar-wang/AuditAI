@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -94,8 +94,20 @@ internal static class Program
 		}
 		catch { /* 旧系统不支持，忽略 */ }
 
+		// 高 DPI 下按键系统 DPI 扩大图标位图生成分辨率，避免固定逻辑像素位图被拉伸而模糊
+		try
+		{
+			using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+			{
+				Auditai.UI.Controls.IconLibrary.DpiScale = Math.Max(1f, g.DpiX / 96f);
+			}
+		}
+		catch { /* 读取 DPI 失败时保持默认 1f */ }
+
 		Application.EnableVisualStyles();
-		Application.SetCompatibleTextRenderingDefault(defaultValue: true);
+		// 必须用 false（GDI/TextRenderer/ClearType 渲染），true 会启用 GDI+ 兼容渲染，
+		// 在高 DPI（PerMonitorV2）下文字发虚模糊
+		Application.SetCompatibleTextRenderingDefault(defaultValue: false);
 
 		// ★ 全局异常钩子必须尽早注册（早于 StorageRouter.Initialize 等可能失败的初始化），
 		// 确保启动序列异常也能被记录日志并执行数据库 WAL checkpoint
@@ -113,6 +125,8 @@ internal static class Program
 		// ★ 新增：初始化本地存储（必须在 StartAuditaiPlatform 之前）
 		try
 		{
+			// Server 模式下启用云端同步（Syncer 默认 Disabled=true，解耦自 StorageRouter）
+			Auditai.LocalDataStore.StorageRouter.OnServerModeActivated = () => Auditai.Model.Syncer.Disabled = false;
 			Auditai.LocalDataStore.StorageRouter.Initialize();
 		}
 		catch (Exception ex)
@@ -201,17 +215,17 @@ internal static class Program
 		UserSet.Config.TableStyle.TitleStyle.FontSize = 14f;
 		UserSet.Config.TableStyle.TitleStyle.Bold = true;
 		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.FromArgb(49, 133, 156);
-		UserSet.Config.TableStyle.TitleStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.TitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.SubTitleHeight = 30;
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = 10.5f;
 		UserSet.Config.TableStyle.SubTitleStyle.Bold = false;
 		UserSet.Config.TableStyle.SubTitleStyle.FontColor = Color.FromArgb(64, 64, 64);
-		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.TableRowHeight = 30;
 		UserSet.Config.TableStyle.FontStyle.FontSize = 10.5f;
 		UserSet.Config.TableStyle.FontStyle.Bold = false;
 		UserSet.Config.TableStyle.FontStyle.FontColor = Color.FromArgb(64, 64, 64);
-		UserSet.Config.TableStyle.FontStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.FontStyle.FontFamily = "微软雅黑";
 	}
 
 	private static void InitDefaultUserSet_ReportPlatform()
@@ -220,17 +234,17 @@ internal static class Program
 		UserSet.Config.TableStyle.TitleStyle.FontSize = 14f;
 		UserSet.Config.TableStyle.TitleStyle.Bold = true;
 		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.FromArgb(0, 102, 0);
-		UserSet.Config.TableStyle.TitleStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.TitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.SubTitleHeight = 30;
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = 10.5f;
 		UserSet.Config.TableStyle.SubTitleStyle.Bold = false;
 		UserSet.Config.TableStyle.SubTitleStyle.FontColor = Color.FromArgb(64, 64, 64);
-		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.TableRowHeight = 30;
 		UserSet.Config.TableStyle.FontStyle.FontSize = 10.5f;
 		UserSet.Config.TableStyle.FontStyle.Bold = false;
 		UserSet.Config.TableStyle.FontStyle.FontColor = Color.FromArgb(64, 64, 64);
-		UserSet.Config.TableStyle.FontStyle.FontFamily = "Noto Sans SC";
+		UserSet.Config.TableStyle.FontStyle.FontFamily = "微软雅黑";
 	}
 
 	private static Color GetClientCustomizeOptionValue_Color(ClientCustomizeData setting, string optionId, Color defaultValue)
@@ -246,17 +260,17 @@ internal static class Program
 		UserSet.Config.TableStyle.TitleStyle.FontSize = current.GetOptionValueInSettingIniFile_Float("TableStyle_TitleStyle_FontSize", 14f);
 		UserSet.Config.TableStyle.TitleStyle.Bold = current.GetOptionValueInSettingIniFile_Bool("TableStyle_TitleStyle_Bold", defaultValue: true);
 		UserSet.Config.TableStyle.TitleStyle.FontColor = GetClientCustomizeOptionValue_Color(current, "TableStyle_TitleStyle_FontColor", Color.FromArgb(0, 102, 0));
-		UserSet.Config.TableStyle.TitleStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_TitleStyle_FontFamily", "Noto Sans SC");
+		UserSet.Config.TableStyle.TitleStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_TitleStyle_FontFamily", "微软雅黑");
 		UserSet.Config.TableStyle.SubTitleHeight = current.GetOptionValueInSettingIniFile_Int("TableStyle_SubTitleHeight ", 30);
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = current.GetOptionValueInSettingIniFile_Float("TableStyle_SubTitleStyle_FontSize", 10.5f);
 		UserSet.Config.TableStyle.SubTitleStyle.Bold = current.GetOptionValueInSettingIniFile_Bool("TableStyle_SubTitleStyle_Bold", defaultValue: false);
 		UserSet.Config.TableStyle.SubTitleStyle.FontColor = GetClientCustomizeOptionValue_Color(current, "TableStyle_SubTitleStyle_FontColor", Color.FromArgb(64, 64, 64));
-		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_SubTitleStyle_FontFamily", "Noto Sans SC");
+		UserSet.Config.TableStyle.SubTitleStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_SubTitleStyle_FontFamily", "微软雅黑");
 		UserSet.Config.TableStyle.TableRowHeight = current.GetOptionValueInSettingIniFile_Int("TableStyle_TableRowHeight", 30);
 		UserSet.Config.TableStyle.FontStyle.FontSize = current.GetOptionValueInSettingIniFile_Float("TableStyle_FontStyle_FontSize", 10.5f);
 		UserSet.Config.TableStyle.FontStyle.Bold = current.GetOptionValueInSettingIniFile_Bool("TableStyle_FontStyle_Bold", defaultValue: false);
 		UserSet.Config.TableStyle.FontStyle.FontColor = GetClientCustomizeOptionValue_Color(current, "TableStyle_FontStyle_FontColor", Color.FromArgb(64, 64, 64));
-		UserSet.Config.TableStyle.FontStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_FontStyle_FontFamily", "Noto Sans SC");
+		UserSet.Config.TableStyle.FontStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_FontStyle_FontFamily", "微软雅黑");
 	}
 
 	public static int GetCurrentPlatformSupporterTeamType()
@@ -310,7 +324,7 @@ internal static class Program
 					if (isExpired && !inGracePeriod)
 					{
 						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
-							$"尊敬的用户：\r\n您的许可证已过期，无法继续使用。\r\n请联系管理员续费或激活新的许可证。\r\n客服电话：400-690-6500");
+							$"尊敬的用户：\r\n您的许可证已过期，无法继续使用。\r\n请联系管理员续费或激活新的许可证。");
 						ApplicationExit();
 						return;
 					}
@@ -318,7 +332,7 @@ internal static class Program
 					if (daysRemaining > 0 && daysRemaining <= 30)
 					{
 						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
-							$"尊敬的用户：\r\n您的许可证将于 {daysRemaining} 天后到期，建议您及时续费。\r\n客服电话：400-690-6500");
+							$"尊敬的用户：\r\n您的许可证将于 {daysRemaining} 天后到期，建议您及时续费。");
 					}
 				}
 			}
@@ -340,11 +354,11 @@ internal static class Program
 					double totalDays = (UserTeam.Current.LicenseDate - DateTime.Now).TotalDays;
 					if (totalDays < 0.0)
 					{
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无法新建及同步{StringConstBase.Current.Project}，您可致电官方客服电话：400-690-6500，联系购买或续期！");
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，无法新建及同步{StringConstBase.Current.Project}，请联系管理员购买或续期！");
 					}
 					else if (totalDays < 30.0)
 					{
-						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品将于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，建议您致电官方客服电话：400-690-6500，联系购买或续期！");
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品将于{UserTeam.Current.LicenseDate:yyyy年MM月dd日}到期，建议您及时联系管理员购买或续期！");
 					}
 				}
 				int type = UserTeam.Current.Type;
@@ -468,6 +482,8 @@ internal static class Program
 			return;
 		}
 		HasLoggedOut = true;
+		// 清理审批只读会话标志，避免重登后误将同名项目判定为只读
+		Auditai.UI.Platform.ReviewSession.End();
 		// 通知服务端清理会话，并停止 SignalR 长连接。
 		// 网络异常不阻塞退出流程（最坏情况是服务端保留脏会话，由其超时清理）。
 		try
@@ -974,7 +990,7 @@ internal static class Program
 			}
 			if (string.IsNullOrEmpty(text))
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前客户端已不支持该类型的组织，请致电官方客服电话：400-690-6500 进行处理。");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "当前客户端已不支持该类型的组织，请联系管理员进行处理。");
 				return;
 			}
 		}
@@ -1417,6 +1433,13 @@ internal static class Program
 		if (url.Contains("LedgerValidateDic"))
 		{
 			var result = await Auditai.LocalDataStore.StorageRouter.GetLedgerValidateDic();
+			jsonBytes = Encoding.UTF8.GetBytes(result.ToString());
+			return new MemoryStream(jsonBytes);
+		}
+		if (url.Contains("StandardAccountDic"))
+		{
+			// 标准科目字典（Server 分支失败/未部署时由 StorageRouter 自动回退本地 config 文件）
+			var result = await Auditai.LocalDataStore.StorageRouter.GetStandardAccountDic();
 			jsonBytes = Encoding.UTF8.GetBytes(result.ToString());
 			return new MemoryStream(jsonBytes);
 		}

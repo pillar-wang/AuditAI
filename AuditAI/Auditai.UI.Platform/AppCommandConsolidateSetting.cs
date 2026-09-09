@@ -10,7 +10,7 @@ public class AppCommandConsolidateSetting : AppCommandButton
 {
 	public override string Text => "合并报表设置";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ConsolidateSettings;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ConsolidateSettings;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

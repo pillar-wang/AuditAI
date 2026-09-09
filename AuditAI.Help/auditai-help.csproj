@@ -24,9 +24,7 @@
     <Reference Include="C1.Win.C1Ribbon.4">
       <HintPath>..\Libs\C1.Win.C1Ribbon.4.dll</HintPath>
     </Reference>
-    <Reference Include="CommonControls">
-      <HintPath>..\Libs\CommonControls.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\CommonControls\CommonControls.csproj" />
     <Reference Include="PdfiumViewer">
       <HintPath>..\Libs\PdfiumViewer.dll</HintPath>
     </Reference>

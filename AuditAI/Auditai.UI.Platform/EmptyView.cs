@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -23,8 +23,7 @@ public static class EmptyView
 		C1SplitterPanel c1SplitterPanel = new C1SplitterPanel
 		{
 			SizeRatio = 100.0,
-			BackgroundImageLayout = ImageLayout.Stretch,
-			BackgroundImage = Resources.contactback,
+			BackColor = Color.FromArgb(247, 250, 253),
 			DoubleBuffered = true
 		};
 		_sl = new C1SuperLabel
@@ -37,36 +36,13 @@ public static class EmptyView
 		View.Panels.Add(c1SplitterPanel);
 	}
 
-	public static void SetQQ()
+	public static void SetWelcome()
 	{
-		AppEditionBase currentEdition = Program.MainForm.CurrentEdition;
-		string html;
-		if (Program.ClientPlatformType == PlatformType.AuditPlatform)
-		{
-			html = GetHtml("852569234");
-		}
-		else if (Program.ClientPlatformType == PlatformType.EnterpriseReportPlatform)
-		{
-			html = GetHtml("1030358605");
-		}
-		else if (Program.ClientPlatformType == PlatformType.TableDevelopPlatform)
-		{
-			html = GetHtml("858176000");
-		}
-		else if (Program.ClientPlatformType == PlatformType.Custom)
-		{
-			string optionValueInSettingIniFile_String = ClientCustomizeData.Current.GetOptionValueInSettingIniFile_String("qq_number", "858176000");
-			html = GetHtml(optionValueInSettingIniFile_String);
-		}
-		else
-		{
-			html = GetHtml("858176000");
-		}
-		_sl.Text = html;
+		_sl.Text = GetHtml();
 	}
 
-	private static string GetHtml(string qq)
+	private static string GetHtml()
 	{
-		return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n<html>\r\n<head><tidtle></title></head>\r\n<body>\r\n<span style=\"height:80px;\"></span>\r\n<p align = 'center' style = \"color:#484848;font: bold 18px Noto Sans SC\" > 保持沟通，享受更好服务 </ p >\r\n<p align = 'center' style = \"color:#909090;font: bold 15px Noto Sans SC\" > AuditAI 提供全程性服务，为您在使用上保驾护航 </ p >\r\n<p align = 'center' style = \"color:#9c9c9c;font: bold 12px Noto Sans SC\" > 官方qq群：" + qq + " </ p >\r\n</body>\r\n</html>";
+		return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n<html>\r\n<head><title></title></head>\r\n<body>\r\n<span style=\"height:80px;\"></span>\r\n<p align = 'center' style = \"color:#909090;font: bold 15px '微软雅黑'\" > AuditAI 提供全程性服务，为您在使用上保驾护航 </ p >\r\n</body>\r\n</html>";
 	}
 }

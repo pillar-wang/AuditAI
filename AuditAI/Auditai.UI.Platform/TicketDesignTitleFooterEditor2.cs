@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -71,12 +71,6 @@ public class TicketDesignTitleFooterEditor2
 	private static readonly HatchBrush _brush = new HatchBrush(HatchStyle.BackwardDiagonal, Color.Red, Color.Transparent);
 
 	private static readonly SolidBrush _brushText = new SolidBrush(Color.Black);
-
-	private static readonly StringFormat _sf = new StringFormat
-	{
-		Alignment = StringAlignment.Center,
-		LineAlignment = StringAlignment.Center
-	};
 
 	private static readonly Regex _rxCol = new Regex("\\[.*]");
 
@@ -154,16 +148,16 @@ public class TicketDesignTitleFooterEditor2
 		{
 			e.Visible = IsExistSelectedCell();
 		};
-		c1Command.Image = ContextResources.ctxInsertRow;
+		c1Command.Image = IconRes.ctxInsertRow;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command));
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = ((_editor_type == EditorType.Title) ? "新增标题行" : "新增表底行");
-		c1Command2.Image = ContextResources.ctxAppendRow;
+		c1Command2.Image = IconRes.ctxAppendRow;
 		c1Command2.Click += Cmd_Click_AppendRow;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command2));
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = ((_editor_type == EditorType.Title) ? "删除标题行" : "删除表底行");
-		c1Command3.Image = ContextResources.ctxDeleteRow;
+		c1Command3.Image = IconRes.ctxDeleteRow;
 		c1Command3.CommandStateQuery += Cmd_CommandStateQuery_DeleteRow;
 		c1Command3.Click += Cmd_Click_RemoveRows;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command3));
@@ -174,7 +168,7 @@ public class TicketDesignTitleFooterEditor2
 		{
 			e.Visible = IsExistSelectedCell();
 		};
-		c1Command4.Image = ContextResources.ctxInsertColumn;
+		c1Command4.Image = IconRes.ctxInsertColumn;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command4)
 		{
 			Delimiter = true
@@ -182,13 +176,13 @@ public class TicketDesignTitleFooterEditor2
 		C1Command c1Command5 = new C1Command();
 		c1Command5.Text = ((_editor_type == EditorType.Title) ? "新增标题列" : "新增表底列");
 		c1Command5.Click += Cmd_Click_AppendColumn;
-		c1Command5.Image = ContextResources.ctxAppendColumn;
+		c1Command5.Image = IconRes.ctxAppendColumn;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command5));
 		C1Command c1Command6 = new C1Command();
 		c1Command6.Text = ((_editor_type == EditorType.Title) ? "删除标题列" : "删除表底列");
 		c1Command6.Click += Cmd_Click_RemoveColumns;
 		c1Command6.CommandStateQuery += Cmd_CommandStateQuery_RemoveColumns;
-		c1Command6.Image = ContextResources.ctxDeleteColumn;
+		c1Command6.Image = IconRes.ctxDeleteColumn;
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command6));
 		C1Command c1Command7 = new C1Command();
 		c1Command7.Text = "设置行高...";
@@ -210,7 +204,7 @@ public class TicketDesignTitleFooterEditor2
 		};
 		C1Command c1Command9 = new C1Command();
 		c1Command9.Text = "复制";
-		c1Command9.Image = ContextResources.ctxCopy;
+		c1Command9.Image = IconRes.ctxCopy;
 		c1Command9.Click += _cmdCopy_Click;
 		c1Command9.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -222,7 +216,7 @@ public class TicketDesignTitleFooterEditor2
 		});
 		C1Command c1Command10 = new C1Command();
 		c1Command10.Text = "剪切";
-		c1Command10.Image = ContextResources.ctxCut;
+		c1Command10.Image = IconRes.ctxCut;
 		c1Command10.Click += _cmdCut_Click;
 		c1Command10.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -231,7 +225,7 @@ public class TicketDesignTitleFooterEditor2
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1Command10));
 		C1Command c1Command11 = new C1Command();
 		c1Command11.Text = "粘贴";
-		c1Command11.Image = ContextResources.ctxPaste;
+		c1Command11.Image = IconRes.ctxPaste;
 		c1Command11.Click += _cmdPaste_Click;
 		c1Command11.CommandStateQuery += delegate(object s, CommandStateQueryEventArgs e)
 		{
@@ -262,15 +256,15 @@ public class TicketDesignTitleFooterEditor2
 		{
 			e.Visible = IsExistSelectedCell();
 		};
-		AddAlignSubMenu(c1CommandMenu, "左上对齐", ContextResources.ctxAlignTopLeft, CellTextAlign.TopLeft);
-		AddAlignSubMenu(c1CommandMenu, "左中对齐", ContextResources.ctxAlignMiddleLeft, CellTextAlign.MiddleLeft);
-		AddAlignSubMenu(c1CommandMenu, "左下对齐", ContextResources.ctxAlignBottomLeft, CellTextAlign.BottomLeft);
-		AddAlignSubMenu(c1CommandMenu, "中上对齐", ContextResources.ctxAlignTopCenter, CellTextAlign.TopCenter);
-		AddAlignSubMenu(c1CommandMenu, "中中对齐", ContextResources.ctxAlignMiddleCenter, CellTextAlign.MiddleCenter);
-		AddAlignSubMenu(c1CommandMenu, "中下对齐", ContextResources.ctxAlignBottomCenter, CellTextAlign.BottomCenter);
-		AddAlignSubMenu(c1CommandMenu, "右上对齐", ContextResources.ctxAlignTopRight, CellTextAlign.TopRight);
-		AddAlignSubMenu(c1CommandMenu, "右中对齐", ContextResources.ctxAlignMiddleRight, CellTextAlign.MiddleRight);
-		AddAlignSubMenu(c1CommandMenu, "右下对齐", ContextResources.ctxAlignBottomRight, CellTextAlign.BottomRight);
+		AddAlignSubMenu(c1CommandMenu, "左上对齐", IconRes.ctxAlignTopLeft, CellTextAlign.TopLeft);
+		AddAlignSubMenu(c1CommandMenu, "左中对齐", IconRes.ctxAlignMiddleLeft, CellTextAlign.MiddleLeft);
+		AddAlignSubMenu(c1CommandMenu, "左下对齐", IconRes.ctxAlignBottomLeft, CellTextAlign.BottomLeft);
+		AddAlignSubMenu(c1CommandMenu, "中上对齐", IconRes.ctxAlignTopCenter, CellTextAlign.TopCenter);
+		AddAlignSubMenu(c1CommandMenu, "中中对齐", IconRes.ctxAlignMiddleCenter, CellTextAlign.MiddleCenter);
+		AddAlignSubMenu(c1CommandMenu, "中下对齐", IconRes.ctxAlignBottomCenter, CellTextAlign.BottomCenter);
+		AddAlignSubMenu(c1CommandMenu, "右上对齐", IconRes.ctxAlignTopRight, CellTextAlign.TopRight);
+		AddAlignSubMenu(c1CommandMenu, "右中对齐", IconRes.ctxAlignMiddleRight, CellTextAlign.MiddleRight);
+		AddAlignSubMenu(c1CommandMenu, "右下对齐", IconRes.ctxAlignBottomRight, CellTextAlign.BottomRight);
 		_ctxCell.CommandLinks.Add(new C1CommandLink(c1CommandMenu)
 		{
 			Delimiter = true
@@ -315,7 +309,7 @@ public class TicketDesignTitleFooterEditor2
 		c1CommandMenu2.CommandLinks.Add(new C1CommandLink(c1CommandMenu6));
 		_cmdField = new C1CommandMenu();
 		_cmdField.Text = "对应表格列";
-		_cmdField.Image = Resources.TicketSetField;
+		_cmdField.Image = IconRes.TicketSetField;
 		_cmdField.CommandStateQuery += Cmd_CommandStateQuery_Field;
 		_cmdField.CommandLinks.Add(new C1CommandLink());
 		_cmdField.Popup += Cmd_Popup_Field;
@@ -1854,7 +1848,7 @@ public class TicketDesignTitleFooterEditor2
 	{
 		if (e.Button == MouseButtons.Right)
 		{
-			_ctxCell.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(_ctxCell, _grid, e.Location);
 		}
 	}
 
@@ -2035,7 +2029,8 @@ public class TicketDesignTitleFooterEditor2
 					{
 						text = "[" + text + "]";
 					}
-					e.Graphics.DrawString(text, _grid.Font, _brushText, rectangle, _sf);
+					TextRenderer.DrawText(e.Graphics, text, _grid.Font, rectangle,
+						_brushText.Color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
 				}
 			}
 		}

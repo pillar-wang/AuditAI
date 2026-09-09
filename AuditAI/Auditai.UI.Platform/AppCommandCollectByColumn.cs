@@ -8,7 +8,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandCollectByColumn : AppCommandButton
 {
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.TableCollect;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.TableCollect;
 
 	public override string Text => "列对应采账设置";
 

@@ -1,4 +1,4 @@
-﻿﻿﻿using System.Drawing;
+﻿﻿using System.Drawing;
 using Auditai.UI.Platform.Properties;
 
 namespace Auditai.UI.Platform;
@@ -7,7 +7,7 @@ public class AppCommandUndo : AppCommandButton
 {
 	public override string Text => "撤销";
 
-	public override Image LargeIcon => Resources.Undo;
+	public override Image LargeIcon => IconRes.Undo;
 
 	protected override void Clicked()
 	{

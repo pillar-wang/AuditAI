@@ -35,8 +35,11 @@ public class ProjectExport
 		{
 			if (_fd.ShowDialog() == DialogResult.OK)
 			{
-				ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+				ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+				ProgressForm2 progressForm = new ProgressForm2();
+				progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 				{
+					IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 					ProgressChanged += progressDeal(progress);
 					try
 					{
@@ -46,10 +49,7 @@ public class ProjectExport
 					{
 						ProgressChanged -= progressDeal(progress);
 					}
-					return Task.FromResult(new object());
 				});
-				progressForm.ShowDialog();
-				await progressForm.Task;
 				return DialogResult.OK;
 			}
 			return DialogResult.Cancel;

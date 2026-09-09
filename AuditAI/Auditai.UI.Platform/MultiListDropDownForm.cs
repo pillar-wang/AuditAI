@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -81,7 +81,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("Noto Sans SC", 9f)
+				Font = new Font("微软雅黑", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -286,7 +286,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				_leaves.Add(n, node.Row.Index);
 				return;
 			}
-			node.Image = Resources.TreeListCollapsed;
+			node.Image = IconRes.TreeListCollapsed;
 			foreach (TreeListNode child in n.Children)
 			{
 				AddNode(node, child);
@@ -310,7 +310,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("Noto Sans SC", 9f)
+				Font = new Font("微软雅黑", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -583,7 +583,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
 				SelectionMode = SelectionModeEnum.Row,
-				Font = new Font("Noto Sans SC", 9f)
+				Font = new Font("微软雅黑", 9f)
 			};
 			Grid.Cols.Count = 0;
 			Grid.Cols.Fixed = 0;
@@ -774,7 +774,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
 				SelectionMode = SelectionModeEnum.Row,
-				Font = new Font("Noto Sans SC", 9f)
+				Font = new Font("微软雅黑", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -1013,7 +1013,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 				AllowMerging = AllowMergingEnum.None,
 				AllowMergingFixed = AllowMergingEnum.None,
 				AllowSorting = AllowSortingEnum.None,
-				Font = new Font("Noto Sans SC", 9f)
+				Font = new Font("微软雅黑", 9f)
 			};
 			Grid.Cols.Count = 1;
 			Grid.Cols.Fixed = 0;
@@ -1481,7 +1481,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 		{
 			Dock = DockStyle.Fill,
 			ShowScrollButtons = false,
-			Font = new Font("Noto Sans SC", 9f)
+			Font = new Font("微软雅黑", 9f)
 		};
 		View.SelectedPageChanged += View_SelectedPageChanged;
 		base.Form.Controls.Add(View);
@@ -1495,9 +1495,9 @@ public class MultiListDropDownForm : ListDropDownFormBase
 		}
 		foreach (C1OutPage page in View.Pages)
 		{
-			page.Image = GetThemedImage(Resources.OutPageCollapsed);
+			page.Image = GetThemedImage(IconRes.OutPageCollapsed);
 		}
-		View.SelectedPage.Image = GetThemedImage(Resources.OutPageExpanded);
+		View.SelectedPage.Image = GetThemedImage(IconRes.OutPageExpanded);
 		_currentPage = Pages[View.SelectedIndex];
 	}
 
@@ -1527,7 +1527,7 @@ public class MultiListDropDownForm : ListDropDownFormBase
 		{
 			Tuple<string, Operand> tuple = _op.MultiList[i];
 			C1OutPage c1OutPage = new C1OutPage();
-			c1OutPage.Image = GetThemedImage(Resources.OutPageCollapsed);
+			c1OutPage.Image = GetThemedImage(IconRes.OutPageCollapsed);
 			c1OutPage.Text = tuple.Item1;
 			MultiListPage multiListPage = CreatePageForOp(tuple.Item2);
 			multiListPage.Op = tuple.Item2;

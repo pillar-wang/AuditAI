@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -24,10 +24,10 @@ namespace Auditai.UI.Platform;
 public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一致
 {
     // 缓存的常用字体（避免重复创建 GDI 资源）
-    private static readonly Font _fontStepTitle = new Font("Noto Sans SC", 12f, FontStyle.Bold);
-    private static readonly Font _fontNormal = new Font("Noto Sans SC", 9f);
-    private static readonly Font _fontStatus = new Font("Noto Sans SC", 10f);
-    private static readonly Font _fontHint = new Font("Noto Sans SC", 8.5f);
+    private static readonly Font _fontStepTitle = new Font("微软雅黑", 12f, FontStyle.Bold);
+    private static readonly Font _fontNormal = new Font("微软雅黑", 9f);
+    private static readonly Font _fontStatus = new Font("微软雅黑", 10f);
+    private static readonly Font _fontHint = new Font("微软雅黑", 8.5f);
 
     private readonly Auditai.Model.Project _currentProject;
     private readonly CrossProjectDataRefStore _store;
@@ -190,12 +190,12 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _btnPrev = new C1Button { Text = "上一步", Location = new Point(10, 5), Size = new Size(110, 40) };
         _btnPrev.FlatStyle = FlatStyle.Flat;
         _btnPrev.FlatAppearance.BorderSize = 1;
-        _btnPrev.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+        _btnPrev.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
         _btnPrev.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
         _btnPrev.ForeColor = Color.FromArgb(30, 41, 59);
         _btnPrev.BackColor = Color.White;
         _btnPrev.UseVisualStyleBackColor = false;
-        _btnPrev.Font = new Font("Noto Sans SC", 9.5f);
+        _btnPrev.Font = new Font("微软雅黑", 9.5f);
         _btnPrev.Click += (s, e) => ShowStep(_currentStep - 1);
         // 统一设计语言：主按钮（品牌蓝底白字、无边框）
         _btnNext = new C1Button { Text = "下一步", Location = new Point(130, 5), Size = new Size(110, 40) };
@@ -206,7 +206,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _btnNext.ForeColor = Color.White;
         _btnNext.BackColor = AuditTheme.Brand;
         _btnNext.UseVisualStyleBackColor = false;
-        _btnNext.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
+        _btnNext.Font = new Font("微软雅黑", 9.5f, FontStyle.Bold);
         _btnNext.Click += (s, e) =>
         {
             // Step3/Step4 需要先验证选择再进入下一步
@@ -226,18 +226,18 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         _btnFinish.ForeColor = Color.White;
         _btnFinish.BackColor = AuditTheme.Brand;
         _btnFinish.UseVisualStyleBackColor = false;
-        _btnFinish.Font = new Font("Noto Sans SC", 9.5f, FontStyle.Bold);
+        _btnFinish.Font = new Font("微软雅黑", 9.5f, FontStyle.Bold);
         _btnFinish.Click += BtnFinish_Click;
         // 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框）
         _btnCancel = new C1Button { Text = "取消", Location = new Point(370, 5), Size = new Size(110, 40), DialogResult = DialogResult.Cancel };
         _btnCancel.FlatStyle = FlatStyle.Flat;
         _btnCancel.FlatAppearance.BorderSize = 1;
-        _btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+        _btnCancel.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
         _btnCancel.FlatAppearance.MouseOverBackColor = Color.FromArgb(241, 245, 249);
         _btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
         _btnCancel.BackColor = Color.White;
         _btnCancel.UseVisualStyleBackColor = false;
-        _btnCancel.Font = new Font("Noto Sans SC", 9.5f);
+        _btnCancel.Font = new Font("微软雅黑", 9.5f);
 
         _pnlButtons.Controls.AddRange(new Control[] { _btnPrev, _btnNext, _btnFinish, _btnCancel });
         this.Controls.Add(_pnlButtons);
@@ -486,7 +486,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 {
                     var groupNode = _gridTables.Rows.AddNode(0);
                     groupNode.Data = treeGroup.Name;
-                    groupNode.Image = ContextResources.TreeGroup;
+                    groupNode.Image = IconRes.TreeGroup;
 
                     foreach (var rootNode in treeGroup.RootNodes)
                     {
@@ -602,11 +602,11 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
     {
         if (treeNode is TreeTableNode tableNode)
         {
-            parentNode.AddNode(NodeTypeEnum.LastChild, tableNode.Number + " " + tableNode.Name, tableNode, Resources.TreeTable);
+            parentNode.AddNode(NodeTypeEnum.LastChild, tableNode.Number + " " + tableNode.Name, tableNode, IconRes.TreeTable);
         }
         else if (treeNode is TreeDirectoryNode dirNode)
         {
-            var childNode = parentNode.AddNode(NodeTypeEnum.LastChild, dirNode.Number + " " + dirNode.Name, dirNode, Resources.TreeDir);
+            var childNode = parentNode.AddNode(NodeTypeEnum.LastChild, dirNode.Number + " " + dirNode.Name, dirNode, IconRes.TreeDir);
             if (dirNode.Children != null)
             {
                 foreach (var child in dirNode.Children)
@@ -617,7 +617,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
         }
         else if (treeNode is TreeDocumentNode docNode)
         {
-            parentNode.AddNode(NodeTypeEnum.LastChild, docNode.Number + " " + docNode.Name, docNode, Resources.TreeDoc);
+            parentNode.AddNode(NodeTypeEnum.LastChild, docNode.Number + " " + docNode.Name, docNode, IconRes.TreeDoc);
         }
     }
 
@@ -1398,7 +1398,7 @@ public class frmCrossProjectRefConfigWizard : Form  // 与 frmTableCollect2 一�
                 Image1 = Program.MainForm.CurrentEdition?.ProjectTileIcon,
                 HorizontalSize = 5,
                 VerticalSize = 4,
-                BackColor = Color.FromArgb(248, 248, 248),
+                BackColor = Color.FromArgb(250, 251, 252),
                 Template = _projectTileTemplate,
                 Tag = proj.Id
             };

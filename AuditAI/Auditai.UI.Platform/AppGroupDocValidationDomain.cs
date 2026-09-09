@@ -11,7 +11,7 @@ public class AppGroupDocValidationDomain : AppCommandGroup
 {
 	public override string Text => "校验域";
 
-	public override Image Image => Resources.ValidationSettings;
+	public override Image Image => IconRes.ValidationSettings;
 
 	public AppGroupDocValidationDomain()
 	{

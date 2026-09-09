@@ -1,10 +1,10 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.Linq;
 using System.Windows.Forms;
+using Auditai.UI.Controls;
 
 namespace Auditai.UI.Platform;
 
@@ -22,6 +22,8 @@ public class SimpleCommand
 	private string _text;
 
 	private Image _image;
+
+	private string _iconName;
 
 	private bool _enabled = true;
 
@@ -56,6 +58,20 @@ public class SimpleCommand
 		set
 		{
 			_image = value;
+			Changed?.Invoke();
+		}
+	}
+
+	/// <summary>字体图标语义名（非空时优先生效，随主题色矢量渲染）。</summary>
+	public string IconName
+	{
+		get
+		{
+			return _iconName;
+		}
+		set
+		{
+			_iconName = value;
 			Changed?.Invoke();
 		}
 	}
@@ -101,6 +117,9 @@ public class SideCommandBar : UserControl
 
 		public Image Icon;
 
+		/// <summary>字体图标语义名（非空时优先生效）。</summary>
+		public string IconName;
+
 		public float Hover;
 	}
 
@@ -111,6 +130,9 @@ public class SideCommandBar : UserControl
 	private const int BarWidth = 200;
 
 	private const float AnimStep = 0.28f;
+
+	/// <summary>GDI 文本渲染格式（TextRenderer 走系统 GDI 通道，雅黑 hinting 下笔画更饱满清晰；左对齐与原 DrawString Near 一致）。</summary>
+	private const TextFormatFlags TextFlags = TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
 
 	/// <summary>按当前 DPI 缩放 96dpi 基准像素值（app.manifest 为 PerMonitorV2，需随 DPI 缩放自绘尺寸）。</summary>
 	private int S(int value)
@@ -139,15 +161,15 @@ public class SideCommandBar : UserControl
 
 	private bool _moduleNavVisible = true;
 
-	private Color _backColor = Color.FromArgb(232, 243, 251);
+	private Color _backColor = AuditTheme.SurfaceMuted;
 
-	private Color _hoverColor = Color.FromArgb(214, 234, 247);
+	private Color _hoverColor = Color.FromArgb(239, 246, 255);
 
-	private Color _selectedColor = Color.FromArgb(197, 224, 245);
+	private Color _selectedColor = Color.FromArgb(59, 130, 246);
 
-	private Color _textColor = Color.FromArgb(52, 64, 84);
+	private Color _textColor = Color.FromArgb(71, 85, 105);
 
-	private Color _separatorColor = Color.FromArgb(204, 222, 236);
+	private Color _separatorColor = Color.FromArgb(229, 231, 235);
 
 	private ModuleInfo CurrentModule => _selectedModule ?? _modules.FirstOrDefault();
 
@@ -176,7 +198,7 @@ public class SideCommandBar : UserControl
 	private void RecreateFonts()
 	{
 		_moduleFont?.Dispose();
-		_moduleFont = new Font("Noto Sans SC", S(13), GraphicsUnit.Pixel);
+		_moduleFont = new Font("微软雅黑", S(13), GraphicsUnit.Pixel);
 	}
 
 	private void UpdateDpi()
@@ -186,6 +208,8 @@ public class SideCommandBar : UserControl
 			return;
 		}
 		_dpi = DeviceDpi;
+		// 跨显示器拖动时按新 DPI 提升图标位图生成分辨率（取到过最大，保证任意屏位图足够清晰）
+		IconLibrary.DpiScale = Math.Max(IconLibrary.DpiScale, DeviceDpi / 96f);
 		int width = S(BarWidth);
 		if (Width != width)
 		{
@@ -214,6 +238,17 @@ public class SideCommandBar : UserControl
 	/// <summary>注册顶部模块导航项（如 TAB_PROJECT）。</summary>
 	public void RegisterModule(string name, string text, Image icon)
 	{
+		RegisterModule(name, text, icon, null);
+	}
+
+	/// <summary>注册模块导航项（字体图标语义名版本，矢量渲染不随 DPI 模糊）。</summary>
+	public void RegisterModule(string name, string text, string iconName)
+	{
+		RegisterModule(name, text, null, iconName);
+	}
+
+	private void RegisterModule(string name, string text, Image icon, string iconName)
+	{
 		if (_modules.Any((ModuleInfo m) => m.Name == name))
 		{
 			return;
@@ -222,7 +257,8 @@ public class SideCommandBar : UserControl
 		{
 			Name = name,
 			Text = text,
-			Icon = icon
+			Icon = icon,
+			IconName = iconName
 		});
 		if (_selectedModule == null)
 		{
@@ -287,7 +323,6 @@ public class SideCommandBar : UserControl
 		base.OnPaint(e);
 		Graphics g = e.Graphics;
 		g.SmoothingMode = SmoothingMode.AntiAlias;
-		g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 		_moduleRects.Clear();
 		g.Clear(_backColor);
 		int y = 0;
@@ -296,8 +331,16 @@ public class SideCommandBar : UserControl
 			Rectangle rect = new Rectangle(S(6), y + S(2), Width - S(12), ModuleItemHeight - S(4));
 			DrawItemBack(g, rect, m.Hover, m == _selectedModule);
 			Rectangle iconRect = new Rectangle(rect.X + S(10), y + (ModuleItemHeight - ModuleIconSize) / 2, ModuleIconSize, ModuleIconSize);
-			DrawIcon(g, m.Icon, iconRect);
-			DrawText(g, m.Text, _moduleFont, new Rectangle(rect.X + S(10) + ModuleIconSize + S(10), y, Width - rect.X * 2 - S(10) - ModuleIconSize - S(10), ModuleItemHeight), _textColor);
+			if (!string.IsNullOrEmpty(m.IconName))
+			{
+				DrawIconName(g, m.IconName, iconRect, m == _selectedModule);
+			}
+			else
+			{
+				DrawIcon(g, m.Icon, iconRect);
+			}
+			Color textColor = (m == _selectedModule) ? Color.White : _textColor;
+			DrawText(g, m.Text, _moduleFont, new Rectangle(rect.X + S(10) + ModuleIconSize + S(10), y, Width - rect.X * 2 - S(10) - ModuleIconSize - S(10), ModuleItemHeight), textColor);
 			_moduleRects.Add(Tuple.Create(m, rect));
 			y += ModuleItemHeight;
 		}
@@ -429,21 +472,20 @@ public class SideCommandBar : UserControl
 		g.InterpolationMode = mode;
 	}
 
+	private void DrawIconName(Graphics g, string iconName, Rectangle rect, bool selected)
+	{
+		// 选中项用白色（蓝色背景上），未选按图标语义色（IconPalette 13 色板）；实心渲染
+		Color color = selected ? Color.White : IconPalette.Get(iconName);
+		IconLibrary.DrawGlyph(g, iconName, rect, color, IconLibrary.StyleFill);
+	}
+
 	private void DrawText(Graphics g, string text, Font font, Rectangle rect, Color color)
 	{
 		if (string.IsNullOrEmpty(text))
 		{
 			return;
 		}
-		using SolidBrush brush = new SolidBrush(color);
-		using StringFormat format = new StringFormat
-		{
-			Alignment = StringAlignment.Near,
-			LineAlignment = StringAlignment.Center,
-			FormatFlags = StringFormatFlags.NoWrap,
-			Trimming = StringTrimming.EllipsisCharacter
-		};
-		g.DrawString(text, font, brush, rect, format);
+		TextRenderer.DrawText(g, text, font, rect, color, TextFlags);
 	}
 
 	private static GraphicsPath CreateRounded(Rectangle rect, int radius)

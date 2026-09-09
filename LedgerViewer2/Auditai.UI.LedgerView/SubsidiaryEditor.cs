@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -134,8 +134,6 @@ internal class SubsidiaryEditor : ISetTheme
 
 	private C1DockingTab SubDockingTab;
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private C1ToolBar toolBar = new C1ToolBar();
 
 	private C1SplitterPanel pnlSidebar;
@@ -248,7 +246,7 @@ internal class SubsidiaryEditor : ISetTheme
 		btnSubsidiaryBack.Image = Auditai.UI.LedgerView.Properties.Resources.back;
 		btnSubsidiaryBack.FlatStyle = FlatStyle.Flat;
 		btnSubsidiaryBack.FlatAppearance.BorderSize = 0;
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblSubsidiaryTitle.TextDetached = true;
 		lblSubsidiaryTitle.BorderStyle = BorderStyle.None;
 		lblSubsidiaryTitle.Dock = DockStyle.Fill;
@@ -264,7 +262,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiaryTitle.SizeRatio = 5.025;
 		pnlSubsidiaryTitle.Controls.Add(btnSubsidiaryBack);
 		pnlSubsidiaryTitle.Controls.Add(lblSubsidiaryTitle);
-		Font font2 = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblAccountName.TextDetached = true;
 		lblAccountName.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblAccountName.BorderStyle = BorderStyle.None;
@@ -358,12 +356,12 @@ internal class SubsidiaryEditor : ISetTheme
 		ctxSidebarTotalSummary.CommandLinks.Add(c1CommandLink5);
 		C1Command c1Command5 = new C1Command();
 		c1Command5.Text = "合计累计";
-		c1Command5.Image = Auditai.UI.LedgerView.Properties.Resources.sideTotalSummary;
+		c1Command5.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("sigma", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command5.Click += CmdTotalSummary_Click;
 		c1CommandLink.Command = c1Command5;
 		toolBar.CommandLinks.Add(c1CommandLink);
 		cmdSidebarDirectionChange.Text = "方向调整";
-		cmdSidebarDirectionChange.Image = Auditai.UI.LedgerView.Properties.Resources.sideDirectionChange;
+		cmdSidebarDirectionChange.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-down-up", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		cmdSidebarDirectionChange.UserData = grdSubsidiary;
 		cmdSidebarDirectionChange.Click += delegate(object s1, ClickEventArgs e1)
 		{
@@ -386,7 +384,7 @@ internal class SubsidiaryEditor : ISetTheme
 		lnkSidebarDirectionChange.Command = cmdSidebarDirectionChange;
 		toolBar.CommandLinks.Add(lnkSidebarDirectionChange);
 		cmdSidebarMarkVoucher.Text = "标记关注";
-		cmdSidebarMarkVoucher.Image = Auditai.UI.LedgerView.Properties.Resources.sideMarkVoucher;
+		cmdSidebarMarkVoucher.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("star", 28, Color.FromArgb(217, 119, 6));
 		cmdSidebarMarkVoucher.UserData = grdSubsidiary;
 		cmdSidebarMarkVoucher.Click += delegate(object s1, ClickEventArgs e1)
 		{
@@ -409,7 +407,7 @@ internal class SubsidiaryEditor : ISetTheme
 		lnkSidebarMarkVoucher.Command = cmdSidebarMarkVoucher;
 		toolBar.CommandLinks.Add(lnkSidebarMarkVoucher);
 		cmdSidebarModifyBegin.Text = "修改期初数";
-		cmdSidebarModifyBegin.Image = Auditai.UI.LedgerView.Properties.Resources.sideModifyBegin;
+		cmdSidebarModifyBegin.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("pencil", 28, Color.FromArgb(59, 130, 246));
 		cmdSidebarModifyBegin.Click += delegate
 		{
 			_owner.ModifyBeginBalance(_owner.CurrentAccount);
@@ -417,7 +415,7 @@ internal class SubsidiaryEditor : ISetTheme
 		lnkSidebarModifyBegin.Command = cmdSidebarModifyBegin;
 		toolBar.CommandLinks.Add(lnkSidebarModifyBegin);
 		cmdSidebarModifyVoucher.Text = "修改凭证";
-		cmdSidebarModifyVoucher.Image = Auditai.UI.LedgerView.Properties.Resources.sideModifyVoucher;
+		cmdSidebarModifyVoucher.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("note-pencil", 28, Color.FromArgb(59, 130, 246));
 		cmdSidebarModifyVoucher.Click += async delegate
 		{
 			if (grdSubsidiary.Row >= grdSubsidiary.Rows.Fixed && grdSubsidiary.Rows[grdSubsidiary.Row].UserData is Voucher voucher)
@@ -434,7 +432,7 @@ internal class SubsidiaryEditor : ISetTheme
 		C1CommandLink c1CommandLink6 = new C1CommandLink();
 		C1Command c1Command6 = new C1Command();
 		c1Command6.Text = "填充至底稿";
-		c1Command6.Image = Auditai.UI.LedgerView.Properties.Resources.sideFillToTable;
+		c1Command6.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("export", 28, Color.FromArgb(217, 119, 6));
 		c1Command6.Click += delegate
 		{
 			FillToTable();
@@ -450,13 +448,9 @@ internal class SubsidiaryEditor : ISetTheme
 		c1CommandLink7.Delimiter = true;
 		C1Command c1Command7 = new C1Command();
 		c1Command7.Text = "隐藏侧边栏";
-		c1Command7.Image = Auditai.UI.LedgerView.Properties.Resources.sideHideSidebar;
+		c1Command7.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command7.Click += CmdHideSidebar_Click;
 		c1CommandLink7.Command = c1Command7;
-		foreach (C1CommandLink commandLink in toolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdSubsidiary, toolBar, out pnlSidebar);
 		pnlSubsidiaryGrid.HeaderLineColor = Color.Transparent;
 		pnlSubsidiaryGrid.HeaderTextAlign = PanelTextAlign.Center;
@@ -484,7 +478,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiayFoot.SizeRatio = 3.657;
 		pnlSubsidiayFoot.Controls.Add(SubDockingTab);
 		View.AutoSizeElement = AutoSizeElement.Both;
-		View.BackColor = Color.FromArgb(240, 240, 240);
+		View.BackColor = Color.FromArgb(243, 244, 246);
 		View.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		View.Dock = DockStyle.Fill;
 		View.ForeColor = Color.FromArgb(0, 0, 0);
@@ -553,7 +547,7 @@ internal class SubsidiaryEditor : ISetTheme
 
 	private void CmdTotalSummary_Click(object sender, ClickEventArgs e)
 	{
-		ctxSidebarTotalSummary.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxSidebarTotalSummary, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdSidebarAllSum_Click(object sender, ClickEventArgs e)
@@ -1756,13 +1750,13 @@ internal class SubsidiaryEditor : ISetTheme
 			switch (grdSubsidiary.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxSubFixed.ShowContextMenu(grdSubsidiary, e.Location);
+				NativeMenuShim.Show(ctxSubFixed, grdSubsidiary, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxSubEmpty.ShowContextMenu(grdSubsidiary, e.Location);
+				NativeMenuShim.Show(ctxSubEmpty, grdSubsidiary, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxSubCell.ShowContextMenu(grdSubsidiary, e.Location);
+				NativeMenuShim.Show(ctxSubCell, grdSubsidiary, e.Location);
 				break;
 			}
 		}
@@ -1817,15 +1811,6 @@ internal class SubsidiaryEditor : ISetTheme
 		btnSubsidiaryBack.FlatAppearance.MouseOverBackColor = Color.LightGray;
 		grdSubsidiary.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdSubsidiary.Styles.Fixed.Font = grdSubsidiary.Font;
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	public void AttachTooltip(TooltipManager tooltipManager)

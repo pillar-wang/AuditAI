@@ -7,7 +7,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandShowHelpSmall : AppCommandToggleButton
 {
-	public override System.Drawing.Image SmallIcon => Auditai.UI.Platform.Properties.Resources.Tooltip16;
+	public override System.Drawing.Image SmallIcon => Auditai.UI.Platform.IconRes.Tooltip16;
 
 	protected override string Tooltip => TipResource.Ribbon菜单_主窗体右上角配置栏_软件向导;
 

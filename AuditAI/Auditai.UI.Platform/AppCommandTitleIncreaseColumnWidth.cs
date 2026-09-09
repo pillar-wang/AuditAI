@@ -7,7 +7,7 @@ public class AppCommandTitleIncreaseColumnWidth : AppCommandButton
 {
 	public override string Text => "增加列宽";
 
-	public override Image LargeIcon => Resources.IncreaseColumnWidth;
+	public override Image LargeIcon => IconRes.IncreaseColumnWidth;
 
 	protected override void Clicked()
 	{

@@ -7,7 +7,7 @@ public class AppCommandTicketBorderAll : AppCommandButton
 {
 	public override string Text => "全部框线";
 
-	public override Image LargeIcon => Resources.TicketBorderAll;
+	public override Image LargeIcon => IconRes.TicketBorderAll;
 
 	protected override void Clicked()
 	{

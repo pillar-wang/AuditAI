@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团队管理 - AuditAI 管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <script src="/js/common.js?v=20260703b"></script>
+    <script>
+        // 页面渲染前立即检查权限
+        if (!requireAdmin()) {
+            document.documentElement.innerHTML = '';
+            throw new Error('unauthorized');
+        }
+    </script>
+    <style>
+        /* 页面内布局（页面在 iframe 内加载） */
+        body {
+            background: var(--bg);
+            min-width: 0;
+        }
+
+        .page-container {
+            padding: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar .search-input {
+            width: 280px;
+        }
+
+        .toolbar .toolbar-info {
+            margin-left: auto;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+        .op-btns {
+            display: flex;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        /* 编辑/成员模态框尺寸调整 */
+        .modal-card.wide {
+            width: 540px;
+        }
+
+        .modal-card.wider {
+            width: 760px;
+        }
+
+        .modal-card .modal-body {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .members-table-wrap {
+            max-height: 440px;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-input);
+        }
+
+        .members-table-wrap table.table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .modal-loading {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-title">团队管理</div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <button class="btn btn-primary" id="addTeamBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>新增团队</button>
+                <input type="search" id="keywordInput" class="search-input" placeholder="按团队名搜索...">
+                <button class="btn btn-primary" id="searchBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>搜索</button>
+                <button class="btn" id="resetBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>重置</button>
+                <span class="toolbar-info" id="totalCountInfo"></span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>团队名</th>
+                            <th>级别</th>
+                            <th>付费状态</th>
+                            <th>所有者</th>
+                            <th>成员数</th>
+                            <th>项目数</th>
+                            <th>最大用户</th>
+                            <th>最大项目</th>
+                            <th>到期日期</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamsTbody">
+                        <tr><td colspan="10" class="text-center text-gray" style="padding:32px;">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- 编辑团队模态框 -->
+    <div class="modal-overlay" id="editModal" style="display:none;">
+        <div class="modal-card wide">
+            <div class="modal-title">编辑团队</div>
+            <div class="modal-body">
+                <form id="editForm" autocomplete="off">
+                    <input type="hidden" id="editTeamId">
+                    <div class="form-group">
+                        <label for="editName">团队名</label>
+                        <input type="text" id="editName" maxlength="100">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editLevel">级别</label>
+                            <select id="editLevel">
+                                <option value="0">无</option>
+                                <option value="1">标准</option>
+                                <option value="2">专业</option>
+                                <option value="3">旗舰</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPayStatus">付费状态</label>
+                            <select id="editPayStatus">
+                                <option value="0">试用</option>
+                                <option value="1">已付费</option>
+                                <option value="2">已过期</option>
+                                <option value="3">免费</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editMaxUsers">最大用户数</label>
+                            <input type="number" id="editMaxUsers" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="editMaxProjects">最大项目数</label>
+                            <input type="number" id="editMaxProjects" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="editMaxTemplates">最大模板数</label>
+                            <input type="number" id="editMaxTemplates" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="editCancelBtn">取消</button>
+                <button class="btn btn-primary" id="editSaveBtn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成员列表模态框 -->
+    <div class="modal-overlay" id="membersModal" style="display:none;">
+        <div class="modal-card wider">
+            <div class="modal-title">团队成员 <span id="membersTeamName" class="text-gray" style="font-size:14px;font-weight:400;"></span></div>
+            <div class="modal-body">
+                <div class="members-table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>姓名</th>
+                                <th>电话</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>团队管理员</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTbody">
+                            <tr><td colspan="8" class="modal-loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="membersCloseBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/teams.js"></script>
+</body>
+</html>

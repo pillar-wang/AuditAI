@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandBatchColumnDuplicate : AppCommandButton
 {
-	public override Image LargeIcon => Resources.BatchColumnDuplicate;
+	public override Image LargeIcon => IconRes.BatchColumnDuplicate;
 
 	public override string Text => "跨表批量复制列";
 

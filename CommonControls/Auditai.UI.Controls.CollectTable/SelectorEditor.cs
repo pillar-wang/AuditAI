@@ -122,7 +122,7 @@ public class SelectorEditor
 		_cmdSortDesc = new C1Command
 		{
 			Text = "降序排列",
-			Image = Resources.ctxDescending
+			Image = IconRes.ctxDescending
 		};
 		_cmdSortDesc.CommandStateQuery += _cmdSortDesc_CommandStateQuery;
 		_cmdSortDesc.Click += _cmdSortDesc_Click;
@@ -131,7 +131,7 @@ public class SelectorEditor
 		_cmdSortAsc = new C1Command
 		{
 			Text = "升序排列",
-			Image = Resources.ctxAscending
+			Image = IconRes.ctxAscending
 		};
 		_cmdSortAsc.CommandStateQuery += _cmdSortAsc_CommandStateQuery;
 		_cmdSortAsc.Click += _cmdSortAsc_Click;
@@ -1429,7 +1429,7 @@ public class SelectorEditor
 		catch (Exception ex5)
 		{
 			ex5.Log();
-			System.Windows.Forms.MessageBox.Show(ex5.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, ex5.Message, MessageBoxButtons.OK, "错误");
 		}
 		finally
 		{
@@ -1541,7 +1541,7 @@ public class SelectorEditor
 		catch (Exception ex5)
 		{
 			ex5.Log();
-			System.Windows.Forms.MessageBox.Show(ex5.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, ex5.Message, MessageBoxButtons.OK, "错误");
 		}
 		finally
 		{
@@ -1592,7 +1592,7 @@ public class SelectorEditor
 		catch (Exception ex5)
 		{
 			ex5.Log();
-			System.Windows.Forms.MessageBox.Show(ex5.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, ex5.Message, MessageBoxButtons.OK, "错误");
 		}
 		finally
 		{
@@ -1652,7 +1652,7 @@ public class SelectorEditor
 		catch (Exception ex5)
 		{
 			ex5.Log();
-			System.Windows.Forms.MessageBox.Show(ex5.Message);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, ex5.Message, MessageBoxButtons.OK, "错误");
 		}
 		finally
 		{
@@ -1881,10 +1881,10 @@ public class SelectorEditor
 			switch (View.HitTest().Type)
 			{
 			case HitTestTypeEnum.Cell:
-				contextMenu.ShowContextMenu(View, e.Location);
+				NativeMenuShim.Show(contextMenu, View, e.Location);
 				break;
 			case HitTestTypeEnum.ColumnHeader:
-				_ctxColHeader.ShowContextMenu(View, e.Location);
+				NativeMenuShim.Show(_ctxColHeader, View, e.Location);
 				break;
 			}
 		}

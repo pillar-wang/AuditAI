@@ -7,7 +7,7 @@ public class AppCommandIndentParagraph : AppCommandButton
 {
 	public override string Text => "整段增缩进";
 
-	public override Image LargeIcon => Resources.IndentPara;
+	public override Image LargeIcon => IconRes.IndentPara;
 
 	protected override void Clicked()
 	{

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -51,8 +51,6 @@ public class StructureEditor : ISetTheme
 	private C1ContextMenu ctxAnalyzyProject = new C1ContextMenu();
 
 	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
-
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
 
 	private C1ContextMenu ctxCell = new C1ContextMenu();
 
@@ -107,7 +105,7 @@ public class StructureEditor : ISetTheme
 		grdStructureTable = new C1FlexGridEx();
 		grdStructureTable.Name = "grdStructureTable";
 		ChartStructure = new Sunburst();
-		Font font = new Font("Microsoft YaHei", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblStructTitle.TextDetached = true;
 		lblStructTitle.BorderStyle = BorderStyle.None;
 		lblStructTitle.Dock = DockStyle.Fill;
@@ -161,30 +159,26 @@ public class StructureEditor : ISetTheme
 		C1CommandLink c1CommandLink4 = new C1CommandLink();
 		C1Command c1Command4 = new C1Command();
 		c1Command4.Text = "分析选项";
-		c1Command4.Image = Resources.sidebarAnalyzyProject;
+		c1Command4.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command4.Click += CmdAnalyzyProject_Click1;
 		c1CommandLink4.Command = c1Command4;
 		c1ToolBar.CommandLinks.Add(c1CommandLink4);
 		C1CommandLink c1CommandLink5 = new C1CommandLink();
 		C1Command c1Command5 = new C1Command();
 		c1Command5.Text = "窗体布局";
-		c1Command5.Image = Resources.sidebarViewLayout;
+		c1Command5.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("layout", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command5.Click += CmdViewStyle_Click1;
 		c1CommandLink5.Command = c1Command5;
 		C1CommandLink c1CommandLink6 = new C1CommandLink();
 		c1CommandLink6.Delimiter = true;
 		C1Command c1Command6 = new C1Command();
 		c1Command6.Text = "隐藏侧边栏";
-		c1Command6.Image = Resources.sideHideSidebar;
+		c1Command6.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
 		c1Command6.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
 		};
 		c1CommandLink6.Command = c1Command6;
-		foreach (C1CommandLink commandLink in c1ToolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		pnlStructureGird.HeaderTextAlign = PanelTextAlign.Center;
 		pnlStructureGird.Height = 223;
 		pnlStructureGird.Location = new Point(0, 31);
@@ -233,7 +227,7 @@ public class StructureEditor : ISetTheme
 
 	private void CmdAnalyzyProject_Click1(object sender, ClickEventArgs e)
 	{
-		ctxAnalyzyProject.ShowContextMenu(e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		NativeMenuShim.Show(ctxAnalyzyProject, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
 	}
 
 	private void CmdViewStyle_Click1(object sender, ClickEventArgs e)
@@ -329,15 +323,6 @@ public class StructureEditor : ISetTheme
 			pnlStructureChart.BackColor = Color.FromArgb(250, 250, 250);
 			break;
 		}
-		if (Auditai.UI.Controls.Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 	}
 
 	private void _chart_MouseDown(object sender, MouseEventArgs e)
@@ -480,13 +465,13 @@ public class StructureEditor : ISetTheme
 			switch (grdStructureTable.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxFixed.ShowContextMenu(grdStructureTable, e.Location);
+				NativeMenuShim.Show(ctxFixed, grdStructureTable, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(grdStructureTable, e.Location);
+				NativeMenuShim.Show(ctxEmpty, grdStructureTable, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(grdStructureTable, e.Location);
+				NativeMenuShim.Show(ctxCell, grdStructureTable, e.Location);
 				break;
 			}
 		}

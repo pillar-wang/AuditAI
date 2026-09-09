@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandAuxEdit : AppCommandButton
 {
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.ComboList;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.ComboList;
 
 	public override string Text => "下拉列表";
 

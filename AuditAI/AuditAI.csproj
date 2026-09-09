@@ -216,9 +216,7 @@
     <Content Include="..\Libs\zh\TXDocumentServer.resources.dll" Link="zh\TXDocumentServer.resources.dll" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\Libs\zh\TXDrawing.resources.dll" Link="zh\TXDrawing.resources.dll" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
-    <Reference Include="XinJiYuan">
-      <HintPath>..\Libs\XinJiYuan.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\XinJiYuan\XinJiYuan.csproj" />
     <Reference Include="XLParser">
       <HintPath>..\Libs\XLParser.dll</HintPath>
     </Reference>

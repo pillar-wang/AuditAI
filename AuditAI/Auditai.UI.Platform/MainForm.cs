@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -58,6 +58,12 @@ public class MainForm
 
 	// 账务数据独立窗口（单实例），承载 MultiLedgerViewer.View
 	private LedgerWindow _ledgerWindow;
+
+	// "账务数据"标签迁移到账务窗口期间，在主窗口 Ribbon 中的原始位置（迁回时还原）
+	private int _ledgerTabMainIndex = -1;
+
+	// 账务窗口当前是否处于显示状态（账务数据标签已随页面迁入，不应再随主窗口视图模式隐藏）
+	public bool LedgerWindowActive => _ledgerWindow != null && _ledgerWindow.Visible && !_ledgerWindow.IsDisposed;
 
 	private C1SplitterPanel pnlMain;
 
@@ -214,7 +220,7 @@ public class MainForm
 			}
 			_currentEdition = value;
 			_currentEdition.GenerateRibbon();
-			ImageProcess.Register(new ImageControl[11]
+			ImageProcess.Register(new ImageControl[10]
 			{
 				new RibbonItemSmallAdapter(AppCommands.Information.Button),
 				new RibbonItemSmallAdapter(AppCommands.Back.Button),
@@ -225,15 +231,14 @@ public class MainForm
 				new RibbonItemSmallAdapter(AppCommands.ShowTooltipSmall.ToggleButton),
 				new RibbonItemSmallAdapter(AppCommands.ToggleFullscreenSmall.ToggleButton),
 				new RibbonItemSmallAdapter(AppCommands.Theme.Button),
-				new RibbonItemSmallAdapter(AppCommands.ProjectMemberEditSmall.Button),
-				new RibbonItemSmallAdapter(AppCommands.ContactWay.Button)
+				new RibbonItemSmallAdapter(AppCommands.ProjectMemberEditSmall.Button)
 			});
 			MultiLedgerViewer.ShowFillToTable(!(value is AppEditionGeneral));
 			SyncTwinkle = new RibbonFlickerProxy(AppCommands.SyncProjectSmall.Button);
 			SyncTwinkle.UpdateEmptyImage(Resources.Empty16);
 			SyncTwinkle.SetTimer(SecondTrigger.Trigger);
 			View.Controls.Add(_currentEdition.Ribbon);
-			EmptyView.SetQQ();
+			EmptyView.SetWelcome();
 		}
 	}
 
@@ -434,10 +439,15 @@ public class MainForm
 		View = new C1RibbonForm
 		{
 			WindowState = FormWindowState.Maximized,
-			Font = new Font("Noto Sans SC", Control.DefaultFont.Size),
+			Font = new Font("微软雅黑", Control.DefaultFont.Size),
 			Icon = Resources.icon,
 			VisualStyle = C1.Win.C1Ribbon.VisualStyle.Custom,
 			Size = new Size(1024, 768)
+		};
+		// 跨显示器拖动时按新 DPI 提升图标位图生成分辨率（取到过最大，兜底覆盖 C1Ribbon 等非自绘图标区）
+		View.DpiChanged += delegate
+		{
+			Auditai.UI.Controls.IconLibrary.DpiScale = Math.Max(Auditai.UI.Controls.IconLibrary.DpiScale, View.DeviceDpi / 96f);
 		};
 		View.Shown += View_Shown;
 		View.FormClosing += View_FormClosing;
@@ -835,6 +845,13 @@ public class MainForm
 	private readonly HashSet<Id64> _autoPushSubscribedTables = new HashSet<Id64>();
 	private readonly HashSet<Id64> _autoPushSubscribedDocuments = new HashSet<Id64>();
 
+	// 已提示过"推送被归档拒绝"的项目 Id（每项目仅提示一次，避免每次保存都弹窗骚扰）
+	private readonly HashSet<Guid> _archivedPushNotified = new HashSet<Guid>();
+
+	/// <summary>AutoPush 被服务端拒绝且原因是"项目已归档/只读"时返回 true</summary>
+	private static bool IsArchivedPushError(Exception ex)
+		=> ex is HttpRequestException && (ex.Message ?? "").Contains("已归档");
+
 	/// <summary>
 	/// 为表格订阅 Saved 事件以触发自动 Push（仅订阅一次）。
 	/// 失败时记录日志，不影响本地保存（后续离线队列可补传）。
@@ -857,6 +874,16 @@ public class MainForm
 			try
 			{
 				await Syncer.Push(table).ConfigureAwait(false);
+		}
+		catch (Exception ex) when (IsArchivedPushError(ex))
+		{
+			// 归档项目推送被拒（HTTP 409 Archived）：切回 UI 线程一次性提示
+			ex.Log($"AutoPush 表格 \"{table.TreeNode?.Name}\" 推送失败（项目已归档）");
+			if (table.Project != null && _archivedPushNotified.Add(table.Project.Id))
+			{
+				View.BeginInvoke((Action)(() => Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+					"项目已归档，禁止修改。您的本地修改未被同步。")));
+			}
 		}
 		catch (Exception ex)
 		{
@@ -881,6 +908,16 @@ public class MainForm
 			try
 			{
 				await Syncer.Push(document).ConfigureAwait(false);
+		}
+		catch (Exception ex) when (IsArchivedPushError(ex))
+		{
+			// 归档项目推送被拒（HTTP 409 Archived）：切回 UI 线程一次性提示
+			ex.Log($"AutoPush 文档 \"{document.TreeNode?.Name}\" 推送失败（项目已归档）");
+			if (document.Project != null && _archivedPushNotified.Add(document.Project.Id))
+			{
+				View.BeginInvoke((Action)(() => Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+					"项目已归档，禁止修改。您的本地修改未被同步。")));
+			}
 		}
 		catch (Exception ex)
 		{
@@ -963,6 +1000,19 @@ public class MainForm
 
 		private const int LockHeartbeatIntervalMs = 5 * 60 * 1000; // 5 分钟
 
+		// 系统模板只读提示已显示的项目（会话内每个项目仅提示一次）
+		private readonly HashSet<Guid> _systemTemplateReadonlyNotified = new HashSet<Guid>();
+
+		/// <summary>
+		/// 系统下发模板只读打开时提示用户（每个项目仅提示一次）。
+		/// </summary>
+		private void NotifySystemTemplateReadonly(Auditai.Model.Project project)
+		{
+			if (!_systemTemplateReadonlyNotified.Add(project.Id)) return;
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information,
+				"系统下发的模板为只读模式，如需编辑请使用「复制模板」创建团队副本。");
+		}
+
 		/// <summary>
 		/// 节点级强锁：获取指定表格的编辑锁。
 		/// 在 TreeNodeSelected_NormalImpl 加载表格后调用。Success → 可编辑；Locked → 只读模式。
@@ -973,6 +1023,25 @@ public class MainForm
 			if (Auditai.LocalDataStore.StorageRouter.IsLocalMode) return;
 			if (table == null) return;
 			if (_currentLockedTable == table) return;
+
+			// 审批只读会话：不申请编辑锁（服务端对非成员审批人会拒绝），表格按只读呈现。
+			// Locker=-1 强制 Table.IsLocked=true，覆盖成员身份审批人本地的陈旧锁状态。
+			if (table.Project != null && Auditai.Model.Project.ReadonlyOpenProjectId == table.Project.Id)
+			{
+				table.Locker = -1;
+				return;
+			}
+
+			// 系统下发模板：非系统管理员/系统支持人员以只读模式查看，不申请编辑锁。
+			// 表格只读由 Locker 标记（Table.IsLocked）保证；编辑需「复制模板」创建团队副本。
+			if (table.Project != null && table.Project.SystemBuild
+				&& !Auditai.Model.User.Current.IsSystemAdmin
+				&& !Auditai.Model.User.Current.IsSystemSupporter)
+			{
+				table.Locker = -1;  // 非当前用户 → IsLocked=true
+				NotifySystemTemplateReadonly(table.Project);
+				return;
+			}
 
 			// 先释放上一个表格的锁
 			if (_currentLockedTable != null)
@@ -1277,22 +1346,28 @@ public class MainForm
 		// 冲突解决对话框：由"仅提示"升级为可操作选择。
 		// 是=保留本地修改（保留本地未同步改动，稍后重新同步）；
 		// 否=放弃本地修改，采用云端版本（本地被云端覆盖）。
-		return System.Windows.Forms.MessageBox.Show(
+		return Auditai.UI.Controls.MessageBox.Show(
+			MessageBoxIcon.Warning,
 			"\"" + display + "\" 已被他人修改，存在冲突。\r\n\r\n" +
 			"选择【是】= 保留本地修改（本地改动保留，稍后重新同步）；\r\n" +
 			"选择【否】= 放弃本地修改，采用云端版本。",
-			"冲突解决",
 			MessageBoxButtons.YesNo,
-			MessageBoxIcon.Warning);
+			"冲突解决");
 	}
 
 	public async Task<Auditai.Model.Project> OpenOrSwitchToProject(Guid id, string willOpenProjectTypeName = null)
 	{
+		bool isOpenArchived = false;
 		// 节点级强锁：切换到不同项目前，释放当前项目持有的表格锁（含 Push 未同步修改）
 		if (CurrentProject != null && CurrentProject.Id != id && _currentLockedTable != null)
 		{
 			try { await ReleaseTableLockAsync(_currentLockedTable); }
 			catch (Exception ex) { ex.Log(); }
+		}
+		// 切离项目时结束其审批只读会话（若适用）
+		if (CurrentProject != null && CurrentProject.Id != id && ReviewSession.IsReadOnly(CurrentProject.Id))
+		{
+			ReviewSession.End();
 		}
 		if (CurrentProject != null && RecentProjects.TryGetValue(CurrentProject.Id, out var value))
 		{
@@ -1337,6 +1412,7 @@ public class MainForm
 					{
 						dto = await WebApiClient.GetProjectDto(id);
 					}
+						isOpenArchived = dto?.IsArchived == true;
 						progressRuntimeData.UpdateProgress(80, 100);
 						toOpen = await OpenProjectDb_DownloadIfNotExist(dto, progressForm);
 						if (toOpen == null)
@@ -1414,6 +1490,11 @@ public class MainForm
 			HideFormulaMap();
 		}
 		RefreshProjectsSyncTwinkle();
+		// 已归档项目打开提示：内容为只读（查看不阻断）
+		if (isOpenArchived && toOpen != null)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "该项目已归档，内容为只读。");
+		}
 		return toOpen;
 	}
 
@@ -2153,7 +2234,7 @@ public class MainForm
 			PageSetupWaterMark.WaterMarkSetting waterMarkSetting = new PageSetupWaterMark.WaterMarkSetting();
 			waterMarkSetting.LeftText = platformName;
 			waterMarkSetting.RightText = empty;
-			waterMarkSetting.FontName = "Noto Sans SC";
+			waterMarkSetting.FontName = "微软雅黑";
 			waterMarkSetting.Height = 12.0;
 			pageSetupWaterMark = new PageSetupWaterMark();
 			pageSetupWaterMark.Header = waterMarkSetting;
@@ -2351,18 +2432,27 @@ public class MainForm
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "不能关闭已打开的仅存的一个" + StringConstBase.Current.Project + "。");
 			return;
 		}
-		string closeProjMsg = Auditai.LocalDataStore.StorageRouter.IsLocalMode
-			? "是否要保存" + StringConstBase.Current.Project + " " + p.Name + " ？"
-			: "是否要保存并同步" + StringConstBase.Current.Project + " " + p.Name + " ？";
-		switch (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, closeProjMsg, MessageBoxButtons.YesNoCancel))
+		// 审批只读会话：只读查看无未保存修改，跳过"保存并同步"提示直接关闭
+		if (!ReviewSession.IsReadOnly(p.Id))
 		{
-		case DialogResult.Cancel:
-			return;
-		case DialogResult.Yes:
-			await SyncProject(p);
-			break;
+			string closeProjMsg = Auditai.LocalDataStore.StorageRouter.IsLocalMode
+				? "是否要保存" + StringConstBase.Current.Project + " " + p.Name + " ？"
+				: "是否要保存并同步" + StringConstBase.Current.Project + " " + p.Name + " ？";
+			switch (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, closeProjMsg, MessageBoxButtons.YesNoCancel))
+			{
+			case DialogResult.Cancel:
+				return;
+			case DialogResult.Yes:
+				await SyncProject(p);
+				break;
+			}
 		}
 		RecentProjects.Remove(p.Id);
+		// 关闭审批只读会话的项目时结束只读会话
+		if (ReviewSession.IsReadOnly(p.Id))
+		{
+			ReviewSession.End();
+		}
 		PopulateRecents();
 		// 关闭单个项目时也执行 WAL checkpoint，确保该项目 .db 的 -wal 数据落盘。
 		// 避免后续异常退出时该项目的 -wal 残留导致数据库损坏。
@@ -2478,8 +2568,11 @@ public class MainForm
 		{
 			return;
 		}
-		ProgressForm<object> progressForm = new ProgressForm<object>(delegate(IProgress<ProgressInfo> iProg)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, delegate
 		{
+			IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 			iProg.Report(new ProgressInfo
 			{
 				MainCaption = "正在删除，可能耗时较长，请耐心等待..."
@@ -2489,10 +2582,8 @@ public class MainForm
 			{
 				item.Remove();
 			}
-			return Task.FromResult<object>(null);
+			return Task.CompletedTask;
 		});
-		progressForm.ShowDialog();
-		await progressForm.Task;
 		ProjectHierarchy.Populate();
 		if (sn != null)
 		{
@@ -2591,8 +2682,8 @@ public class MainForm
 		if (tableSaveErrors.Count > 0)
 		{
 			var msg = string.Join("\n", tableSaveErrors);
-			System.Windows.Forms.MessageBox.Show($"以下表格已损坏，已跳过保存。其他内容已正常保存：\n\n{msg}\n\n请尝试重新载入这些表格或删除后重建。",
-				"保存完成（部分表格被跳过）", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, $"以下表格已损坏，已跳过保存。其他内容已正常保存：\n\n{msg}\n\n请尝试重新载入这些表格或删除后重建。",
+				MessageBoxButtons.OK, "保存完成（部分表格被跳过）", scroll: true);
 		}
 		foreach (var pair in DocumentEditors.Select((KeyValuePair<Auditai.Model.Document, DocumentEditor> kv, int i) => new { kv, i }).ToList())
 		{
@@ -2689,7 +2780,7 @@ public class MainForm
 		{
 			if (SoftwareLicenseManager.IsPayByProjectReachExpireDate(value))
 			{
-				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{value.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，您可致电官方客服电话：400-690-6500，联系购买或续期！");
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{value.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，请联系管理员购买或续期！");
 			}
 			else
 			{
@@ -2785,7 +2876,7 @@ public class MainForm
 		}
 		if (SoftwareLicenseManager.IsPayByProjectReachExpireDate(proj))
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{proj.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，您可致电官方客服电话：400-690-6500，联系购买或续期！");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{proj.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，请联系管理员购买或续期！");
 			return false;
 		}
 		bool anyNodeUpdated = false;
@@ -2844,7 +2935,7 @@ public class MainForm
 		}
 		if (SoftwareLicenseManager.IsPayByProjectReachExpireDate(proj))
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{proj.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，您可致电官方客服电话：400-690-6500，联系购买或续期！");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"尊敬的用户：\r\n您的产品已于{proj.ProjectLicenseDate:yyyy年MM月dd日}到期，无法同步{StringConstBase.Current.Project}，请联系管理员购买或续期！");
 			return true;
 		}
 		if (progressRuntimeData == null)
@@ -3226,6 +3317,15 @@ public class MainForm
 		ApplyConfig();
 	}
 
+	/// <summary>
+	/// 打开标准科目字典配置窗口（“设置”选项卡入口）
+	/// </summary>
+	public void ShowStandardAccountDic()
+	{
+		frmStandardAccountDic form = new frmStandardAccountDic();
+		form.ShowDialog();
+	}
+
 	public void AboutForm()
 	{
 		PolicyForm policyForm = new PolicyForm();
@@ -3242,11 +3342,6 @@ public class MainForm
 	public void SelectTheme()
 	{
 		ThemeEditor.ShowForm();
-	}
-
-	public void ShowContactWayForm()
-	{
-		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Asterisk, "尊敬的用户：\r\n购买咨询、寻求支持以及提出改进建议，欢迎您致电官方客服电话：400-690-6500。", MessageBoxButtons.OK, "联系方式");
 	}
 
 	public void LoadPrintSetup(PageSetup pageSetup)
@@ -3294,6 +3389,17 @@ public class MainForm
 			{
 				ShowOpenLedgerTip();
 				return;
+			}
+			// 标准科目 code 集合为空时刷新标准科目字典缓存（失败静默，不影响主流程）
+			if (DictionarySync.StandardAccountCodes.Count == 0)
+			{
+				try
+				{
+					await DictionarySync.RefreshStandardAccountCodes();
+				}
+				catch
+				{
+				}
 			}
 			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && DictionarySync.TableCollector.Version == 0)
 			{
@@ -3384,6 +3490,17 @@ public class MainForm
 			{
 				ShowOpenLedgerTip();
 				return;
+			}
+			// 标准科目 code 集合为空时刷新标准科目字典缓存（失败静默，不影响主流程）
+			if (DictionarySync.StandardAccountCodes.Count == 0)
+			{
+				try
+				{
+					await DictionarySync.RefreshStandardAccountCodes();
+				}
+				catch
+				{
+				}
 			}
 			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && DictionarySync.TableCollector.Version == 0)
 			{
@@ -3524,8 +3641,11 @@ public class MainForm
 		Ledger ledger = CurrentLedgerViewer.Ledger;
 		List<TreeTableNode> tableNodes = Auditai.Model.Project.Current.GetAllTableNodes().ToList();
 		int count = tableNodes.Count();
-		ProgressForm<object> pf = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> iProg)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 pf = new ProgressForm2();
+		pf.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 			for (int j = 0; j < count; j++)
 			{
 				iProg.Report(new ProgressInfo
@@ -3647,26 +3767,7 @@ public class MainForm
 					CellsCollect(ledger, table);
 				}
 			}
-			return new object();
 		});
-		if (pf == null)
-		{
-			return;
-		}
-		pf.ShowDialog();
-		for (int i = 0; i < 10; i++)
-		{
-			if (pf.Task != null)
-			{
-				break;
-			}
-			if (i == 9)
-			{
-				return;
-			}
-			await Task.Delay(100);
-		}
-		await pf.Task;
 		ShowHelperTooltip = tempShowTooltip;
 	}
 
@@ -3724,6 +3825,17 @@ public class MainForm
 					ttp.LinkClicked += Ttp_LinkClicked;
 				}, 5000);
 				return;
+			}
+			// 标准科目 code 集合为空时刷新标准科目字典缓存（失败静默，不影响主流程）
+			if (DictionarySync.StandardAccountCodes.Count == 0)
+			{
+				try
+				{
+					await DictionarySync.RefreshStandardAccountCodes();
+				}
+				catch
+				{
+				}
 			}
 			if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && DictionarySync.TableCollector.Version == 0)
 			{
@@ -4462,14 +4574,14 @@ public class MainForm
 		TreeDirectoryNode treeDirectoryNode = (selectDocumentNode.IsRoot ? selectDocumentNode.Group.InsertRootDirectory(index) : selectDocumentNode.Parent.InsertChildDirectory(index));
 		treeDirectoryNode.UpdateName("函证列表");
 		Node node = ProjectHierarchy.FindNode(selectDocumentNode).Node;
-		Node node2 = node.AddNode(NodeTypeEnum.PreviousSibling, treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+		Node node2 = node.AddNode(NodeTypeEnum.PreviousSibling, treeDirectoryNode.Name, treeDirectoryNode, IconRes.TreeDir);
 		foreach (Dictionary<string, Auditai.Model.Cell> item in dataTable)
 		{
 			if (!item.All((KeyValuePair<string, Auditai.Model.Cell> t) => t.Value.IsEmpty))
 			{
 				TreeDocumentNode treeDocumentNode = treeDirectoryNode.InsertChildDocument(treeDirectoryNode.Children.Count);
 				treeDocumentNode.UpdateName(item.FirstOrDefault().Value.GetDisplayValue());
-				node2.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Name, treeDocumentNode, Resources.TreeDoc);
+				node2.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Name, treeDocumentNode, IconRes.TreeDoc);
 				DocumentEditor documentEditor = new DocumentEditor();
 				treeDocumentNode.IsEntityDirty = true;
 				documentEditor.Document = treeDocumentNode.Document;
@@ -4932,8 +5044,11 @@ public class MainForm
 		}
 		await TableEditor.CalcAllTables();
 		ValidationResultCache.Clear();
-		ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			Dictionary<Id64, string> dicIdName = (from n in CurrentProject.GetAllTableNodes()
 				where n.Visible
 				select n).ToDictionary((TreeTableNode n) => n.Id, (TreeTableNode n) => n.Name);
@@ -4951,9 +5066,7 @@ public class MainForm
 					ValidationResultCache.Add(vf.Id, value2);
 				}
 			}
-			return Task.FromResult<object>(null);
 		});
-		progressForm.ShowDialog();
 		UpdateTableValidationCache();
 		if (TableValidationResults.Sum((KeyValuePair<TreeTableNode, TableValidationInfo> tvi) => tvi.Value.ErrorRefs.Count) == 0)
 		{
@@ -5149,11 +5262,11 @@ public class MainForm
 			{
 				if (selectedAuditaiTheme != null && selectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 				{
-					AppCommands.ShowSidebar.Button.SmallImage = new WhiteImageStrategy().ProcessImage(Resources.ShowSideToolbar16);
+					AppCommands.ShowSidebar.Button.SmallImage = new WhiteImageStrategy().ProcessImage(IconRes.ShowSideToolbar16);
 				}
 				else
 				{
-					AppCommands.ShowSidebar.Button.SmallImage = Resources.ShowSideToolbar16;
+					AppCommands.ShowSidebar.Button.SmallImage = IconRes.ShowSideToolbar16;
 				}
 			}
 		}
@@ -5172,11 +5285,11 @@ public class MainForm
 			{
 				if (selectedAuditaiTheme2 != null && selectedAuditaiTheme2.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 				{
-					AppCommands.ShowSidebar.Button.SmallImage = new WhiteImageStrategy().ProcessImage(Resources.HideSideToolbar16);
+					AppCommands.ShowSidebar.Button.SmallImage = new WhiteImageStrategy().ProcessImage(IconRes.HideSideToolbar16);
 				}
 				else
 				{
-					AppCommands.ShowSidebar.Button.SmallImage = Resources.HideSideToolbar16;
+					AppCommands.ShowSidebar.Button.SmallImage = IconRes.HideSideToolbar16;
 				}
 			}
 		}
@@ -5198,10 +5311,6 @@ public class MainForm
 			return true;
 		}
 		return false;
-	}
-
-	public void Test()
-	{
 	}
 
 	public async Task RevertTableDialog()
@@ -6487,7 +6596,7 @@ public class MainForm
 		}
 		C1ContextMenu c1ContextMenu = new C1ContextMenu();
 		c1ContextMenu.CommandLinks.AddRange(onlineMemberContextMenu);
-		c1ContextMenu.ShowContextMenu(shareLink.Owner as C1ToolBar, new Point(shareLink.Bounds.Left, shareLink.Bounds.Bottom));
+		NativeMenuShim.Show(c1ContextMenu, shareLink.Owner as C1ToolBar, new Point(shareLink.Bounds.Left, shareLink.Bounds.Bottom));
 	}
 
 	public C1CommandLink[] GetOnlineMemberContextMenu(string file)
@@ -6600,8 +6709,11 @@ public class MainForm
 			return;
 		}
 		PrinterSettings printerSettings = printDialog.PrinterSettings;
-		ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			await Task.Delay(10);
 			int totalCount = frm.Selected.Count;
 			int current = 0;
@@ -6718,10 +6830,7 @@ public class MainForm
 					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, node.Name + "打印失败！失败原因：" + ex.Message);
 				}
 			}
-			return Task.FromResult(new object());
 		});
-		progressForm.ShowDialog();
-		await progressForm.Task;
 	}
 
 	private string ContactNumberAndName(string number, string name)
@@ -6764,8 +6873,11 @@ public class MainForm
 		}
 		string rootPath = folderBrowserDialog.SelectedPath;
 		rootPath = standardPath(rootPath);
-		ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			await Task.Delay(10);
 			int totalCount = frm.Selected.Count;
 			int current = 0;
@@ -6774,7 +6886,6 @@ public class MainForm
 			{
 				await forEachNodes(node2, rootPath);
 			}
-			return Task.FromResult(new object());
 			async Task forEachNodes(Node node, string path)
 			{
 				if (frm.Grid.GetCellCheck(node.Row.Index, 1) == CheckEnum.Checked)
@@ -7026,8 +7137,6 @@ public class MainForm
 				}
 			}
 		});
-		progressForm.ShowDialog();
-		await progressForm.Task;
 		static void exportDoc(TreeDocumentNode _treeDoc, string _fullPath)
 		{
 			try
@@ -7246,6 +7355,12 @@ public class MainForm
 			Theme.SetCurrentTree(View);
 			Browser?.SetTheme();
 			MultiLedgerViewer.SetTheme();
+			// 账务窗口的 Ribbon 与账套查看器已不在主窗口控件树内，需单独应用新主题
+			if (_ledgerWindow != null && !_ledgerWindow.IsDisposed)
+			{
+				Theme.SetCurrentTree(_ledgerWindow);
+				MultiLedgerViewer.SetTheme();
+			}
 			// Google Blue 主题精修
 			if (theme.Name == "auditai_GoogleBlue")
 			{
@@ -7256,15 +7371,15 @@ public class MainForm
 				ImageProcess.SetImageStrategy(new WhiteImageStrategy());
 				ImageProcess.ProcessImage();
 				WhiteImageStrategy whiteImageStrategy = new WhiteImageStrategy();
-				SyncTwinkle.UpdateOrignImage(whiteImageStrategy.ProcessImage(Resources.SyncProject_S));
-				SyncTwinkle.UpdateTwinkleImage(whiteImageStrategy.ProcessImage(Resources.SyncProject_S));
+				SyncTwinkle.UpdateOrignImage(whiteImageStrategy.ProcessImage(IconRes.SyncProject_S));
+				SyncTwinkle.UpdateTwinkleImage(whiteImageStrategy.ProcessImage(IconRes.SyncProject_S));
 			}
 			else
 			{
 				ImageProcess.SetImageStrategy(new DefaultImageStrategy());
 				ImageProcess.ProcessImage();
-				SyncTwinkle.UpdateOrignImage(Resources.SyncProject_S);
-				SyncTwinkle.UpdateTwinkleImage(Resources.SyncProject_S);
+				SyncTwinkle.UpdateOrignImage(IconRes.SyncProject_S);
+				SyncTwinkle.UpdateTwinkleImage(IconRes.SyncProject_S);
 			}
 			ThemeManager.GetInstance().ApplyTheme();
 			View.Update();
@@ -7484,12 +7599,17 @@ public class MainForm
 		{
 			_ledgerWindow = new LedgerWindow(this);
 			_ledgerWindow.AttachViewer(MultiLedgerViewer.View);
-			// 窗口被隐藏（点 X）时收起关联账套提示
+			// 窗口被隐藏（点 X）时：账务数据标签迁回主窗口 Ribbon（作为再次打开的入口），并收起关联账套提示
 			_ledgerWindow.WindowHidden += delegate
 			{
+				MoveLedgerTabToMainForm();
 				HideRelatedLedgerTip();
 			};
 		}
+		// 工具栏随页面走：把"账务数据"标签（含全部命令组）从主窗口 Ribbon 迁移到账务窗口
+		MoveLedgerTabToLedgerWindow();
+		// 账务窗口整体应用当前主题（Ribbon 与已 Reparent 进来的账套查看器不再属于主窗口控件树）
+		Theme.SetCurrentTree(_ledgerWindow);
 		if (CurrentLedgerViewer == null)
 		{
 			MultiLedgerViewer.LedgerDefaultPanel.Populate();
@@ -7515,11 +7635,55 @@ public class MainForm
 		if (_ledgerWindow != null && _ledgerWindow.Visible)
 		{
 			_ledgerWindow.Hide();
+			// 与点 X 隐藏一致：账务数据标签迁回主窗口 Ribbon，保证有入口可再次打开
+			MoveLedgerTabToMainForm();
 			HideRelatedLedgerTip();
 		}
 		else
 		{
 			ShowLedgerWindow();
+		}
+	}
+
+	// 把"账务数据"标签从主窗口 Ribbon 迁到账务窗口 Ribbon：数据采集/账套管理等命令组随页面走
+	private void MoveLedgerTabToLedgerWindow()
+	{
+		C1Ribbon mainRibbon = CurrentEdition?.Ribbon;
+		RibbonTab tab = AppCommandTabs.Ledger.RibbonTab;
+		if (mainRibbon == null || tab == null || _ledgerWindow == null)
+		{
+			return;
+		}
+		int index = mainRibbon.Tabs.IndexOf(tab);
+		if (index < 0)
+		{
+			// 已在账务窗口中（或不在主窗口），无需迁移
+			return;
+		}
+		_ledgerTabMainIndex = index;
+		mainRibbon.Tabs.Remove(tab);
+		_ledgerWindow.LedgerRibbon.Tabs.Add(tab);
+		// 迁入即显示：此刻窗口尚未 Show，LedgerWindowActive 还为 false，防止状态刷新把标签藏掉（入口已做许可证防护）
+		AppCommandTabs.Ledger.Visible = true;
+	}
+
+	// 账务窗口隐藏时把"账务数据"标签迁回主窗口 Ribbon（还原原位置），点击可再次打开账务窗口
+	private void MoveLedgerTabToMainForm()
+	{
+		C1Ribbon mainRibbon = CurrentEdition?.Ribbon;
+		RibbonTab tab = AppCommandTabs.Ledger.RibbonTab;
+		if (mainRibbon == null || tab == null || _ledgerWindow == null || !_ledgerWindow.LedgerRibbon.Tabs.Contains(tab))
+		{
+			return;
+		}
+		_ledgerWindow.LedgerRibbon.Tabs.Remove(tab);
+		if (_ledgerTabMainIndex >= 0 && _ledgerTabMainIndex <= mainRibbon.Tabs.Count)
+		{
+			mainRibbon.Tabs.Insert(_ledgerTabMainIndex, tab);
+		}
+		else
+		{
+			mainRibbon.Tabs.Add(tab);
 		}
 	}
 

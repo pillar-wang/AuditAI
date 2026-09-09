@@ -7,7 +7,7 @@ public class AppCommandLineSpacing : AppCommandMenu
 {
 	public override string Text => "段内行距";
 
-	public override Image LargeImage => Resources.LineSpacing;
+	public override Image LargeImage => IconRes.LineSpacing;
 
 	public AppCommandLineSpacing()
 		: base(new AppCommandBase[5]

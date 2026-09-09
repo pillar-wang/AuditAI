@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -56,16 +56,16 @@ public class ReferenceEditor
 	private C1Command cmdCrossProject = new C1Command
 	{
 		Text = "跨项目引用单元格",
-		Image = ContextResources.ctxAppendRow
+		Image = IconRes.ctxAppendRow
 	};
 
 	private C1CommandLink lnkCrossProject = new C1CommandLink();
 
-	private C1Command cmdBatchRef = new C1Command { Text = "批量引用多列", Image = ContextResources.ctxAppendRow };
+	private C1Command cmdBatchRef = new C1Command { Text = "批量引用多列", Image = IconRes.ctxAppendRow };
 	private C1CommandLink lnkBatchRef = new C1CommandLink();
-	private C1Command cmdRangeRef = new C1Command { Text = "区域引用", Image = ContextResources.ctxAppendRow };
+	private C1Command cmdRangeRef = new C1Command { Text = "区域引用", Image = IconRes.ctxAppendRow };
 	private C1CommandLink lnkRangeRef = new C1CommandLink();
-	private C1Command cmdComputeRef = new C1Command { Text = "公式运算引用", Image = ContextResources.ctxAppendRow };
+	private C1Command cmdComputeRef = new C1Command { Text = "公式运算引用", Image = IconRes.ctxAppendRow };
 	private C1CommandLink lnkComputeRef = new C1CommandLink();
 
 	private C1.Win.C1FlexGrid.CellStyle _csHyperlink;
@@ -229,11 +229,11 @@ public class ReferenceEditor
 			switch (_grid.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxEmpty, _grid, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
 			case HitTestTypeEnum.RowHeader:
-				ctxCell.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxCell, _grid, e.Location);
 				break;
 			}
 		}
@@ -310,7 +310,7 @@ public class ReferenceEditor
 	private void CmdAppend_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAppend.Text = "新增行";
-		cmdAppend.Image = ContextResources.ctxAppendRow;
+		cmdAppend.Image = IconRes.ctxAppendRow;
 	}
 
 	private void CmdRemove_Click(object sender, ClickEventArgs e)
@@ -321,7 +321,7 @@ public class ReferenceEditor
 	private void CmdRemove_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRemove.Text = "删除行";
-		cmdRemove.Image = ContextResources.ctxDeleteRow;
+		cmdRemove.Image = IconRes.ctxDeleteRow;
 		if (_grid.MouseRow >= 0 && _grid.MouseCol >= 0 && _grid.Rows[_grid.MouseRow].UserData is ViewModel { Model: not null } viewModel && (viewModel.Model.Kind == DataReferenceKind.Text || viewModel.Model.Kind == DataReferenceKind.CellRef))
 		{
 			e.Visible = true;
@@ -535,7 +535,7 @@ public class ReferenceEditor
 	private void CmdCrossProject_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCrossProject.Text = "跨项目引用单元格";
-		cmdCrossProject.Image = ContextResources.ctxAppendRow;
+		cmdCrossProject.Image = IconRes.ctxAppendRow;
 	}
 
 	private void CmdCrossProject_Click(object sender, ClickEventArgs e)

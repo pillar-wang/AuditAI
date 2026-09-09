@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -431,10 +431,10 @@ public class ValidationEditor
 		switch (hitTestInfo.Type)
 		{
 		case HitTestTypeEnum.None:
-			ctxEmpty.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(ctxEmpty, _grid, e.Location);
 			break;
 		case HitTestTypeEnum.RowHeader:
-			ctxRow.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(ctxRow, _grid, e.Location);
 			break;
 		case HitTestTypeEnum.Cell:
 			ctxCell.CommandLinks.Clear();
@@ -444,7 +444,7 @@ public class ValidationEditor
 			{
 				ctxCell.CommandLinks.Add(lnkPaste);
 			}
-			ctxCell.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(ctxCell, _grid, e.Location);
 			break;
 		}
 	}
@@ -479,7 +479,7 @@ public class ValidationEditor
 	private void CmdAppend_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAppend.Text = "新增行";
-		cmdAppend.Image = ContextResources.ctxAppendRow;
+		cmdAppend.Image = IconRes.ctxAppendRow;
 		if (!SoftwareLicenseManager.IsAllowEditFormula())
 		{
 			cmdAppend.Visible = false;
@@ -518,7 +518,7 @@ public class ValidationEditor
 	private void CmdRemove_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRemove.Text = "删除行";
-		cmdRemove.Image = ContextResources.ctxDeleteRow;
+		cmdRemove.Image = IconRes.ctxDeleteRow;
 		if (!SoftwareLicenseManager.IsAllowEditFormula())
 		{
 			cmdRemove.Visible = false;

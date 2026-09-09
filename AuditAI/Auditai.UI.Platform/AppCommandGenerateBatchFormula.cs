@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandGenerateBatchFormula : AppCommandButton
 {
-	public override Image LargeIcon => Resources.GenerateBatchFormula;
+	public override Image LargeIcon => IconRes.GenerateBatchFormula;
 
 	public override string Text => "智能扩充跨表公式";
 

@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandShrinkFont : AppCommandButton
 {
-	public override Image SmallIcon => Resources.ShrinkFont;
+	public override Image SmallIcon => IconRes.ShrinkFont;
 
 	protected override void Clicked()
 	{

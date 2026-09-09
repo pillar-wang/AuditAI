@@ -7,7 +7,7 @@ public class AppCommandTicketRowHeightDecrease : AppCommandButton
 {
 	public override string Text => "减少行高";
 
-	public override Image LargeIcon => Resources.DecreaseRowHeight;
+	public override Image LargeIcon => IconRes.DecreaseRowHeight;
 
 	protected override void Clicked()
 	{

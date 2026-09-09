@@ -9,7 +9,7 @@ public class AppCommandStructureAnalysis : AppCommandButton
 {
 	public override string Text => "结构分析";
 
-	public override Image LargeIcon => Resources.CommonSizeAnalysis;
+	public override Image LargeIcon => IconRes.CommonSizeAnalysis;
 
 	protected override void Clicked()
 	{

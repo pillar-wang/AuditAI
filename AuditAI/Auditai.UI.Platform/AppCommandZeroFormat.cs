@@ -8,7 +8,7 @@ public class AppCommandZeroFormat : AppCommandMenu
 {
 	public override string Text => "显示零值";
 
-	public override Image LargeImage => Auditai.UI.Platform.Properties.Resources.ToggleZero;
+	public override Image LargeImage => Auditai.UI.Platform.IconRes.ToggleZero;
 
 	protected override string Tooltip => TipResource.显示零值;
 

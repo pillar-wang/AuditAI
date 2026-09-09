@@ -7,7 +7,7 @@ public class AppGroupClipboard : AppCommandGroup
 {
 	public override string Text => "剪贴板";
 
-	public override Image Image => Resources.Copy;
+	public override Image Image => IconRes.Copy;
 
 	public AppGroupClipboard()
 	{

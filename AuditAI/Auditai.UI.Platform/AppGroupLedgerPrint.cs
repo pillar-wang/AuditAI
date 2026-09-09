@@ -7,7 +7,7 @@ public class AppGroupLedgerPrint : AppCommandGroup
 {
 	public override string Text => "打印输出";
 
-	public override Image Image => Resources.PrintPreview;
+	public override Image Image => IconRes.PrintPreview;
 
 	public AppGroupLedgerPrint()
 	{

@@ -276,11 +276,11 @@ public class TicketGridDecorator
 					_lastModifyObject = obj;
 					if (_lastModifyObject is C1OutPage)
 					{
-						_lastModifyOrignImage = Resources.TicketNav;
+						_lastModifyOrignImage = IconRes.TicketNav;
 					}
 					else if (_lastModifyObject is C1.Win.C1FlexGrid.Row)
 					{
-						_lastModifyOrignImage = Resources.Ticket16;
+						_lastModifyOrignImage = IconRes.Ticket16;
 					}
 					else
 					{

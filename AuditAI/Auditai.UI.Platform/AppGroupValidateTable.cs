@@ -7,7 +7,7 @@ public class AppGroupValidateTable : AppCommandGroup
 {
 	public override string Text => "表格校验";
 
-	public override Image Image => Resources.ValidateTable;
+	public override Image Image => IconRes.ValidateTable;
 
 	public AppGroupValidateTable()
 	{

@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档编辑器 - AuditAI</title>
+    <style id="theme-vars">
+/* ============================================================
+   AuditAI 账务数据页面 · 轻盈清新风 Design Tokens
+   brand prefix: audit
+   ============================================================ */
+:root {
+  /* ---- Semantic aliases (head contract) ---- */
+  --audit-background: #fafbfc;
+  --audit-foreground: #111827;
+  --audit-card: #ffffff;
+  --audit-card-foreground: #111827;
+  --audit-popover: #ffffff;
+  --audit-popover-foreground: #111827;
+  --audit-primary: #3b82f6;
+  --audit-primary-foreground: #ffffff;
+  --audit-muted: #f3f4f6;
+  --audit-muted-foreground: #6b7280;
+  --audit-border: #e5e7eb;
+  --audit-input: #d1d5db;
+  --audit-ring: #3b82f6;
+  --audit-radius-sm: 6px;
+  --audit-radius-md: 8px;
+  --audit-radius-lg: 12px;
+
+  /* ---- Brand scale (清新蓝) ---- */
+  --audit-brand: #3b82f6;
+  --audit-brand-hover: #2563eb;
+  --audit-brand-active: #1d4ed8;
+  --audit-brand-subtle: #eff6ff;
+  --audit-brand-border: #bfdbfe;
+  --audit-brand-foreground: #ffffff;
+
+  /* ---- State colors (status only) ---- */
+  --audit-success: #10b981;
+  --audit-success-hover: #059669;
+  --audit-success-subtle: #ecfdf5;
+  --audit-success-border: #a7f3d0;
+  --audit-success-foreground: #065f46;
+
+  --audit-warning: #f59e0b;
+  --audit-warning-hover: #d97706;
+  --audit-warning-subtle: #fffbeb;
+  --audit-warning-border: #fde68a;
+  --audit-warning-foreground: #92400e;
+
+  --audit-error: #ef4444;
+  --audit-error-hover: #dc2626;
+  --audit-error-subtle: #fef2f2;
+  --audit-error-border: #fecaca;
+  --audit-error-foreground: #991b1b;
+
+  --audit-info: #06b6d4;
+  --audit-info-subtle: #ecfeff;
+  --audit-info-border: #a5f3fc;
+  --audit-info-foreground: #155e75;
+
+  /* ---- Surfaces ---- */
+  --audit-surface: #ffffff;
+  --audit-surface-muted: #fafbfc;
+  --audit-surface-subtle: #f3f4f6;
+  --audit-surface-hover: #f9fafb;
+  --audit-surface-selected: #eff6ff;
+
+  /* ---- Text ---- */
+  --audit-text: #0f172a;
+  --audit-text-secondary: #1e293b;
+  --audit-text-tertiary: #475569;
+  --audit-text-muted: #94a3b8;
+  --audit-text-disabled: #cbd5e1;
+  --audit-text-on-brand: #ffffff;
+
+  /* ---- Borders ---- */
+  --audit-border-subtle: #f3f4f6;
+  --audit-border-strong: #d1d5db;
+
+  /* ---- Sidebar ---- */
+  --audit-sidebar-bg: #fafbfc;
+  --audit-sidebar-item-hover: #f3f4f6;
+  --audit-sidebar-item-active: #eff6ff;
+  --audit-sidebar-text: #374151;
+  --audit-sidebar-text-active: #1d4ed8;
+
+  /* ---- Typography ---- */
+  --audit-font-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --audit-font-mono: "Consolas", "SF Mono", "Cascadia Code", Monaco, "Courier New", monospace;
+
+  --audit-fs-display: 24px;
+  --audit-fs-h1: 20px;
+  --audit-fs-h2: 16px;
+  --audit-fs-h3: 14px;
+  --audit-fs-body: 14px;
+  --audit-fs-caption: 13px;
+  --audit-fs-tiny: 12px;
+
+  --audit-fw-normal: 400;
+  --audit-fw-medium: 500;
+  --audit-fw-semibold: 600;
+  --audit-fw-bold: 700;
+
+  /* ---- Font rendering (sharpness tuning) ---- */
+  --audit-font-smoothing: antialiased;
+  --audit-text-rendering: optimizeLegibility;
+
+  /* ---- Shadows (static alpha <= 0.05) ---- */
+  --audit-shadow-xs: 0 1px 2px 0 rgba(17, 24, 39, 0.04);
+  --audit-shadow-sm: 0 1px 3px 0 rgba(17, 24, 39, 0.05), 0 1px 2px -1px rgba(17, 24, 39, 0.03);
+  --audit-shadow-float: 0 8px 24px -6px rgba(17, 24, 39, 0.12), 0 2px 6px -2px rgba(17, 24, 39, 0.06);
+
+  /* ---- Layout ---- */
+  --audit-sidebar-width: 232px;
+  --audit-topbar-height: 56px;
+  --audit-statusbar-height: 32px;
+  --audit-content-padding: 20px;
+
+  /* ---- Motion ---- */
+  --audit-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --audit-dur-fast: 120ms;
+  --audit-dur-base: 160ms;
+}
+
+    
+  /* ========== Icon System ========== */
+  .icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    vertical-align: middle;
+    stroke: currentColor;
+  }
+  .icon--xs { width: 14px; height: 14px; }
+  .icon--sm { width: 16px; height: 16px; }
+  .icon--md { width: 20px; height: 20px; }
+  .icon--lg { width: 24px; height: 24px; }
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--audit-background);
+    --color-foreground: var(--audit-foreground);
+    --color-card: var(--audit-card);
+    --color-card-foreground: var(--audit-card-foreground);
+    --color-popover: var(--audit-popover);
+    --color-popover-foreground: var(--audit-popover-foreground);
+    --color-primary: var(--audit-primary);
+    --color-primary-foreground: var(--audit-primary-foreground);
+    --color-muted: var(--audit-muted);
+    --color-muted-foreground: var(--audit-muted-foreground);
+    --color-border: var(--audit-border);
+    --color-input: var(--audit-input);
+    --color-ring: var(--audit-ring);
+    --radius-sm: var(--audit-radius-sm);
+    --radius-md: var(--audit-radius-md);
+    --radius-lg: var(--audit-radius-lg);
+  }
+  @layer base {
+    body { background: var(--audit-background); color: var(--audit-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--audit-background); }
+      .text-background { color: var(--audit-background); }
+      .border-background { border-color: var(--audit-background); }
+      .ring-background { --tw-ring-color: var(--audit-background); }
+      .bg-foreground { background-color: var(--audit-foreground); }
+      .text-foreground { color: var(--audit-foreground); }
+      .border-foreground { border-color: var(--audit-foreground); }
+      .ring-foreground { --tw-ring-color: var(--audit-foreground); }
+      .bg-card { background-color: var(--audit-card); }
+      .text-card { color: var(--audit-card); }
+      .border-card { border-color: var(--audit-card); }
+      .ring-card { --tw-ring-color: var(--audit-card); }
+      .bg-card-foreground { background-color: var(--audit-card-foreground); }
+      .text-card-foreground { color: var(--audit-card-foreground); }
+      .border-card-foreground { border-color: var(--audit-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--audit-card-foreground); }
+      .bg-popover { background-color: var(--audit-popover); }
+      .text-popover { color: var(--audit-popover); }
+      .border-popover { border-color: var(--audit-popover); }
+      .ring-popover { --tw-ring-color: var(--audit-popover); }
+      .bg-popover-foreground { background-color: var(--audit-popover-foreground); }
+      .text-popover-foreground { color: var(--audit-popover-foreground); }
+      .border-popover-foreground { border-color: var(--audit-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--audit-popover-foreground); }
+      .bg-primary { background-color: var(--audit-primary); }
+      .text-primary { color: var(--audit-primary); }
+      .border-primary { border-color: var(--audit-primary); }
+      .ring-primary { --tw-ring-color: var(--audit-primary); }
+      .bg-primary-foreground { background-color: var(--audit-primary-foreground); }
+      .text-primary-foreground { color: var(--audit-primary-foreground); }
+      .border-primary-foreground { border-color: var(--audit-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--audit-primary-foreground); }
+      .bg-muted { background-color: var(--audit-muted); }
+      .text-muted { color: var(--audit-muted); }
+      .border-muted { border-color: var(--audit-muted); }
+      .ring-muted { --tw-ring-color: var(--audit-muted); }
+      .bg-muted-foreground { background-color: var(--audit-muted-foreground); }
+      .text-muted-foreground { color: var(--audit-muted-foreground); }
+      .border-muted-foreground { border-color: var(--audit-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--audit-muted-foreground); }
+      .bg-border { background-color: var(--audit-border); }
+      .text-border { color: var(--audit-border); }
+      .border-border { border-color: var(--audit-border); }
+      .ring-border { --tw-ring-color: var(--audit-border); }
+      .bg-input { background-color: var(--audit-input); }
+      .text-input { color: var(--audit-input); }
+      .border-input { border-color: var(--audit-input); }
+      .ring-input { --tw-ring-color: var(--audit-input); }
+      .bg-ring { background-color: var(--audit-ring); }
+      .text-ring { color: var(--audit-ring); }
+      .border-ring { border-color: var(--audit-ring); }
+      .ring-ring { --tw-ring-color: var(--audit-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      /* Sharp icon rendering — align to pixel grid, use geometric precision */
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="font-sans subpixel-antialiased overflow-hidden" style="font-family: var(--audit-font-sans); font-size: var(--audit-fs-body); color: var(--audit-text); text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;">
+
+<!-- ======= Ribbon ======= -->
+<div class="ribbon">
+  <!-- QAT Bar -->
+  <div class="qat-bar">
+    <div class="qat-left">
+      <div class="qat-btn" title="保存">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </div>
+      <div class="qat-btn" title="撤销">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </div>
+      <div class="qat-btn" title="重做">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </div>
+    </div>
+    <div class="qat-right">
+      <div class="qat-btn" title="成员">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="qat-btn" title="消息">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="qat-btn" title="返回">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </div>
+      <div class="qat-btn" title="前进">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+      <div class="qat-btn" title="刷新">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
+      <div class="qat-btn" title="同步项目">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+      </div>
+      <div class="qat-btn" title="全屏">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </div>
+      <div class="qat-btn" title="主题">
+        <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item">项目</div>
+    <div class="tab-item">文件管理</div>
+    <div class="tab-item">账套</div>
+    <div class="tab-item">显示设置</div>
+    <div class="tab-item">表格编辑</div>
+    <div class="tab-item active">文档编辑</div>
+    <div class="tab-item">高级</div>
+    <div class="tab-item">计算</div>
+    <div class="tab-item">打印</div>
+    <div class="tab-item">设置</div>
+    <div class="tab-item">公式</div>
+  </div>
+
+  <!-- Ribbon Groups -->
+  <div class="ribbon-groups">
+    <!-- 文档锁定 -->
+    <div class="ribbon-group">
+      <div class="group-body">
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span class="rbtn-text">锁定</span>
+        </div>
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+          <span class="rbtn-text">解锁</span>
+        </div>
+      </div>
+      <div class="group-label">文档锁定</div>
+    </div>
+
+    <!-- 剪贴板 -->
+    <div class="ribbon-group">
+      <div class="group-body">
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span class="rbtn-text">复制</span>
+        </div>
+        <div class="rbtn">
+          <svg class="icon rbtn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v3a1 1 0 0 0 1 1h4"/><path d="M18 2v3a1 1 0 0 1-1 1h-4"/><path d="M8 22h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+          <span class="rbtn-text">剪切</span>
+        </div>
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" rx="1" ry="1"/></svg>
+          <span class="rbtn-text">粘贴</span>
+        </div>
+        <div class="rbtn">
+          <svg class="icon rbtn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.06 1.93l-6 6a2 2 0 0 0 0 2.83l10 10a2 2 0 0 0 2.83 0l6-6a2 2 0 0 0 0-2.83l-10-10a2 2 0 0 0-2.83 0z"/><path d="m7 13 10-10"/></svg>
+          <span class="rbtn-text">格式刷</span>
+        </div>
+      </div>
+      <div class="group-label">剪贴板</div>
+    </div>
+
+    <!-- 字体样式 -->
+    <div class="ribbon-group">
+      <div class="group-body" style="flex-direction:column;gap:3px;">
+        <div style="display:flex;gap:4px;">
+          <select class="font-select w-24"><option>微软雅黑</option></select>
+          <select class="font-select w-16"><option>小四</option></select>
+        </div>
+        <div class="rbtn-row">
+          <div class="rbtn-sm active" title="加粗" style="font-weight:700;">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
+          </div>
+          <div class="rbtn-sm" title="斜体">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+          </div>
+          <div class="rbtn-sm" title="下划线">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+          </div>
+          <div class="rbtn-sm" title="删除线">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M17.5 7.5c-.5-1.5-2-3-5.5-3s-6 1.5-6 4c0 2.5 2.5 3.5 6 3.5s5.5 1 5.5 3c0 2.5-2 3.5-5.5 3.5s-5-1.5-5.5-3"/></svg>
+          </div>
+          <div class="rbtn-sm" title="下标">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8 10"/><path d="M12 7l-8 10"/><text x="19" y="20" font-size="8" fill="currentColor" stroke="none">2</text></svg>
+          </div>
+          <div class="rbtn-sm" title="上标">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l8-10"/><path d="M12 17l-8-10"/><text x="19" y="9" font-size="8" fill="currentColor" stroke="none">2</text></svg>
+          </div>
+        </div>
+        <div class="rbtn-row">
+          <div class="rbtn-sm" title="文字颜色" style="flex-direction:column;justify-content:center;gap:0;">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7.5 16l3.5-12 3.5 12"/><path d="M8.5 13h6"/></svg>
+            <div class="color-dot" style="background:#1d4ed8;width:12px;"></div>
+          </div>
+          <div class="rbtn-sm" title="文字高亮色" style="flex-direction:column;justify-content:center;gap:0;">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L4 14h7l-1 7 8-11h-7l1-7z"/></svg>
+            <div class="color-dot" style="background:#fef08a;width:12px;"></div>
+          </div>
+          <div class="rbtn-sm" title="增大字号">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="7" x2="12" y2="20"/></svg>
+          </div>
+          <div class="rbtn-sm" title="缩小字号">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="7" y1="20" x2="17" y2="20"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="group-label">字体样式</div>
+    </div>
+
+    <!-- 段落格式 -->
+    <div class="ribbon-group">
+      <div class="group-body" style="flex-direction:column;gap:3px;">
+        <div class="rbtn-row">
+          <div class="rbtn-sm active" title="左对齐">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+          </div>
+          <div class="rbtn-sm" title="居中对齐">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </div>
+          <div class="rbtn-sm" title="右对齐">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
+          </div>
+          <div class="rbtn-sm" title="两端对齐">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </div>
+          <select class="dropdown-sm" style="width:52px;margin-left:2px;"><option>行距</option></select>
+        </div>
+        <div class="rbtn-row">
+          <div class="rbtn-sm" title="首行缩进">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M9 6l-3 3 3 3"/></svg>
+          </div>
+          <div class="rbtn-sm" title="段落缩进">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6h8"/><path d="M7 12h14"/><path d="M7 18h14"/><path d="M3 6v6h6l-3-3"/></svg>
+          </div>
+          <div class="rbtn-sm" title="段前间距">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="20" y2="18"/><polyline points="12 8 9 11 15 11"/></svg>
+          </div>
+          <div class="rbtn-sm" title="段后间距">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="18" x2="20" y2="18"/><polyline points="12 16 15 13 9 13"/></svg>
+          </div>
+          <div class="rbtn-sm" title="项目符号">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+          </div>
+          <div class="rbtn-sm" title="编号">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="2" y="8" font-size="7" fill="currentColor" stroke="none" font-weight="600">1</text><text x="2" y="14" font-size="7" fill="currentColor" stroke="none" font-weight="600">2</text><text x="2" y="20" font-size="7" fill="currentColor" stroke="none" font-weight="600">3</text></svg>
+          </div>
+        </div>
+      </div>
+      <div class="group-label">段落格式</div>
+    </div>
+
+    <!-- 插入元素 -->
+    <div class="ribbon-group">
+      <div class="group-body">
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/><path d="M14 13h6" stroke="var(--audit-success)"/><path d="M17 10v6" stroke="var(--audit-success)"/></svg>
+          <span class="rbtn-text">插入引用表</span>
+        </div>
+        <div class="rbtn">
+          <svg class="icon rbtn-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-warning)"><path d="M6 9h12M6 15h12"/><path d="M9 6l-3 3 3 3"/><path d="M15 12l3 3-3 3"/><rect x="3" y="3" rx="2"/></svg>
+          <span class="rbtn-text">插入变量</span>
+        </div>
+        <div class="rbtn-row" style="margin-top:4px;">
+          <div class="rbtn-sm" title="插入图片">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="rbtn-sm" title="插入图文框">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div class="rbtn-sm" title="插入符号">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/><path d="M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+          </div>
+          <div class="rbtn-sm" title="分页符">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V3"/><path d="M6 21v-6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v6"/><path d="M3 12h18" stroke-dasharray="2 2"/></svg>
+          </div>
+          <div class="rbtn-sm" title="分节符">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 8h18"/><path d="M3 16h18"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="group-label">插入元素</div>
+    </div>
+
+    <!-- 查找替换 -->
+    <div class="ribbon-group">
+      <div class="group-body">
+        <div class="rbtn">
+          <svg class="icon rbtn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><path d="M8 11h6"/><path d="M11 8v6"/></svg>
+          <span class="rbtn-text">查找替换</span>
+        </div>
+      </div>
+      <div class="group-label">查找替换</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= Main Layout ======= -->
+<div data-viewport-mode="app-shell" class="main-layout">
+  <!-- Left Sidebar -->
+  <div class="sidebar-left">
+    <div class="sidebar-breadcrumb">
+      XX会计师事务所审计项目<br>
+      <span class="crumb-current">/ 2024年度财务报表审计</span>
+    </div>
+    <div class="sidebar-search">
+      <svg class="icon search-icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="搜索节点...">
+    </div>
+    <div class="tree-container">
+      <!-- Level 1: 审计底稿 -->
+      <div class="tree-node level-1">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-warning)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>审计底稿</span>
+      </div>
+      <!-- Level 2: 业务循环类 -->
+      <div class="tree-node level-2">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-warning)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>业务循环类</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>销售与收款循环</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>采购与付款循环</span>
+      </div>
+      <!-- Level 2: 报表项目类 -->
+      <div class="tree-node level-2">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-warning)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>报表项目类</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>货币资金</span>
+        <span class="node-status status-check">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>应收账款</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon icon--md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-brand)"><rect x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>存货</span>
+        <span class="node-status status-warn">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+      </div>
+      <!-- Level 2: 审计报告 -->
+      <div class="tree-node level-2">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-warning)"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>审计报告</span>
+      </div>
+      <!-- Level 3 - 文档节点 -->
+      <div class="tree-node level-3 active">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>审计报告正文</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>管理建议书</span>
+      </div>
+      <div class="tree-node level-3">
+        <svg class="icon node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>业务约定书</span>
+      </div>
+    </div>
+    <div class="tree-footer">共 42 个节点</div>
+  </div>
+
+  <!-- Center: Document Editor -->
+  <div class="doc-area">
+    <!-- Horizontal Ruler -->
+    <div class="ruler-bar">
+      <div class="ruler-scale">
+        <!-- CM marks 0-21 -->
+        <div class="ruler-tick major" style="left:0px;"></div>
+        <div class="ruler-cm" style="left:0px;">0</div>
+        <div class="ruler-tick minor" style="left:28px;"></div>
+        <div class="ruler-tick minor" style="left:57px;"></div>
+        <div class="ruler-tick minor" style="left:85px;"></div>
+        <div class="ruler-tick minor" style="left:113px;"></div>
+        <div class="ruler-tick major" style="left:142px;"></div>
+        <div class="ruler-cm" style="left:142px;">2</div>
+        <div class="ruler-tick minor" style="left:170px;"></div>
+        <div class="ruler-tick minor" style="left:198px;"></div>
+        <div class="ruler-tick minor" style="left:227px;"></div>
+        <div class="ruler-tick minor" style="left:255px;"></div>
+        <div class="ruler-tick major" style="left:283px;"></div>
+        <div class="ruler-cm" style="left:283px;">4</div>
+        <div class="ruler-tick minor" style="left:312px;"></div>
+        <div class="ruler-tick minor" style="left:340px;"></div>
+        <div class="ruler-tick minor" style="left:368px;"></div>
+        <div class="ruler-tick minor" style="left:397px;"></div>
+        <div class="ruler-tick major" style="left:425px;"></div>
+        <div class="ruler-cm" style="left:425px;">6</div>
+        <div class="ruler-tick minor" style="left:453px;"></div>
+        <div class="ruler-tick minor" style="left:482px;"></div>
+        <div class="ruler-tick minor" style="left:510px;"></div>
+        <div class="ruler-tick minor" style="left:538px;"></div>
+        <div class="ruler-tick major" style="left:567px;"></div>
+        <div class="ruler-cm" style="left:567px;">8</div>
+
+        <!-- Indent markers -->
+        <div class="indent-marker indent-first-line" title="首行缩进">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div class="indent-marker indent-left" title="左缩进">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+        </div>
+        <div class="indent-marker indent-right" title="右缩进">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document Scroll Area -->
+    <div class="doc-scroll">
+      <div class="doc-page">
+        <div class="doc-content">
+          <h1 class="doc-title">审 计 报 告</h1>
+          <h2 class="doc-subtitle">XX会审字[2025]第XXXX号</h2>
+          <p class="doc-recipient" style="text-indent:0;">ABC股份有限公司全体股东：</p>
+
+          <p>我们审计了后附的ABC股份有限公司（以下简称"ABC公司"）财务报表，包括2024年12月31日的资产负债表，<span class="data-field" title="点击查看取数来源">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            资产总计：1,234,567,890.00元
+          </span>2024年度的利润表、现金流量表、股东权益变动表以及相关财务报表附注。</p>
+
+          <!-- Bookmark marker for "审计意见段" -->
+          <div class="bookmark-marker" style="top: 260px;" title="审计意见段"></div>
+          <p>我们认为，后附的财务报表在所有重大方面按照企业会计准则的规定编制，<span class="comment-marker">公允反映<sup class="comment-badge">1</sup></span>了ABC公司2024年12月31日的财务状况以及2024年度的经营成果和现金流量。</p>
+
+          <h3>二、形成审计意见的基础</h3>
+          <p>我们按照中国注册会计师审计准则的规定执行了审计工作。审计报告的"注册会计师对财务报表审计的责任"部分进一步阐述了我们在这些准则下的责任。按照中国注册会计师职业道德守则，我们独立于ABC公司，并履行了职业道德方面的其他责任。我们相信，我们获取的审计证据是充分、适当的，为发表审计意见提供了基础。</p>
+
+          <h3>三、关键审计事项</h3>
+          <p>关键审计事项是我们根据职业判断，认为对本期财务报表审计最为重要的事项。这些事项的应对以对财务报表整体进行审计并形成审计意见为背景，我们不对这些事项单独发表意见。</p>
+
+          <p>（一）应收账款坏账准备</p>
+          <p>如财务报表附注五、3所述，ABC公司2024年12月31日应收账款余额为人民币<span class="data-field" style="font-size:12px;padding:0 6px;">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            245,680,000.00元
+          </span>，坏账准备余额为人民币12,284,000.00元。由于应收账款金额重大，且管理层在确定坏账准备时需要作出重大判断和估计，我们将应收账款坏账准备确认识别为关键审计事项。</p>
+        </div>
+      </div>
+
+      <div class="doc-page-info">第 1 页，共 22 页</div>
+    </div>
+  </div>
+
+  <!-- Right: Validation Panel -->
+  <div class="sidebar-right">
+    <div class="panel-header">
+      <span class="panel-title">文档校验</span>
+      <div class="panel-collapse-btn" title="折叠面板">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+    <div data-scroll-region="primary" class="panel-body overflow-y-auto">
+      <!-- Action buttons -->
+      <div class="validation-actions">
+        <button class="btn-primary">开始校验</button>
+        <button class="btn-secondary" title="上一处">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <button class="btn-secondary" title="下一处">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+
+      <!-- Stats card -->
+      <div class="stats-card">
+        <div class="stat-item">
+          <div class="stat-value error">2</div>
+          <div class="stat-label">错误</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value warning">5</div>
+          <div class="stat-label">警告</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value success">38</div>
+          <div class="stat-label">通过</div>
+        </div>
+      </div>
+
+      <!-- Validation list -->
+      <div class="validation-list">
+        <div class="validation-section-title">错误（2）</div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">数据不一致</div>
+            <div class="validation-desc">资产总计金额与资产负债表底稿不符（底稿：1,234,567,891.00）</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">签名缺失</div>
+            <div class="validation-desc">缺少注册会计师签名签章</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-section-title" style="margin-top:8px;">警告（5）</div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">格式警告</div>
+            <div class="validation-desc">一级标题字体不是规定黑体</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">日期格式</div>
+            <div class="validation-desc">报告日期格式不统一</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">引用缺失</div>
+            <div class="validation-desc">未引用管理层讨论与分析</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">段落间距</div>
+            <div class="validation-desc">第3段段前间距不符合规范</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+
+        <div class="validation-item">
+          <svg class="icon validation-icon" viewBox="0 0 24 24" fill="none" stroke="var(--audit-warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div class="validation-content">
+            <div class="validation-title">编号不连续</div>
+            <div class="validation-desc">审计意见段后缺少"一、"标题编号</div>
+          </div>
+          <span class="locate-btn">定位</span>
+        </div>
+      </div>
+
+      <!-- Footer link -->
+      <div class="panel-footer-link">
+        <a>校验域管理</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======= Status Bar ======= -->
+<div class="status-bar">
+  <div class="status-left">
+    <div class="status-item">
+      <span class="status-dot"></span>
+      <span>就绪</span>
+    </div>
+  </div>
+  <div class="status-center">
+    <span>第 1 节 / 第 1 页 / 共 22 页 / 字数：3,456 / 字符：4,120</span>
+  </div>
+  <div class="status-right">
+    <div class="status-item" title="拼写检查">
+      <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/><path d="M5 7l7 13 7-13"/></svg>
+    </div>
+    <div class="status-item" title="校对">
+      <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><polyline points="10 9 9 9 8 9"/></svg>
+    </div>
+    <div class="zoom-control">
+      <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-text-muted)"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="zoom-slider">
+        <div class="zoom-fill"></div>
+        <div class="zoom-thumb"></div>
+      </div>
+      <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--audit-text-muted)"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span style="min-width:36px;text-align:right;">100%</span>
+    </div>
+  </div>
+</div>
+
+
+    <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--audit-font-sans);
+    font-size: var(--audit-fs-body);
+    color: var(--audit-text);
+    background: var(--audit-background);
+    overflow: hidden;
+    width: 1440px;
+    height: 900px;
+  }
+  .mono { font-family: var(--audit-font-mono); font-variant-numeric: tabular-nums; }
+
+  /* ===== Ribbon ===== */
+  .ribbon {
+    background: var(--audit-surface);
+    border-bottom: 1px solid var(--audit-border);
+    box-shadow: var(--audit-shadow-xs);
+  }
+  .qat-bar {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--audit-border-subtle);
+    background: var(--audit-surface-muted);
+  }
+  .qat-left, .qat-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .qat-btn {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--audit-text-secondary);
+    cursor: pointer;
+  }
+  .qat-btn:hover { background: var(--audit-surface-hover); color: var(--audit-text); }
+
+  .tab-bar {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--audit-border);
+    gap: 4px;
+  }
+  .tab-item {
+    height: 36px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--audit-fs-body);
+    color: var(--audit-text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+  }
+  .tab-item:hover { color: var(--audit-text); }
+  .tab-item.active {
+    color: var(--audit-brand-active);
+    font-weight: 600;
+  }
+  .tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: var(--audit-brand);
+    border-radius: 2px 2px 0 0;
+  }
+
+  .ribbon-groups {
+    height: 88px;
+    display: flex;
+    align-items: stretch;
+    padding: 0 8px;
+    gap: 0;
+  }
+  .ribbon-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 10px 4px;
+    border-right: 1px solid var(--audit-border-subtle);
+    min-width: 0;
+  }
+  .ribbon-group:last-child { border-right: none; }
+  .group-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .group-label {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    line-height: 16px;
+  }
+
+  .rbtn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    min-width: 40px;
+    color: var(--audit-text-secondary);
+    transition: background 0.12s;
+  }
+  .rbtn:hover { background: var(--audit-surface-hover); color: var(--audit-text); }
+  .rbtn-icon { width: 16px; height: 16px; margin-bottom: 2px; }
+  .rbtn-text { font-size: var(--audit-fs-tiny); line-height: 1; }
+
+  .rbtn-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+  }
+  .rbtn-sm {
+    width: 24px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--audit-text-secondary);
+    border: 1px solid transparent;
+  }
+  .rbtn-sm:hover { background: var(--audit-surface-hover); border-color: var(--audit-border); }
+  .rbtn-sm.active { background: var(--audit-brand-subtle); border-color: var(--audit-brand-border); color: var(--audit-brand-active); }
+
+  .font-select {
+    height: 24px;
+    border: 1px solid var(--audit-border);
+    border-radius: 4px;
+    padding: 0 24px 0 8px;
+    font-size: var(--audit-fs-caption);
+    background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    cursor: pointer;
+  }
+  .font-select.w-24 { width: 96px; }
+  .font-select.w-16 { width: 64px; }
+
+  .color-dot {
+    width: 16px;
+    height: 4px;
+    border-radius: 1px;
+    margin-top: 1px;
+  }
+
+  .dropdown-sm {
+    height: 22px;
+    border: 1px solid var(--audit-border);
+    border-radius: 3px;
+    padding: 0 20px 0 6px;
+    font-size: 12px;
+    background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    cursor: pointer;
+    color: var(--audit-text-secondary);
+  }
+
+  /* ===== Main Layout ===== */
+  .main-layout {
+    display: flex;
+    height: calc(900px - 28px - 36px - 88px - 32px);
+    /* 900 - qat(28) - tabbar(36) - groups(88) - statusbar(32) = 716 */
+    overflow: hidden;
+  }
+
+  /* ===== Left Sidebar - Project Tree ===== */
+  .sidebar-left {
+    width: 232px;
+    background: var(--audit-sidebar-bg);
+    border-right: 1px solid var(--audit-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sidebar-breadcrumb {
+    padding: 10px 12px 8px;
+    font-size: var(--audit-fs-caption);
+    color: var(--audit-text-tertiary);
+    line-height: 1.5;
+    border-bottom: 1px solid var(--audit-border-subtle);
+  }
+  .sidebar-breadcrumb .crumb-current {
+    color: var(--audit-text-secondary);
+    font-weight: 500;
+  }
+  .sidebar-search {
+    padding: 8px 10px;
+    position: relative;
+  }
+  .sidebar-search input {
+    width: 100%;
+    height: 28px;
+    border: 1px solid var(--audit-border);
+    border-radius: var(--audit-radius-sm);
+    padding: 0 10px 0 30px;
+    font-size: var(--audit-fs-caption);
+    background: #fff;
+    outline: none;
+  }
+  .sidebar-search input:focus { border-color: var(--audit-brand); }
+  .sidebar-search .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--audit-text-muted);
+  }
+  .tree-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 6px;
+  }
+  .tree-node {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: var(--audit-radius-sm);
+    cursor: pointer;
+    font-size: var(--audit-fs-body);
+    color: var(--audit-sidebar-text);
+    gap: 6px;
+    white-space: nowrap;
+    overflow: visible;
+  }
+  .tree-node span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tree-node:hover { background: var(--audit-sidebar-item-hover); }
+  .tree-node.active {
+    background: var(--audit-sidebar-item-active);
+    color: var(--audit-sidebar-text-active);
+    font-weight: 500;
+  }
+  .tree-node.level-1 { padding-left: 8px; }
+  .tree-node.level-2 { padding-left: 28px; }
+  .tree-node.level-3 { padding-left: 48px; }
+  .tree-node .node-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .tree-node .node-status {
+    margin-left: auto;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .tree-node .status-check { color: var(--audit-success); }
+  .tree-node .status-warn { color: var(--audit-warning); }
+
+  .tree-footer {
+    height: 32px;
+    border-top: 1px solid var(--audit-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-muted);
+  }
+
+  /* ===== Center - Document Editor ===== */
+  .doc-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--audit-surface-subtle);
+    min-width: 0;
+  }
+  .ruler-bar {
+    height: 22px;
+    background: var(--audit-surface);
+    border-bottom: 1px solid var(--audit-border);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 0 0 60px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .ruler-scale {
+    position: relative;
+    height: 100%;
+    width: 595px; /* A4 width at ~72dpi */
+  }
+  .ruler-cm {
+    position: absolute;
+    bottom: 0;
+    font-size: 12px;
+    color: var(--audit-text-muted);
+    font-family: var(--audit-font-mono);
+    transform: translateX(-50%);
+    line-height: 1;
+    padding-bottom: 2px;
+  }
+  .ruler-tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    background: var(--audit-border-strong);
+  }
+  .ruler-tick.major { height: 8px; }
+  .ruler-tick.minor { height: 4px; background: var(--audit-border); }
+
+  .indent-marker {
+    position: absolute;
+    top: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .indent-first-line {
+    left: 40px;
+    top: -1px;
+  }
+  .indent-left {
+    left: 40px;
+    top: 6px;
+  }
+  .indent-right {
+    right: 40px;
+    top: 6px;
+  }
+
+  .doc-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .doc-page {
+    width: 595px; /* A4 at ~72dpi width */
+    min-height: 842px; /* A4 at ~72dpi height */
+    background: #fff;
+    border: 1px solid var(--audit-border);
+    box-shadow: var(--audit-shadow-float);
+    padding: 72px 60px; /* ~2.5cm top/bottom, ~2cm left/right */
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Document content styles */
+  .doc-content { font-family: "SimSun", "宋体", "Microsoft YaHei", serif; color: #111827; }
+  .doc-content h1.doc-title {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "Microsoft YaHei", sans-serif;
+    text-align: center;
+    letter-spacing: 8px;
+    margin-bottom: 16px;
+  }
+  .doc-content h2.doc-subtitle {
+    font-size: 15px;
+    font-weight: 400;
+    text-align: center;
+    color: var(--audit-text-secondary);
+    margin-bottom: 28px;
+    font-family: "SimSun", "宋体", serif;
+  }
+  .doc-content .doc-recipient {
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    font-family: "SimSun", "宋体", serif;
+  }
+  .doc-content p {
+    font-size: 12px;
+    line-height: 1.8;
+    text-indent: 2em;
+    margin-bottom: 10px;
+    font-family: "SimSun", "宋体", serif;
+    text-align: justify;
+  }
+  .doc-content h3 {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: "SimHei", "黑体", "Microsoft YaHei", sans-serif;
+    margin: 18px 0 10px;
+  }
+
+  /* Data field - 取数域 */
+  .data-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--audit-brand-subtle);
+    border: 1px solid var(--audit-brand-border);
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-family: var(--audit-font-mono);
+    font-size: 12px;
+    color: var(--audit-brand-active);
+    font-weight: 500;
+    margin: 0 2px;
+    vertical-align: baseline;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .data-field:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+  }
+
+  /* Bookmark marker */
+  .bookmark-marker {
+    position: absolute;
+    left: 10px;
+    width: 3px;
+    height: 18px;
+    background: var(--audit-error);
+    border-radius: 0 2px 2px 0;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .bookmark-marker:hover { opacity: 1; }
+  .bookmark-marker::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -3px;
+    width: 9px;
+    height: 9px;
+    background: var(--audit-error);
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+    border-radius: 1px 1px 0 0;
+  }
+
+  /* Comment marker */
+  .comment-marker {
+    position: relative;
+    display: inline;
+    cursor: pointer;
+  }
+  .comment-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    min-width: 14px;
+    height: 14px;
+    background: var(--audit-error);
+    border-radius: 3px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--audit-font-sans);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+    font-style: normal;
+  }
+  .comment-badge::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 3px;
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-top: 3px solid var(--audit-error);
+  }
+
+  /* Page info */
+  .doc-page-info {
+    text-align: center;
+    font-size: 12px;
+    color: var(--audit-text-tertiary);
+    margin-top: 12px;
+    padding-bottom: 8px;
+  }
+
+  /* ===== Right Panel - Validation ===== */
+  .sidebar-right {
+    width: 280px;
+    background: var(--audit-surface);
+    border-left: 1px solid var(--audit-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .panel-header {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--audit-border);
+    background: var(--audit-surface);
+  }
+  .panel-title {
+    font-size: var(--audit-fs-h3);
+    font-weight: 600;
+    color: var(--audit-text);
+  }
+  .panel-collapse-btn {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--audit-text-tertiary);
+  }
+  .panel-collapse-btn:hover { background: var(--audit-surface-hover); }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .validation-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .btn-primary {
+    height: 28px;
+    padding: 0 12px;
+    background: var(--audit-brand);
+    color: #fff;
+    border: none;
+    border-radius: var(--audit-radius-sm);
+    font-size: var(--audit-fs-caption);
+    cursor: pointer;
+    font-weight: 500;
+    flex: 1;
+  }
+  .btn-primary:hover { background: var(--audit-brand-hover); }
+  .btn-secondary {
+    height: 28px;
+    padding: 0 10px;
+    background: #fff;
+    color: var(--audit-text-secondary);
+    border: 1px solid var(--audit-border);
+    border-radius: var(--audit-radius-sm);
+    font-size: var(--audit-fs-caption);
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: var(--audit-surface-hover); border-color: var(--audit-border-strong); }
+
+  .stats-card {
+    background: var(--audit-surface);
+    border: 1px solid var(--audit-border);
+    border-radius: var(--audit-radius-md);
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .stat-item {
+    text-align: center;
+    flex: 1;
+  }
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    font-family: var(--audit-font-mono);
+  }
+  .stat-value.error { color: var(--audit-error); }
+  .stat-value.warning { color: var(--audit-warning); }
+  .stat-value.success { color: var(--audit-success); }
+  .stat-label {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    margin-top: 2px;
+  }
+
+  .validation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .validation-section-title {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    font-weight: 600;
+    padding: 4px 2px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .validation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--audit-radius-sm);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.12s;
+  }
+  .validation-item:hover {
+    background: var(--audit-surface-hover);
+    border-color: var(--audit-border-subtle);
+  }
+  .validation-item:hover .locate-btn {
+    color: var(--audit-brand);
+    opacity: 1;
+  }
+  .validation-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .validation-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .validation-title {
+    font-size: var(--audit-fs-body);
+    color: var(--audit-text);
+    font-weight: 500;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .validation-desc {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    line-height: 1.4;
+  }
+  .locate-btn {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0.7;
+    transition: all 0.12s;
+    margin-top: 2px;
+  }
+
+  .panel-footer-link {
+    text-align: center;
+    padding-top: 4px;
+    border-top: 1px solid var(--audit-border-subtle);
+    margin-top: auto;
+  }
+  .panel-footer-link a {
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-brand);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .panel-footer-link a:hover { color: var(--audit-brand-hover); text-decoration: underline; }
+
+  /* ===== Status Bar ===== */
+  .status-bar {
+    height: 32px;
+    background: var(--audit-surface);
+    border-top: 1px solid var(--audit-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: var(--audit-fs-tiny);
+    color: var(--audit-text-tertiary);
+    flex-shrink: 0;
+  }
+  .status-left, .status-center, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .status-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--audit-success);
+  }
+  .zoom-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .zoom-slider {
+    width: 80px;
+    height: 4px;
+    background: var(--audit-border);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  .zoom-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    background: var(--audit-brand);
+    border-radius: 2px;
+  }
+  .zoom-thumb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border: 2px solid var(--audit-brand);
+    border-radius: 50%;
+  }
+
+  /* Scrollbar */
+  .doc-scroll::-webkit-scrollbar,
+  .tree-container::-webkit-scrollbar,
+  .panel-body::-webkit-scrollbar { width: 8px; }
+  .doc-scroll::-webkit-scrollbar-track,
+  .tree-container::-webkit-scrollbar-track,
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .doc-scroll::-webkit-scrollbar-thumb,
+  .tree-container::-webkit-scrollbar-thumb,
+  .panel-body::-webkit-scrollbar-thumb {
+    background: var(--audit-border);
+    border-radius: 4px;
+  }
+  .doc-scroll::-webkit-scrollbar-thumb:hover,
+  .tree-container::-webkit-scrollbar-thumb:hover,
+  .panel-body::-webkit-scrollbar-thumb:hover { background: var(--audit-border-strong); }
+</style>
+</body>
+</html>

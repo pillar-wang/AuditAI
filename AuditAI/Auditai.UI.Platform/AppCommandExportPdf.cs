@@ -7,7 +7,7 @@ public class AppCommandExportPdf : AppCommandButton
 {
 	public override string Text => "Pdf文件";
 
-	public override Image LargeIcon => Resources.PdfExport;
+	public override Image LargeIcon => IconRes.PdfExport;
 
 	protected override void Clicked()
 	{

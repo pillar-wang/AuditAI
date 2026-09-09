@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -171,19 +171,19 @@ public class dlgTemplateEditor : C1RibbonForm
 			switch (_mode)
 			{
 			case Mode.Create:
-				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.CreateProject16);
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.CreateProject16);
 				await PopulateCreate();
 				break;
 			case Mode.Modify:
-				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(ContextResources.ctxMofify);
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ctxMofify);
 				await PopulateModify();
 				break;
 			case Mode.Duplicate:
-				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.DuplicateProject16);
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.DuplicateProject16);
 				await PopulateDuplicate();
 				break;
 			case Mode.FromProject:
-				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.SaveAsTemplate16);
+				base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.SaveAsTemplate16);
 				await PopulateFromProject();
 				break;
 			}
@@ -491,11 +491,11 @@ public class dlgTemplateEditor : C1RibbonForm
 		{
 		case ListTileViewMode.List:
 			projectUsersListSelector.GetControl().BringToFront();
-			btnSwitchMode.Image = Auditai.UI.Platform.Properties.Resources.toolTileMode;
+			btnSwitchMode.Image = Auditai.UI.Platform.IconRes.toolTileMode;
 			break;
 		case ListTileViewMode.Tile:
 			projectUsersTileSelector.GetControl().BringToFront();
-			btnSwitchMode.Image = Auditai.UI.Platform.Properties.Resources.toolListMode;
+			btnSwitchMode.Image = Auditai.UI.Platform.IconRes.toolListMode;
 			break;
 		}
 	}
@@ -559,7 +559,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.inputPanel.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.inputPanel.DesignScaleFactor = 1.293737f;
 		this.inputPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.inputPanel.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.inputPanel.Items.Add(this.基本信息);
 		this.inputPanel.Items.Add(this.lblNumber);
 		this.inputPanel.Items.Add(this.txtNumber);
@@ -646,7 +646,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlButtons.Size = new System.Drawing.Size(1100, 82);
 		this.pnlButtons.TabIndex = 1;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(962, 27);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(91, 34);
@@ -655,7 +655,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnOk.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnOk.Location = new System.Drawing.Point(826, 27);
 		this.btnOk.Name = "btnOk";
 		this.btnOk.Size = new System.Drawing.Size(91, 34);
@@ -684,7 +684,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1SplitterPanel1.Width = 8;
 		this.c1InputPanel3.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel3.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel3.Name = "c1InputPanel3";
 		this.c1InputPanel3.Size = new System.Drawing.Size(8, 541);
@@ -701,7 +701,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlUserHead.SizeRatio = 9.662;
 		this.pnlUserHead.TabIndex = 3;
 		this.txbSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txbSearch.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txbSearch.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txbSearch.Location = new System.Drawing.Point(83, 5);
 		this.txbSearch.Name = "txbSearch";
 		this.txbSearch.Size = new System.Drawing.Size(295, 27);
@@ -710,7 +710,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.txbSearch.Visible = false;
 		this.ckbSearch.Appearance = System.Windows.Forms.Appearance.Button;
 		this.ckbSearch.BackColor = System.Drawing.Color.Transparent;
-		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.Properties.Resources.btnSearch;
+		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.IconRes.btnSearch;
 		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.ckbSearch.BorderColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -726,7 +726,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.btnSwitchMode.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnSwitchMode.FlatAppearance.BorderSize = 0;
 		this.btnSwitchMode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnSwitchMode.Image = Auditai.UI.Platform.Properties.Resources.toolListMode;
+		this.btnSwitchMode.Image = Auditai.UI.Platform.IconRes.toolListMode;
 		this.btnSwitchMode.Location = new System.Drawing.Point(417, 4);
 		this.btnSwitchMode.Name = "btnSwitchMode";
 		this.btnSwitchMode.Size = new System.Drawing.Size(31, 29);
@@ -736,7 +736,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.c1InputPanel2.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel2.DesignScaleFactor = 1.293737f;
 		this.c1InputPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel2.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel2.Items.Add(this.inputGroupHeader1);
 		this.c1InputPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel2.Name = "c1InputPanel2";
@@ -756,7 +756,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.pnlEmpty.TabIndex = 4;
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel1.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Name = "c1InputPanel1";
 		this.c1InputPanel1.Size = new System.Drawing.Size(450, 21);
@@ -772,7 +772,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1100, 625);
 		base.Controls.Add(this.ctnMain);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.MaximizeBox = false;
 		base.MinimizeBox = false;

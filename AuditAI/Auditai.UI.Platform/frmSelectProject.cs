@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -161,7 +161,7 @@ public class frmSelectProject : Form
         nameText.AlignmentOfContents = ContentAlignment.TopCenter;
         nameText.TextTrimming = TextTrimming.EndEllipsis;
         nameText.SingleLine = false;
-        nameText.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+        nameText.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
         nameText.FixedHeight = 40;
         nameText.FixedWidth = 130;
         namePanel.Children.Add(nameText);
@@ -187,7 +187,7 @@ public class frmSelectProject : Form
         //
         this._tileControl.AllowChecking = false;
         this._tileControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-        this._tileControl.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+        this._tileControl.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
         this._tileControl.CellWidth = 13;
         this._tileControl.CellHeight = 13;
         this._tileControl.CellSpacing = 26;
@@ -204,7 +204,7 @@ public class frmSelectProject : Form
         this._lblTitle.AutoSize = true;
         this._lblTitle.BackColor = System.Drawing.Color.Transparent;
         this._lblTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
-        this._lblTitle.Font = new System.Drawing.Font("Noto Sans SC", 12f, System.Drawing.FontStyle.Bold);
+        this._lblTitle.Font = new System.Drawing.Font("微软雅黑", 12f, System.Drawing.FontStyle.Bold);
         this._lblTitle.ForeColor = System.Drawing.Color.Black;
         this._lblTitle.Location = new System.Drawing.Point(16, 20);
         this._lblTitle.Name = "_lblTitle";
@@ -216,7 +216,7 @@ public class frmSelectProject : Form
         // _btnOk
         //
         this._btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnOk.Font = new System.Drawing.Font("Noto Sans SC", 9f);
+        this._btnOk.Font = new System.Drawing.Font("微软雅黑", 9f);
         this._btnOk.Location = new System.Drawing.Point(770, 625);
         this._btnOk.Name = "_btnOk";
         this._btnOk.Size = new System.Drawing.Size(113, 43);
@@ -229,7 +229,7 @@ public class frmSelectProject : Form
         // _btnCancel
         //
         this._btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        this._btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9f);
+        this._btnCancel.Font = new System.Drawing.Font("微软雅黑", 9f);
         this._btnCancel.Location = new System.Drawing.Point(891, 625);
         this._btnCancel.Name = "_btnCancel";
         this._btnCancel.Size = new System.Drawing.Size(113, 43);
@@ -248,7 +248,7 @@ public class frmSelectProject : Form
         this.Controls.Add(this._tileControl);
         this.Controls.Add(this._btnOk);
         this.Controls.Add(this._btnCancel);
-        this.Font = new System.Drawing.Font("Noto Sans SC", 9f);
+        this.Font = new System.Drawing.Font("微软雅黑", 9f);
         this.Name = "frmSelectProject";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
         this.Text = "选择来源项目";

@@ -1,4 +1,4 @@
-extern alias CrawlerModelAlias;
+﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections;
@@ -300,7 +300,7 @@ public class LedgerViewer
 		pnlData.Width = 935;
 		ctnView.Name = "LedgerViewer+ctnView";
 		ctnView.AutoSizeElement = AutoSizeElement.Both;
-		ctnView.BackColor = Color.FromArgb(240, 240, 240);
+		ctnView.BackColor = Color.FromArgb(243, 244, 246);
 		ctnView.CollapsingCueColor = Color.FromArgb(133, 133, 150);
 		ctnView.ForeColor = Color.FromArgb(0, 0, 0);
 		ctnView.SplitterWidth = 2;
@@ -2259,8 +2259,11 @@ public class LedgerViewer
 	{
 		setFileAttribute(xjy001File);
 		string dbFilePath = null;
-		ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			XinJiYuan xjy = new XinJiYuan();
 			int totalProgress = 114;
 			xjy.ProgressChanged += delegate(object s, CrawlerModelAlias::Auditai.Model.GetLedgerProgressEventArgs e)
@@ -2276,17 +2279,7 @@ public class LedgerViewer
 				string text = xjy.Convert001File(xjy001File, Path.GetDirectoryName(xjy001File));
 				dbFilePath = text;
 			});
-			return Task.FromResult(new object());
 		});
-		progressForm.ShowDialog();
-		try
-		{
-			progressForm.Task.Wait();
-		}
-		catch (AggregateException ex)
-		{
-			throw ex.InnerException;
-		}
 		return dbFilePath;
 	}
 
@@ -2306,8 +2299,11 @@ public class LedgerViewer
 			throw new FileNotFoundException(fullPath);
 		}
 		setFileAttribute(fullPath);
-		ProgressForm<object> progressForm = new ProgressForm<object>(async delegate(IProgress<ProgressInfo> progress)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
 			progress.Report(new ProgressInfo
 			{
 				MainCaption = "正在打开账套，请稍候......",
@@ -2335,10 +2331,8 @@ public class LedgerViewer
 			ctnView.BringToFront();
 			InitOtherView();
 			SetTheme();
-			return await Task.FromResult(new object());
+			await Task.CompletedTask;
 		});
-		progressForm.ShowDialog();
-		await progressForm.Task;
 	}
 
 	private void InitStatus()

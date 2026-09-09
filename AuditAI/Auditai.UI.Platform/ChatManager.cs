@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -106,7 +106,7 @@ public static class ChatManager
 						Id = teamId.ToString(),
 						Name = "全体同事"
 					};
-					group.SetPicture(Resources.group);
+					group.SetPicture(IconRes.group);
 					memberManager.AddGroup(group);
 				}
 				else
@@ -176,7 +176,7 @@ public static class ChatManager
 					Id = Auditai.Model.User.Current.TeamId.ToString(),
 					Name = "全体同事"
 				};
-				group2.SetPicture(Resources.group);
+				group2.SetPicture(IconRes.group);
 				memberManager.AddGroup(group2);
 			}
 			else
@@ -215,7 +215,7 @@ public static class ChatManager
 						Id = projectId.ToString(),
 						Name = "全体成员"
 					};
-					group.SetPicture(Resources.member);
+					group.SetPicture(IconRes.member);
 					memberManager.AddGroup(group);
 				}
 				else
@@ -275,7 +275,7 @@ public static class ChatManager
 					Id = projectId.ToString(),
 					Name = "全体成员"
 				};
-				group2.SetPicture(Resources.member);
+				group2.SetPicture(IconRes.member);
 				memberManager.AddGroup(group2);
 			}
 			else
@@ -296,7 +296,7 @@ public static class ChatManager
 					Id = projectId.ToString(),
 					Name = "全体成员"
 				};
-				group3.SetPicture(Resources.member);
+				group3.SetPicture(IconRes.member);
 				memberManager.AddGroup(group3);
 			}
 			else

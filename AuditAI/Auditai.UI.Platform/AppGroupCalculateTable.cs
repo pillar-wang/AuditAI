@@ -7,7 +7,7 @@ public class AppGroupCalculateTable : AppCommandGroup
 {
 	public override string Text => "表格运算";
 
-	public override Image Image => Resources.CalculateTable;
+	public override Image Image => IconRes.CalculateTable;
 
 	public AppGroupCalculateTable()
 	{

@@ -9,7 +9,7 @@ public class AppCommandProjectMembers : AppCommandButton
 {
 	public override string Text => "增减成员";
 
-	public override Image LargeIcon => Resources.ProjectEditor;
+	public override Image LargeIcon => IconRes.ProjectEditor;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

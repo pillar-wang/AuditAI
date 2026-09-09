@@ -7,7 +7,7 @@ public class AppCommandZoom : AppCommandMenu
 {
 	public override string Text => "缩放比例";
 
-	public override Image LargeImage => Resources.Scale;
+	public override Image LargeImage => IconRes.Scale;
 
 	public AppCommandZoom()
 		: base(new AppCommandBase[11]

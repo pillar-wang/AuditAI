@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -348,7 +348,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
 		btnCancel.FlatStyle = FlatStyle.Flat;
 		btnCancel.FlatAppearance.BorderSize = 1;
-		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
 	}
 
 	private Id64 GenerateSingleId()
@@ -365,7 +365,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 	public DialogResult ShowBatchPrinter()
 	{
 		Text = "批量打印文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchPrint16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchPrint16);
 		ckbExportExcel.Visible = false;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -377,7 +377,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 	public DialogResult ShowBatchExporter()
 	{
 		Text = "批量导出文件";
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.BatchExport16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.BatchExport16);
 		ckbExportExcel.Visible = true;
 		cboShowHideNodes.Visible = false;
 		Populate();
@@ -399,7 +399,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		_grid.Styles.Normal.Border.Width = 0;
 		_grid.Rows.DefaultSize = 30;
 		_grid.Styles.Fixed.TextAlign = TextAlignEnum.CenterCenter;
-		_grid.Glyphs[GlyphEnum.Grayed] = Resources.NoPermission;
+		_grid.Glyphs[GlyphEnum.Grayed] = IconRes.NoPermission;
 		_grid.Rows.Count = 1;
 		_grid.Rows.Fixed = 1;
 		_grid.Cols.Count = 0;
@@ -449,7 +449,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		{
 			Owner = this
 		};
-		c1CommandHolder.SetC1ContextMenu(_grid, ctxMenu);
+		NativeMenuShim.Wire(_grid, ctxMenu);
 		txtSearch.TextChanged += TxtSearch_TextChanged;
 		txtSearch.KeyDown += TxtSearch_KeyDown;
 		pnlButton.SizeChanged += PnlButton_SizeChanged;
@@ -736,8 +736,8 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 	private Rectangle GetTicketRecordIconPosition(int row, int col)
 	{
 		Rectangle cellRect = _grid.GetCellRect(row, col);
-		int num = Resources.TicketNav.Width;
-		int num2 = Resources.TicketNav.Height;
+		int num = IconLibrary.LogicalWidth(IconRes.TicketNav);
+		int num2 = IconLibrary.LogicalHeight(IconRes.TicketNav);
 		int num3 = cellRect.Right - num - 8;
 		int num4 = cellRect.Top + (cellRect.Height - num2) / 2;
 		return new Rectangle(num3, num4, num, num2);
@@ -753,7 +753,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 			_ticketRecordIconOnFocusBackgrndBrush.Color = Auditai.UI.Controls.Util.DarkenColor(_grid.Styles.SelectedColumnHeader.BackColor, 0.1);
 			e.Graphics.FillRectangle(_ticketRecordIconOnFocusBackgrndBrush, rect);
 		}
-		e.Graphics.DrawImage(Resources.TicketNav, ticketRecordIconPosition);
+		e.Graphics.DrawImage(IconRes.TicketNav, ticketRecordIconPosition);
 		e.DrawCell(DrawCellFlags.Border);
 		e.Handled = true;
 	}
@@ -783,7 +783,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 				Node node = _grid.Rows.AddNode(0);
 				node.Key = treeGroup;
 				node.Data = treeGroup.Name;
-				node.Image = ContextResources.TreeGroup;
+				node.Image = IconRes.TreeGroup;
 				foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
 				{
 					Node node2 = null;
@@ -797,27 +797,27 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 								{
 									if (rootNode is TreePdfNode { Visible: not false } treePdfNode)
 									{
-										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, Resources.TreePdf);
+										node2 = node.AddNode(NodeTypeEnum.LastChild, treePdfNode.Number + " " + treePdfNode.Name, treePdfNode, IconRes.TreePdf);
 									}
 								}
 								else if (treeImageNode.Visible)
 								{
-									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, Resources.TreeImage);
+									node2 = node.AddNode(NodeTypeEnum.LastChild, treeImageNode.Number + " " + treeImageNode.Name, treeImageNode, IconRes.TreeImage);
 								}
 							}
 							else if (treeDocumentNode.Visible)
 							{
-								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name, treeDocumentNode, Resources.TreeDoc);
+								node2 = node.AddNode(NodeTypeEnum.LastChild, treeDocumentNode.Number + " " + treeDocumentNode.Name, treeDocumentNode, IconRes.TreeDoc);
 							}
 						}
 						else if (treeTableNode.Visible)
 						{
-							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, Resources.TreeTable);
+							node2 = node.AddNode(NodeTypeEnum.LastChild, treeTableNode.Number + " " + treeTableNode.Name, treeTableNode, IconRes.TreeTable);
 						}
 					}
 					else if (treeDirectoryNode.Visible)
 					{
-						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, Resources.TreeDir);
+						node2 = node.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode.Number + " " + treeDirectoryNode.Name, treeDirectoryNode, IconRes.TreeDir);
 						AddDirectoryNode(treeDirectoryNode, node2);
 					}
 					if (node2 != null && PreSelectNodes != null && PreSelectNodes.Contains(rootNode.Id))
@@ -859,27 +859,27 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 							{
 								if (child is TreePdfNode { Visible: not false } treePdfNode2)
 								{
-									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, Resources.TreePdf);
+									node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treePdfNode2.Number + " " + treePdfNode2.Name, treePdfNode2, IconRes.TreePdf);
 								}
 							}
 							else if (treeImageNode2.Visible)
 							{
-								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, Resources.TreeImage);
+								node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeImageNode2.Number + " " + treeImageNode2.Name, treeImageNode2, IconRes.TreeImage);
 							}
 						}
 						else if (treeDocumentNode2.Visible)
 						{
-							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, Resources.TreeDoc);
+							node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDocumentNode2.Number + " " + treeDocumentNode2.Name, treeDocumentNode2, IconRes.TreeDoc);
 						}
 					}
 					else if (treeTableNode2.Visible)
 					{
-						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, Resources.TreeTable);
+						node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeTableNode2.Number + " " + treeTableNode2.Name, treeTableNode2, IconRes.TreeTable);
 					}
 				}
 				else if (treeDirectoryNode2.Visible)
 				{
-					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Number + " " + treeDirectoryNode2.Name, treeDirectoryNode2, Resources.TreeDir);
+					node3 = subRootView.AddNode(NodeTypeEnum.LastChild, treeDirectoryNode2.Number + " " + treeDirectoryNode2.Name, treeDirectoryNode2, IconRes.TreeDir);
 					AddDirectoryNode(treeDirectoryNode2, node3);
 				}
 				if (node3 != null && PreSelectNodes != null && PreSelectNodes.Contains(child.Id))
@@ -920,7 +920,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 				ticketNavTreePageNode.TicketColumnList = nav.Columns.Select((Id64 id) => table.Table.Columns.GetById(id)).ToList();
 				ticketNavTreePageNode.Name = TicketInputEditor2.TicketNavToString(ticketNavTreePageNode.TicketColumnList);
 				ticketNavTreePageNode.ParentNode = table;
-				ticketNavTreePageNode.GridNode = parentNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreePageNode.Name ?? "", ticketNavTreePageNode, Resources.TicketNav);
+				ticketNavTreePageNode.GridNode = parentNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreePageNode.Name ?? "", ticketNavTreePageNode, IconRes.TicketNav);
 				_grid.SetCellCheck(ticketNavTreePageNode.GridNode.Row.Index, 1, CheckEnum.Unchecked);
 				MakeNavTree(table, ticketNavTreePageNode);
 			}
@@ -966,14 +966,14 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 				ticketNavTreeRecordNode.Name = (string.IsNullOrWhiteSpace(node.Text) ? "(空)" : node.Text);
 				ticketNavTreeRecordNode.ParentNode = parentTreeNode;
 				ticketNavTreeRecordNode.TableNode = tableNode;
-				ticketNavTreeRecordNode.GridNode = parentGridNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreeRecordNode.Name, ticketNavTreeRecordNode, Resources.Ticket16);
+				ticketNavTreeRecordNode.GridNode = parentGridNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreeRecordNode.Name, ticketNavTreeRecordNode, IconRes.Ticket16);
 				_grid.SetCellCheck(ticketNavTreeRecordNode.GridNode.Row.Index, 1, CheckEnum.Unchecked);
 				return;
 			}
 			TicketNavTreeFolderNode ticketNavTreeFolderNode = new TicketNavTreeFolderNode();
 			ticketNavTreeFolderNode.Name = (string.IsNullOrWhiteSpace(node.Text) ? "(空)" : node.Text);
 			ticketNavTreeFolderNode.ParentNode = parentTreeNode;
-			ticketNavTreeFolderNode.GridNode = parentGridNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreeFolderNode.Name, ticketNavTreeFolderNode, Resources.TicketNavTreeListExpanded);
+			ticketNavTreeFolderNode.GridNode = parentGridNode.AddNode(NodeTypeEnum.LastChild, ticketNavTreeFolderNode.Name, ticketNavTreeFolderNode, IconRes.TicketNavTreeListExpanded);
 			_grid.SetCellCheck(ticketNavTreeFolderNode.GridNode.Row.Index, 1, CheckEnum.Unchecked);
 			foreach (TicketNavGrid.NavNode child2 in node.Children)
 			{
@@ -998,11 +998,11 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		ctnAll.SplitterWidth = 0;
 		// 统一设计语言：Populate 每次填充都会走到这里，同步保证主题浅色系不被回退
 		ctnAll.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
-		ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
-		ctnAll.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(229, 231, 235);
+		ctnAll.SplitterColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		ctnAll.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
-		splSearch.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
-		splSearch.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		splSearch.FixedLineColor = System.Drawing.Color.FromArgb(229, 231, 235);
+		splSearch.SplitterColor = System.Drawing.Color.FromArgb(229, 231, 235);
 	}
 
 	private void GrdEditor_Resize(object sender, EventArgs e)
@@ -1380,7 +1380,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.ctnAll.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
 		// 统一设计语言：固定线由旧深蓝改为浅灰
-		this.ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.ctnAll.FixedLineColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		// 统一设计语言：前景文字由旧深蓝改为深灰蓝
 		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		this.ctnAll.HeaderHeight = 35;
@@ -1392,7 +1392,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.ctnAll.Panels.Add(this.pnlEditor);
 		this.ctnAll.Size = new System.Drawing.Size(532, 732);
 		// 统一设计语言：分隔条颜色同步为浅灰
-		this.ctnAll.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.ctnAll.SplitterColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.ctnAll.SplitterWidth = 0;
 		this.ctnAll.TabIndex = 0;
 		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
@@ -1456,7 +1456,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.btnCertain.ForeColor = System.Drawing.Color.White;
 		this.btnCertain.BackColor = AuditTheme.Brand;
 		this.btnCertain.UseVisualStyleBackColor = false;
-		this.btnCertain.Font = new System.Drawing.Font("Noto Sans SC", 9.5f, System.Drawing.FontStyle.Bold);
+		this.btnCertain.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Bold);
 		this.btnCertain.Click += new System.EventHandler(btnCertain_Click);
 		// 统一设计语言：次按钮（白底 + 深灰字 + 浅灰边框），加宽到 110、高 40，右缘距面板右边 12
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
@@ -1468,12 +1468,12 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.btnCancel.Text = "取消";
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCancel.FlatAppearance.BorderSize = 1;
-		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.btnCancel.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(241, 245, 249);
 		this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		this.btnCancel.BackColor = System.Drawing.Color.White;
 		this.btnCancel.UseVisualStyleBackColor = false;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 9.5f);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 9.5f);
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.pnlSearch.Controls.Add(this.splSearch);
 		this.pnlSearch.Height = 31;
@@ -1489,7 +1489,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.splSearch.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
 		this.splSearch.Dock = System.Windows.Forms.DockStyle.Fill;
 		// 统一设计语言：搜索区固定线由旧深蓝改为浅灰
-		this.splSearch.FixedLineColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.splSearch.FixedLineColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.splSearch.HeaderHeight = 35;
 		this.splSearch.Location = new System.Drawing.Point(0, 0);
 		this.splSearch.Name = "splSearch";
@@ -1497,7 +1497,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.splSearch.Panels.Add(this.pnlSearchTxt);
 		this.splSearch.Size = new System.Drawing.Size(532, 31);
 		// 统一设计语言：搜索区分隔条颜色同步为浅灰
-		this.splSearch.SplitterColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.splSearch.SplitterColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.splSearch.SplitterWidth = 0;
 		this.splSearch.TabIndex = 1;
 		// 统一设计语言：移除旧蓝色 ToolTipGradient，改用控件默认值（无副作用）
@@ -1515,7 +1515,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		this.pnlSearchIcon.TabIndex = 0;
 		this.pnlSearchIcon.Width = 31;
 		this.btnSearch.FlatAppearance.BorderSize = 0;
-		this.btnSearch.Image = Auditai.UI.Platform.Properties.Resources.btnSearch;
+		this.btnSearch.Image = Auditai.UI.Platform.IconRes.btnSearch;
 		this.btnSearch.Location = new System.Drawing.Point(-1, -1);
 		this.btnSearch.Name = "btnSearch";
 		this.btnSearch.Size = new System.Drawing.Size(34, 34);
@@ -1567,7 +1567,7 @@ public class frmNodeSelectorWithTicketRecord : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(532, 732);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmNodeSelectorWithTicketRecord";
 		base.ShowInTaskbar = false;

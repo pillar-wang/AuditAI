@@ -7,7 +7,7 @@ public class AppCommandControlFormula : AppCommandButton
 {
 	public override string Text => "控制公式";
 
-	public override Image LargeIcon => Resources.ControlFormula;
+	public override Image LargeIcon => IconRes.ControlFormula;
 
 	protected override void Clicked()
 	{

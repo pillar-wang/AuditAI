@@ -7,7 +7,7 @@ public class AppCommandTitleUnifyColumnWidth : AppCommandButton
 {
 	public override string Text => "平均分布列宽";
 
-	public override Image LargeIcon => Resources.UnifyColumnWidth;
+	public override Image LargeIcon => IconRes.UnifyColumnWidth;
 
 	protected override void Clicked()
 	{

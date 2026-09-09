@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -49,6 +49,12 @@ public class Project
 
 	/// <summary>自定义填充规则配置（JSON 格式）</summary>
 	public string CustomFillConfig { get; set; }
+
+	/// <summary>审核状态：0=未上报 1=审批中 2=已通过 3=已退回</summary>
+	public int ReviewStatus { get; set; }
+
+	/// <summary>是否已归档（归档后项目锁定，禁止数据推送）</summary>
+	public bool IsArchived { get; set; }
 
 
 	public Project Clone()

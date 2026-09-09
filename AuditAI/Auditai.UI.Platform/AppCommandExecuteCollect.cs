@@ -10,7 +10,7 @@ public class AppCommandExecuteCollect : AppCommandButton
 {
 	public override string Text => "采账填充";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.GenerateWorkingPaper;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.GenerateWorkingPaper;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

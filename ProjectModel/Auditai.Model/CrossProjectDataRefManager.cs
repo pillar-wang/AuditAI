@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -110,12 +110,16 @@ public class CrossProjectDataRefManager
 
         var startTime = DateTime.Now;
         ProjectDAL sourceDal = null;
+        // 提升到方法级作用域：finally 之后的 SetCache 需要访问这些变量
+        string externalDbPath = null;
+        CrossProjectRefCache cache = null;
+        List<List<object>> sourceData = null;
 
             try
             {
                 // 打开外部项目数据库
             // 服务端模式下，来源项目数据库可能需要先从服务器下载到本地缓存
-            string externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
+            externalDbPath = GetExternalDbPath(dataRef.SourceProjectId);
             if (!File.Exists(externalDbPath))
             {
                 // 尝试缓存降级
@@ -155,8 +159,7 @@ public class CrossProjectDataRefManager
             }
 
             // 两级缓存检查（跳过 FormulaCompute 模式，它需要直接访问数据库获取列数据）
-            CrossProjectRefCache cache = null;
-            List<List<object>> sourceData = null;
+            // cache / sourceData 已提升为方法级变量
             int affectedRows = 0;
 
             // 异常处理 - 自动重试
@@ -190,10 +193,6 @@ public class CrossProjectDataRefManager
 
                         // 读取来源表数据为 List<List<object>> 格式
                         sourceData = ReadSourceData(sourceDal, dataRef.SourceTableId);
-
-                        // 设置缓存
-                        cache?.SetCache(dataRef.Id, sourceData, externalDbPath,
-                            dataRef.CacheDurationSeconds > 0 ? dataRef.CacheDurationSeconds : 60);
                     }
 
                     // 数据验证：获取来源列名并对原始数据进行验证
@@ -368,6 +367,15 @@ public class CrossProjectDataRefManager
         finally
         {
             sourceDal?.Dispose();
+        }
+
+        // SetCache 必须放在 sourceDal.Dispose() 之后：ProjectDAL 释放连接时执行 WAL checkpoint
+        // 会再次写来源库主文件更新 mtime；同样 IncrementVersion 也会更新 mtime。
+        // 若缓存记录的 mtime 早于这些写入，下一次 GetCachedData 的时间戳校验必然失败（缓存永远无法命中）。
+        if (sourceData != null)
+        {
+            cache?.SetCache(dataRef.Id, sourceData, externalDbPath,
+                dataRef.CacheDurationSeconds > 0 ? dataRef.CacheDurationSeconds : 60);
         }
 
         return result;

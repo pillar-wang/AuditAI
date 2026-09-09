@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -76,7 +76,7 @@ public class frmActivateLicense : Form
 		Rectangle bgRect = new Rectangle(0, 0, base.Width, base.Height);
 		// 垂直渐变：浅天蓝 → 浅灰白
 		using (var bgBrush = new System.Drawing.Drawing2D.LinearGradientBrush(
-			bgRect, Color.FromArgb(227, 240, 255), Color.FromArgb(245, 248, 250),
+			bgRect, Color.FromArgb(239, 246, 255), Color.FromArgb(245, 248, 250),
 			System.Drawing.Drawing2D.LinearGradientMode.Vertical))
 		{
 			g.FillRectangle(bgBrush, bgRect);
@@ -139,7 +139,7 @@ public class frmActivateLicense : Form
 		btnCancel.ForeColor = Color.FromArgb(30, 41, 59);
 		btnCancel.FlatStyle = FlatStyle.Flat;
 		btnCancel.FlatAppearance.BorderSize = 1;
-		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(208, 215, 222);
+		btnCancel.FlatAppearance.BorderColor = Color.FromArgb(229, 231, 235);
 	}
 
 	private void InitializeComponent()
@@ -157,15 +157,15 @@ public class frmActivateLicense : Form
 		this.lblMachineCodeTitle.AutoSize = true;
 		// 统一样式调整：标签背景透明，避免渐变背景上出现灰色色块
 		this.lblMachineCodeTitle.BackColor = System.Drawing.Color.Transparent;
-		this.lblMachineCodeTitle.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblMachineCodeTitle.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblMachineCodeTitle.Location = new System.Drawing.Point(20, 20);
 		this.lblMachineCodeTitle.Name = "lblMachineCodeTitle";
 		this.lblMachineCodeTitle.Size = new System.Drawing.Size(73, 22);
 		this.lblMachineCodeTitle.TabIndex = 0;
 		this.lblMachineCodeTitle.Text = "机器码：";
 		// txtMachineCode
-		this.txtMachineCode.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
-		this.txtMachineCode.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtMachineCode.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
+		this.txtMachineCode.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtMachineCode.Location = new System.Drawing.Point(104, 20);
 		this.txtMachineCode.Name = "txtMachineCode";
 		this.txtMachineCode.ReadOnly = true;
@@ -175,14 +175,14 @@ public class frmActivateLicense : Form
 		this.lblLicenseKeyTitle.AutoSize = true;
 		// 统一样式调整：标签背景透明，避免渐变背景上出现灰色色块
 		this.lblLicenseKeyTitle.BackColor = System.Drawing.Color.Transparent;
-		this.lblLicenseKeyTitle.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblLicenseKeyTitle.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblLicenseKeyTitle.Location = new System.Drawing.Point(20, 72);
 		this.lblLicenseKeyTitle.Name = "lblLicenseKeyTitle";
 		this.lblLicenseKeyTitle.Size = new System.Drawing.Size(73, 22);
 		this.lblLicenseKeyTitle.TabIndex = 2;
 		this.lblLicenseKeyTitle.Text = "激活码：";
 		// txtLicenseKey
-		this.txtLicenseKey.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.txtLicenseKey.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.txtLicenseKey.Location = new System.Drawing.Point(104, 68);
 		this.txtLicenseKey.Name = "txtLicenseKey";
 		this.txtLicenseKey.Size = new System.Drawing.Size(254, 30);
@@ -191,7 +191,7 @@ public class frmActivateLicense : Form
 		this.lblTip.AutoSize = false;
 		// 统一样式调整：标签背景透明，避免渐变背景上出现灰色色块
 		this.lblTip.BackColor = System.Drawing.Color.Transparent;
-		this.lblTip.Font = new System.Drawing.Font("Noto Sans SC", 8f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblTip.Font = new System.Drawing.Font("微软雅黑", 8f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblTip.ForeColor = System.Drawing.Color.Gray;
 		this.lblTip.Location = new System.Drawing.Point(20, 111);
 		this.lblTip.Name = "lblTip";
@@ -206,7 +206,7 @@ public class frmActivateLicense : Form
 		this.btnActivate.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
 		this.btnActivate.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
 		this.btnActivate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnActivate.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnActivate.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnActivate.ForeColor = System.Drawing.Color.White;
 		// 统一样式调整：主按钮高度统一 40
 		this.btnActivate.Location = new System.Drawing.Point(104, 163);
@@ -222,9 +222,9 @@ public class frmActivateLicense : Form
 		this.btnCancel.BackColor = System.Drawing.Color.White;
 		this.btnCancel.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		this.btnCancel.FlatAppearance.BorderSize = 1;
-		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(208, 215, 222);
+		this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		// 统一样式调整：次按钮高度统一 40
 		this.btnCancel.Location = new System.Drawing.Point(241, 163);
 		this.btnCancel.Name = "btnCancel";
@@ -244,7 +244,7 @@ public class frmActivateLicense : Form
 		base.Controls.Add(this.lblLicenseKeyTitle);
 		base.Controls.Add(this.txtMachineCode);
 		base.Controls.Add(this.lblMachineCodeTitle);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		// 统一样式调整：无边框窗体（配合圆角 Region + 渐变背景 + MouseDown 拖拽）
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		base.MaximizeBox = false;

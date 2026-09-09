@@ -10,7 +10,7 @@ public class AppCommandInformation : AppCommandButton
 {
 	private TooltipBox _ttp;
 
-	public override Image SmallIcon => Resources.Infomation;
+	public override Image SmallIcon => IconRes.Infomation;
 
 	public override void GenerateRibbonItem()
 	{

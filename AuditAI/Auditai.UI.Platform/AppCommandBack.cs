@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandBack : AppCommandButton
 {
-	public override Image SmallIcon => Resources.back;
+	public override Image SmallIcon => IconRes.back;
 
 	public override void GenerateRibbonItem()
 	{

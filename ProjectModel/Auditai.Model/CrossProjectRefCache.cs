@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -56,9 +56,10 @@ public class CrossProjectRefCache
         {
             if (DateTime.Now < memEntry.ExpiresAt)
             {
-                // 检查源文件时间戳是否变化
                 var fileInfo = new FileInfo(sourceProjectPath);
-                if (fileInfo.Exists && fileInfo.LastWriteTimeUtc == memEntry.SourceFileLastWriteTime)
+                // 源文件存在时校验时间戳；文件不存在（离线/缓存降级场景）允许使用缓存，
+                // 这正是 CacheFallback 的设计意图：来源库不可用时返回最后已知数据
+                if (!fileInfo.Exists || fileInfo.LastWriteTimeUtc == memEntry.SourceFileLastWriteTime)
                 {
                     memEntry.HitCount++;
                     _cacheHits++;
@@ -79,7 +80,8 @@ public class CrossProjectRefCache
                 if (diskEntry != null && diskEntry.SourceProjectPath == sourceProjectPath)
                 {
                     var fileInfo = new FileInfo(sourceProjectPath);
-                    if (fileInfo.Exists && fileInfo.LastWriteTimeUtc.Ticks == diskEntry.SourceFileLastWriteTimeTicks)
+                    // 源文件不存在（降级场景）时以记录的 mtime=0 匹配；存在时校验时间戳
+                    if (!fileInfo.Exists || fileInfo.LastWriteTimeUtc.Ticks == diskEntry.SourceFileLastWriteTimeTicks)
                     {
                         // 磁盘缓存有效，恢复到内存缓存
                         var expiresAt = diskEntry.CachedAt.AddSeconds(cacheDurationSeconds);

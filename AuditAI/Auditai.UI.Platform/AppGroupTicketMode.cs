@@ -7,7 +7,7 @@ public class AppGroupTicketMode : AppCommandGroup
 {
 	public override string Text => "设计表单";
 
-	public override Image Image => Resources.TicketReport16;
+	public override Image Image => IconRes.TicketReport16;
 
 	public AppGroupTicketMode()
 	{

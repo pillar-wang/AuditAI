@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -537,15 +537,15 @@ public class frmTableStyleConfig : Form
 				{
 					var style = GetConfiguredStyle();
 					File.WriteAllText(dlg.FileName, style.ToJson());
-					MessageBox.Show("模板保存成功！\n" + dlg.FileName, "提示",
-						MessageBoxButtons.OK, MessageBoxIcon.Information);
+					Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "模板保存成功！\n" + dlg.FileName,
+						MessageBoxButtons.OK, "提示");
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show("保存模板失败：" + ex.Message, "错误",
-				MessageBoxButtons.OK, MessageBoxIcon.Error);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "保存模板失败：" + ex.Message,
+				MessageBoxButtons.OK, "错误");
 		}
 	}
 
@@ -566,21 +566,21 @@ public class frmTableStyleConfig : Form
 					if (style != null)
 					{
 						LoadFromStyle(style);
-						MessageBox.Show("模板加载成功！", "提示",
-							MessageBoxButtons.OK, MessageBoxIcon.Information);
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "模板加载成功！",
+							MessageBoxButtons.OK, "提示");
 					}
 					else
 					{
-						MessageBox.Show("模板文件格式无效。", "错误",
-							MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning, "模板文件格式无效。",
+							MessageBoxButtons.OK, "错误");
 					}
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-			MessageBox.Show("加载模板失败：" + ex.Message, "错误",
-				MessageBoxButtons.OK, MessageBoxIcon.Error);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "加载模板失败：" + ex.Message,
+				MessageBoxButtons.OK, "错误");
 		}
 	}
 }

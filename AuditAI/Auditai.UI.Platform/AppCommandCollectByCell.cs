@@ -8,7 +8,7 @@ public class AppCommandCollectByCell : AppCommandButton
 {
 	public override string Text => "单元格采账设置";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.CellCollect;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.CellCollect;
 
 	protected override string Tooltip => TipResource.单元格采数设置按钮;
 

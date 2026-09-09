@@ -8,7 +8,7 @@ public class AppGroupCollectLedger : AppCommandGroup
 {
 	public override string Text => "自财务数据中填充数据";
 
-	public override Image Image => Resources.TableCollect;
+	public override Image Image => IconRes.TableCollect;
 
 	public AppGroupCollectLedger()
 	{

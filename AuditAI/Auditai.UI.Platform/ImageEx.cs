@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿﻿using System.Drawing;
 using System.IO;
 
 namespace Auditai.UI.Platform;

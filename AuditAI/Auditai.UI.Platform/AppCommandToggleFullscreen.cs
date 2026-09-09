@@ -7,7 +7,7 @@ public class AppCommandToggleFullscreen : AppCommandToggleButton
 {
 	public override string Text => "全屏显示";
 
-	public override Image LargeIcon => Resources.Fullscreen;
+	public override Image LargeIcon => IconRes.Fullscreen;
 
 	protected override void Pressed()
 	{

@@ -217,7 +217,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		NextErrorButton = new C1Button
 		{
 			Dock = DockStyle.Left,
-			Image = Auditai.UI.Platform.Properties.Resources.NextError_S
+			Image = Auditai.UI.Platform.IconRes.NextError_S
 		};
 		_ttp.SetToolTip(NextErrorButton, "下一个错误");
 		NextErrorButton.Width = NextErrorButton.Height;
@@ -229,7 +229,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 			BackgroundImageLayout = ImageLayout.Center,
 			Dock = DockStyle.Left,
 			AutoCheck = false,
-			BackgroundImage = Auditai.UI.Platform.Properties.Resources.ValidationFormula16,
+			BackgroundImage = Auditai.UI.Platform.IconRes.ValidationFormula16,
 			FlatStyle = FlatStyle.Flat
 		};
 		ValidationFormula.FlatAppearance.BorderSize = 0;
@@ -243,7 +243,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 			BackgroundImageLayout = ImageLayout.Center,
 			Dock = DockStyle.Left,
 			AutoCheck = false,
-			BackgroundImage = Auditai.UI.Platform.Properties.Resources.TableNote16,
+			BackgroundImage = Auditai.UI.Platform.IconRes.TableNote16,
 			FlatStyle = FlatStyle.Flat
 		};
 		TableNote.FlatAppearance.BorderSize = 0;
@@ -252,7 +252,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		TableFoot = new C1CheckBox
 		{
 			Appearance = Appearance.Button,
-			BackgroundImage = Auditai.UI.Platform.Properties.Resources.TableFoot16,
+			BackgroundImage = Auditai.UI.Platform.IconRes.TableFoot16,
 			BackgroundImageLayout = ImageLayout.Center,
 			Dock = DockStyle.Left,
 			FlatStyle = FlatStyle.Flat,
@@ -265,7 +265,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		PreviousErrorButton = new C1Button
 		{
 			Dock = DockStyle.Left,
-			Image = Auditai.UI.Platform.Properties.Resources.PreviousError_S
+			Image = Auditai.UI.Platform.IconRes.PreviousError_S
 		};
 		_ttp.SetToolTip(PreviousErrorButton, "上一个错误");
 		PreviousErrorButton.Width = PreviousErrorButton.Height;

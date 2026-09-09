@@ -1,4 +1,36 @@
-namespace Auditai.UI.Controls;
+﻿namespace Auditai.UI.Controls;
+
+using System;
+using Auditai.DTO;
+
+/// <summary>
+/// IProgress&lt;ProgressInfo&gt; → ProgressRuntimeData 适配器。
+/// 用于旧 ProgressForm&lt;T&gt;（IProgress 上报）向 ProgressForm2（ProgressRuntimeData 上报）迁移：
+/// 任务体内的 iProg.Report(new ProgressInfo { MainCaption = ..., MainProgress = ... }) 调用保持原样，
+/// 由本适配器转发到 ProgressRuntimeData（MainProgress 0-100 → 0-1 归一化）。
+/// </summary>
+public sealed class ProgressRuntimeDataReporter : IProgress<ProgressInfo>
+{
+	private readonly ProgressRuntimeData _data;
+
+	public ProgressRuntimeDataReporter(ProgressRuntimeData data)
+	{
+		_data = data ?? new ProgressRuntimeData();
+	}
+
+	public void Report(ProgressInfo value)
+	{
+		if (value == null)
+		{
+			return;
+		}
+		if (!string.IsNullOrEmpty(value.MainCaption))
+		{
+			_data.UpdateMessage(value.MainCaption);
+		}
+		_data.UpdateProgress(value.MainProgress / 100f);
+	}
+}
 
 public class ProgressRuntimeData
 {

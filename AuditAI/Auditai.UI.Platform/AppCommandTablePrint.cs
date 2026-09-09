@@ -7,7 +7,7 @@ public class AppCommandTablePrint : AppCommandButton
 {
 	public override string Text => "直接打印";
 
-	public override Image LargeIcon => Resources.Print;
+	public override Image LargeIcon => IconRes.Print;
 
 	protected override void Clicked()
 	{

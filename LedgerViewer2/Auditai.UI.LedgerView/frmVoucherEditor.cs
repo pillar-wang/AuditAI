@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -981,15 +981,15 @@ public class frmVoucherEditor : C1RibbonForm
 		switch (grdVoucher.HitTest(e.Location).Type)
 		{
 		case HitTestTypeEnum.Cell:
-			ctxCell.ShowContextMenu(grdVoucher, e.Location);
+			NativeMenuShim.Show(ctxCell, grdVoucher, e.Location);
 			break;
 		case HitTestTypeEnum.None:
-			ctxEmpty.ShowContextMenu(grdVoucher, e.Location);
+			NativeMenuShim.Show(ctxEmpty, grdVoucher, e.Location);
 			break;
 		case HitTestTypeEnum.RowHeader:
 			if (grdVoucher.MouseRow >= grdVoucher.Rows.Fixed)
 			{
-				ctxFixedCol.ShowContextMenu(grdVoucher, e.Location);
+				NativeMenuShim.Show(ctxFixedCol, grdVoucher, e.Location);
 			}
 			break;
 		}
@@ -1578,7 +1578,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.lblVoucherTitle.AutoSize = true;
 		this.lblVoucherTitle.BackColor = System.Drawing.Color.Transparent;
 		this.lblVoucherTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblVoucherTitle.Font = new System.Drawing.Font("Microsoft YaHei", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblVoucherTitle.Font = new System.Drawing.Font("微软雅黑", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblVoucherTitle.ForeColor = System.Drawing.Color.Black;
 		this.lblVoucherTitle.Location = new System.Drawing.Point(472, 3);
 		this.lblVoucherTitle.Name = "lblVoucherTitle";
@@ -1622,7 +1622,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.txtVoucherDate.AllowSpinLoop = false;
 		this.txtVoucherDate.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom;
 		this.txtVoucherDate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txtVoucherDate.Calendar.Font = new System.Drawing.Font("Tahoma", 8f);
+		this.txtVoucherDate.Calendar.Font = new System.Drawing.Font("微软雅黑", 9f);
 		this.txtVoucherDate.Calendar.VisualStyle = C1.Win.C1Input.VisualStyle.Office2007Blue;
 		this.txtVoucherDate.Calendar.VisualStyleBaseStyle = C1.Win.C1Input.VisualStyle.Office2007Blue;
 		this.txtVoucherDate.ImagePadding = new System.Windows.Forms.Padding(0);
@@ -1717,7 +1717,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.grdVoucher.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this.grdVoucher.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.grdVoucher.DrawMode = C1.Win.C1FlexGrid.DrawModeEnum.OwnerDraw;
-		this.grdVoucher.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdVoucher.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdVoucher.Location = new System.Drawing.Point(0, 0);
 		this.grdVoucher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdVoucher.Name = "grdVoucher";
@@ -1736,7 +1736,7 @@ public class frmVoucherEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1030, 654);
 		base.Controls.Add(this.ctnVoucher);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmVoucherEditor";
 		this.Text = "编辑凭证";

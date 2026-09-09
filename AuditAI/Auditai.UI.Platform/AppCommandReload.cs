@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandReload : AppCommandButton
 {
-	public override Image SmallIcon => ContextResources.ctxReloadFile;
+	public override Image SmallIcon => IconRes.ctxReloadFile;
 
 	protected override string Tooltip => TipResource.Ribbon菜单_主窗体右上角配置栏_重新载入;
 

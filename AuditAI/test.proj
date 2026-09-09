@@ -1,7 +1,0 @@
-<Project DefaultTargets="ShowCompile">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
-  <Import Project="e:\lq\AuditAI\AuditAI\AuditAI.csproj" />
-  <Target Name="ShowCompile">
-    <Message Text="Compile items: @(Compile)" Importance="high" />
-  </Target>
-</Project>

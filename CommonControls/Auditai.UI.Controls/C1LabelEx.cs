@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -30,10 +30,9 @@ public class C1LabelEx : C1Label
 
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		using (SolidBrush brush = new SolidBrush(TextColor))
-		{
-			e.Graphics.DrawString(Text, Font, brush, GetDrawArea(), GetStringFormat());
-		}
+		// 自绘文字统一走 TextRenderer（GDI 通道），保证微软雅黑 hinting 正常、笔画不偏细
+		Rectangle drawArea = Rectangle.Round(GetDrawArea());
+		TextRenderer.DrawText(e.Graphics, Text, Font, drawArea, TextColor, GetTextFormatFlags());
 		if (PaintCallback != null)
 		{
 			PaintCallback(this, e);
@@ -46,52 +45,39 @@ public class C1LabelEx : C1Label
 		return new RectangleF(clientRectangle.X, clientRectangle.Y, clientRectangle.Width, clientRectangle.Height);
 	}
 
-	private StringFormat GetStringFormat()
+	private TextFormatFlags GetTextFormatFlags()
 	{
-		StringFormat stringFormat = new StringFormat();
-		StringAlignment alignment = StringAlignment.Near;
-		StringAlignment lineAlignment = StringAlignment.Near;
+		TextFormatFlags flags = TextFormatFlags.Default;
 		switch (TextAlign)
 		{
 		case ContentAlignment.TopLeft:
-			alignment = StringAlignment.Near;
-			lineAlignment = StringAlignment.Near;
+		case ContentAlignment.MiddleLeft:
+		case ContentAlignment.BottomLeft:
 			break;
 		case ContentAlignment.TopCenter:
-			alignment = StringAlignment.Center;
-			lineAlignment = StringAlignment.Near;
+		case ContentAlignment.MiddleCenter:
+		case ContentAlignment.BottomCenter:
+			flags |= TextFormatFlags.HorizontalCenter;
 			break;
 		case ContentAlignment.TopRight:
-			alignment = StringAlignment.Far;
-			lineAlignment = StringAlignment.Near;
-			break;
-		case ContentAlignment.MiddleLeft:
-			alignment = StringAlignment.Near;
-			lineAlignment = StringAlignment.Center;
-			break;
-		case ContentAlignment.MiddleCenter:
-			alignment = StringAlignment.Center;
-			lineAlignment = StringAlignment.Center;
-			break;
 		case ContentAlignment.MiddleRight:
-			alignment = StringAlignment.Far;
-			lineAlignment = StringAlignment.Center;
-			break;
-		case ContentAlignment.BottomLeft:
-			alignment = StringAlignment.Near;
-			lineAlignment = StringAlignment.Far;
-			break;
-		case ContentAlignment.BottomCenter:
-			alignment = StringAlignment.Center;
-			lineAlignment = StringAlignment.Far;
-			break;
 		case ContentAlignment.BottomRight:
-			alignment = StringAlignment.Far;
-			lineAlignment = StringAlignment.Far;
+			flags |= TextFormatFlags.Right;
 			break;
 		}
-		stringFormat.Alignment = alignment;
-		stringFormat.LineAlignment = lineAlignment;
-		return stringFormat;
+		switch (TextAlign)
+		{
+		case ContentAlignment.MiddleLeft:
+		case ContentAlignment.MiddleCenter:
+		case ContentAlignment.MiddleRight:
+			flags |= TextFormatFlags.VerticalCenter;
+			break;
+		case ContentAlignment.BottomLeft:
+		case ContentAlignment.BottomCenter:
+		case ContentAlignment.BottomRight:
+			flags |= TextFormatFlags.Bottom;
+			break;
+		}
+		return flags;
 	}
 }

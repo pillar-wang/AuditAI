@@ -52,7 +52,7 @@ public class FormNodesIndexEdit
 		_form = FormFactory.Create();
 		_form.Text = "批量编辑索引号";
 		_form.Size = new Size(471, 594);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.EditNodesNumber16);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.EditNodesNumber16);
 		_form.ShowInTaskbar = false;
 		_splAll = new C1SplitContainer
 		{
@@ -193,7 +193,7 @@ public class FormNodesIndexEdit
 		HitTestInfo hitTestInfo = _grid.HitTest(e.Location);
 		if (e.Button == MouseButtons.Right && hitTestInfo.Type == HitTestTypeEnum.Cell)
 		{
-			ctxCell.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(ctxCell, _grid, e.Location);
 		}
 	}
 
@@ -339,7 +339,7 @@ public class FormNodesIndexEdit
 			Node node = _grid.Rows.AddNode(0);
 			node.Data = treeGroup.Name;
 			node.Key = treeGroup;
-			node.Image = ContextResources.TreeGroup;
+			node.Image = IconRes.TreeGroup;
 			_grid.SetCellStyle(node.Row.Index, "CN_NUMBER", Style_Group);
 			foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
 			{
@@ -358,27 +358,27 @@ public class FormNodesIndexEdit
 							{
 								if (rootNode is TreePdfNode)
 								{
-									node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, Resources.TreePdf);
+									node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, IconRes.TreePdf);
 								}
 							}
 							else
 							{
-								node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, Resources.TreeImage);
+								node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, IconRes.TreeImage);
 							}
 						}
 						else
 						{
-							node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, Resources.TreeDoc);
+							node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, IconRes.TreeDoc);
 						}
 					}
 					else
 					{
-						node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, Resources.TreeTable);
+						node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, IconRes.TreeTable);
 					}
 				}
 				else
 				{
-					node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, Resources.TreeDir);
+					node2 = node.AddNode(NodeTypeEnum.LastChild, rootNode.Name, rootNode, IconRes.TreeDir);
 					AddDirectoryNode(dir2, node2);
 					node2.Collapsed = true;
 				}
@@ -403,27 +403,27 @@ public class FormNodesIndexEdit
 								{
 									if (child is TreePdfNode)
 									{
-										node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, Resources.TreePdf);
+										node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, IconRes.TreePdf);
 									}
 								}
 								else
 								{
-									node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, Resources.TreeImage);
+									node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, IconRes.TreeImage);
 								}
 							}
 							else
 							{
-								node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, Resources.TreeDoc);
+								node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, IconRes.TreeDoc);
 							}
 						}
 						else
 						{
-							node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, Resources.TreeTable);
+							node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, IconRes.TreeTable);
 						}
 					}
 					else
 					{
-						node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, Resources.TreeDir);
+						node3 = dirView.AddNode(NodeTypeEnum.LastChild, child.Name, child, IconRes.TreeDir);
 						AddDirectoryNode(dir3, node3);
 						node3.Collapsed = true;
 					}

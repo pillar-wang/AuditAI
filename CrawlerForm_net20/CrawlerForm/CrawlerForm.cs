@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿#define DEBUG
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿#define DEBUG
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1884,7 +1884,7 @@ public class CrawlerForm : Form
 			break;
 		case -10:
 			SwitchStatusTo(StatusEnum.CralerComplete);
-			ReportNotice("提示：", "分析完成，请致电官方客服电话400-690-6500寻求支持。");
+			ReportNotice("提示：", "分析完成，如需支持请联系管理员。");
 			break;
 		case -4:
 			SwitchStatusTo(StatusEnum.Warning);
@@ -2270,7 +2270,7 @@ public class CrawlerForm : Form
 		this.pnlMainNotice.TabIndex = 13;
 		this.lblMainNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMainNotice.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.lblMainNotice.Font = new System.Drawing.Font("Microsoft YaHei", 15f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblMainNotice.Font = new System.Drawing.Font("微软雅黑", 15f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblMainNotice.Location = new System.Drawing.Point(63, 0);
 		this.lblMainNotice.Name = "lblMainNotice";
 		this.lblMainNotice.Size = new System.Drawing.Size(386, 33);
@@ -2292,7 +2292,7 @@ public class CrawlerForm : Form
 		this.lnkException.Visible = false;
 		this.btnCrawler.FlatAppearance.BorderSize = 0;
 		this.btnCrawler.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnCrawler.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCrawler.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCrawler.Location = new System.Drawing.Point(605, 49);
 		this.btnCrawler.Name = "btnCrawler";
 		this.btnCrawler.Size = new System.Drawing.Size(100, 40);
@@ -2301,7 +2301,7 @@ public class CrawlerForm : Form
 		this.btnCrawler.UseVisualStyleBackColor = true;
 		this.btnCrawler.Click += new System.EventHandler(btnCrawler_Click);
 		this.lblSubNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblSubNotice.Font = new System.Drawing.Font("Microsoft YaHei", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblSubNotice.Font = new System.Drawing.Font("微软雅黑", 12f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblSubNotice.Location = new System.Drawing.Point(128, 66);
 		this.lblSubNotice.MaximumSize = new System.Drawing.Size(450, 58);
 		this.lblSubNotice.Name = "lblSubNotice";
@@ -2356,7 +2356,7 @@ public class CrawlerForm : Form
 		this.btnBack.Click += new System.EventHandler(btnBack_Click);
 		this.btnScan.FlatAppearance.BorderSize = 0;
 		this.btnScan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnScan.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnScan.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnScan.Location = new System.Drawing.Point(605, 49);
 		this.btnScan.Name = "btnScan";
 		this.btnScan.Size = new System.Drawing.Size(100, 40);
@@ -2367,7 +2367,7 @@ public class CrawlerForm : Form
 		this.btnScan.Enter += new System.EventHandler(btnCertain_Enter);
 		this.lblTitle.AutoSize = true;
 		this.lblTitle.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		this.lblTitle.Font = new System.Drawing.Font("Microsoft YaHei", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblTitle.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblTitle.Location = new System.Drawing.Point(31, 8);
 		this.lblTitle.Name = "lblTitle";
 		this.lblTitle.Size = new System.Drawing.Size(68, 17);

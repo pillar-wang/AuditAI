@@ -40,6 +40,12 @@ public class Project
 
 	public static Project Current { get; set; }
 
+	/// <summary>审批只读会话：当前正以只读方式打开（审批人查阅待审项目）的项目 Id；与 HasRead/HasWritePermission 联动实现全链路只读</summary>
+	public static Guid? ReadonlyOpenProjectId { get; set; }
+
+	/// <summary>当前打开的项目是否处于审批只读会话</summary>
+	public static bool IsReadonlyOpenSession => Current != null && ReadonlyOpenProjectId.HasValue && ReadonlyOpenProjectId.Value == Current.Id;
+
 	public ProjectDAL Dal { get; set; }
 
 	public Guid Id { get; set; }

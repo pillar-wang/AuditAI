@@ -17,7 +17,7 @@ namespace Auditai.UI.Controls;
 ///   3. 背景层次从 3 层缩为 2 层（浅蓝渐变窗体 + 白色内容卡），去除按钮顶部分隔边框
 ///   4. 最小尺寸 560×240 → 440×180，更小巧精致
 ///   5. 按钮高度 36→40（接近 44px 触控目标），按钮栏 72→60
-///   6. 字体统一 Noto Sans SC 10.5f，主按钮 Primary 浅蓝填充 + 白字
+///   6. 字体统一 微软雅黑 10.5f，主按钮 Primary 浅蓝填充 + 白字
 ///   7. 对外 MessageBox.Show(...) API 完全兼容，零侵入
 /// </summary>
 public class MessageShowBox : Form
@@ -33,7 +33,7 @@ public class MessageShowBox : Form
     // --- 自定义标题栏控件 ---
     private Panel pnlTitleBar;
     private Label lblTitle;
-    private C1Button btnClose;
+    private System.Windows.Forms.Button btnClose;
 
     // --- 内容与按钮容器 ---
     private Panel pnlCard;         // 白色圆角卡片（承载图标+文字+按钮栏）
@@ -70,13 +70,13 @@ public class MessageShowBox : Form
         var theme = Theme.SelectedAuditaiTheme;
         if (theme != null && theme.Name == "auditai_GoogleBlue")
         {
-            // Google Blue 色板
-            Primary = Color.FromArgb(26, 115, 232);       // #1a73e8
-            PrimaryDark = Color.FromArgb(21, 87, 176);    // #1557b0
-            PrimaryLight = Color.FromArgb(23, 101, 204);  // #1765cc
-            LineColorDefault = Color.FromArgb(226, 232, 240); // #e2e8f0
-            TextPrimary = Color.FromArgb(15, 23, 42);     // #0f172a
-            TextSecondary = Color.FromArgb(51, 65, 85);   // #334155
+            // 清新蓝色板
+            Primary = Color.FromArgb(59, 130, 246);       // #3b82f6
+            PrimaryDark = Color.FromArgb(29, 78, 216);    // #1d4ed8
+            PrimaryLight = Color.FromArgb(37, 99, 235);   // #2563eb
+            LineColorDefault = Color.FromArgb(229, 231, 235); // #e5e7eb
+            TextPrimary = Color.FromArgb(30, 41, 59);     // #1e293b
+            TextSecondary = Color.FromArgb(71, 85, 105);  // #475569
         }
         else
         {
@@ -84,7 +84,7 @@ public class MessageShowBox : Form
             Primary = Color.FromArgb(74, 144, 217);
             PrimaryDark = Color.FromArgb(53, 123, 189);
             PrimaryLight = Color.FromArgb(90, 160, 230);
-            LineColorDefault = Color.FromArgb(208, 215, 222);
+            LineColorDefault = Color.FromArgb(229, 231, 235);
             TextPrimary = Color.FromArgb(30, 41, 59);
             TextSecondary = Color.FromArgb(71, 85, 105);
         }
@@ -241,7 +241,7 @@ public class MessageShowBox : Form
     /// </summary>
     private bool ContentNeedsScroll()
     {
-        Font font = new Font("Noto Sans SC", 10.5f);
+        Font font = new Font("微软雅黑", 10.5f);
         int contentTextWidth = MidDialogSize.Width
                                - CardSideMargin * 2
                                - ContentPaddingX * 2
@@ -257,7 +257,7 @@ public class MessageShowBox : Form
 
     private void AutoSizeDialog()
     {
-        Font font = new Font("Noto Sans SC", 10.5f);
+        Font font = new Font("微软雅黑", 10.5f);
         const int dialogWidth = 760;
 
         // 1. 计算文字高度
@@ -333,8 +333,8 @@ public class MessageShowBox : Form
             Width = ButtonWidth,
             Height = ButtonHeight,
             Font = isPrimary
-                ? new Font("Noto Sans SC", 9.5f, FontStyle.Bold)
-                : new Font("Noto Sans SC", 9.5f, FontStyle.Regular),
+                ? new Font("微软雅黑", 9.5f, FontStyle.Bold)
+                : new Font("微软雅黑", 9.5f, FontStyle.Regular),
             Anchor = AnchorStyles.None,
             FlatStyle = FlatStyle.Flat
         };
@@ -504,7 +504,7 @@ public class MessageShowBox : Form
         // 1) 浅蓝渐变窗体背景
         Rectangle bgRect = new Rectangle(0, 0, Width, Height);
         using (var bgBrush = new LinearGradientBrush(
-            bgRect, Color.FromArgb(227, 240, 255), Color.FromArgb(245, 248, 250),
+            bgRect, Color.FromArgb(239, 246, 255), Color.FromArgb(245, 248, 250),
             LinearGradientMode.Vertical))
         {
             g.FillRectangle(bgBrush, bgRect);
@@ -577,14 +577,13 @@ public class MessageShowBox : Form
     {
         this.pnlTitleBar = new System.Windows.Forms.Panel();
         this.lblTitle = new System.Windows.Forms.Label();
-        this.btnClose = new C1.Win.C1Input.C1Button();
+        this.btnClose = new System.Windows.Forms.Button();
         this.pnlCard = new System.Windows.Forms.Panel();
         this.pnlContent = new System.Windows.Forms.Panel();
         this.picIcon = new System.Windows.Forms.PictureBox();
         this.lblNotice = new C1.Win.C1Input.C1Label();
         this.txtNotice = new Auditai.UI.Controls.C1TextBoxEx();
         this.pnlTitleBar.SuspendLayout();
-        ((System.ComponentModel.ISupportInitialize)(this.btnClose)).BeginInit();
         this.pnlCard.SuspendLayout();
         this.pnlContent.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)(this.picIcon)).BeginInit();
@@ -606,7 +605,7 @@ public class MessageShowBox : Form
         // ---- lblTitle：居中显示标题（标题栏有内边距，不贴边缘） ----
         this.lblTitle.AutoSize = true;
         this.lblTitle.BackColor = System.Drawing.Color.Transparent;
-        this.lblTitle.Font = new System.Drawing.Font("Noto Sans SC", 11f, System.Drawing.FontStyle.Bold,
+        this.lblTitle.Font = new System.Drawing.Font("微软雅黑", 11f, System.Drawing.FontStyle.Bold,
             System.Drawing.GraphicsUnit.Point, 134);
         this.lblTitle.ForeColor = TextPrimary;
         this.lblTitle.Name = "lblTitle";
@@ -621,9 +620,12 @@ public class MessageShowBox : Form
         this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
         this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
         this.btnClose.FlatAppearance.BorderSize = 0;
-        this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(220, 53, 69);
-        this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-        this.btnClose.Image = Auditai.UI.Controls.Properties.Resources.关闭;
+		this.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(255, 200, 200);
+		this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+		// 最原始的关闭按钮：透明底灰色 ×
+		this.btnClose.BackColor = System.Drawing.Color.White;
+		this.btnClose.UseVisualStyleBackColor = false;
+		this.btnClose.Image = IconLibrary.CreateBitmap("x", 16, System.Drawing.Color.FromArgb(150, 150, 150));
         this.btnClose.Location = new System.Drawing.Point(620 - 36 - 6, 4);
         this.btnClose.Name = "btnClose";
         this.btnClose.Size = new System.Drawing.Size(32, 32);
@@ -656,7 +658,7 @@ public class MessageShowBox : Form
         this.lblNotice.BackColor = System.Drawing.Color.White;
         this.lblNotice.ForeColor = TextPrimary;
         this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
-        this.lblNotice.Font = new System.Drawing.Font("Noto Sans SC", 10f,
+        this.lblNotice.Font = new System.Drawing.Font("微软雅黑", 10f,
             System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
         this.lblNotice.Name = "lblNotice";
         this.lblNotice.TabIndex = 1;
@@ -669,7 +671,7 @@ public class MessageShowBox : Form
         this.txtNotice.ForeColor = TextPrimary;
         this.txtNotice.BorderColor = LineColorDefault;
         this.txtNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
-        this.txtNotice.Font = new System.Drawing.Font("Noto Sans SC", 10.5f,
+        this.txtNotice.Font = new System.Drawing.Font("微软雅黑", 10.5f,
             System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
         this.txtNotice.Multiline = true;
         this.txtNotice.Name = "txtNotice";
@@ -701,7 +703,6 @@ public class MessageShowBox : Form
 
         this.pnlTitleBar.ResumeLayout(false);
         this.pnlTitleBar.PerformLayout();
-        ((System.ComponentModel.ISupportInitialize)(this.btnClose)).EndInit();
         this.pnlCard.ResumeLayout(false);
         this.pnlContent.ResumeLayout(false);
         this.pnlContent.PerformLayout();

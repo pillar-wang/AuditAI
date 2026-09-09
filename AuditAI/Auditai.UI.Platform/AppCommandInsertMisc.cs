@@ -7,7 +7,7 @@ public class AppCommandInsertMisc : AppCommandMenu
 {
 	public override string Text => "插入其他";
 
-	public override Image LargeImage => Resources.InsertOther;
+	public override Image LargeImage => IconRes.InsertOther;
 
 	public AppCommandInsertMisc()
 		: base(new AppCommandBase[10]

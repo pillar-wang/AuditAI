@@ -9,7 +9,7 @@ public class AppCommandLedgerPortrait : AppCommandButton
 {
 	public override string Text => "\u3000纵向\u3000";
 
-	public override Image LargeIcon => Resources.Portrait;
+	public override Image LargeIcon => IconRes.Portrait;
 
 	public override void GenerateRibbonItem()
 	{

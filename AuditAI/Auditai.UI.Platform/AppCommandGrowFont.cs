@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandGrowFont : AppCommandButton
 {
-	public override Image SmallIcon => Resources.GrowFont;
+	public override Image SmallIcon => IconRes.GrowFont;
 
 	protected override void Clicked()
 	{

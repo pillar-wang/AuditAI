@@ -8,7 +8,7 @@ public class AppCommandAbout : AppCommandButton
 {
 	public override string Text => "\u3000关于\u3000";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.About;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.About;
 
 	protected override string Tooltip => TipResource.关于;
 

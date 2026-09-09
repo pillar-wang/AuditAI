@@ -8,7 +8,7 @@ public class AppCommandGenerateLedger : AppCommandButton
 {
 	public override string Text => "账套生成器";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.OpenExcelLedger;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.OpenExcelLedger;
 
 	protected override string Tooltip => TipResource.打开序时账按钮;
 

@@ -10,7 +10,7 @@ public class AppCommandMyFavorites : AppCommandButton
 {
 	public override string Text => "我的关注";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.MarkFocus;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.MarkFocus;
 
 	protected override string Tooltip => TipResource.我的关注按钮;
 

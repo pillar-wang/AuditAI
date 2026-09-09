@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandRecycleNode : AppCommandButton
 {
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.RecycleNode;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.RecycleNode;
 
 	public override string Text => "回收文件";
 

@@ -7,7 +7,7 @@ public class AppCommandTitleUnifyRowHeight : AppCommandButton
 {
 	public override string Text => "平均分布行高";
 
-	public override Image LargeIcon => Resources.UnifyRowHeight;
+	public override Image LargeIcon => IconRes.UnifyRowHeight;
 
 	protected override void Clicked()
 	{

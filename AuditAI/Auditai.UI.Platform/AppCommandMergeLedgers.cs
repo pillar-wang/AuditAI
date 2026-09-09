@@ -10,7 +10,7 @@ public class AppCommandMergeLedgers : AppCommandButton
 {
 	public override string Text => "合并账套";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.LedgerMerge;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.LedgerMerge;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

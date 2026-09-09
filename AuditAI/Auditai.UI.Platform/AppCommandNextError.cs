@@ -8,7 +8,7 @@ public class AppCommandNextError : AppCommandButton
 {
 	public override string Text => "下一个错误";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.NextError;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.NextError;
 
 	protected override string Tooltip => TipResource.下一个错误;
 

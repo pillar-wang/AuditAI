@@ -7,7 +7,7 @@ public class AppGroupHeader : AppCommandGroup
 {
 	public override string Text => "页眉页脚";
 
-	public override Image Image => Resources.Portrait;
+	public override Image Image => IconRes.Portrait;
 
 	public AppGroupHeader()
 	{

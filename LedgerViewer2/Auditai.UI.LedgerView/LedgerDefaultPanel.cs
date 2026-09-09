@@ -1,4 +1,4 @@
-using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -91,8 +91,6 @@ public class LedgerDefaultPanel : ISetTheme
 
 	private C1ContextMenu cacelContextMenu = new C1ContextMenu();
 
-	private RibbonImageProcess imageProcess = new RibbonImageProcess();
-
 	private C1SplitContainer emptyView;
 
 	private Pen selectBorderPen = new Pen(Theme.SelectedAuditaiTheme.ThemeContext.DarkColor, 4f);
@@ -101,11 +99,10 @@ public class LedgerDefaultPanel : ISetTheme
 
 	private Tile previousMouseSlideTile;
 
-	private System.Drawing.Image imgTileClose = Auditai.UI.Controls.Properties.Resources.tileClose;
-
-	private System.Drawing.Image imgTileCloseDown = Auditai.UI.Controls.Properties.Resources.tileCloseDown;
-
-	private System.Drawing.Image imgTileCloseSlide = Auditai.UI.Controls.Properties.Resources.tileCloseSlide;
+	// 最原始的关闭按钮样式：透明底灰色"×"，普通/悬停/按下仅色差
+	private System.Drawing.Image imgTileClose = Auditai.UI.Controls.IconLibrary.CreateBitmap("x", 16, System.Drawing.Color.FromArgb(150, 150, 150));
+	private System.Drawing.Image imgTileCloseDown = Auditai.UI.Controls.IconLibrary.CreateBitmap("x", 16, System.Drawing.Color.FromArgb(40, 40, 40));
+	private System.Drawing.Image imgTileCloseSlide = Auditai.UI.Controls.IconLibrary.CreateBitmap("x", 16, System.Drawing.Color.FromArgb(80, 80, 80));
 
 	private TooltipBox _tooltipBox = new TooltipBox
 	{
@@ -596,8 +593,8 @@ public class LedgerDefaultPanel : ISetTheme
 				Width = (int)((double)e.ClipRectangle.Width * (progressInfo.current / progressInfo.count))
 			});
 			string text = ((fileCache.FileState == FileState.SendWaitAccept) ? "正在等待接收" : "正在发送");
-			SizeF sizeF = e.Graphics.MeasureString(text, progressFont);
-			e.Graphics.DrawString(text, progressFont, Brushes.Red, ((float)tile.Width - sizeF.Width) / 2f, 5f);
+			Size textSize = TextRenderer.MeasureText(text, progressFont);
+			TextRenderer.DrawText(e.Graphics, text, progressFont, new Point((tile.Width - textSize.Width) / 2, 5), Color.Red);
 		}
 		catch (Exception)
 		{
@@ -625,8 +622,8 @@ public class LedgerDefaultPanel : ISetTheme
 				Height = tile.Height,
 				Width = (int)((double)e.ClipRectangle.Width * (tag.ProgressInfo.current / tag.ProgressInfo.count))
 			});
-			SizeF sizeF = e.Graphics.MeasureString("正在接收", progressFont);
-			e.Graphics.DrawString("正在接收", progressFont, Brushes.Red, ((float)tile.Width - sizeF.Width) / 2f, 5f);
+			Size receiveTextSize = TextRenderer.MeasureText("正在接收", progressFont);
+			TextRenderer.DrawText(e.Graphics, "正在接收", progressFont, new Point((tile.Width - receiveTextSize.Width) / 2, 5), Color.Red);
 		}
 	}
 
@@ -838,12 +835,12 @@ public class LedgerDefaultPanel : ISetTheme
 			if (tileInfo.TileFlag.HasFlag(TileFlag.WaitSend) || tileInfo.TileFlag.HasFlag(TileFlag.Sending) || tileInfo.TileFlag.HasFlag(TileFlag.Recieving))
 			{
 				contextMenuLocation = e.Location;
-				cacelContextMenu.ShowContextMenu(_tileControl, e.Location);
+				NativeMenuShim.Show(cacelContextMenu, _tileControl, e.Location);
 			}
 			else if (_selectedTile?.Tag is TileInfo tileInfo2 && tileInfo2.TileFlag.HasFlag(TileFlag.LocalFile) && tileInfo.TileFlag.HasFlag(TileFlag.LocalFile) && tileInfo2.LocalFile == tileInfo.LocalFile)
 			{
 				contextMenuLocation = e.Location;
-				contextMenu.ShowContextMenu(_tileControl, e.Location);
+				NativeMenuShim.Show(contextMenu, _tileControl, e.Location);
 			}
 		}
 	}
@@ -872,7 +869,7 @@ public class LedgerDefaultPanel : ISetTheme
 		C1CommandLink lnkShareLedger = new C1CommandLink();
 		C1Command c1Command = new C1Command();
 		c1Command.Text = "分享账套";
-		c1Command.Image = Auditai.UI.LedgerView.Properties.Resources.sideShareLedger;
+		c1Command.Image = IconLibrary.CreateBitmap("share", 28, Color.FromArgb(59, 130, 246));
 		c1Command.Click += delegate
 		{
 			if (!(_selectedTile?.Tag is TileInfo tileInfo) || !tileInfo.TileFlag.HasFlag(TileFlag.LocalFile))
@@ -898,7 +895,7 @@ public class LedgerDefaultPanel : ISetTheme
 		C1CommandLink c1CommandLink = new C1CommandLink();
 		C1Command c1Command2 = new C1Command();
 		c1Command2.Text = "重命名账套";
-		c1Command2.Image = Auditai.UI.LedgerView.Properties.Resources.sideRenameLedger;
+		c1Command2.Image = IconLibrary.CreateBitmap("pencil", 28, Color.FromArgb(59, 130, 246));
 		c1Command2.Click += delegate
 		{
 			RenameLedger();
@@ -908,7 +905,7 @@ public class LedgerDefaultPanel : ISetTheme
 		C1CommandLink c1CommandLink2 = new C1CommandLink();
 		C1Command c1Command3 = new C1Command();
 		c1Command3.Text = "删除账套";
-		c1Command3.Image = Auditai.UI.LedgerView.Properties.Resources.sideDeleteLedger;
+		c1Command3.Image = IconLibrary.CreateBitmap("trash", 28, Color.FromArgb(239, 68, 68));
 		c1Command3.Click += delegate
 		{
 			DeleteLedger();
@@ -918,17 +915,13 @@ public class LedgerDefaultPanel : ISetTheme
 		C1CommandLink c1CommandLink3 = new C1CommandLink();
 		C1Command c1Command4 = new C1Command();
 		c1Command4.Text = "所在位置";
-		c1Command4.Image = Auditai.UI.LedgerView.Properties.Resources.sideLocation;
+		c1Command4.Image = IconLibrary.CreateBitmap("map-pin", 28, Color.FromArgb(217, 119, 6));
 		c1Command4.Click += delegate
 		{
 			OpenLocation();
 		};
 		c1CommandLink3.Command = c1Command4;
 		toolBar.CommandLinks.Add(c1CommandLink3);
-		foreach (C1CommandLink commandLink in toolBar.CommandLinks)
-		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
 		C1SplitContainer value = ComponentFactory.BuildSidebar(_tileControl, toolBar, out pnlSidebar);
 		c1SplitterPanel.Controls.Add(value);
 		return emptyView;
@@ -1074,7 +1067,7 @@ public class LedgerDefaultPanel : ISetTheme
 		group.Tiles.Add(new Tile
 		{
 			Text = title,
-			HorizontalSize = 20,
+			HorizontalSize = 10,
 			VerticalSize = 3,
 			Template = _titleTemplate,
 			BackColor = Color.Transparent,
@@ -1184,6 +1177,7 @@ public class LedgerDefaultPanel : ISetTheme
 		textElement.Font = titleFont;
 		textElement.Margin = new Padding(0, 8, 0, 6);
 		textElement.SingleLine = true;
+		textElement.TextTrimming = TextTrimming.EndEllipsis;
 		textElement.FontUnderline = ThreeStateBoolean.True;
 		panelElement.Children.Add(textElement);
 		panelElement.Dock = DockStyle.Fill;
@@ -1401,15 +1395,6 @@ public class LedgerDefaultPanel : ISetTheme
 	{
 		ComponentFactory.RestoreSidebarToolBar(pnlSidebar);
 		_tileControl.TileBorderColor = Color.Transparent;
-		if (Theme.SelectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
-		{
-			imageProcess.SetImageStrategy(new WhiteImageStrategy());
-		}
-		else
-		{
-			imageProcess.SetImageStrategy(new DefaultImageStrategy());
-		}
-		imageProcess.ProcessImage();
 		Color darkColor = Theme.SelectedAuditaiTheme.ThemeContext.DarkColor;
 		selectBorderPen = new Pen(darkColor, 4f);
 		solidBrush = new SolidBrush(Color.FromArgb(100, darkColor.R, darkColor.G, darkColor.B));

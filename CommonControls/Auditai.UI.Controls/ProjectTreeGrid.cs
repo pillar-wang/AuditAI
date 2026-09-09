@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Command;
@@ -48,10 +48,10 @@ public class ProjectTreeGrid
 
 	public ProjectTreeGrid()
 	{
-		_treeGroupImage = ScaleImage(Resources.TreeGroup, 20, 20);
-		_treeDirImage = ScaleImage(Resources.TreeDir, 20, 20);
-		_treeDocImage = ScaleImage(Resources.TreeDoc, 20, 20);
-		_treeTableImage = ScaleImage(Resources.TreeTable, 20, 20);
+		_treeGroupImage = ScaleImage(IconRes.TreeGroup, 20, 20);
+		_treeDirImage = ScaleImage(IconRes.TreeDir, 20, 20);
+		_treeDocImage = ScaleImage(IconRes.TreeDoc, 20, 20);
+		_treeTableImage = ScaleImage(IconRes.TreeTable, 20, 20);
 
 		_grid = new C1FlexGridEx
 		{
@@ -212,7 +212,7 @@ public class ProjectTreeGrid
 				if (e.Button == MouseButtons.Right)
 				{
 					this.TreeNodeRightClicked?.Invoke(this, new TreeNodeEventArgs(tnb));
-					_ctxMenu.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(_ctxMenu, _grid, e.Location);
 				}
 				else
 				{

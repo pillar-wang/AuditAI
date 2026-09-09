@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -227,7 +227,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		column.AllowEditing = _isAdmin;
 		column.Editor = _listDropDown.DropDown;
 		_grid.Tree.Column = 1;
-		_grid.Rows.DefaultSize = 44;
+		_grid.Rows.DefaultSize = 40;
 		_grid.DrawMode = DrawModeEnum.OwnerDraw;
 		_grid.SelectionMode = SelectionModeEnum.Row;
 		_grid.AllowAddNew = false;
@@ -295,7 +295,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 
 	private async void DlgTeamUserManagement_Load(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.Users);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.Users);
 		Text = (Auditai.Model.User.Current.IsTeamAdmin ? "同事管理" : "我的同事") + " 【" + UserTeam.Current.Name + "】";
 		toolLnkDisplayMode.Delimiter = Auditai.Model.User.Current.IsTeamAdmin;
 		await Populate();
@@ -721,11 +721,11 @@ public class dlgTeamUserManagement : C1RibbonForm
 			{
 				if (row.UserData is Auditai.DTO.User)
 				{
-					userContextMenu.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(userContextMenu, _grid, e.Location);
 				}
 				else if (row.UserData is UserGroup)
 				{
-					groupContextMenu.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(groupContextMenu, _grid, e.Location);
 				}
 			}
 		}
@@ -1329,11 +1329,11 @@ public class dlgTeamUserManagement : C1RibbonForm
 		{
 		case ListTileViewMode.List:
 			toolCmdDisplayMode.Text = "磁贴模式";
-			toolCmdDisplayMode.Image = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedBitmap(Auditai.UI.Platform.Properties.Resources.tileMode);
+			toolCmdDisplayMode.Image = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedBitmap(Auditai.UI.Platform.IconRes.tileMode);
 			break;
 		case ListTileViewMode.Tile:
 			toolCmdDisplayMode.Text = "列表模式";
-			toolCmdDisplayMode.Image = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedBitmap(Auditai.UI.Platform.Properties.Resources.listMode);
+			toolCmdDisplayMode.Image = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedBitmap(Auditai.UI.Platform.IconRes.listMode);
 			break;
 		}
 	}
@@ -1529,26 +1529,26 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.c1SplitContainer1.Name = "c1SplitContainer1";
 		this.c1SplitContainer1.Panels.Add(this.pnlToolbar);
 		this.c1SplitContainer1.Panels.Add(this.c1SplitterPanel2);
-		this.c1SplitContainer1.Size = new System.Drawing.Size(1160, 805);
+		this.c1SplitContainer1.Size = new System.Drawing.Size(1060, 700);
 		this.c1SplitContainer1.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
 		this.c1SplitContainer1.SplitterWidth = 0;
 		this.c1SplitContainer1.TabIndex = 0;
 		this.c1SplitContainer1.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
 		this.pnlToolbar.Controls.Add(this.commandDock);
-		this.pnlToolbar.Height = 86;
+		this.pnlToolbar.Height = 72;
 		this.pnlToolbar.KeepRelativeSize = false;
 		this.pnlToolbar.Location = new System.Drawing.Point(0, 0);
 		this.pnlToolbar.Name = "pnlToolbar";
 		this.pnlToolbar.Resizable = false;
-		this.pnlToolbar.Size = new System.Drawing.Size(1160, 86);
-		this.pnlToolbar.SizeRatio = 15.752;
+		this.pnlToolbar.Size = new System.Drawing.Size(1060, 72);
+		this.pnlToolbar.SizeRatio = 10.3;
 		this.pnlToolbar.TabIndex = 2;
 		this.commandDock.Controls.Add(this.toolbar);
 		this.commandDock.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.commandDock.Id = 2;
 		this.commandDock.Location = new System.Drawing.Point(0, 0);
 		this.commandDock.Name = "commandDock";
-		this.commandDock.Size = new System.Drawing.Size(1160, 86);
+		this.commandDock.Size = new System.Drawing.Size(1060, 72);
 		this.toolbar.AccessibleName = "Tool Bar";
 		this.toolbar.AutoSize = false;
 		this.toolbar.ButtonLayoutHorz = C1.Win.C1Command.ButtonLayoutEnum.TextBelow;
@@ -1564,12 +1564,12 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolbar.MinButtonSize = 42;
 		this.toolbar.Movable = false;
 		this.toolbar.Name = "toolbar";
-		this.toolbar.Size = new System.Drawing.Size(1047, 86);
+		this.toolbar.Size = new System.Drawing.Size(1060, 72);
 		this.toolbar.Text = "c1ToolBar1";
 		this.toolbar.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.toolbar.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
 		this.lnkToolAddTeamUser.Command = this.toolCmdAddTeamUser;
-		this.toolCmdAddTeamUser.Image = Auditai.UI.Platform.Properties.Resources.toolAddUserToTeam;
+		this.toolCmdAddTeamUser.Image = Auditai.UI.Platform.IconRes.toolAddUserToTeam;
 		this.toolCmdAddTeamUser.Name = "toolCmdAddTeamUser";
 		this.toolCmdAddTeamUser.ShortcutText = "";
 		this.toolCmdAddTeamUser.Text = "新增同事";
@@ -1577,7 +1577,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdAddTeamUser.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolAddTeamUser_CommandStateQuery);
 		this.toolLnkRemoveTeamUser.Command = this.toolCmdRemoveTeamUser;
 		this.toolLnkRemoveTeamUser.SortOrder = 1;
-		this.toolCmdRemoveTeamUser.Image = Auditai.UI.Platform.Properties.Resources.toolRemoveUserFromTeam;
+		this.toolCmdRemoveTeamUser.Image = Auditai.UI.Platform.IconRes.toolRemoveUserFromTeam;
 		this.toolCmdRemoveTeamUser.Name = "toolCmdRemoveTeamUser";
 		this.toolCmdRemoveTeamUser.ShortcutText = "";
 		this.toolCmdRemoveTeamUser.Text = "移除同事";
@@ -1586,7 +1586,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolLnkAddUserGroup.Command = this.toolCmdAddUserGroup;
 		this.toolLnkAddUserGroup.Delimiter = true;
 		this.toolLnkAddUserGroup.SortOrder = 2;
-		this.toolCmdAddUserGroup.Image = Auditai.UI.Platform.Properties.Resources.addUserGroup;
+		this.toolCmdAddUserGroup.Image = Auditai.UI.Platform.IconRes.addUserGroup;
 		this.toolCmdAddUserGroup.Name = "toolCmdAddUserGroup";
 		this.toolCmdAddUserGroup.ShortcutText = "";
 		this.toolCmdAddUserGroup.Text = "新建分组";
@@ -1594,7 +1594,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdAddUserGroup.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolAddUserGroup_CommandStateQuery);
 		this.toolLnkAddChildGroup.Command = this.toolCmdAddChildGroup;
 		this.toolLnkAddChildGroup.SortOrder = 3;
-		this.toolCmdAddChildGroup.Image = Auditai.UI.Platform.Properties.Resources.addChildGroup;
+		this.toolCmdAddChildGroup.Image = Auditai.UI.Platform.IconRes.addChildGroup;
 		this.toolCmdAddChildGroup.Name = "toolCmdAddChildGroup";
 		this.toolCmdAddChildGroup.ShortcutText = "";
 		this.toolCmdAddChildGroup.Text = "下增分组";
@@ -1602,7 +1602,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdAddChildGroup.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolAddChildGroup_CommandStateQuery);
 		this.toolLnkRemoveUserGroup.Command = this.toolCmdRemoveUserGroup;
 		this.toolLnkRemoveUserGroup.SortOrder = 4;
-		this.toolCmdRemoveUserGroup.Image = Auditai.UI.Platform.Properties.Resources.toolDeleteGroup;
+		this.toolCmdRemoveUserGroup.Image = Auditai.UI.Platform.IconRes.toolDeleteGroup;
 		this.toolCmdRemoveUserGroup.Name = "toolCmdRemoveUserGroup";
 		this.toolCmdRemoveUserGroup.ShortcutText = "";
 		this.toolCmdRemoveUserGroup.Text = "删除分组";
@@ -1610,7 +1610,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdRemoveUserGroup.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolRemoveUserGroup_CommandStateQuery);
 		this.toolLnkRenameUserGroup.Command = this.toolCmdRenameUserGroup;
 		this.toolLnkRenameUserGroup.SortOrder = 5;
-		this.toolCmdRenameUserGroup.Image = Auditai.UI.Platform.Properties.Resources.toolRenameGroup;
+		this.toolCmdRenameUserGroup.Image = Auditai.UI.Platform.IconRes.toolRenameGroup;
 		this.toolCmdRenameUserGroup.Name = "toolCmdRenameUserGroup";
 		this.toolCmdRenameUserGroup.ShortcutText = "";
 		this.toolCmdRenameUserGroup.Text = "重命名分组";
@@ -1619,7 +1619,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolLnkDisplayMode.Command = this.toolCmdDisplayMode;
 		this.toolLnkDisplayMode.Delimiter = true;
 		this.toolLnkDisplayMode.SortOrder = 6;
-		this.toolCmdDisplayMode.Image = Auditai.UI.Platform.Properties.Resources.listMode;
+		this.toolCmdDisplayMode.Image = Auditai.UI.Platform.IconRes.listMode;
 		this.toolCmdDisplayMode.Name = "toolCmdDisplayMode";
 		this.toolCmdDisplayMode.ShortcutText = "";
 		this.toolCmdDisplayMode.Text = "列表模式";
@@ -1627,7 +1627,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdDisplayMode.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolDisplayMode_CommandStateQuery);
 		this.toolLnkRenameTeam.Command = this.toolCmdRenameTeam;
 		this.toolLnkRenameTeam.SortOrder = 7;
-		this.toolCmdRenameTeam.Image = Auditai.UI.Platform.Properties.Resources.toolRenameGroup;
+		this.toolCmdRenameTeam.Image = Auditai.UI.Platform.IconRes.toolRenameGroup;
 		this.toolCmdRenameTeam.Name = "toolCmdRenameTeam";
 		this.toolCmdRenameTeam.ShortcutText = "";
 		this.toolCmdRenameTeam.Text = "重命名组织";
@@ -1635,7 +1635,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdRenameTeam.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(toolCmdRenameTeam_CommandStateQuery);
 		this.toolLnkMergeTeam.Command = this.toolCmdMergeTeam;
 		this.toolLnkMergeTeam.SortOrder = 8;
-		this.toolCmdMergeTeam.Image = Auditai.UI.Platform.Properties.Resources.toolMergeTeam;
+		this.toolCmdMergeTeam.Image = Auditai.UI.Platform.IconRes.toolMergeTeam;
 		this.toolCmdMergeTeam.Name = "toolCmdMergeTeam";
 		this.toolCmdMergeTeam.ShortcutText = "";
 		this.toolCmdMergeTeam.Text = "合并组织";
@@ -1643,7 +1643,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdMergeTeam.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolMergeTeam_CommandStateQuery);
 		this.toolLnkDismissTeam.Command = this.toolCmdDismissTeam;
 		this.toolLnkDismissTeam.SortOrder = 9;
-		this.toolCmdDismissTeam.Image = Auditai.UI.Platform.Properties.Resources.toolDismissTeam;
+		this.toolCmdDismissTeam.Image = Auditai.UI.Platform.IconRes.toolDismissTeam;
 		this.toolCmdDismissTeam.Name = "toolCmdDismissTeam";
 		this.toolCmdDismissTeam.ShortcutText = "";
 		this.toolCmdDismissTeam.Text = "解散组织";
@@ -1651,21 +1651,21 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.toolCmdDismissTeam.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolDismissTeam_CommandStateQuery);
 		this.toolLnkLeaveTeam.Command = this.toolCmdLeaveTeam;
 		this.toolLnkLeaveTeam.SortOrder = 10;
-		this.toolCmdLeaveTeam.Image = Auditai.UI.Platform.Properties.Resources.toolQuitTeam;
+		this.toolCmdLeaveTeam.Image = Auditai.UI.Platform.IconRes.toolQuitTeam;
 		this.toolCmdLeaveTeam.Name = "toolCmdLeaveTeam";
 		this.toolCmdLeaveTeam.ShortcutText = "";
 		this.toolCmdLeaveTeam.Text = "退出组织";
 		this.toolCmdLeaveTeam.Click += new C1.Win.C1Command.ClickEventHandler(cmdToolLeaveTeam_Click);
 		this.toolCmdLeaveTeam.CommandStateQuery += new C1.Win.C1Command.CommandStateQueryEventHandler(cmdToolLeaveTeam_CommandStateQuery);
 		this.c1SplitterPanel2.Controls.Add(this._grid);
-		this.c1SplitterPanel2.Height = 718;
-		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 87);
+		this.c1SplitterPanel2.Height = 628;
+		this.c1SplitterPanel2.Location = new System.Drawing.Point(0, 73);
 		this.c1SplitterPanel2.MinHeight = 52;
 		this.c1SplitterPanel2.MinWidth = 52;
 		this.c1SplitterPanel2.Name = "c1SplitterPanel2";
-		this.c1SplitterPanel2.Size = new System.Drawing.Size(1160, 718);
+		this.c1SplitterPanel2.Size = new System.Drawing.Size(1060, 628);
 		this.c1SplitterPanel2.TabIndex = 1;
-		this.c1SplitterPanel2.Width = 1160;
+		this.c1SplitterPanel2.Width = 1060;
 		this._grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		this._grid.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this._grid.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -1674,7 +1674,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this._grid.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this._grid.Name = "_grid";
 		this._grid.Rows.DefaultSize = 20;
-		this._grid.Size = new System.Drawing.Size(1160, 718);
+		this._grid.Size = new System.Drawing.Size(1060, 628);
 		this._grid.TabIndex = 0;
 		this.c1CommandHolder1.Commands.Add(this.toolCmdAddTeamUser);
 		this.c1CommandHolder1.Commands.Add(this.toolCmdRemoveTeamUser);
@@ -1690,9 +1690,9 @@ public class dlgTeamUserManagement : C1RibbonForm
 		this.c1CommandHolder1.Owner = this;
 		base.AutoScaleDimensions = new System.Drawing.SizeF(7f, 17f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		base.ClientSize = new System.Drawing.Size(1160, 805);
+		base.ClientSize = new System.Drawing.Size(1060, 700);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "dlgTeamUserManagement";
 		base.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

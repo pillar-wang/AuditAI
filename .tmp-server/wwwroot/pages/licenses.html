@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License 管理 - AuditAI 管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        /* iframe 内嵌页面适配：覆盖全局 min-width / height 限制 */
+        html, body { height: auto; min-height: 100%; }
+        body { min-width: 0; }
+
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .toolbar .search-input { width: 280px; }
+        .toolbar .spacer { flex: 1; }
+
+        /* 表格操作列 */
+        .table-actions { display: flex; gap: 4px; flex-wrap: nowrap; }
+        .license-key { font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; }
+
+        /* 弹窗内的三列配额输入 */
+        .quota-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+        /* 续费弹窗快捷按钮 */
+        .quick-days { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .quick-days button { padding: 4px 10px; font-size: 12px; }
+
+        /* 加宽弹窗 */
+        .modal-card.wide { width: 560px; }
+
+        /* 空行/加载行 */
+        .empty-row td { text-align: center; padding: 40px; color: var(--text-gray); }
+
+        /* 弹窗内当前信息展示 */
+        .current-info {
+            background: var(--header-bg);
+            padding: 10px 12px;
+            border-radius: var(--radius-input);
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .current-info .label { color: var(--text-gray); }
+        .current-info .value { color: var(--text-main); font-weight: 500; margin-left: 6px; }
+    </style>
+</head>
+<body>
+    <div class="content-body">
+        <div class="page-header">
+            <div class="page-title">License 管理</div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <input type="search" id="searchInput" class="search-input" placeholder="按 License Key 或团队名搜索">
+                <button class="btn btn-primary" id="searchBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>搜索</button>
+                <div class="spacer"></div>
+                <button class="btn btn-primary" id="createBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>创建 License</button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>License Key</th>
+                            <th>团队名</th>
+                            <th>套餐</th>
+                            <th>座位数</th>
+                            <th>最大项目</th>
+                            <th>开始日期</th>
+                            <th>到期日期</th>
+                            <th>剩余天数</th>
+                            <th>激活机器数</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="licenseTableBody">
+                        <tr class="empty-row"><td colspan="11">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="pagination"></div>
+        </div>
+    </div>
+
+    <script src="/js/common.js?v=20260703b"></script>
+    <script src="/js/licenses.js"></script>
+</body>
+</html>

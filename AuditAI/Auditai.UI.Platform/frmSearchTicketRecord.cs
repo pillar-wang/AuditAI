@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -231,7 +231,7 @@ public class frmSearchTicketRecord : C1RibbonForm
 		{
 			Popualte();
 			Auditai.UI.Controls.Theme.SetCurrentTree(this);
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(ContextResources.ctxSearch);
+			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ctxSearch);
 			ctnAll.SplitterWidth = 0;
 			txtKeyword.Select();
 			txtKeyword.SelectionStart = txtKeyword.TextLength;
@@ -349,7 +349,7 @@ public class frmSearchTicketRecord : C1RibbonForm
 			Row row = grdEditor.Rows.Add();
 			row.UserData = Tuple.Create(node, navGrid);
 			row[0] = value ?? "";
-			grdEditor.SetCellImage(row.Index, 0, Resources.Ticket16);
+			grdEditor.SetCellImage(row.Index, 0, IconRes.Ticket16);
 		}
 	}
 
@@ -452,7 +452,7 @@ public class frmSearchTicketRecord : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.grdEditor).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.ctnAll.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -508,7 +508,7 @@ public class frmSearchTicketRecord : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(796, 602);
 		base.Controls.Add(this.ctnAll);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmSearch";

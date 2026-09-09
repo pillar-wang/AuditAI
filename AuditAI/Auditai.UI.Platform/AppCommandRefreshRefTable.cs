@@ -8,7 +8,7 @@ public class AppCommandRefreshRefTable : AppCommandButton
 {
 	public override string Text => "表格刷新";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.TableWholeReflush;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.TableWholeReflush;
 
 	protected override string Tooltip => TipResource.表格刷新按钮;
 

@@ -7,7 +7,7 @@ public class AppCommandDraftView : AppCommandButton
 {
 	public override string Text => "草稿模式";
 
-	public override Image LargeIcon => Resources.DraftView;
+	public override Image LargeIcon => IconRes.DraftView;
 
 	protected override void Clicked()
 	{

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -30,7 +30,7 @@ public class dlgTeamSelector : C1RibbonForm
 
 	private readonly C1TextBoxEx _txbSearch;
 
-	private readonly C1Button _btnCloseSearch;
+	private readonly System.Windows.Forms.Button _btnCloseSearch;
 
 	public EventHandler AfterTeamOpened;
 
@@ -119,14 +119,20 @@ public class dlgTeamSelector : C1RibbonForm
 		_tileControl.Templates.Add(_funcTemplate);
 		base.Shown += DlgTeamSelector_Shown;
 		toolCmdSearchTeam.Click += ToolCmdSearchTeam_Click;
-		_btnCloseSearch = new C1Button
+		_btnCloseSearch = new System.Windows.Forms.Button
 		{
-			Image = Resources.close2,
+			Image = IconRes.close2,
 			Text = "",
 			AutoSize = true,
 			AutoSizeMode = AutoSizeMode.GrowAndShrink,
 			Dock = DockStyle.Right
 		};
+		// 关闭按钮使用最原始样式：透明底灰色 ×（不套用 C1Button 深色默认外观）
+		_btnCloseSearch.FlatStyle = FlatStyle.Flat;
+		_btnCloseSearch.BackColor = Color.White;
+		_btnCloseSearch.UseVisualStyleBackColor = false;
+		
+		_btnCloseSearch.FlatAppearance.BorderSize = 0;
 		_btnCloseSearch.Click += _btnCloseSearch_Click;
 		pnlSearch.Controls.Add(_btnCloseSearch);
 		_txbSearch = new C1TextBoxEx
@@ -233,7 +239,7 @@ public class dlgTeamSelector : C1RibbonForm
 
 	private void DlgTeamSelector_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.TeamManage);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.TeamManage);
 		FilterTeamList();
 	}
 
@@ -403,9 +409,9 @@ public class dlgTeamSelector : C1RibbonForm
 		if (teams.Count == 0 && !_isCurrentUseInAnyTeam)
 		{
 			C1.Win.C1Tile.Group group = createGroup(string.Empty);
-			group.Tiles.Add(CreateFuncTile("create", Resources.toolCreateTeam, "创建一个新组织", "● 若您是组织的系统管理员，请点击此按钮创建一个新组织。\n\n● 系统管理员一般应由组织中职级较高的人员担任，系统管理员创建组织后，具备对组织内人员进行增减的权限。"));
+			group.Tiles.Add(CreateFuncTile("create", IconRes.toolCreateTeam, "创建一个新组织", "● 若您是组织的系统管理员，请点击此按钮创建一个新组织。\n\n● 系统管理员一般应由组织中职级较高的人员担任，系统管理员创建组织后，具备对组织内人员进行增减的权限。"));
 			C1.Win.C1Tile.Group group2 = createGroup(string.Empty);
-			group2.Tiles.Add(CreateFuncTile("refresh", Resources.RefreshProject, "刷新已加入的组织", "● 若您不是组织的系统管理员，请在系统管理员创建组织并将您加入后，点此按钮刷新。\n\n● 系统管理员在准备加您至其创建的组织中时，请向系统管理员提供您注册的用户名。"));
+			group2.Tiles.Add(CreateFuncTile("refresh", IconRes.RefreshProject, "刷新已加入的组织", "● 若您不是组织的系统管理员，请在系统管理员创建组织并将您加入后，点此按钮刷新。\n\n● 系统管理员在准备加您至其创建的组织中时，请向系统管理员提供您注册的用户名。"));
 			_tileControl.Groups.Add(group);
 			_tileControl.Groups.Add(group2);
 			_tileControl.SurfaceContentAlignment = ContentAlignment.MiddleCenter;
@@ -512,7 +518,7 @@ public class dlgTeamSelector : C1RibbonForm
 		C1.Win.C1Tile.TextElement textElement = new C1.Win.C1Tile.TextElement();
 		textElement.ForeColor = Color.Black;
 		textElement.ForeColorSelector = ForeColorSelector.Unbound;
-		textElement.Font = new Font("Noto Sans SC", 9f, FontStyle.Regular);
+		textElement.Font = new Font("微软雅黑", 9f, FontStyle.Regular);
 		textElement.Margin = new Padding(0, 0, 0, 6);
 		textElement.SingleLine = true;
 		panelElement.Children.Add(panelElement2);
@@ -645,25 +651,25 @@ public class dlgTeamSelector : C1RibbonForm
 		this.toolbar.VisualStyle = C1.Win.C1Command.VisualStyle.Custom;
 		this.toolbar.VisualStyleBase = C1.Win.C1Command.VisualStyle.System;
 		this.toolLnkCreateTeam.Command = this.toolCmdCreateTeam;
-		this.toolCmdCreateTeam.Image = Auditai.UI.Platform.Properties.Resources.toolCreateTeam;
+		this.toolCmdCreateTeam.Image = Auditai.UI.Platform.IconRes.toolCreateTeam;
 		this.toolCmdCreateTeam.Name = "toolCmdCreateTeam";
 		this.toolCmdCreateTeam.ShortcutText = "";
 		this.toolCmdCreateTeam.Text = "创建组织";
 		this.toolCmdCreateTeam.Click += new C1.Win.C1Command.ClickEventHandler(toolCmdCreateTeam_Click);
-		this.toolCmdRefresh.Image = Auditai.UI.Platform.Properties.Resources.RefreshProject;
+		this.toolCmdRefresh.Image = Auditai.UI.Platform.IconRes.RefreshProject;
 		this.toolCmdRefresh.Name = "toolCmdRefresh";
 		this.toolCmdRefresh.ShortcutText = "";
 		this.toolCmdRefresh.Text = "刷新组织";
 		this.toolCmdRefresh.Click += new C1.Win.C1Command.ClickEventHandler(toolCmdRefresh_Click);
 		this.toolLnkRefresh.Command = this.toolCmdRefresh;
 		this.toolLnkRefresh.SortOrder = 1;
-		this.toolCmdSearchTeam.Image = Auditai.UI.Platform.Properties.Resources.SearchTeam;
+		this.toolCmdSearchTeam.Image = Auditai.UI.Platform.IconRes.SearchTeam;
 		this.toolCmdSearchTeam.Name = "toolCmdSearchTeam";
 		this.toolCmdSearchTeam.ShortcutText = "";
 		this.toolCmdSearchTeam.Text = "搜索组织";
 		this.toollnkSearchTeam.Command = this.toolCmdSearchTeam;
 		this.toollnkSearchTeam.SortOrder = 2;
-		this.toolCmdExitTeam.Image = Auditai.UI.Platform.Properties.Resources.toolQuitTeam;
+		this.toolCmdExitTeam.Image = Auditai.UI.Platform.IconRes.toolQuitTeam;
 		this.toolCmdExitTeam.Name = "toolCmdExitTeam";
 		this.toolCmdExitTeam.ShortcutText = "";
 		this.toolCmdExitTeam.Text = "退出组织";
@@ -675,7 +681,7 @@ public class dlgTeamSelector : C1RibbonForm
 		this.pnlTeamList.Name = "pnlTeamList";
 		this.pnlTeamList.Size = new System.Drawing.Size(1030, 553);
 		this.pnlTeamList.TabIndex = 2;
-		this.toolCmdOpenTeam.Image = Auditai.UI.Platform.Properties.Resources.toolOpenTeam;
+		this.toolCmdOpenTeam.Image = Auditai.UI.Platform.IconRes.toolOpenTeam;
 		this.toolCmdOpenTeam.Name = "toolCmdOpenTeam";
 		this.toolCmdOpenTeam.ShortcutText = "";
 		this.toolCmdOpenTeam.Text = "进入组织";
@@ -699,7 +705,7 @@ public class dlgTeamSelector : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1030, 675);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "dlgTeamSelector";
 		this.Text = "创建或选择组织";

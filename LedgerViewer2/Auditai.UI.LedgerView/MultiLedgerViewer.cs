@@ -182,7 +182,7 @@ public class MultiLedgerViewer
 	{
 		if (!UserTeam.CurrentTeamIsPayByProject && User.Current.IsLicenseOutOfDate)
 		{
-			string text = $"尊敬的用户：\r\n您的产品已于{User.Current.LicenseDate:yyyy年MM月dd日}到期，建议您致电官方客服电话：400-690-6500，联系购买或续期！";
+			string text = $"尊敬的用户：\r\n您的产品已于{User.Current.LicenseDate:yyyy年MM月dd日}到期，建议您及时联系管理员购买或续期！";
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, text);
 		}
 		else

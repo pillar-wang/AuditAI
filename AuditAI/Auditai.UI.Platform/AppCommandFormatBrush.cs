@@ -7,7 +7,7 @@ public class AppCommandFormatBrush : AppCommandToggleButton
 {
 	public override string Text => "格式刷";
 
-	public override Image LargeIcon => Resources.FormatPainter;
+	public override Image LargeIcon => IconRes.FormatPainter;
 
 	protected override void Pressed()
 	{

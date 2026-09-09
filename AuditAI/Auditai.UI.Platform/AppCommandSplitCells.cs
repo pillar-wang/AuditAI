@@ -7,7 +7,7 @@ public class AppCommandSplitCells : AppCommandButton
 {
 	public override string Text => "拆分单元格";
 
-	public override Image LargeIcon => Resources.SplitCells;
+	public override Image LargeIcon => IconRes.SplitCells;
 
 	protected override void Clicked()
 	{

@@ -7,7 +7,7 @@ public class AppCommandFormulaCommit : AppCommandButton
 {
 	public override string Text => "保存公式";
 
-	public override Image LargeIcon => Resources.FormulaCommit;
+	public override Image LargeIcon => IconRes.FormulaCommit;
 
 	protected override void Clicked()
 	{

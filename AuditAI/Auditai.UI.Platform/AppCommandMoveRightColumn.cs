@@ -7,7 +7,7 @@ public class AppCommandMoveRightColumn : AppCommandButton
 {
 	public override string Text => "右移列";
 
-	public override Image LargeIcon => Resources.ColumnRight;
+	public override Image LargeIcon => IconRes.ColumnRight;
 
 	protected override void Clicked()
 	{

@@ -8,7 +8,7 @@ public class AppCommandLandscape : AppCommandButton
 {
 	public override string Text => "横向";
 
-	public override System.Drawing.Image LargeIcon => Resources.Landscape16;
+	public override System.Drawing.Image LargeIcon => IconRes.Landscape16;
 
 	protected override void Clicked()
 	{

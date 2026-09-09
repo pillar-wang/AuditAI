@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -343,8 +343,8 @@ public class C1FlexGridEx : C1FlexGrid
 	public C1FlexGridEx()
 	{
 		base.DrawMode = DrawModeEnum.OwnerDraw;
-		base.Glyphs[GlyphEnum.Checked] = Resources.Checked;
-		base.Glyphs[GlyphEnum.Unchecked] = Resources.Unchecked;
+		base.Glyphs[GlyphEnum.Checked] = IconRes.Checked;
+		base.Glyphs[GlyphEnum.Unchecked] = IconRes.Unchecked;
 		FilterManager = new FilterManager(this);
 		FilterManager.Context = new GridFilterContext(this);
 		base.FocusRect = FocusRectEnum.None;

@@ -9,7 +9,7 @@ public class AppCommandGeneralLedger : AppCommandButton
 {
 	public override string Text => "\u3000总账\u3000";
 
-	public override Image LargeIcon => Resources.GeneralLedger;
+	public override Image LargeIcon => IconRes.GeneralLedger;
 
 	protected override void Clicked()
 	{

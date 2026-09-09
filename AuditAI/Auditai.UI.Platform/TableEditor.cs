@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -403,7 +403,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdAuxEdit = new C1Command
 	{
 		Text = "下拉列表...",
-		Image = Auditai.UI.Platform.Properties.Resources.ComboList16
+		Image = Auditai.UI.Platform.IconRes.ComboList16
 	};
 
 	private readonly C1CommandLink lnkAuxEdit = new C1CommandLink();
@@ -415,7 +415,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdEditComment = new C1Command
 	{
 		Text = "编辑注释...",
-		Image = ContextResources.ctxParagraphComment
+		Image = IconRes.ctxParagraphComment
 	};
 
 	private readonly C1CommandLink lnkEditComment = new C1CommandLink();
@@ -427,7 +427,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdLedgerCollectFormulaEdit = new C1Command
 	{
 		Text = "采数公式",
-		Image = Auditai.UI.Controls.Properties.Resources.TableCollect16
+		Image = Auditai.UI.Controls.IconRes.TableCollect16
 	};
 
 	private readonly C1CommandLink lnkLedgerCollectFormulaEdit = new C1CommandLink();
@@ -456,7 +456,7 @@ public class TableEditor : ISetTheme
 
 	private readonly C1Command cmdBack = new C1Command
 	{
-		Image = Auditai.UI.Platform.Properties.Resources.back32,
+		Image = Auditai.UI.Platform.IconRes.back32,
 		Text = "后退"
 	};
 
@@ -464,7 +464,7 @@ public class TableEditor : ISetTheme
 
 	private readonly C1Command cmdForward = new C1Command
 	{
-		Image = Auditai.UI.Platform.Properties.Resources.forward32,
+		Image = Auditai.UI.Platform.IconRes.forward32,
 		Text = "前进"
 	};
 
@@ -546,7 +546,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdSortAscending2 = new C1Command
 	{
 		Text = "升序排序",
-		Image = ContextResources.ctxAscending
+		Image = IconRes.ctxAscending
 	};
 
 	private readonly C1CommandLink lnkSortAscending2 = new C1CommandLink();
@@ -554,7 +554,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdSortDescending2 = new C1Command
 	{
 		Text = "降序排序",
-		Image = ContextResources.ctxDescending
+		Image = IconRes.ctxDescending
 	};
 
 	private readonly C1CommandLink lnkSortDescending2 = new C1CommandLink();
@@ -562,7 +562,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdSumHeaderCells = new C1Command
 	{
 		Text = "生成合计行",
-		Image = ContextResources.ctxTotal
+		Image = IconRes.ctxTotal
 	};
 
 	private readonly C1CommandLink lnkSumHeaderCells = new C1CommandLink();
@@ -585,7 +585,7 @@ public class TableEditor : ISetTheme
 	{
 		Text = "行独占权限分享",
 		CloseOnItemClick = false,
-		Image = Auditai.UI.Platform.Properties.Resources.RowOwnerShare16
+		Image = Auditai.UI.Platform.IconRes.RowOwnerShare16
 	};
 
 	private readonly C1CommandLink lnkRowOwnerShare = new C1CommandLink();
@@ -600,7 +600,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdAddAttachment = new C1Command
 	{
 		Text = "插入单元格附件",
-		Image = Auditai.UI.Platform.Properties.Resources.ctxAttachment
+		Image = Auditai.UI.Platform.IconRes.ctxAttachment
 	};
 
 	private readonly C1CommandLink lnkAddAttachment = new C1CommandLink();
@@ -722,7 +722,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdDesignTicket = new C1Command
 	{
 		Text = "设计表单",
-		Image = Auditai.UI.Platform.Properties.Resources.TicketMode
+		Image = Auditai.UI.Platform.IconRes.TicketMode
 	};
 
 	private readonly C1CommandLink lnkDesignTicket = new C1CommandLink();
@@ -902,12 +902,6 @@ public class TableEditor : ISetTheme
 
 	private SolidBrush _navTreeTitleBrush = new SolidBrush(Color.Black);
 
-	private StringFormat _navTreeTitleTextFormat = new StringFormat
-	{
-		Alignment = StringAlignment.Near,
-		LineAlignment = StringAlignment.Center
-	};
-
 	private Brush _navTreeTitlePanelBackgroundBrush;
 
 	public Tuple<Auditai.Model.Cell, Auditai.Model.Cell> Clipboard { get; set; }
@@ -1013,7 +1007,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdRefreshCrossProjectRefs = new C1Command
 	{
 		Text = "刷新引用",
-		Image = Auditai.UI.Platform.Properties.Resources.RefreshProject
+		Image = Auditai.UI.Platform.IconRes.RefreshProject
 	};
 
 	private readonly C1CommandLink lnkRefreshCrossProjectRefs = new C1CommandLink();
@@ -1025,7 +1019,7 @@ public class TableEditor : ISetTheme
 	private readonly C1Command cmdRefreshSingleRef = new C1Command
 	{
 		Text = "刷新此引用",
-		Image = Auditai.UI.Platform.Properties.Resources.TicketMode
+		Image = Auditai.UI.Platform.IconRes.TicketMode
 	};
 	private readonly C1CommandLink lnkRefreshSingleRef = new C1CommandLink();
 
@@ -1223,13 +1217,13 @@ public class TableEditor : ISetTheme
 		cmdPasteTableList.Click += CmdPasteTableList_Click;
 		lnkPasteTableList.Command = cmdPasteTableList;
 		cmdAdvancedPaste.CommandLinks.Add(lnkPasteTableList);
-		cmdCopyColumnFormula.Image = ContextResources.ctxCopy;
+		cmdCopyColumnFormula.Image = IconRes.ctxCopy;
 		cmdCopyColumnFormula.CommandStateQuery += CmdCopyColumnFormula_CommandStateQuery;
 		cmdCopyColumnFormula.Click += CmdCopyColumnFormula_Click;
 		lnkCopyColumnFormula.Delimiter = true;
 		lnkCopyColumnFormula.Command = cmdCopyColumnFormula;
 		ctxColumn.CommandLinks.Add(lnkCopyColumnFormula);
-		cmdPasteColumnFormula.Image = ContextResources.ctxPaste;
+		cmdPasteColumnFormula.Image = IconRes.ctxPaste;
 		cmdPasteColumnFormula.CommandStateQuery += CmdPasteColumnFormula_CommandStateQuery;
 		cmdPasteColumnFormula.Click += CmdPasteColumnFormula_Click;
 		lnkPasteColumnFormula.Command = cmdPasteColumnFormula;
@@ -1302,11 +1296,11 @@ public class TableEditor : ISetTheme
 		cmdDataTypeString.Click += CmdDataTypeString_Click;
 		lnkDataTypeString.Command = cmdDataTypeString;
 		cmdDataType.CommandLinks.Add(lnkDataTypeString);
-		AddCommandMenu("数值格式", Auditai.UI.Platform.Properties.Resources.Numeric, SetDataFormatNumeric, Tuple.Create("1234.56", DataFormatType.Number), Tuple.Create("1,234.56", DataFormatType.Comma), Tuple.Create("$1,234.56", DataFormatType.NumDollar), Tuple.Create("￥1,234.56", DataFormatType.NumRmb), Tuple.Create("123,456.78%", DataFormatType.Percentage));
-		C1CommandMenu menu = AddCommandMenu("日期格式", Auditai.UI.Platform.Properties.Resources.Date, SetDataFormatDate, Tuple.Create("2017年12月31日", DataFormatType.DateChinese), Tuple.Create("2017-12-31", DataFormatType.DateDash), Tuple.Create("2017/12/31", DataFormatType.DateSlash), Tuple.Create("2017.12.31", DataFormatType.DateDot));
+		AddCommandMenu("数值格式", Auditai.UI.Platform.IconRes.Numeric, SetDataFormatNumeric, Tuple.Create("1234.56", DataFormatType.Number), Tuple.Create("1,234.56", DataFormatType.Comma), Tuple.Create("$1,234.56", DataFormatType.NumDollar), Tuple.Create("￥1,234.56", DataFormatType.NumRmb), Tuple.Create("123,456.78%", DataFormatType.Percentage));
+		C1CommandMenu menu = AddCommandMenu("日期格式", Auditai.UI.Platform.IconRes.Date, SetDataFormatDate, Tuple.Create("2017年12月31日", DataFormatType.DateChinese), Tuple.Create("2017-12-31", DataFormatType.DateDash), Tuple.Create("2017/12/31", DataFormatType.DateSlash), Tuple.Create("2017.12.31", DataFormatType.DateDot));
 		AppendCommandMenu(menu, SetDataFormatDateYearMonth, Tuple.Create("2017年12月", DataFormatType.DateYearMonthChinese), Tuple.Create("2017-12", DataFormatType.DateYearMonthDash), Tuple.Create("2017/12", DataFormatType.DateYearMonthSlash), Tuple.Create("2017.12", DataFormatType.DateYearMonthDot));
 		AddCommandMenu("时间格式", null, SetDataFormatTime, Tuple.Create("10时20分30秒", DataFormatType.TimeLongChinese), Tuple.Create("10时20分", DataFormatType.TimeShortChinese), Tuple.Create("10:20:30", DataFormatType.TimeLong), Tuple.Create("10:20", DataFormatType.TimeShort));
-		AddCommandMenu("判断格式", Auditai.UI.Platform.Properties.Resources.Boolean, SetDataFormatBoolean, Tuple.Create("复选框", DataFormatType.BoolCheckBox), Tuple.Create("开关钮", DataFormatType.BoolOnOff));
+		AddCommandMenu("判断格式", Auditai.UI.Platform.IconRes.Boolean, SetDataFormatBoolean, Tuple.Create("复选框", DataFormatType.BoolCheckBox), Tuple.Create("开关钮", DataFormatType.BoolOnOff));
 		lnkAlign2.Command = cmdAlign;
 		C1CommandLink c1CommandLink2 = _grid.FilterManager.GenLnkFilter();
 		c1CommandLink2.Delimiter = true;
@@ -1488,12 +1482,12 @@ public class TableEditor : ISetTheme
 		cmdRemoveColHeaderFormula.Click += CmdRemoveColHeaderFormula_Click;
 		lnkRemoveColHeaderFormula.Command = cmdRemoveColHeaderFormula;
 		ctxColHeader.CommandLinks.Add(lnkRemoveColHeaderFormula);
-		cmdCopyHeaderCellFormula.Image = ContextResources.ctxCopy;
+		cmdCopyHeaderCellFormula.Image = IconRes.ctxCopy;
 		cmdCopyHeaderCellFormula.CommandStateQuery += CmdCopyHeaderCellFormula_CommandStateQuery;
 		cmdCopyHeaderCellFormula.Click += CmdCopyHeaderCellFormula_Click;
 		lnkCopyHeaderCellFormula.Command = cmdCopyHeaderCellFormula;
 		ctxHeaderCell.CommandLinks.Add(lnkCopyHeaderCellFormula);
-		cmdPasteHeaderCellFormula.Image = ContextResources.ctxPaste;
+		cmdPasteHeaderCellFormula.Image = IconRes.ctxPaste;
 		cmdPasteHeaderCellFormula.CommandStateQuery += CmdPasteHeaderCellFormula_CommandStateQuery;
 		cmdPasteHeaderCellFormula.Click += CmdPasteHeaderCellFormula_Click;
 		lnkPasteHeaderCellFormula.Command = cmdPasteHeaderCellFormula;
@@ -1703,7 +1697,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignBottomRight_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignBottomRight.Text = "右下对齐";
-		cmdAlignBottomRight.Image = ContextResources.ctxAlignBottomRight;
+		cmdAlignBottomRight.Image = IconRes.ctxAlignBottomRight;
 		if (_isEditingHeaders)
 		{
 			cmdAlignBottomRight.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.BottomRight;
@@ -1722,7 +1716,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignBottomCenter_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignBottomCenter.Text = "中下对齐";
-		cmdAlignBottomCenter.Image = ContextResources.ctxAlignBottomCenter;
+		cmdAlignBottomCenter.Image = IconRes.ctxAlignBottomCenter;
 		if (_isEditingHeaders)
 		{
 			cmdAlignBottomCenter.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.BottomCenter;
@@ -1741,7 +1735,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignBottomLeft_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignBottomLeft.Text = "左下对齐";
-		cmdAlignBottomLeft.Image = ContextResources.ctxAlignBottomLeft;
+		cmdAlignBottomLeft.Image = IconRes.ctxAlignBottomLeft;
 		if (_isEditingHeaders)
 		{
 			cmdAlignBottomLeft.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.BottomLeft;
@@ -1760,7 +1754,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignMiddleRightCommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignMiddleRight.Text = "右中对齐";
-		cmdAlignMiddleRight.Image = ContextResources.ctxAlignMiddleRight;
+		cmdAlignMiddleRight.Image = IconRes.ctxAlignMiddleRight;
 		if (_isEditingHeaders)
 		{
 			cmdAlignMiddleRight.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.MiddleRight;
@@ -1779,7 +1773,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignMiddleCenterCommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignMiddleCenter.Text = "中中对齐";
-		cmdAlignMiddleCenter.Image = ContextResources.ctxAlignMiddleCenter;
+		cmdAlignMiddleCenter.Image = IconRes.ctxAlignMiddleCenter;
 		if (_isEditingHeaders)
 		{
 			cmdAlignMiddleCenter.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.MiddleCenter;
@@ -1798,7 +1792,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignMiddleLeftCommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignMiddleLeft.Text = "左中对齐";
-		cmdAlignMiddleLeft.Image = ContextResources.ctxAlignMiddleLeft;
+		cmdAlignMiddleLeft.Image = IconRes.ctxAlignMiddleLeft;
 		if (_isEditingHeaders)
 		{
 			cmdAlignMiddleLeft.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.MiddleLeft;
@@ -1817,7 +1811,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignTopCenter_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignTopCenter.Text = "中上对齐";
-		cmdAlignTopCenter.Image = ContextResources.ctxAlignTopCenter;
+		cmdAlignTopCenter.Image = IconRes.ctxAlignTopCenter;
 		if (_isEditingHeaders)
 		{
 			cmdAlignTopCenter.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.TopCenter;
@@ -1836,7 +1830,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignTopRight_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignTopRight.Text = "右上对齐";
-		cmdAlignTopRight.Image = ContextResources.ctxAlignTopRight;
+		cmdAlignTopRight.Image = IconRes.ctxAlignTopRight;
 		if (_isEditingHeaders)
 		{
 			cmdAlignTopRight.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align.GetValueOrDefault() == CellTextAlign.TopRight;
@@ -1868,7 +1862,7 @@ public class TableEditor : ISetTheme
 	private void CmdAlignTopLeft_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAlignTopLeft.Text = "左上对齐";
-		cmdAlignTopLeft.Image = ContextResources.ctxAlignTopLeft;
+		cmdAlignTopLeft.Image = IconRes.ctxAlignTopLeft;
 		if (_isEditingHeaders)
 		{
 			cmdAlignTopLeft.Checked = Table.Columns[_grid.Col - _grid.Cols.Fixed].CaptionStyle.Align == CellTextAlign.TopLeft;
@@ -1942,7 +1936,7 @@ public class TableEditor : ISetTheme
 	private void CmdRemoveRows_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRemoveRows.Text = "删除行";
-		cmdRemoveRows.Image = ContextResources.ctxDeleteRow;
+		cmdRemoveRows.Image = IconRes.ctxDeleteRow;
 		if (_grid.BodyRow < 0)
 		{
 			e.Enabled = false;
@@ -1973,7 +1967,7 @@ public class TableEditor : ISetTheme
 	private void CmdInsertRows_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdInsertRows.Text = "插入行...";
-		cmdInsertRows.Image = ContextResources.ctxInsertRow;
+		cmdInsertRows.Image = IconRes.ctxInsertRow;
 	}
 
 	private void CmdAddFootRow_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -2003,7 +1997,7 @@ public class TableEditor : ISetTheme
 		bool flag = SoftwareLicenseManager.IsAllowModifyTableStruct();
 		cmdAppendColumns.Enabled = flag && HasSchemaPermission();
 		cmdAppendColumns.Text = "追加列...";
-		cmdAppendColumns.Image = ContextResources.ctxAppendColumn;
+		cmdAppendColumns.Image = IconRes.ctxAppendColumn;
 		cmdAppendColumns.Visible = flag;
 	}
 
@@ -2015,7 +2009,7 @@ public class TableEditor : ISetTheme
 	private void CmdAppendRows_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAppendRows.Text = "追加行...";
-		cmdAppendRows.Image = ContextResources.ctxAppendRow;
+		cmdAppendRows.Image = IconRes.ctxAppendRow;
 	}
 
 	private void CmdDataTypeString_Click(object sender, ClickEventArgs e)
@@ -2071,7 +2065,7 @@ public class TableEditor : ISetTheme
 		bool flag = SoftwareLicenseManager.IsAllowModifyTableStruct();
 		cmdRemoveColumns.Enabled = flag && HasSchemaPermission();
 		cmdRemoveColumns.Text = "删除列";
-		cmdRemoveColumns.Image = ContextResources.ctxDeleteColumn;
+		cmdRemoveColumns.Image = IconRes.ctxDeleteColumn;
 		cmdRemoveColumns.Visible = flag;
 	}
 
@@ -2085,7 +2079,7 @@ public class TableEditor : ISetTheme
 		bool flag = SoftwareLicenseManager.IsAllowModifyTableStruct();
 		cmdInsertColumns.Enabled = flag && HasSchemaPermission();
 		cmdInsertColumns.Text = "插入列...";
-		cmdInsertColumns.Image = ContextResources.ctxInsertColumn;
+		cmdInsertColumns.Image = IconRes.ctxInsertColumn;
 		cmdInsertColumns.Visible = flag;
 	}
 
@@ -2116,7 +2110,7 @@ public class TableEditor : ISetTheme
 	private void CmdSubtotal_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdSubtotal.Text = "分类汇总";
-		cmdSubtotal.Image = ContextResources.ctxSubtotal;
+		cmdSubtotal.Image = IconRes.ctxSubtotal;
 		if ((Table.RowOwnerLoad || Table.RowOwnerExclusive) && !Table.IsManager())
 		{
 			e.Enabled = false;
@@ -2171,7 +2165,7 @@ public class TableEditor : ISetTheme
 			}
 		}
 		ProjectHierarchy.TreeGroupView currentGroup = _owner.ProjectHierarchy._currentGroup;
-		currentGroup.Grid.Row = currentGroup.Grid.Rows[currentGroup.Grid.Row].Node.AddNode(NodeTypeEnum.NextSibling, treeTableNode.Name, treeTableNode, Auditai.UI.Platform.Properties.Resources.TreeTable).Row.Index;
+		currentGroup.Grid.Row = currentGroup.Grid.Rows[currentGroup.Grid.Row].Node.AddNode(NodeTypeEnum.NextSibling, treeTableNode.Name, treeTableNode, Auditai.UI.Platform.IconRes.TreeTable).Row.Index;
 	}
 
 	private void CmdSubtotalTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -2193,7 +2187,7 @@ public class TableEditor : ISetTheme
 	private void CmdSortDescending_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdSortDescending.Text = "降序排序";
-		cmdSortDescending.Image = ContextResources.ctxDescending;
+		cmdSortDescending.Image = IconRes.ctxDescending;
 		bool visible = true;
 		if (_grid.Selection.RightCol - _grid.Selection.LeftCol >= 1)
 		{
@@ -2210,7 +2204,7 @@ public class TableEditor : ISetTheme
 	private void CmdSortAscending_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdSortAscending.Text = "升序排序";
-		cmdSortAscending.Image = ContextResources.ctxAscending;
+		cmdSortAscending.Image = IconRes.ctxAscending;
 		bool visible = true;
 		if (_grid.Selection.RightCol - _grid.Selection.LeftCol >= 1)
 		{
@@ -2275,7 +2269,7 @@ public class TableEditor : ISetTheme
 	private void CmdPaste_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdPaste.Text = "粘贴";
-		cmdPaste.Image = ContextResources.ctxPaste;
+		cmdPaste.Image = IconRes.ctxPaste;
 	}
 
 	private void CmdCopy_Click(object sender, ClickEventArgs e)
@@ -2286,7 +2280,7 @@ public class TableEditor : ISetTheme
 	private void CmdCopy_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCopy.Text = "复制";
-		cmdCopy.Image = ContextResources.ctxCopy;
+		cmdCopy.Image = IconRes.ctxCopy;
 	}
 
 	private void CmdCut_Click(object sender, ClickEventArgs e)
@@ -2297,7 +2291,7 @@ public class TableEditor : ISetTheme
 	private void CmdCut_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCut.Text = "剪切";
-		cmdCut.Image = ContextResources.ctxCut;
+		cmdCut.Image = IconRes.ctxCut;
 	}
 
 	private void CmdBlankFill_Click(object sender, ClickEventArgs e)
@@ -2526,7 +2520,7 @@ public class TableEditor : ISetTheme
 	{
 		cmdLockCells.Enabled = HasSchemaPermission();
 		cmdLockCells.Text = "锁定单元格";
-		cmdLockCells.Image = ContextResources.ctxLockCell;
+		cmdLockCells.Image = IconRes.ctxLockCell;
 	}
 
 	private void CmdCancelSumColumns_Click(object sender, ClickEventArgs e)
@@ -2556,7 +2550,7 @@ public class TableEditor : ISetTheme
 	private void CmdSumColumns_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdSumColumns.Text = "生成合计行";
-		cmdSumColumns.Image = ContextResources.ctxTotal;
+		cmdSumColumns.Image = IconRes.ctxTotal;
 		if ((Table.RowOwnerLoad || Table.RowOwnerExclusive) && !Table.IsManager())
 		{
 			e.Enabled = false;
@@ -2580,7 +2574,7 @@ public class TableEditor : ISetTheme
 	private void CmdLockRows_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdLockRows.Text = "锁定行";
-		cmdLockRows.Image = ContextResources.ctxLockCell;
+		cmdLockRows.Image = IconRes.ctxLockCell;
 	}
 
 	private void CmdLockColumns_Click(object sender, ClickEventArgs e)
@@ -2591,7 +2585,7 @@ public class TableEditor : ISetTheme
 	private void CmdLockColumns_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdLockColumns.Text = "锁定列";
-		cmdLockColumns.Image = ContextResources.ctxLockCell;
+		cmdLockColumns.Image = IconRes.ctxLockCell;
 		if (_grid.BodyCol < 0)
 		{
 			e.Visible = false;
@@ -2660,7 +2654,7 @@ public class TableEditor : ISetTheme
 	private void CmdFreezeColumn_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdFreezeColumn.Text = "冻结列";
-		cmdFreezeColumn.Image = Auditai.UI.Platform.Properties.Resources.ctxFreezeCol;
+		cmdFreezeColumn.Image = Auditai.UI.Platform.IconRes.ctxFreezeCol;
 		if (_grid.BodyCol == _grid.BodyColSel)
 		{
 			e.Visible = true;
@@ -2698,7 +2692,7 @@ public class TableEditor : ISetTheme
 
 	private void CmdUnlockColumns_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
-		cmdUnlockColumns.Image = ContextResources.ctxUnlockCell;
+		cmdUnlockColumns.Image = IconRes.ctxUnlockCell;
 		cmdUnlockColumns.Text = "解锁列";
 		if (_grid.BodyCol < 0)
 		{
@@ -2717,7 +2711,7 @@ public class TableEditor : ISetTheme
 
 	private void CmdUnlockRows_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
-		cmdUnlockRows.Image = ContextResources.ctxUnlockCell;
+		cmdUnlockRows.Image = IconRes.ctxUnlockCell;
 		cmdUnlockRows.Text = "解锁行";
 	}
 
@@ -2728,7 +2722,7 @@ public class TableEditor : ISetTheme
 
 	private void CmdUnlockCells_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
-		cmdUnlockCells.Image = ContextResources.ctxUnlockCell;
+		cmdUnlockCells.Image = IconRes.ctxUnlockCell;
 		cmdUnlockCells.Text = "解锁单元格";
 		cmdUnlockCells.Enabled = HasSchemaPermission();
 	}
@@ -2746,7 +2740,7 @@ public class TableEditor : ISetTheme
 	private void CmdCalculateTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCalculateTable.Text = "运算表格";
-		cmdCalculateTable.Image = ContextResources.ctxCalculateTable;
+		cmdCalculateTable.Image = IconRes.ctxCalculateTable;
 	}
 
 	private void CmdAuxEdit_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -2832,7 +2826,7 @@ public class TableEditor : ISetTheme
 	private void CmdAutoCollect_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdAutoCollect.Text = "采账填充";
-		cmdAutoCollect.Image = ContextResources.CollectFill;
+		cmdAutoCollect.Image = IconRes.CollectFill;
 	}
 
 	private void CmdValidateTable_Click(object sender, ClickEventArgs e)
@@ -2843,7 +2837,7 @@ public class TableEditor : ISetTheme
 	private void CmdValidateTable_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdValidateTable.Text = "校验表格";
-		cmdValidateTable.Image = ContextResources.ctxValidateTable;
+		cmdValidateTable.Image = IconRes.ctxValidateTable;
 	}
 
 	private void CmdValidateTable2_Click(object sender, ClickEventArgs e)
@@ -2896,7 +2890,7 @@ public class TableEditor : ISetTheme
 
 	private void CmdToolbarTables_Click(object sender, ClickEventArgs e)
 	{
-		ctxToolbarTables.ShowContextMenu(ToolBar, ToolBar.PointToClient(Cursor.Position));
+		NativeMenuShim.Show(ctxToolbarTables, ToolBar, ToolBar.PointToClient(Cursor.Position));
 	}
 
 	private void CmdMakerSign_Click(object sender, ClickEventArgs e)
@@ -2907,7 +2901,7 @@ public class TableEditor : ISetTheme
 	private void CmdMakerSign_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdMakerSign.Text = "编制签名";
-		cmdMakerSign.Image = Auditai.UI.Platform.Properties.Resources.MakerSign;
+		cmdMakerSign.Image = Auditai.UI.Platform.IconRes.MakerSign;
 	}
 
 	private void CmdCheckerSign_Click(object sender, ClickEventArgs e)
@@ -2918,7 +2912,7 @@ public class TableEditor : ISetTheme
 	private void CmdCheckerSign_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCheckerSign.Text = "复核签名";
-		cmdCheckerSign.Image = Auditai.UI.Platform.Properties.Resources.CheckerSign;
+		cmdCheckerSign.Image = Auditai.UI.Platform.IconRes.CheckerSign;
 	}
 
 	private void CmdFoot_Click(object sender, ClickEventArgs e)
@@ -3063,7 +3057,7 @@ public class TableEditor : ISetTheme
 	{
 		cmdRowAccessAll.Text = "全体成员";
 		cmdRowAccessAll.CheckAutoToggle = true;
-		mnuRowAccess.Image = Auditai.UI.Platform.Properties.Resources.AccessControl16;
+		mnuRowAccess.Image = Auditai.UI.Platform.IconRes.AccessControl16;
 	}
 
 	private void mnuRowOwnerShare_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
@@ -3276,7 +3270,7 @@ public class TableEditor : ISetTheme
 	{
 		mnuRowAccess.Text = "编辑权限";
 		mnuRowAccess.CloseOnItemClick = false;
-		mnuRowAccess.Image = Auditai.UI.Platform.Properties.Resources.AccessControl16;
+		mnuRowAccess.Image = Auditai.UI.Platform.IconRes.AccessControl16;
 		e.Visible = _owner.CanAccessControl() && !Table.RowOwnerExclusive && !Table.RowOwnerLoad;
 	}
 
@@ -3381,7 +3375,7 @@ public class TableEditor : ISetTheme
 	{
 		mnuColumnAccess.Text = "编辑权限";
 		mnuColumnAccess.CloseOnItemClick = false;
-		mnuColumnAccess.Image = Auditai.UI.Platform.Properties.Resources.AccessControl16;
+		mnuColumnAccess.Image = Auditai.UI.Platform.IconRes.AccessControl16;
 		e.Visible = _owner.CanAccessControl();
 	}
 
@@ -3393,7 +3387,7 @@ public class TableEditor : ISetTheme
 	private void CmdCollectFill_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdCollectFill.Text = "采账填充";
-		cmdCollectFill.Image = ContextResources.CollectFill;
+		cmdCollectFill.Image = IconRes.CollectFill;
 	}
 
 	private async void CmdCollectFill2_Click(object sender, ClickEventArgs e)
@@ -5008,7 +5002,7 @@ public class TableEditor : ISetTheme
 			{
 				C1Command c1Command = new C1Command
 				{
-					Image = Auditai.UI.Platform.Properties.Resources.TreeTable,
+					Image = Auditai.UI.Platform.IconRes.TreeTable,
 					Text = referredTable.TreeNode.Number + " " + referredTable.TreeNode.Name
 				};
 				c1Command.Click += delegate
@@ -9005,10 +8999,10 @@ public class TableEditor : ISetTheme
 
 	static TableEditor()
 	{
-		CursorCross = new Cursor(new MemoryStream(Auditai.UI.Platform.Properties.Resources.Fill));
-		CursorTable = new Cursor(new MemoryStream(Auditai.UI.Platform.Properties.Resources.table));
-		CursorRowHeader = new Cursor(new MemoryStream(Auditai.UI.Platform.Properties.Resources.RowHeader));
-		CursorColumnHeader = new Cursor(new MemoryStream(Auditai.UI.Platform.Properties.Resources.ColumnHeader));
+		CursorCross = new Cursor(new MemoryStream(Properties.Resources.Fill));
+		CursorTable = new Cursor(new MemoryStream(Properties.Resources.table));
+		CursorRowHeader = new Cursor(new MemoryStream(Properties.Resources.RowHeader));
+		CursorColumnHeader = new Cursor(new MemoryStream(Properties.Resources.ColumnHeader));
 		_curFormatBrush = new Cursor(new MemoryStream(Auditai.UI.Platform.Properties.Resources.cursortable));
 		_penFormulaCell = new Pen(Color.Red, 1f)
 		{
@@ -10983,7 +10977,7 @@ public class TableEditor : ISetTheme
 		{
 			if (e.Button == MouseButtons.Right && _grid.HitTest(e.Location).Type == HitTestTypeEnum.Cell)
 			{
-				ctxLock.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxLock, _grid, e.Location);
 			}
 		}
 		else if (e.Button == MouseButtons.Right)
@@ -10994,42 +10988,42 @@ public class TableEditor : ISetTheme
 			case HitTestTypeEnum.RowHeader:
 				if (!_isEditingHeaders && _grid.BodyRow >= 0)
 				{
-					ctxRow.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxRow, _grid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.ColumnHeader:
 				if (hitTestInfo.Column >= _grid.Cols.Fixed && _grid.BodyCol >= 0)
 				{
-					ctxColumn.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxColumn, _grid, e.Location);
 					AfterCtxColumnPopUp();
 				}
 				else if (hitTestInfo.Column < _grid.Cols.Fixed && HasSchemaPermission())
 				{
-					ctxTableHeader.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxTableHeader, _grid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(ctxEmpty, _grid, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
 				if (_isEditingHeaders)
 				{
 					if (hitTestInfo.Row == 0 && CanEditColumn(Table.Columns[hitTestInfo.Column - _grid.Cols.Fixed]))
 					{
-						ctxColHeader.ShowContextMenu(_grid, e.Location);
+						NativeMenuShim.Show(ctxColHeader, _grid, e.Location);
 					}
 				}
 				else if (IsCellRangeHeaderCellEntireColumn(_grid.BodySelection) && Table.Rows[hitTestInfo.Row - _grid.Rows.Fixed].Role == RowRole.Header)
 				{
-					ctxHeaderCell.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxHeaderCell, _grid, e.Location);
 				}
 				else if (_grid.Selection.IsSingleCell)
 				{
-					ctxCell.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxCell, _grid, e.Location);
 				}
 				else
 				{
-					ctxRange.ShowContextMenu(_grid, e.Location);
+					NativeMenuShim.Show(ctxRange, _grid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.ColumnResize:
@@ -11076,13 +11070,13 @@ public class TableEditor : ISetTheme
 			{
 				e.Cancel = true;
 				_grid.FilterManager.IsFilterOnGridColumnHeader = true;
-				ctxColumn.ShowContextMenu(_grid, new Point(e.X, e.Y));
+				NativeMenuShim.Show(ctxColumn, _grid, new Point(e.X, e.Y));
 				AfterCtxColumnPopUp();
 			}
 			else
 			{
 				_grid.FilterManager.IsFilterOnGridColumnHeader = true;
-				ctxColumn.ShowContextMenu(_grid, new Point(e.X, e.Y));
+				NativeMenuShim.Show(ctxColumn, _grid, new Point(e.X, e.Y));
 				AfterCtxColumnPopUp();
 			}
 		}
@@ -11168,9 +11162,9 @@ public class TableEditor : ISetTheme
 
 	private Rectangle GetCancelManualInputIconArea(Rectangle cellRect, out bool isIconOutOfRange)
 	{
-		Rectangle result = new Rectangle(cellRect.X + 2, cellRect.Y + 2, Auditai.UI.Platform.Properties.Resources.CancelManualInput.Width, Auditai.UI.Platform.Properties.Resources.CancelManualInput.Height);
+		Rectangle result = new Rectangle(cellRect.X + 2, cellRect.Y + 2, IconLibrary.LogicalWidth(Auditai.UI.Platform.IconRes.CancelManualInput), IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.CancelManualInput));
 		isIconOutOfRange = false;
-		if (result.X - 2 + Auditai.UI.Platform.Properties.Resources.CancelManualInput.Width + 4 >= cellRect.Right || result.Y - 2 + Auditai.UI.Platform.Properties.Resources.CancelManualInput.Height + 4 >= cellRect.Bottom)
+		if (result.X - 2 + IconLibrary.LogicalWidth(Auditai.UI.Platform.IconRes.CancelManualInput) + 4 >= cellRect.Right || result.Y - 2 + IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.CancelManualInput) + 4 >= cellRect.Bottom)
 		{
 			isIconOutOfRange = true;
 		}
@@ -11635,7 +11629,7 @@ public class TableEditor : ISetTheme
 				Auditai.Model.Row row = Table.Rows[num];
 				if (!CanEditRow(row) || row.IsLocked)
 				{
-					e.Image = Auditai.UI.Platform.Properties.Resources.TableLock;
+					e.Image = Auditai.UI.Platform.IconRes.TableLock;
 					e.Style.ImageAlign = ImageAlignEnum.LeftCenter;
 					e.Style.Display = DisplayEnum.Overlay;
 				}
@@ -11648,7 +11642,7 @@ public class TableEditor : ISetTheme
 			Auditai.Model.Column column = Table.Columns[num2];
 			if (!CanEditColumn(column) || column.IsLocked)
 			{
-				e.Image = Auditai.UI.Platform.Properties.Resources.TableLock;
+				e.Image = Auditai.UI.Platform.IconRes.TableLock;
 				e.Style.Display = DisplayEnum.Overlay;
 			}
 		}
@@ -11756,11 +11750,11 @@ public class TableEditor : ISetTheme
 		{
 			if (flag)
 			{
-				image = Auditai.UI.Platform.Properties.Resources.Warning16;
+				image = Auditai.UI.Platform.IconRes.Warning16;
 			}
 			else if (flag2)
 			{
-				image = Auditai.UI.Platform.Properties.Resources.Remind16;
+				image = Auditai.UI.Platform.IconRes.Remind16;
 			}
 		}
 		e.Image = image;
@@ -11824,12 +11818,12 @@ public class TableEditor : ISetTheme
 			else if (displayFormat.FormatType == DataFormatType.BoolOnOff)
 			{
 				e.Text = string.Empty;
-				e.Image = (true.Equals(cell.Value) ? Auditai.UI.Platform.Properties.Resources.On : Auditai.UI.Platform.Properties.Resources.Off);
+				e.Image = (true.Equals(cell.Value) ? Auditai.UI.Platform.IconRes.On : Auditai.UI.Platform.IconRes.Off);
 				styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cell.DisplayAlign);
 			}
 			else if (Table.CellPropManager.TryGetAttachments(cell, out attachments))
 			{
-				e.Image = Auditai.UI.Platform.Properties.Resources.CellAttachment;
+				e.Image = Auditai.UI.Platform.IconRes.CellAttachment;
 				e.Text = ((cell.DisplayAlign == CellTextAlign.MiddleCenter) ? "\n\n" : "") + $"({attachments.Attachments.Count}个附件)";
 				styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cell.DisplayAlign);
 			}
@@ -12039,7 +12033,7 @@ public class TableEditor : ISetTheme
 					_cancelManualInputBackgroundBrush.Color = Auditai.UI.Controls.Util.DarkenColor(styleNew.BackColor, 0.1);
 					e.Graphics.FillRectangle(_cancelManualInputBackgroundBrush, rect);
 				}
-				e.Graphics.DrawImage(Auditai.UI.Platform.Properties.Resources.CancelManualInput, cancelManualInputIconArea.X, cancelManualInputIconArea.Y);
+				e.Graphics.DrawImage(Auditai.UI.Platform.IconRes.CancelManualInput, cancelManualInputIconArea.X, cancelManualInputIconArea.Y);
 				e.Handled = true;
 			}
 			Color GetBackColor()
@@ -12437,7 +12431,7 @@ public class TableEditor : ISetTheme
 						_brushStartEditingColHeaderBackground.Color = Auditai.UI.Controls.Util.DarkenColor(_grid.Styles.SelectedColumnHeader.BackColor, 0.1);
 						e.Graphics.FillRectangle(_brushStartEditingColHeaderBackground, editColHeaderImageRectangle);
 					}
-					e.Graphics.DrawImage(Auditai.UI.Platform.Properties.Resources.EditColHeader, editColHeaderImageRectangle.Location);
+					e.Graphics.DrawImage(Auditai.UI.Platform.IconRes.EditColHeader, editColHeaderImageRectangle);
 				}
 				if (column.Width >= GetColumnMinWidthForShowColumnHeaderIcon() && !_grid.FilterManager.IsColumnInFilting(_mouseHeaderCol))
 				{
@@ -12448,7 +12442,7 @@ public class TableEditor : ISetTheme
 						_brushStartEditingColHeaderBackground.Color = Auditai.UI.Controls.Util.DarkenColor(_grid.Styles.SelectedColumnHeader.BackColor, 0.1);
 						e.Graphics.FillRectangle(_brushStartEditingColHeaderBackground, colHeaderShowMoreMenuImageShadowRectangle);
 					}
-					e.Graphics.DrawImage(Auditai.UI.Platform.Properties.Resources.menuMoreOperation, colHeaderShowMoreMenuImageRectangle.Location);
+					e.Graphics.DrawImage(Auditai.UI.Platform.IconRes.menuMoreOperation, colHeaderShowMoreMenuImageRectangle);
 				}
 			}
 		}
@@ -12808,7 +12802,7 @@ public class TableEditor : ISetTheme
 	{
 		if (e.Button == MouseButtons.Right && !_isEditingHeaders)
 		{
-			ctxEmpty.ShowContextMenu(pnlGrid, e.Location);
+			NativeMenuShim.Show(ctxEmpty, pnlGrid, e.Location);
 		}
 	}
 
@@ -12820,16 +12814,16 @@ public class TableEditor : ISetTheme
 		}
 		Rectangle cellRect = _grid.GetCellRect(_grid.Rows.Fixed - 1, col);
 		int x = cellRect.Left + 4;
-		int y = cellRect.Top + (cellRect.Height - Auditai.UI.Platform.Properties.Resources.EditColHeader.Height) / 2;
-		return new Rectangle(new Point(x, y), Auditai.UI.Platform.Properties.Resources.EditColHeader.Size);
+		int y = cellRect.Top + (cellRect.Height - IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.EditColHeader)) / 2;
+		return new Rectangle(new Point(x, y), IconLibrary.LogicalSize(Auditai.UI.Platform.IconRes.EditColHeader));
 	}
 
 	private Rectangle GetColHeaderShowMoreMenuImageRectangle(int col)
 	{
 		Rectangle cellRect = _grid.GetCellRect(_grid.Rows.Fixed - 1, col);
-		int x = cellRect.Right - Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Width - 8;
-		int y = cellRect.Top + (cellRect.Height - Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Height) / 2;
-		return new Rectangle(new Point(x, y), Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Size);
+		int x = cellRect.Right - IconLibrary.LogicalWidth(Auditai.UI.Platform.IconRes.menuMoreOperation) - 8;
+		int y = cellRect.Top + (cellRect.Height - IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.menuMoreOperation)) / 2;
+		return new Rectangle(new Point(x, y), IconLibrary.LogicalSize(Auditai.UI.Platform.IconRes.menuMoreOperation));
 	}
 
 	private Rectangle GetColHeaderShowMoreMenuImageShadowRectangle(int col)
@@ -13303,7 +13297,7 @@ public class TableEditor : ISetTheme
 		C1Command c1Command = new C1Command
 		{
 			Text = "删除快捷查询列表",
-			Image = ContextResources.ctxDelete
+			Image = IconRes.ctxDelete
 		};
 		c1Command.Click += CmdDeleteNavTree_Click;
 		_navTitleCtx = new C1ContextMenu();
@@ -13408,44 +13402,47 @@ public class TableEditor : ISetTheme
 		ToolBar.Horizontal = false;
 		ToolBar.Dock = DockStyle.Fill;
 		ToolBar.ButtonLookVert = ButtonLookFlags.TextAndImage;
-		ToolBar.MinButtonSize = 40;
+		// 竖排工具栏：11pt 加粗(清晰且不撑大)、深色文字高对比、按钮高 52(32图标+4间距+15字高)紧凑协调
+		ToolBar.Font = new Font("微软雅黑", 11f, FontStyle.Bold);
+		ToolBar.ForeColor = Color.FromArgb(17, 24, 39);
+		ToolBar.MinButtonSize = 52;
 		RibbonImageProcess imageProcess = MainForm.ImageProcess;
 		lnkCollectFill2.Command = cmdCollectFill2;
-		cmdCollectFill2.Image = Auditai.UI.Platform.Properties.Resources.GenerateWorkingPaper;
+		cmdCollectFill2.Image = Auditai.UI.Platform.IconRes.GenerateWorkingPaper;
 		cmdCollectFill2.CommandStateQuery += CmdCollectFill2_CommandStateQuery;
 		cmdCollectFill2.Click += CmdCollectFill2_Click;
 		ToolBar.CommandLinks.Add(lnkCollectFill2);
 		lnkCalculateTable3.Command = cmdCalculateTable2;
-		cmdCalculateTable2.Image = Auditai.UI.Platform.Properties.Resources.CalculateTable;
+		cmdCalculateTable2.Image = Auditai.UI.Platform.IconRes.CalculateTable;
 		cmdCalculateTable2.CommandStateQuery += CmdCalculateTable2_CommandStateQuery;
 		cmdCalculateTable2.Click += CmdCalculateTable2_Click;
 		lnkCalculateTable3.Delimiter = true;
 		ToolBar.CommandLinks.Add(lnkCalculateTable3);
 		lnkValidateTable3.Command = cmdValidateTable2;
-		cmdValidateTable2.Image = Auditai.UI.Platform.Properties.Resources.ValidateTable;
+		cmdValidateTable2.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("check-circle", 32, AuditTheme.SuccessText);
 		cmdValidateTable2.CommandStateQuery += CmdValidateTable2_CommandStateQuery;
 		cmdValidateTable2.Click += CmdValidateTable2_Click;
 		ToolBar.CommandLinks.Add(lnkValidateTable3);
 		lnkLockTable.Command = cmdLockTable;
-		cmdLockTable.Image = Auditai.UI.Platform.Properties.Resources.ToggleLockTable;
+		cmdLockTable.Image = Auditai.UI.Platform.IconRes.ToggleLockTable;
 		cmdLockTable.CommandStateQuery += CmdLockTable_CommandStateQuery;
 		cmdLockTable.Click += CmdLockTable_Click;
 		ToolBar.CommandLinks.Add(lnkLockTable);
 		lnkExportTable.Command = cmdExportTable;
-		cmdExportTable.Image = Auditai.UI.Platform.Properties.Resources.ExportExcel;
+		cmdExportTable.Image = Auditai.UI.Platform.IconRes.ExportExcel;
 		cmdExportTable.CommandStateQuery += CmdExportTable_CommandStateQuery;
 		cmdExportTable.Click += CmdExportTable_Click;
 		ToolBar.CommandLinks.Add(lnkExportTable);
 		lnkFoot.Command = cmdFoot;
-		cmdFoot.Image = Auditai.UI.Platform.Properties.Resources.TableFoot;
+		cmdFoot.Image = Auditai.UI.Platform.IconRes.TableFoot;
 		cmdFoot.CommandStateQuery += CmdFoot_CommandStateQuery;
 		cmdFoot.Click += CmdFoot_Click;
 		lnkToolbarTables.Delimiter = true;
 		lnkToolbarTables.Command = cmdToolbarTables;
-		cmdToolbarTables.Image = Auditai.UI.Platform.Properties.Resources.ToolbarTable;
+		cmdToolbarTables.Image = Auditai.UI.Platform.IconRes.ToolbarTable;
 		cmdToolbarTables.Click += CmdToolbarTables_Click;
 		cmdToolbarTables.Text = "关联表格";
-		cmdToolbarTables.Image = Auditai.UI.Platform.Properties.Resources.ToolbarTable;
+		cmdToolbarTables.Image = Auditai.UI.Platform.IconRes.ToolbarTable;
 		lnkMakerSign.Command = cmdMakerSign;
 		cmdMakerSign.CommandStateQuery += CmdMakerSign_CommandStateQuery;
 		cmdMakerSign.Click += CmdMakerSign_Click;
@@ -13454,14 +13451,14 @@ public class TableEditor : ISetTheme
 		cmdCheckerSign.Click += CmdCheckerSign_Click;
 		lnkBack.Delimiter = true;
 		lnkBack.Command = cmdBack;
-		cmdBack.Image = Auditai.UI.Platform.Properties.Resources.back32;
+		cmdBack.Image = Auditai.UI.Platform.IconRes.back32;
 		cmdBack.Click += CmdBack_Click;
 		lnkForward.Command = cmdForward;
-		cmdForward.Image = Auditai.UI.Platform.Properties.Resources.forward32;
+		cmdForward.Image = Auditai.UI.Platform.IconRes.forward32;
 		cmdForward.Click += CmdForward_Click;
 		lnkTicketInputMode.Command = cmdTicketInputMode;
 		lnkTicketInputMode.Delimiter = true;
-		cmdTicketInputMode.Image = Auditai.UI.Platform.Properties.Resources.TicketMode;
+		cmdTicketInputMode.Image = Auditai.UI.Platform.IconRes.TicketMode;
 		cmdTicketInputMode.Click += CmdTicketInputMode_Click;
 		cmdDesignTicket.Click += CmdDesignTicket_Click;
 		cmdDesignTicket.CommandStateQuery += CmdDesignTicket_CommandStateQuery;
@@ -13470,7 +13467,7 @@ public class TableEditor : ISetTheme
 		ToolBar.CommandLinks.Add(lnkDesignTicket);
 		lnkHideToolbar.Delimiter = true;
 		lnkHideToolbar.Command = cmdHideToolbar;
-		cmdHideToolbar.Image = Auditai.UI.Platform.Properties.Resources.HideSideToolbar;
+		cmdHideToolbar.Image = Auditai.UI.Platform.IconRes.HideSideToolbar;
 		cmdHideToolbar.CommandStateQuery += CmdHideToolbar_CommandStateQuery;
 		cmdHideToolbar.Click += CmdHideToolbar_Click;
 		// 跨项目数据引用工具栏按钮
@@ -13540,14 +13537,14 @@ public class TableEditor : ISetTheme
 				{
 					if (_menuMoreOperationWhiteImage == null)
 					{
-						_menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(Auditai.UI.Platform.Properties.Resources.menuMoreOperation);
+						_menuMoreOperationWhiteImage = (Bitmap)new WhiteImageStrategy().ProcessImage(Auditai.UI.Platform.IconRes.menuMoreOperation);
 					}
 					bitmap = _menuMoreOperationWhiteImage;
 					flag = true;
 				}
 				else
 				{
-					bitmap = Auditai.UI.Platform.Properties.Resources.menuMoreOperation;
+					bitmap = Auditai.UI.Platform.IconRes.menuMoreOperation;
 				}
 				if (_isMouseOverNavTreePanelMoreMenuIcon)
 				{
@@ -13566,11 +13563,12 @@ public class TableEditor : ISetTheme
 		}
 		void Draw_Title()
 		{
-			e.Graphics.DrawString("快捷查询列表", _navTreeTitlePanel.Font, _navTreeTitleBrush, new RectangleF(32f, 0f, 100f, 30f), _navTreeTitleTextFormat);
+			TextRenderer.DrawText(e.Graphics, "快捷查询列表", _navTreeTitlePanel.Font,
+				new Rectangle(32, 0, 100, 30), _navTreeTitleBrush.Color, TextFormatFlags.VerticalCenter);
 		}
 		void Draw_TitleImage()
 		{
-			e.Graphics.DrawImage(Auditai.UI.Platform.Properties.Resources.tableNavTreeIcon16, new Point(10, 7));
+			e.Graphics.DrawImage(Auditai.UI.Platform.IconRes.tableNavTreeIcon16, new Point(10, 7));
 		}
 	}
 
@@ -13579,7 +13577,7 @@ public class TableEditor : ISetTheme
 		Rectangle clientRectangle = _navTreeTitlePanel.ClientRectangle;
 		int num = 25;
 		int x = clientRectangle.X + clientRectangle.Width - num;
-		int y = clientRectangle.Y + (clientRectangle.Height - Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Height) / 2;
+		int y = clientRectangle.Y + (clientRectangle.Height - Auditai.UI.Controls.IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.menuMoreOperation)) / 2;
 		return new Point(x, y);
 	}
 
@@ -13588,18 +13586,18 @@ public class TableEditor : ISetTheme
 		Point navTreeTitleMoreMenuIconLeftTopPosition = GetNavTreeTitleMoreMenuIconLeftTopPosition();
 		int num = 3;
 		int num2 = 3;
-		return new Rectangle(navTreeTitleMoreMenuIconLeftTopPosition.X - num, navTreeTitleMoreMenuIconLeftTopPosition.Y - num2, Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Width + num * 2, Auditai.UI.Platform.Properties.Resources.menuMoreOperation.Height + num2 * 2);
+		return new Rectangle(navTreeTitleMoreMenuIconLeftTopPosition.X - num, navTreeTitleMoreMenuIconLeftTopPosition.Y - num2, Auditai.UI.Controls.IconLibrary.LogicalWidth(Auditai.UI.Platform.IconRes.menuMoreOperation) + num * 2, Auditai.UI.Controls.IconLibrary.LogicalHeight(Auditai.UI.Platform.IconRes.menuMoreOperation) + num2 * 2);
 	}
 
 	private void _navTreeTitlePanel_MouseClick(object sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Right)
 		{
-			_navTitleCtx.ShowContextMenu(_navTreeTitlePanel, e.Location);
+			NativeMenuShim.Show(_navTitleCtx, _navTreeTitlePanel, e.Location);
 		}
 		else if (e.Button == MouseButtons.Left && _isMouseOverNavTreePanelMoreMenuIcon)
 		{
-			_navTitleCtx.ShowContextMenu(_navTreeTitlePanel, e.Location);
+			NativeMenuShim.Show(_navTitleCtx, _navTreeTitlePanel, e.Location);
 		}
 	}
 
@@ -15354,7 +15352,7 @@ public class TableEditor : ISetTheme
 	{
 		if (IsTableLocked)
 		{
-			_grid.SetCellImage(0, 0, Auditai.UI.Platform.Properties.Resources.TableLock);
+			_grid.SetCellImage(0, 0, Auditai.UI.Platform.IconRes.TableLock);
 		}
 		else
 		{

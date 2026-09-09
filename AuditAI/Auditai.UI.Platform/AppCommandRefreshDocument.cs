@@ -10,7 +10,7 @@ public class AppCommandRefreshDocument : AppCommandButton
 {
 	public override string Text => "全文刷新";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.DocWholeRefresh;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.DocWholeRefresh;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

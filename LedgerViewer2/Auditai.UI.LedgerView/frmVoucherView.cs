@@ -1,4 +1,4 @@
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -105,7 +105,7 @@ public class frmVoucherView : Form
 	{
 		base.ClientSize = new Size(1120, 360);
 		base.MinimumSize = new Size(880, 300);
-		base.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		base.Font = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 
 		TableLayoutPanel table = new TableLayoutPanel();
 		table.Dock = DockStyle.Fill;
@@ -210,7 +210,7 @@ public class frmVoucherView : Form
 		grid.Dock = DockStyle.Fill;
 		grid.DrawMode = DrawModeEnum.OwnerDraw;
 		grid.ExtendLastCol = true;
-		grid.Font = new Font("Microsoft YaHei", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		grid.Font = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		grid.Rows.DefaultSize = 20;
 		grid.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		return grid;
@@ -607,13 +607,13 @@ public class frmVoucherView : Form
 			switch (grdVoucher.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.ColumnHeader:
-				ctxVouFixed.ShowContextMenu(grdVoucher, e.Location);
+				NativeMenuShim.Show(ctxVouFixed, grdVoucher, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxVouEmpty.ShowContextMenu(grdVoucher, e.Location);
+				NativeMenuShim.Show(ctxVouEmpty, grdVoucher, e.Location);
 				break;
 			case HitTestTypeEnum.Cell:
-				ctxVouCell.ShowContextMenu(grdVoucher, e.Location);
+				NativeMenuShim.Show(ctxVouCell, grdVoucher, e.Location);
 				break;
 			}
 		}

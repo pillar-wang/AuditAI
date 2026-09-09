@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -51,7 +51,7 @@ public class frmIntelliFormat
 		{
 			StartPosition = FormStartPosition.CenterScreen,
 			Size = new Size(300, 300),
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			Text = "智能排版",
 			MaximizeBox = false,
 			MinimizeBox = false,
@@ -145,7 +145,7 @@ public class frmIntelliFormat
 		};
 		_pnlMain.Controls.Add(_cbxRemoveEmptyParagraphs);
 		Theme.SetCurrentTree(_form);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.IntelliLayout16);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.IntelliLayout16);
 	}
 
 	public DialogResult ShowDialog()

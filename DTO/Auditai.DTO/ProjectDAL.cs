@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -26,6 +26,9 @@ public class ProjectDAL : IDisposable
 	private bool _disposed;
 
 	public static readonly string DefaultPermissions;
+
+	/// <summary>MigrateSchema 迁移链的最新 user_version（新增迁移步骤时须同步更新）</summary>
+	public const int LatestSchemaVersion = 44;
 
 	static ProjectDAL()
 	{

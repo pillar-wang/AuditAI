@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -80,7 +80,7 @@ public class FormControlFormula
 			Size = new Size(800, 600),
 			Text = "控制公式",
 			DialogResult = DialogResult.Cancel,
-			Font = new Font("Noto Sans SC", 9f),
+			Font = new Font("微软雅黑", 9f),
 			StartPosition = FormStartPosition.CenterScreen,
 			ShowInTaskbar = false
 		};
@@ -226,7 +226,7 @@ public class FormControlFormula
 		Theme.SetCurrentTree(_form);
 		_btnOk.Location = new Point(600, 10);
 		_btnCancel.Location = new Point(700, 10);
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.ControlFormula);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ControlFormula);
 		if (Table.HasControlFormula)
 		{
 			ControlFormulaEvaluator controlFormulaEvaluator = new ControlFormulaEvaluator(Table.ControlFormula);

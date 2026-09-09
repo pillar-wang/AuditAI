@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -184,11 +184,11 @@ public class dlgProjectEditor : C1RibbonForm
 		_mode = Mode.Create;
 		if (Project.TemplateId.HasValue)
 		{
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.CreateProjectFromTemplate16);
+			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.CreateProjectFromTemplate16);
 		}
 		else
 		{
-			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.CreateProject16);
+			base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.CreateProject16);
 		}
 		Auditai.UI.Controls.Theme.SetCurrentTree(this);
 		SetTheme();
@@ -198,7 +198,7 @@ public class dlgProjectEditor : C1RibbonForm
 	internal bool ShowDuplicate()
 	{
 		_mode = Mode.Duplicate;
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.Properties.Resources.DuplicateProject16);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(Auditai.UI.Platform.IconRes.DuplicateProject16);
 		Auditai.UI.Controls.Theme.SetCurrentTree(this);
 		SetTheme();
 		return ShowDialog() == DialogResult.OK;
@@ -207,7 +207,7 @@ public class dlgProjectEditor : C1RibbonForm
 	internal bool ShowModify()
 	{
 		_mode = Mode.Modify;
-		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(ContextResources.ctxMofify);
+		base.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.ctxMofify);
 		Auditai.UI.Controls.Theme.SetCurrentTree(this);
 		SetTheme();
 		return ShowDialog() == DialogResult.OK;
@@ -215,19 +215,61 @@ public class dlgProjectEditor : C1RibbonForm
 
 	private void SetTheme()
 	{
+		// 分割容器：去除旧版 Office 蓝底色与分割线，统一为浅色表面 + 细边框
 		ctnMain.SplitterWidth = 0;
+		ctnMain.BackColor = AuditTheme.Surface;
+		ctnMain.SplitterColor = AuditTheme.Border;
+		ctnMain.FixedLineColor = AuditTheme.Border;
+		ctnMain.CollapsingAreaColor = AuditTheme.SurfaceMuted;
+		ctnMain.ForeColor = AuditTheme.Text;
+		// 各面板底色统一为白色表面（按钮区、间隙条、信息区不再透出旧蓝底）
+		pnlButtons.BackColor = AuditTheme.Surface;
+		pnlProjectInfo.BackColor = AuditTheme.Surface;
+		c1SplitterPanel1.BackColor = AuditTheme.Surface;
+		pnlEmpty.BackColor = AuditTheme.Surface;
+		pnlUserHeader.BackColor = AuditTheme.Surface;
+		c1InputPanel2.BackColor = AuditTheme.Surface;
+		c1InputPanel3.BackColor = AuditTheme.Surface;
+		// 成员选择区：细边框 + 白底
+		pnlUserSelector.BackColor = AuditTheme.Surface;
 		pnlUserSelector.BorderWidth = 1;
-		pnlUserSelector.BorderColor = Color.DarkGray;
-		pnlUserHeader.BackColor = Color.White;
+		pnlUserSelector.BorderColor = AuditTheme.Border;
+		// 主按钮：品牌蓝填充
+		btnOk.FlatStyle = FlatStyle.Flat;
+		btnOk.FlatAppearance.BorderSize = 0;
+		btnOk.BackColor = AuditTheme.Brand;
+		btnOk.ForeColor = AuditTheme.BrandForeground;
+		btnOk.Cursor = Cursors.Hand;
+		btnOk.FlatAppearance.MouseOverBackColor = AuditTheme.BrandHover;
+		btnOk.FlatAppearance.MouseDownBackColor = AuditTheme.BrandActive;
+		btnOk.UseVisualStyleBackColor = false;
+		// 次按钮：白底描边
+		btnCancel.FlatStyle = FlatStyle.Flat;
+		btnCancel.FlatAppearance.BorderSize = 1;
+		btnCancel.FlatAppearance.BorderColor = AuditTheme.BorderStrong;
+		btnCancel.BackColor = AuditTheme.Surface;
+		btnCancel.ForeColor = AuditTheme.Text;
+		btnCancel.Cursor = Cursors.Hand;
+		btnCancel.FlatAppearance.MouseOverBackColor = AuditTheme.SurfaceMuted;
+		btnCancel.UseVisualStyleBackColor = false;
+		// 头部图标按钮：无边框透明底 + 悬停淡蓝反馈
 		btnSwitchUserSelector.FlatStyle = FlatStyle.Flat;
 		btnSwitchUserSelector.FlatAppearance.BorderSize = 0;
 		btnSwitchUserSelector.BackColor = Color.Transparent;
-		projectUsersListSelector.SetTheme();
-		projectUsersTileSelector.SetTheme();
+		btnSwitchUserSelector.Cursor = Cursors.Hand;
+		btnSwitchUserSelector.FlatAppearance.MouseOverBackColor = AuditTheme.BrandSubtle;
+		btnSwitchUserSelector.FlatAppearance.MouseDownBackColor = AuditTheme.SurfaceHover;
 		ckbSearch.FlatStyle = FlatStyle.Flat;
 		ckbSearch.FlatAppearance.BorderSize = 0;
+		ckbSearch.Cursor = Cursors.Hand;
+		ckbSearch.FlatAppearance.MouseOverBackColor = AuditTheme.BrandSubtle;
 		ckbSearch.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
 		ckbSearch.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+		// 搜索框统一正文字号
+		txbSearch.Font = AuditTheme.FontBody;
+		txbSearch.ForeColor = AuditTheme.Text;
+		projectUsersListSelector.SetTheme();
+		projectUsersTileSelector.SetTheme();
 	}
 
 	internal async Task PopulateProject()
@@ -479,14 +521,20 @@ public class dlgProjectEditor : C1RibbonForm
 				return;
 			}
 			Auditai.Model.User current = Auditai.Model.User.Current;
-			if (current.TeamId == Guid.Empty)
-			{
-				await WebApiClient.GetUserById(current.Id);
-				projectUsersListSelector.PopulateUsers();
-				projectUsersTileSelector.PopulateUsers();
-				return;
-			}
-			Context.Project = Project;
+		if (current.TeamId == Guid.Empty)
+		{
+			await WebApiClient.GetUserById(current.Id);
+			// 无团队数据：下发空 Context，选择器安全显示空白，搜索过滤也不会空引用
+			Context.RootUsers = new List<Auditai.DTO.User>();
+			Context.UserGroups = new List<UserGroup>();
+			Context.UserViewStates = new List<Tuple<Auditai.DTO.User, bool>>();
+			projectUsersListSelector.Context = Context;
+			projectUsersTileSelector.Context = Context;
+			projectUsersListSelector.PopulateUsers();
+			projectUsersTileSelector.PopulateUsers();
+			return;
+		}
+		Context.Project = Project;
 			Context.ManagerId = UserTeam.Current.ManagerId;
 			Tuple<List<Auditai.DTO.User>, List<UserGroup>> tuple = await WebApiClient.GetTeamUserGroups();
 			Context.RootUsers = tuple.Item1;
@@ -575,11 +623,11 @@ public class dlgProjectEditor : C1RibbonForm
 		{
 		case ListTileViewMode.List:
 			projectUsersListSelector.GetControl().BringToFront();
-			btnSwitchUserSelector.Image = Auditai.UI.Platform.Properties.Resources.toolTileMode;
+			btnSwitchUserSelector.Image = Auditai.UI.Platform.IconRes.toolTileMode;
 			break;
 		case ListTileViewMode.Tile:
 			projectUsersTileSelector.GetControl().BringToFront();
-			btnSwitchUserSelector.Image = Auditai.UI.Platform.Properties.Resources.toolListMode;
+			btnSwitchUserSelector.Image = Auditai.UI.Platform.IconRes.toolListMode;
 			break;
 		}
 	}
@@ -647,7 +695,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.inputPanel.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.inputPanel.DesignScaleFactor = 1.293737f;
 		this.inputPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.inputPanel.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.inputPanel.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.inputPanel.Items.Add(this.inputGroupHeader1);
 		this.inputPanel.Items.Add(this.lblNumber);
 		this.inputPanel.Items.Add(this.txtNumber);
@@ -719,12 +767,12 @@ public class dlgProjectEditor : C1RibbonForm
 		this.txtNote.VerticalAlign = C1.Win.C1InputPanel.InputContentAlignment.Spread;
 		this.txtNote.Width = 355;
 		this.ctnMain.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.ctnMain.BackColor = System.Drawing.Color.FromArgb(164, 195, 235);
-		this.ctnMain.CollapsingAreaColor = System.Drawing.Color.FromArgb(221, 231, 238);
+		this.ctnMain.BackColor = System.Drawing.Color.White;
+		this.ctnMain.CollapsingAreaColor = System.Drawing.Color.FromArgb(250, 251, 252);
 		this.ctnMain.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnMain.FixedLineColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		this.ctnMain.FixedLineColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.ctnMain.FixedLineWidth = 0;
-		this.ctnMain.ForeColor = System.Drawing.Color.FromArgb(21, 66, 139);
+		this.ctnMain.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
 		this.ctnMain.HeaderHeight = 35;
 		this.ctnMain.Location = new System.Drawing.Point(0, 0);
 		this.ctnMain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -736,7 +784,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.ctnMain.Panels.Add(this.pnlEmpty);
 		this.ctnMain.Panels.Add(this.pnlUserSelector);
 		this.ctnMain.Size = new System.Drawing.Size(1100, 625);
-		this.ctnMain.SplitterColor = System.Drawing.Color.FromArgb(119, 147, 185);
+		this.ctnMain.SplitterColor = System.Drawing.Color.FromArgb(229, 231, 235);
 		this.ctnMain.SplitterWidth = 1;
 		this.ctnMain.TabIndex = 1;
 		this.ctnMain.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
@@ -755,7 +803,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.pnlButtons.TabIndex = 1;
 		this.pnlButtons.Width = 1100;
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnCancel.Location = new System.Drawing.Point(974, 27);
 		this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnCancel.Name = "btnCancel";
@@ -765,7 +813,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.btnCancel.UseVisualStyleBackColor = true;
 		this.btnCancel.Click += new System.EventHandler(btnCancel_Click);
 		this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-		this.btnOk.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.btnOk.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnOk.Location = new System.Drawing.Point(853, 27);
 		this.btnOk.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.btnOk.Name = "btnOk";
@@ -796,7 +844,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.c1SplitterPanel1.Width = 10;
 		this.c1InputPanel2.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel2.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel2.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel2.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel2.Name = "c1InputPanel2";
 		this.c1InputPanel2.Size = new System.Drawing.Size(10, 547);
@@ -824,7 +872,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.txbSearch.Visible = false;
 		this.ckbSearch.Appearance = System.Windows.Forms.Appearance.Button;
 		this.ckbSearch.BackColor = System.Drawing.Color.Transparent;
-		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.Properties.Resources.btnSearch;
+		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.IconRes.btnSearch;
 		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
 		this.ckbSearch.BorderColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -840,7 +888,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.btnSwitchUserSelector.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
 		this.btnSwitchUserSelector.FlatAppearance.BorderSize = 0;
 		this.btnSwitchUserSelector.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-		this.btnSwitchUserSelector.Image = Auditai.UI.Platform.Properties.Resources.toolListMode;
+		this.btnSwitchUserSelector.Image = Auditai.UI.Platform.IconRes.toolListMode;
 		this.btnSwitchUserSelector.Location = new System.Drawing.Point(417, 4);
 		this.btnSwitchUserSelector.Name = "btnSwitchUserSelector";
 		this.btnSwitchUserSelector.Size = new System.Drawing.Size(31, 29);
@@ -850,7 +898,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.DesignScaleFactor = 1.293737f;
 		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel1.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel1.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel1.Items.Add(this.inputGroupHeader2);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Margin = new System.Windows.Forms.Padding(0, 4, 3, 4);
@@ -871,7 +919,7 @@ public class dlgProjectEditor : C1RibbonForm
 		this.pnlEmpty.TabIndex = 4;
 		this.c1InputPanel3.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.c1InputPanel3.Font = new System.Drawing.Font("Noto Sans SC UI", 10.5f);
+		this.c1InputPanel3.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel3.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel3.Name = "c1InputPanel3";
 		this.c1InputPanel3.Size = new System.Drawing.Size(450, 21);
@@ -892,7 +940,7 @@ public class dlgProjectEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1100, 625);
 		base.Controls.Add(this.ctnMain);
-		this.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.MaximizeBox = false;

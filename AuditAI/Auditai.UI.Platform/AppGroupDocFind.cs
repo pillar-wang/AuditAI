@@ -7,7 +7,7 @@ public class AppGroupDocFind : AppCommandGroup
 {
 	public override string Text => "查找替换";
 
-	public override Image Image => Resources.Find;
+	public override Image Image => IconRes.Find;
 
 	public AppGroupDocFind()
 	{

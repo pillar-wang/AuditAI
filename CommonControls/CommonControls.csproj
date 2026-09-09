@@ -44,22 +44,16 @@
     <Reference Include="C1.C1Report.4">
       <HintPath>..\Libs\C1.C1Report.4.dll</HintPath>
     </Reference>
-    <Reference Include="ProjectModel">
-      <HintPath>..\Libs\ProjectModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
     <Reference Include="C1.Win.C1SplitContainer.4">
       <HintPath>..\Libs\C1.Win.C1SplitContainer.4.dll</HintPath>
     </Reference>
     <Reference Include="C1.C1Excel.4">
       <HintPath>..\Libs\C1.C1Excel.4.dll</HintPath>
     </Reference>
-    <Reference Include="LedgerModel">
-      <HintPath>..\Libs\LedgerModel.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\LedgerModel\LedgerModel.csproj" />
     <Reference Include="System.Data" />
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="ChnCharInfo">
@@ -100,5 +94,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Auditai.UI.Controls\Icons\Phosphor-Fill.ttf" />
   </ItemGroup>
 </Project>

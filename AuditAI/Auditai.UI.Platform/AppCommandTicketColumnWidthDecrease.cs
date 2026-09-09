@@ -7,7 +7,7 @@ public class AppCommandTicketColumnWidthDecrease : AppCommandButton
 {
 	public override string Text => "减少列宽";
 
-	public override Image LargeIcon => Resources.DecreaseColumnWidth;
+	public override Image LargeIcon => IconRes.DecreaseColumnWidth;
 
 	protected override void Clicked()
 	{

@@ -7,7 +7,7 @@ public class AppCommandRemoveNodes : AppCommandButton
 {
 	public override string Text => "批量删除文件";
 
-	public override Image LargeIcon => Resources.RemoveNodes;
+	public override Image LargeIcon => IconRes.RemoveNodes;
 
 	protected override void Clicked()
 	{

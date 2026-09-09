@@ -7,7 +7,7 @@ public class AppCommandUnindentParagraph : AppCommandButton
 {
 	public override string Text => "整段减缩进";
 
-	public override Image LargeIcon => Resources.UnindentPara;
+	public override Image LargeIcon => IconRes.UnindentPara;
 
 	protected override void Clicked()
 	{

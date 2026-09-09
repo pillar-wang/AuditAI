@@ -1,4 +1,4 @@
-﻿namespace Auditai.UI.Platform;
+﻿﻿namespace Auditai.UI.Platform;
 
 public class AppTabLedger : AppCommandTab
 {
@@ -18,14 +18,14 @@ public class AppTabLedger : AppCommandTab
 	public override void OnAppStateChanged(AppState state)
 	{
 		base.OnAppStateChanged(state);
-		if (SoftwareLicenseManager.IsLedgerModuleEnable())
-		{
-			base.Visible = state.ViewKind == MainFormView.Empty || state.ViewKind == MainFormView.Table || state.ViewKind == MainFormView.TablePreview || state.ViewKind == MainFormView.Document || state.ViewKind == MainFormView.DocumentPreview || state.ViewKind == MainFormView.Image || state.ViewKind == MainFormView.ImagePreview || state.ViewKind == MainFormView.Pdf || state.ViewKind == MainFormView.PdfPreview || state.ViewKind == MainFormView.Ledger || state.ViewKind == MainFormView.TicketInput;
-		}
-		else
+		if (!SoftwareLicenseManager.IsLedgerModuleEnable())
 		{
 			base.Visible = false;
+			return;
 		}
+		// 工具栏已随页面迁入账务窗口：窗口显示期间标签保持常显，不随主窗口视图模式（编辑标题/公式等）隐藏
+		MainForm mainForm = Program.MainForm;
+		base.Visible = (mainForm != null && mainForm.LedgerWindowActive) || state.ViewKind == MainFormView.Empty || state.ViewKind == MainFormView.Table || state.ViewKind == MainFormView.TablePreview || state.ViewKind == MainFormView.Document || state.ViewKind == MainFormView.DocumentPreview || state.ViewKind == MainFormView.Image || state.ViewKind == MainFormView.ImagePreview || state.ViewKind == MainFormView.Pdf || state.ViewKind == MainFormView.PdfPreview || state.ViewKind == MainFormView.Ledger || state.ViewKind == MainFormView.TicketInput;
 	}
 
 	protected override void Selected()

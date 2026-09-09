@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
@@ -700,7 +700,7 @@ public class TableFootEditor : UserControl
 		{
 			fontStyle |= FontStyle.Underline;
 		}
-		styleNew.Font = new Font(cell.FontFamily ?? "Noto Sans SC", cell.FontSize, fontStyle);
+		styleNew.Font = new Font(cell.FontFamily ?? "微软雅黑", cell.FontSize, fontStyle);
 		styleNew.ForeColor = cell.ForeColor;
 		styleNew.TextAlign = C1FlexGridEx.ToTextAlign(cell.Align);
 		styleNew.Margins = new System.Drawing.Printing.Margins(cell.Margin, 0, 0, 0);

@@ -7,7 +7,7 @@ public class AppGroupTableLock : AppCommandGroup
 {
 	public override string Text => "表格权限保护";
 
-	public override Image Image => Resources.ToggleLockTable;
+	public override Image Image => IconRes.ToggleLockTable;
 
 	public AppGroupTableLock()
 	{

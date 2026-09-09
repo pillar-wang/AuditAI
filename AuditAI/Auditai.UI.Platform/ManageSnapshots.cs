@@ -20,7 +20,7 @@ public class ManageSnapshots
 	{
 		_form.View = frmManageSnapshots.ViewKind.Snapshot;
 		_form.ShowIcon = true;
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.Snapshots);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Snapshots);
 		return _form.ShowDialog();
 	}
 
@@ -28,7 +28,7 @@ public class ManageSnapshots
 	{
 		_form.View = frmManageSnapshots.ViewKind.Recycle;
 		_form.ShowIcon = true;
-		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(Resources.RecycleNode);
+		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.RecycleNode);
 		return _form.ShowDialog();
 	}
 }

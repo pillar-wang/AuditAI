@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -89,6 +89,7 @@ public class ProjectHierarchy
     private C1Command cmdBatchEditIndex = new C1Command();
     private C1Command cmdBatchExportFile = new C1Command();
     private C1Command cmdBatchPrintFile = new C1Command();
+    private C1Command cmdFillStatusReport = new C1Command();
 
     // 空白区域右键菜单命令
     private C1Command cmdAppendRootDirectory = new C1Command();
@@ -150,6 +151,8 @@ public class ProjectHierarchy
     private C1CommandLink lnkBatchOperation2 = new C1CommandLink();
     private C1CommandLink lnkBatchHideFile = new C1CommandLink();
     private C1CommandLink lnkBatchUnhideFile = new C1CommandLink();
+    private C1CommandLink lnkFillStatusReport = new C1CommandLink();
+    private C1CommandLink lnkFillStatusReport2 = new C1CommandLink();
     private C1CommandLink lnkBatchDeleteFile = new C1CommandLink();
     private C1CommandLink lnkBatchEditIndex = new C1CommandLink();
     private C1CommandLink lnkBatchExportFile = new C1CommandLink();
@@ -198,11 +201,11 @@ public class ProjectHierarchy
         public TreeGroup Model { get; set; }
         public SDImage GetTreeNodeIcon(TreeNodeBase node)
         {
-            if (node is TreeDirectoryNode) return Resources.TreeDir;
-            if (node is TreeDocumentNode) return Resources.TreeDoc;
-            if (node is TreeTableNode) return Resources.TreeTable;
-            if (node is TreeImageNode) return Resources.TreeDoc;
-            if (node is TreePdfNode) return Resources.TreeDoc;
+            if (node is TreeDirectoryNode) return IconRes.TreeDir;
+            if (node is TreeDocumentNode) return IconRes.TreeDoc;
+            if (node is TreeTableNode) return IconRes.TreeTable;
+            if (node is TreeImageNode) return IconRes.TreeDoc;
+            if (node is TreePdfNode) return IconRes.TreeDoc;
             throw new ArgumentOutOfRangeException();
         }
         public void PopulateDirectoryNode(TreeDirectoryNode dirNode, Node gridNode)
@@ -284,16 +287,16 @@ public class ProjectHierarchy
         cmdRemoveGroup.Text = "删除分组";
         cmdCopyGroup.Text = "复制分组";
         cmdRenameGroup.Text = "重命名分组";
-        cmdRenameGroup.Image = Auditai.UI.Platform.Properties.ContextResources.ctxMofify;
+        cmdRenameGroup.Image = Auditai.UI.Platform.IconRes.ctxMofify;
         cmdPasteGroup.Text = "粘贴分组";
         cmdPasteGroupClickOnGridTree.Text = "粘贴分组";
 
         cmdInsertDirectory.Text = "新建文件夹";
         cmdInsertTable.Text = "新建表格";
-        cmdInsertTable.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        cmdInsertTable.Image = Auditai.UI.Platform.IconRes.ctxInsertTable;
         cmdInsertDocument.Text = "新建文档";
         cmdInsertImage.Text = "新建图片";
-        cmdInsertImage.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertImage;
+        cmdInsertImage.Image = Auditai.UI.Platform.IconRes.ctxInsertImage;
         cmdInsertPdf.Text = "新建PDF";
 
         cmdAppendChildDirectory.Text = "追加文件夹";
@@ -305,111 +308,114 @@ public class ProjectHierarchy
         cmdMoveUpNode.Text = "上移";
         cmdMoveDownNode.Text = "下移";
         cmdRemoveNode.Text = "删除";
-        cmdRemoveNode.Image = Auditai.UI.Platform.Properties.ContextResources.ctxDelete;
+        cmdRemoveNode.Image = Auditai.UI.Platform.IconRes.ctxDelete;
         cmdHideNode.Text = "隐藏";
 
         cmdShowNodes.Text = "取消隐藏";
-        cmdShowNodes.Image = Auditai.UI.Platform.Properties.ContextResources.ctxSearch;
+        cmdShowNodes.Image = Auditai.UI.Platform.IconRes.ctxSearch;
         cmdSearchNodes.Text = "搜索节点";
-        cmdSearchNodes.Image = Auditai.UI.Platform.Properties.ContextResources.ctxSearch;
+        cmdSearchNodes.Image = Auditai.UI.Platform.IconRes.ctxSearch;
+
+        cmdFillStatusReport.Text = "填报情况统计";
+        cmdFillStatusReport.Image = Auditai.UI.Platform.IconRes.FillStatusReport16;
 
         cmdCutNode.Text = "剪切";
-        cmdCutNode.Image = Auditai.UI.Platform.Properties.ContextResources.ctxCut;
+        cmdCutNode.Image = Auditai.UI.Platform.IconRes.ctxCut;
 
         cmdCopy.Text = "复制";
-        cmdCopy.Image = Auditai.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdCopy.Image = Auditai.UI.Platform.IconRes.ctxCopy;
 
         cmdPasteNode.Text = "粘贴";
-        cmdPasteNode.Image = Auditai.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteNode.Image = Auditai.UI.Platform.IconRes.ctxPaste;
 
         cmdRenameNode.Text = "重命名";
-        cmdRenameNode.Image = Auditai.UI.Platform.Properties.ContextResources.ctxMofify;
+        cmdRenameNode.Image = Auditai.UI.Platform.IconRes.ctxMofify;
         cmdEditNumber.Text = "编辑索引号";
-        cmdEditNumber.Image = Auditai.UI.Platform.Properties.ContextResources.ctxNumber;
+        cmdEditNumber.Image = Auditai.UI.Platform.IconRes.ctxNumber;
         cmdReload.Text = "重新加载";
-        cmdReload.Image = Auditai.UI.Platform.Properties.ContextResources.ctxReloadFile;
+        cmdReload.Image = Auditai.UI.Platform.IconRes.ctxReloadFile;
         cmdSyncTable.Text = "同步表格";
-        cmdSyncTable.Image = Auditai.UI.Platform.Properties.ContextResources.ctxRefreshTable;
+        cmdSyncTable.Image = Auditai.UI.Platform.IconRes.ctxRefreshTable;
         cmdSyncDocument.Text = "同步文档";
-        cmdSyncDocument.Image = Auditai.UI.Platform.Properties.ContextResources.ctxRefresh;
+        cmdSyncDocument.Image = Auditai.UI.Platform.IconRes.ctxRefresh;
 
         cmdNodeImportFile.Text = "导入文件";
-        cmdNodeImportFile.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportFile.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdNodeImportExcel.Text = "导入Excel";
-        cmdNodeImportExcel.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportExcel.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdNodeImportWord.Text = "导入Word";
-        cmdNodeImportWord.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportWord.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdNodeImportImage.Text = "导入图片";
-        cmdNodeImportImage.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportImage.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdNodeImportPdf.Text = "导入PDF";
-        cmdNodeImportPdf.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportPdf.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdNodeImportFolder.Text = "导入文件夹";
-        cmdNodeImportFolder.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdNodeImportFolder.Image = Auditai.UI.Platform.IconRes.ctxImport;
 
         cmdAppendRootDirectory.Text = "新建文件夹";
         cmdAppendRootTable.Text = "新建表格";
-        cmdAppendRootTable.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        cmdAppendRootTable.Image = Auditai.UI.Platform.IconRes.ctxInsertTable;
         cmdAppendRootDocument.Text = "新建文档";
         cmdAppendRootImage.Text = "新建图片";
-        cmdAppendRootImage.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertImage;
+        cmdAppendRootImage.Image = Auditai.UI.Platform.IconRes.ctxInsertImage;
         cmdAppendRootPdf.Text = "新建PDF";
 
         cmdPasteRootNode.Text = "粘贴";
-        cmdPasteRootNode.Image = Auditai.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdPasteRootNode.Image = Auditai.UI.Platform.IconRes.ctxPaste;
 
         cmdEmptyImportFile.Text = "导入文件";
-        cmdEmptyImportFile.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportFile.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdEmptyImportExcel.Text = "导入Excel";
-        cmdEmptyImportExcel.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportExcel.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdEmptyImportWord.Text = "导入Word";
-        cmdEmptyImportWord.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportWord.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdEmptyImportImage.Text = "导入图片";
-        cmdEmptyImportImage.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportImage.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdEmptyImportPdf.Text = "导入PDF";
-        cmdEmptyImportPdf.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportPdf.Image = Auditai.UI.Platform.IconRes.ctxImport;
         cmdEmptyImportFolder.Text = "导入文件夹";
-        cmdEmptyImportFolder.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        cmdEmptyImportFolder.Image = Auditai.UI.Platform.IconRes.ctxImport;
 
         // ---- 补充缺失的图标 ----
-        cmdMoveUpGroup.Image = Auditai.UI.Platform.Properties.Resources.MoveUp;
-        cmdMoveDownGroup.Image = Auditai.UI.Platform.Properties.Resources.MoveDown;
-        cmdRemoveGroup.Image = Auditai.UI.Platform.Properties.ContextResources.ctxDelete;
-        cmdCopyGroup.Image = Auditai.UI.Platform.Properties.ContextResources.ctxCopy;
+        cmdMoveUpGroup.Image = Auditai.UI.Platform.IconRes.MoveUp;
+        cmdMoveDownGroup.Image = Auditai.UI.Platform.IconRes.MoveDown;
+        cmdRemoveGroup.Image = Auditai.UI.Platform.IconRes.ctxDelete;
+        cmdCopyGroup.Image = Auditai.UI.Platform.IconRes.ctxCopy;
 
-        cmdMoveUpNode.Image = Auditai.UI.Platform.Properties.Resources.MoveUp;
-        cmdMoveDownNode.Image = Auditai.UI.Platform.Properties.Resources.MoveDown;
-        cmdHideNode.Image = Auditai.UI.Platform.Properties.Resources.HideNodes;
+        cmdMoveUpNode.Image = Auditai.UI.Platform.IconRes.MoveUp;
+        cmdMoveDownNode.Image = Auditai.UI.Platform.IconRes.MoveDown;
+        cmdHideNode.Image = Auditai.UI.Platform.IconRes.HideNodes;
 
-        cmdInsertDirectory.Image = Auditai.UI.Platform.Properties.Resources.TreeDir;
-        cmdInsertDocument.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
-        cmdInsertPdf.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
+        cmdInsertDirectory.Image = Auditai.UI.Platform.IconRes.TreeDir;
+        cmdInsertDocument.Image = Auditai.UI.Platform.IconRes.TreeDoc;
+        cmdInsertPdf.Image = Auditai.UI.Platform.IconRes.TreeDoc;
 
-        cmdAppendChildDirectory.Image = Auditai.UI.Platform.Properties.Resources.TreeDir;
-        cmdAppendChildTable.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertTable;
-        cmdAppendChildDocument.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
-        cmdAppendChildImage.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertImage;
-        cmdAppendChildPdf.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
+        cmdAppendChildDirectory.Image = Auditai.UI.Platform.IconRes.TreeDir;
+        cmdAppendChildTable.Image = Auditai.UI.Platform.IconRes.ctxInsertTable;
+        cmdAppendChildDocument.Image = Auditai.UI.Platform.IconRes.TreeDoc;
+        cmdAppendChildImage.Image = Auditai.UI.Platform.IconRes.ctxInsertImage;
+        cmdAppendChildPdf.Image = Auditai.UI.Platform.IconRes.TreeDoc;
 
-        cmdAppendRootDirectory.Image = Auditai.UI.Platform.Properties.Resources.TreeDir;
-        cmdAppendRootDocument.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
-        cmdAppendRootPdf.Image = Auditai.UI.Platform.Properties.Resources.TreeDoc;
+        cmdAppendRootDirectory.Image = Auditai.UI.Platform.IconRes.TreeDir;
+        cmdAppendRootDocument.Image = Auditai.UI.Platform.IconRes.TreeDoc;
+        cmdAppendRootPdf.Image = Auditai.UI.Platform.IconRes.TreeDoc;
 
         // ---- 补充缺失的命令图标 ----
-        cmdAddGroup.Image = Auditai.UI.Platform.Properties.ContextResources.ctxAppendRow;
-        cmdPasteGroup.Image = Auditai.UI.Platform.Properties.ContextResources.ctxPaste;
-        cmdPasteGroupClickOnGridTree.Image = Auditai.UI.Platform.Properties.ContextResources.ctxPaste;
+        cmdAddGroup.Image = Auditai.UI.Platform.IconRes.ctxAppendRow;
+        cmdPasteGroup.Image = Auditai.UI.Platform.IconRes.ctxPaste;
+        cmdPasteGroupClickOnGridTree.Image = Auditai.UI.Platform.IconRes.ctxPaste;
 
         // ---- 设置子菜单 ----
         mnuInsert.Text = "新建";
-        mnuInsert.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        mnuInsert.Image = Auditai.UI.Platform.IconRes.ctxInsertTable;
         mnuAppendChild.Text = "追加";
-        mnuAppendChild.Image = Auditai.UI.Platform.Properties.ContextResources.ctxAppendRow;
+        mnuAppendChild.Image = Auditai.UI.Platform.IconRes.ctxAppendRow;
         mnuNodeImport.Text = "导入";
-        mnuNodeImport.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        mnuNodeImport.Image = Auditai.UI.Platform.IconRes.ctxImport;
         mnuAppendRoot.Text = "新建";
-        mnuAppendRoot.Image = Auditai.UI.Platform.Properties.ContextResources.ctxInsertTable;
+        mnuAppendRoot.Image = Auditai.UI.Platform.IconRes.ctxInsertTable;
         mnuEmptyImport.Text = "导入";
-        mnuEmptyImport.Image = Auditai.UI.Platform.Properties.ContextResources.ctxImport;
+        mnuEmptyImport.Image = Auditai.UI.Platform.IconRes.ctxImport;
 
         // 配置 新建 子菜单
         mnuInsert.CommandLinks.Add(lnkInsertDirectory);
@@ -638,7 +644,7 @@ public class ProjectHierarchy
         ctxTreeNode.CommandLinks.Add(lnkEditNumber);
 
         // cmdReload
-        cmdReload.Image = Auditai.UI.Platform.Properties.ContextResources.ctxReloadFile;
+        cmdReload.Image = Auditai.UI.Platform.IconRes.ctxReloadFile;
         cmdReload.CommandStateQuery += CmdReload_CommandStateQuery;
         cmdReload.Click += CmdReload_Click;
         lnkReload.Command = cmdReload;
@@ -691,20 +697,20 @@ public class ProjectHierarchy
 
         // ctxBatchOperation 子菜单
         ctxBatchOperation.Text = "批量操作";
-        ctxBatchOperation.Image = Auditai.UI.Platform.Properties.Resources.BatchOperation16;
+        ctxBatchOperation.Image = Auditai.UI.Platform.IconRes.BatchOperation16;
         lnkBatchOperation.Command = ctxBatchOperation;
         ctxTreeNode.CommandLinks.Add(lnkBatchOperation);
 
         // cmdBatchHideFile
         cmdBatchHideFile.Text = "批量隐藏文件";
-        cmdBatchHideFile.Image = Auditai.UI.Platform.Properties.Resources.BatchHideNodes16;
+        cmdBatchHideFile.Image = Auditai.UI.Platform.IconRes.BatchHideNodes16;
         cmdBatchHideFile.Click += CmdBatchHideFile_Click;
         lnkBatchHideFile.Command = cmdBatchHideFile;
         ctxBatchOperation.CommandLinks.Add(lnkBatchHideFile);
 
         // cmdBatchUnhideFile
         cmdBatchUnhideFile.Text = "批量取消隐藏";
-        cmdBatchUnhideFile.Image = Auditai.UI.Platform.Properties.ContextResources.ctxSearch;
+        cmdBatchUnhideFile.Image = Auditai.UI.Platform.IconRes.ctxSearch;
         cmdBatchUnhideFile.Click += CmdBatchUnhideFile_Click;
         cmdBatchUnhideFile.CommandStateQuery += CmdBatchUnhideFile_CommandStateQuery;
         lnkBatchUnhideFile.Command = cmdBatchUnhideFile;
@@ -712,7 +718,7 @@ public class ProjectHierarchy
 
         // cmdBatchDeleteFile
         cmdBatchDeleteFile.Text = "批量删除文件";
-        cmdBatchDeleteFile.Image = Auditai.UI.Platform.Properties.Resources.BatchRemoveNodes16;
+        cmdBatchDeleteFile.Image = Auditai.UI.Platform.IconRes.BatchRemoveNodes16;
         cmdBatchDeleteFile.Click += CmdBatchDeleteFile_Click;
         cmdBatchDeleteFile.CommandStateQuery += CmdBatchDeleteFile_CommandStateQuery;
         lnkBatchDeleteFile.Command = cmdBatchDeleteFile;
@@ -720,7 +726,7 @@ public class ProjectHierarchy
 
         // cmdBatchEditIndex
         cmdBatchEditIndex.Text = "批量编辑索引号";
-        cmdBatchEditIndex.Image = Auditai.UI.Platform.Properties.Resources.EditNodesNumber16;
+        cmdBatchEditIndex.Image = Auditai.UI.Platform.IconRes.EditNodesNumber16;
         cmdBatchEditIndex.Click += CmdBatchEditIndex_Click;
         cmdBatchEditIndex.CommandStateQuery += CmdBatchEditIndex_CommandStateQuery;
         lnkBatchEditIndex.Command = cmdBatchEditIndex;
@@ -728,17 +734,24 @@ public class ProjectHierarchy
 
         // cmdBatchExportFile
         cmdBatchExportFile.Text = "批量导出文件";
-        cmdBatchExportFile.Image = Auditai.UI.Platform.Properties.Resources.BatchExport16;
+        cmdBatchExportFile.Image = Auditai.UI.Platform.IconRes.BatchExport16;
         cmdBatchExportFile.Click += CmdBatchExportFile_Click;
         lnkBatchExportFile.Command = cmdBatchExportFile;
         ctxBatchOperation.CommandLinks.Add(lnkBatchExportFile);
 
         // cmdBatchPrintFile
         cmdBatchPrintFile.Text = "批量打印文件";
-        cmdBatchPrintFile.Image = Auditai.UI.Platform.Properties.Resources.BatchPrint16;
+        cmdBatchPrintFile.Image = Auditai.UI.Platform.IconRes.BatchPrint16;
         cmdBatchPrintFile.Click += CmdBatchPrintFile_Click;
         lnkBatchPrintFile.Command = cmdBatchPrintFile;
         ctxBatchOperation.CommandLinks.Add(lnkBatchPrintFile);
+
+        // cmdFillStatusReport
+        cmdFillStatusReport.CommandStateQuery += CmdFillStatusReport_CommandStateQuery;
+        cmdFillStatusReport.Click += CmdFillStatusReport_Click;
+        lnkFillStatusReport.Command = cmdFillStatusReport;
+        lnkFillStatusReport.Delimiter = true;
+        ctxTreeNode.CommandLinks.Add(lnkFillStatusReport);
 
         // ctxProjectMember 子菜单
         ctxProjectMember.CommandStateQuery += ctxProjectMember_CommandStateQuery;
@@ -854,6 +867,10 @@ public class ProjectHierarchy
         lnkBatchOperation2.Delimiter = true;
         ctxTreeEmpty.CommandLinks.Add(lnkBatchOperation2);
 
+        // lnkFillStatusReport2 -> cmdFillStatusReport (ctxTreeEmpty)
+        lnkFillStatusReport2.Command = cmdFillStatusReport;
+        ctxTreeEmpty.CommandLinks.Add(lnkFillStatusReport2);
+
         // 事件和延迟执行
         TreeNodeCollapsed += ProjectHierarchy_TreeNodeCollapsed;
         View.SelectedPageChanged += View_SelectedPageChanged;
@@ -900,8 +917,8 @@ public class ProjectHierarchy
         var selectedGroup = SelectedNode as TreeGroup;
         if (selectedGroup == null) return;
 
-        if (System.Windows.Forms.MessageBox.Show($"确定要删除分组 \"{selectedGroup.Name}\" 吗？", "确认删除",
-            MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, $"确定要删除分组 \"{selectedGroup.Name}\" 吗？",
+            MessageBoxButtons.YesNo, "确认删除") != DialogResult.Yes)
             return;
 
         try
@@ -913,7 +930,7 @@ public class ProjectHierarchy
         catch (Exception ex)
         {
             ex.Log();
-            System.Windows.Forms.MessageBox.Show("删除分组失败：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "删除分组失败：" + ex.Message, MessageBoxButtons.OK, "错误");
         }
     }
 
@@ -942,7 +959,7 @@ public class ProjectHierarchy
         catch (Exception ex)
         {
             ex.Log();
-            System.Windows.Forms.MessageBox.Show("复制分组失败：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "复制分组失败：" + ex.Message, MessageBoxButtons.OK, "错误");
         }
     }
 
@@ -1110,7 +1127,7 @@ public class ProjectHierarchy
             catch (Exception ex)
             {
                 ex.Log();
-                System.Windows.Forms.MessageBox.Show("导入文件失败：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "导入文件失败：" + ex.Message, MessageBoxButtons.OK, "错误");
             }
         }
     }
@@ -1150,7 +1167,7 @@ public class ProjectHierarchy
             catch (Exception ex)
             {
                 ex.Log();
-                System.Windows.Forms.MessageBox.Show("导入文件夹失败：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "导入文件夹失败：" + ex.Message, MessageBoxButtons.OK, "错误");
             }
         }
     }
@@ -1174,8 +1191,8 @@ public class ProjectHierarchy
         var selectedNode = SelectedNode as TreeNodeBase;
         if (selectedNode == null) return;
 
-        if (System.Windows.Forms.MessageBox.Show($"确定要删除 \"{selectedNode.Name}\" 吗？", "确认删除",
-            MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        if (Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, $"确定要删除 \"{selectedNode.Name}\" 吗？",
+            MessageBoxButtons.YesNo, "确认删除") != DialogResult.Yes)
             return;
 
         try
@@ -1207,7 +1224,7 @@ public class ProjectHierarchy
         catch (Exception ex)
         {
             ex.Log();
-            System.Windows.Forms.MessageBox.Show("删除失败：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Error, "删除失败：" + ex.Message, MessageBoxButtons.OK, "错误");
         }
     }
 
@@ -1284,7 +1301,7 @@ public class ProjectHierarchy
                 Node node = _grid.Rows.AddNode(0);
                 node.Key = treeGroup;
                 node.Data = treeGroup.Name;
-                node.Image = Resources.TreeDir;
+                node.Image = IconRes.TreeDir;
 
                 foreach (TreeNodeBase rootNode in treeGroup.RootNodes)
                 {
@@ -1313,7 +1330,7 @@ public class ProjectHierarchy
         Node node = null;
         if (treeNode is TreeDirectoryNode dirNode)
         {
-            node = parentNode.AddNode(NodeTypeEnum.LastChild, dirNode.Name, dirNode, Resources.TreeDir);
+            node = parentNode.AddNode(NodeTypeEnum.LastChild, dirNode.Name, dirNode, IconRes.TreeDir);
             foreach (TreeNodeBase child in dirNode.Children)
             {
                 AddTreeNode(child, node);
@@ -1322,19 +1339,19 @@ public class ProjectHierarchy
         }
         else if (treeNode is TreeTableNode tableNode)
         {
-            node = parentNode.AddNode(NodeTypeEnum.LastChild, tableNode.Name, tableNode, Resources.TreeTable);
+            node = parentNode.AddNode(NodeTypeEnum.LastChild, tableNode.Name, tableNode, IconRes.TreeTable);
         }
         else if (treeNode is TreeDocumentNode docNode)
         {
-            node = parentNode.AddNode(NodeTypeEnum.LastChild, docNode.Name, docNode, Resources.TreeDoc);
+            node = parentNode.AddNode(NodeTypeEnum.LastChild, docNode.Name, docNode, IconRes.TreeDoc);
         }
         else if (treeNode is TreeImageNode imgNode)
         {
-            node = parentNode.AddNode(NodeTypeEnum.LastChild, imgNode.Name, imgNode, Resources.TreeDoc);
+            node = parentNode.AddNode(NodeTypeEnum.LastChild, imgNode.Name, imgNode, IconRes.TreeDoc);
         }
         else if (treeNode is TreePdfNode pdfNode)
         {
-            node = parentNode.AddNode(NodeTypeEnum.LastChild, pdfNode.Name, pdfNode, Resources.TreeDoc);
+            node = parentNode.AddNode(NodeTypeEnum.LastChild, pdfNode.Name, pdfNode, IconRes.TreeDoc);
         }
 
         if (!treeNode.Visible && node != null)
@@ -1782,24 +1799,24 @@ public class ProjectHierarchy
                         SelectedNode = group;
                         UpdateCurrentGroupModel(group);
                         _grid.Row = ht.Row;
-                        ctxTreeGroup.ShowContextMenu(_grid, e.Location);
+                        NativeMenuShim.Show(ctxTreeGroup, _grid, e.Location);
                     }
                     else if (node.Key is TreeNodeBase tnb)
                     {
                         SelectedNode = tnb;
                         UpdateCurrentGroupModel(tnb.Group);
                         _grid.Row = ht.Row;
-                        ctxTreeNode.ShowContextMenu(_grid, e.Location);
+                        NativeMenuShim.Show(ctxTreeNode, _grid, e.Location);
                     }
                 }
                 else
                 {
-                    ctxTreeEmpty.ShowContextMenu(_grid, e.Location);
+                    NativeMenuShim.Show(ctxTreeEmpty, _grid, e.Location);
                 }
             }
             else
             {
-                ctxTreeNothing.ShowContextMenu(_grid, e.Location);
+                NativeMenuShim.Show(ctxTreeNothing, _grid, e.Location);
             }
         }
 
@@ -1813,9 +1830,9 @@ public class ProjectHierarchy
 
         var outBar = (C1OutBarEx)sender;
         if (outBar.HotPage == null)
-            ctxTreeNothing.ShowContextMenu(View, e.Location);
+            NativeMenuShim.Show(ctxTreeNothing, View, e.Location);
         else
-            ctxTreeGroup.ShowContextMenu(View, e.Location);
+            NativeMenuShim.Show(ctxTreeGroup, View, e.Location);
     }
 
     private void _grid_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1959,7 +1976,7 @@ public class ProjectHierarchy
             newNode = SelectedNode.Parent.InsertChildImage(index, imageId.Value);
         }
         var grid = _currentGroup.Grid;
-        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, IconRes.TreeDoc);
         grid.Row = node.Row.Index;
     }
     private void CmdInsertImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
@@ -1980,7 +1997,7 @@ public class ProjectHierarchy
             newNode = SelectedNode.Parent.InsertChildPdf(index, pdfId.Value);
         }
         var grid = _currentGroup.Grid;
-        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, IconRes.TreeDoc);
         grid.Row = node.Row.Index;
     }
     private void CmdInsertPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
@@ -2002,7 +2019,7 @@ public class ProjectHierarchy
         var dirNode = (TreeDirectoryNode)SelectedNode;
         var newNode = dirNode.InsertChildImage(dirNode.Children.Count, imageId.Value);
         var grid = _currentGroup.Grid;
-        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, IconRes.TreeDoc);
         grid.Row = node.Row.Index;
     }
     private void CmdAppendChildImage_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
@@ -2015,7 +2032,7 @@ public class ProjectHierarchy
         var dirNode = (TreeDirectoryNode)SelectedNode;
         var newNode = dirNode.InsertChildPdf(dirNode.Children.Count, pdfId.Value);
         var grid = _currentGroup.Grid;
-        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, Resources.TreeDoc);
+        var node = grid.Rows[grid.Row].Node.AddNode(NodeTypeEnum.LastChild, newNode.Name, newNode, IconRes.TreeDoc);
         grid.Row = node.Row.Index;
     }
     private void CmdAppendChildPdf_CommandStateQuery(object sender, CommandStateQueryEventArgs e) => e.Enabled = true;
@@ -2053,6 +2070,10 @@ public class ProjectHierarchy
                 MessageBox.Show(MessageBoxIcon.None, string.Concat("因您没有该文件的【", node.GetDontHavePermissionString(), "】权限，因此，无法对该文件执行隐藏操作。"), MessageBoxButtons.OK, "", scroll: false);
                 return;
             }
+            if (node is TreeTableNode && MessageBox.Show(MessageBoxIcon.Question, "设置后批量校验、全量重算、批量导出、批量打印将自动跳过该表格；可随时在【填报情况统计】中恢复填报。确定将该表格设为【不必填报】吗？", MessageBoxButtons.OKCancel, "不必填报", scroll: false) != DialogResult.OK)
+            {
+                return;
+            }
             node.UpdateVisible(false);
             var gridNode = _currentGroup.Grid.Rows[_currentGroup.Grid.Row].Node;
             ((C1FlexGridEx)_currentGroup.Grid).SetSubtreeVisible(gridNode, false);
@@ -2071,8 +2092,34 @@ public class ProjectHierarchy
         e.Enabled = node != null;
         if (node != null)
         {
-            cmdHideNode.Text = node.Visible ? "隐藏" : "取消隐藏";
+            if (node is TreeTableNode)
+            {
+                cmdHideNode.Text = node.Visible ? "不必填报" : "恢复填报";
+            }
+            else
+            {
+                cmdHideNode.Text = node.Visible ? "隐藏" : "取消隐藏";
+            }
         }
+    }
+
+    private void CmdFillStatusReport_Click(object sender, ClickEventArgs e)
+    {
+        try
+        {
+            var form = new frmFillStatusReport();
+            form.Project = Project;
+            form.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            ex.Log(null);
+            MessageBox.Show(MessageBoxIcon.Error, ex.Message, MessageBoxButtons.OK, "", scroll: false);
+        }
+    }
+    private void CmdFillStatusReport_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
+    {
+        e.Enabled = SelectedNode == null || SelectedNode is TreeGroup || SelectedNode is TreeDirectoryNode;
     }
 
     private void CmdShowNodes_Click(object sender, ClickEventArgs e)
@@ -2445,7 +2492,7 @@ public class ProjectHierarchy
             var node = grid.Rows.AddNode(0);
             node.Data = newNode.Name;
             node.Key = newNode;
-            node.Image = Resources.TreeDoc;
+            node.Image = IconRes.TreeDoc;
             grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -2468,7 +2515,7 @@ public class ProjectHierarchy
             var node = grid.Rows.AddNode(0);
             node.Data = newNode.Name;
             node.Key = newNode;
-            node.Image = Resources.TreeDoc;
+            node.Image = IconRes.TreeDoc;
             grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -2562,7 +2609,7 @@ public class ProjectHierarchy
                 node = grid.Rows.AddNode(0);
                 node.Data = dup.Name;
                 node.Key = dup;
-                node.Image = Resources.TreeDoc;
+                node.Image = IconRes.TreeDoc;
             }
             else
             {
@@ -2571,7 +2618,7 @@ public class ProjectHierarchy
                 if (((List<TreeNodeBase>)children).Any(n => n.Name == dup.Name))
                     dup.Name += "-副本";
                 parent.InsertChildNode(dup, SelectedNode.Index);
-                node = node.AddNode(NodeTypeEnum.LastChild, dup.Name, dup, Resources.TreeDoc);
+                node = node.AddNode(NodeTypeEnum.LastChild, dup.Name, dup, IconRes.TreeDoc);
             }
             grid.Row = node.Row.Index;
         }
@@ -2731,23 +2778,23 @@ public class ProjectHierarchy
             {
                 case 0: // Table
                     node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotTable(snapshot);
-                    icon = Resources.TreeTable;
+                    icon = IconRes.TreeTable;
                     break;
                 case 1: // Document
                     var docNode = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotDocument(snapshot);
                     node = docNode;
-                    icon = Resources.TreeDoc;
+                    icon = IconRes.TreeDoc;
                     Program.MainForm.CurrentDocumentEditor = new DocumentEditor { Document = docNode.Document, NeedSave = true };
                     Program.MainForm.AddDocumentEditor(Program.MainForm.CurrentDocumentEditor);
                     Program.MainForm.CurrentDocumentEditor.PopulateDocument(false, true);
                     break;
                 case 2: // Image
                     node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotImage(snapshot);
-                    icon = Resources.TreeDoc;
+                    icon = IconRes.TreeDoc;
                     break;
                 case 3: // Pdf
                     node = Program.MainForm.CurrentProject.SnapshotManager.GetSnapshotPdf(snapshot);
-                    icon = Resources.TreeDoc;
+                    icon = IconRes.TreeDoc;
                     break;
             }
             node.Name += " - 历史版本";
@@ -2832,7 +2879,7 @@ public class ProjectHierarchy
             var node = _currentGroup.Grid.Rows.AddNode(0);
             node.Data = dup.Name;
             node.Key = dup;
-            node.Image = Resources.TreeTable;
+            node.Image = IconRes.TreeTable;
             _currentGroup.Grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -2857,7 +2904,7 @@ public class ProjectHierarchy
             var node = _currentGroup.Grid.Rows.AddNode(0);
             node.Data = dup.Name;
             node.Key = dup;
-            node.Image = Resources.TreeDoc;
+            node.Image = IconRes.TreeDoc;
             _currentGroup.Grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -2894,7 +2941,7 @@ public class ProjectHierarchy
             var node = _currentGroup.Grid.Rows.AddNode(0);
             node.Data = dup.Name;
             node.Key = dup;
-            node.Image = Resources.TreeDir;
+            node.Image = IconRes.TreeDir;
             _currentGroup.PopulateDirectoryNode(dup, node);
             _currentGroup.Grid.Row = node.Row.Index;
         }
@@ -2919,7 +2966,7 @@ public class ProjectHierarchy
             var node = _currentGroup.Grid.Rows.AddNode(0);
             node.Data = dup.Name;
             node.Key = dup;
-            node.Image = Resources.TreeDoc;
+            node.Image = IconRes.TreeDoc;
             _currentGroup.Grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -2943,7 +2990,7 @@ public class ProjectHierarchy
             var node = _currentGroup.Grid.Rows.AddNode(0);
             node.Data = dup.Name;
             node.Key = dup;
-            node.Image = Resources.TreeDoc;
+            node.Image = IconRes.TreeDoc;
             _currentGroup.Grid.Row = node.Row.Index;
         }
         catch (Exception ex)
@@ -3343,13 +3390,13 @@ public class ProjectHierarchy
         {
             switch (tp)
             {
-                case ImportTypeEnum.Dir: return Resources.TreeDir;
-                case ImportTypeEnum.Doc: return Resources.TreeDoc;
+                case ImportTypeEnum.Dir: return IconRes.TreeDir;
+                case ImportTypeEnum.Doc: return IconRes.TreeDoc;
                 case ImportTypeEnum.Table:
-                case ImportTypeEnum.Sheet: return Resources.TreeTable;
-                case ImportTypeEnum.Image: return Auditai.UI.Platform.Properties.Resources.TreeImage;
-                case ImportTypeEnum.Pdf: return Auditai.UI.Platform.Properties.Resources.TreePdf;
-                default: return Resources.TreeDoc;
+                case ImportTypeEnum.Sheet: return IconRes.TreeTable;
+                case ImportTypeEnum.Image: return Auditai.UI.Platform.IconRes.TreeImage;
+                case ImportTypeEnum.Pdf: return Auditai.UI.Platform.IconRes.TreePdf;
+                default: return IconRes.TreeDoc;
             }
         }
     }

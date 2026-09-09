@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandCopy : AppCommandButton
 {
-	public override Image LargeIcon => Resources.Copy;
+	public override Image LargeIcon => IconRes.Copy;
 
 	public override string Text => "复制";
 

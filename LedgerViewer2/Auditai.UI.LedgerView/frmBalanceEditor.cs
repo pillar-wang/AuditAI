@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -472,17 +472,24 @@ public class frmBalanceEditor : C1RibbonForm
 		grid.BeginUpdate();
 		try
 		{
-			ProgressForm<List<List<object>>> progressForm = new ProgressForm<List<List<object>>>(delegate
+			List<List<object>> list = null;
+			ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+			ProgressForm2 progressForm = new ProgressForm2();
+			progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 			{
-				Application.DoEvents();
-				return new ProgressInfo
+				IProgress<ProgressInfo> progress = new ProgressRuntimeDataReporter(progressRuntimeData);
+				Task<List<List<object>>> readTask = Task.Run(() => ClipboardUtil.GetClipboardAsTable());
+				while (!readTask.IsCompleted)
 				{
-					MainCaption = "正在进行粘贴准备，可能时间较长，请耐心等待...",
-					MainProgress = ((ClipboardUtil.IsStreamReady && ClipboardUtil.RowsCount > 0) ? ((int)((double)ClipboardUtil.RowsCountAlreadyRead * 100.0 / (double)ClipboardUtil.RowsCount)) : 0)
-				};
-			}, () => Task.Run(() => ClipboardUtil.GetClipboardAsTable()), TimeSpan.FromSeconds(1.0));
-			progressForm.ShowDialog();
-			List<List<object>> list = await progressForm.Task;
+					progress.Report(new ProgressInfo
+					{
+						MainCaption = "正在进行粘贴准备，可能时间较长，请耐心等待...",
+						MainProgress = ((ClipboardUtil.IsStreamReady && ClipboardUtil.RowsCount > 0) ? ((int)((double)ClipboardUtil.RowsCountAlreadyRead * 100.0 / (double)ClipboardUtil.RowsCount)) : 0)
+					});
+					await Task.Delay(100);
+				}
+				list = await readTask;
+			});
 			if (list == null)
 			{
 				return;
@@ -654,10 +661,10 @@ public class frmBalanceEditor : C1RibbonForm
 			switch (c1FlexGrid.HitTest(e.Location).Type)
 			{
 			case HitTestTypeEnum.Cell:
-				ctxCell.ShowContextMenu(c1FlexGrid, e.Location);
+				NativeMenuShim.Show(ctxCell, c1FlexGrid, e.Location);
 				break;
 			case HitTestTypeEnum.None:
-				ctxEmpty.ShowContextMenu(c1FlexGrid, e.Location);
+				NativeMenuShim.Show(ctxEmpty, c1FlexGrid, e.Location);
 				break;
 			}
 		}
@@ -1182,7 +1189,7 @@ public class frmBalanceEditor : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.c1CommandHolder1).BeginInit();
 		base.SuspendLayout();
 		this.c1SplitContainer1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
-		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
+		this.c1SplitContainer1.BackColor = System.Drawing.Color.FromArgb(243, 244, 246);
 		this.c1SplitContainer1.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.c1SplitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.c1SplitContainer1.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0);
@@ -1277,7 +1284,7 @@ public class frmBalanceEditor : C1RibbonForm
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		base.ClientSize = new System.Drawing.Size(1213, 829);
 		base.Controls.Add(this.c1SplitContainer1);
-		this.Font = new System.Drawing.Font("Microsoft YaHei", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		base.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		base.Name = "frmBalanceEditor";
 		this.Text = "修改期初数";

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,7 +15,7 @@ public static class Util
 {
 	private delegate System.Drawing.Image InvokeHandle(System.Drawing.Image image, int desLength);
 
-	private static System.Drawing.Image markImage = Resources.managerMark;
+	private static System.Drawing.Image markImage = IconRes.managerMark;
 
 	public static void ShellExecuteUrl(string url)
 	{
@@ -102,7 +102,7 @@ public static class Util
 		}
 		if (user.IsTeamAdmin)
 		{
-			return MarkImage2(StandardImage(image, size), Resources.managerMark);
+			return MarkImage2(StandardImage(image, size), IconRes.managerMark);
 		}
 		return MarkImage2(StandardImage(image, size), markImage.Width, markImage.Height);
 	}
@@ -160,8 +160,11 @@ public static class Util
 		int total = items.Count;
 		if (total == 0) return;
 
-		new ProgressForm<object>(async delegate(IProgress<ProgressInfo> iProg)
+		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		ProgressForm2 progressForm = new ProgressForm2();
+		progressForm.ShowDialogOnUiThread(progressRuntimeData, async delegate
 		{
+			IProgress<ProgressInfo> iProg = new ProgressRuntimeDataReporter(progressRuntimeData);
 			for (int i = 0; i < total; i++)
 			{
 				int idx = i;
@@ -180,7 +183,6 @@ public static class Util
 				MainCaption = $"{taskName}完成",
 				MainProgress = 100
 			});
-			return (object)null;
-		}).ShowDialog();
+		});
 	}
 }

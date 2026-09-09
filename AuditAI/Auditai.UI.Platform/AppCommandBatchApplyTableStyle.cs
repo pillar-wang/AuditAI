@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+﻿﻿using System.Windows.Forms;
 
 namespace Auditai.UI.Platform;
 
@@ -18,7 +18,7 @@ public class AppCommandBatchApplyTableStyle : AppCommandButton
 		var docEditor = mainForm.CurrentDocumentEditor;
 		if (docEditor == null)
 		{
-			MessageBox.Show("请先打开文档", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "请先打开文档", MessageBoxButtons.OK, "提示");
 			return;
 		}
 

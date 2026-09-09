@@ -39,7 +39,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdInsertRow = new C1Command
 	{
 		Text = "插入副标题行",
-		Image = ContextResources.ctxInsertRow
+		Image = IconRes.ctxInsertRow
 	};
 
 	private readonly C1CommandLink lnkInsertRow = new C1CommandLink();
@@ -67,7 +67,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdAuxEdit = new C1Command
 	{
 		Text = "下拉列表...",
-		Image = Auditai.UI.Platform.Properties.Resources.ComboList16
+		Image = Auditai.UI.Platform.IconRes.ComboList16
 	};
 
 	private readonly C1CommandLink lnkAuxEdit = new C1CommandLink();
@@ -75,7 +75,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdEditComment = new C1Command
 	{
 		Text = "编辑注释...",
-		Image = ContextResources.ctxParagraphComment
+		Image = IconRes.ctxParagraphComment
 	};
 
 	private readonly C1CommandLink lnkEditComment = new C1CommandLink();
@@ -91,7 +91,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdInsertColumn = new C1Command
 	{
 		Text = "插入副标题列",
-		Image = ContextResources.ctxInsertColumn
+		Image = IconRes.ctxInsertColumn
 	};
 
 	private readonly C1CommandLink lnkInsertColumn = new C1CommandLink();
@@ -99,7 +99,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdAppendColumn = new C1Command
 	{
 		Text = "追加副标题列",
-		Image = ContextResources.ctxAppendColumn
+		Image = IconRes.ctxAppendColumn
 	};
 
 	private readonly C1CommandLink lnkAppendColumn = new C1CommandLink();
@@ -107,7 +107,7 @@ public class TableTitleEditor
 	private readonly C1Command cmdRemoveColumn = new C1Command
 	{
 		Text = "删除副标题列",
-		Image = ContextResources.ctxDeleteColumn
+		Image = IconRes.ctxDeleteColumn
 	};
 
 	private readonly C1CommandLink lnkRemoveColumn = new C1CommandLink();
@@ -319,47 +319,47 @@ public class TableTitleEditor
 		lnkAlign.Command = cmdAlign;
 		ctxTitle.CommandLinks.Add(lnkAlign);
 		cmdAlignTopLeft.Text = "左上对齐";
-		cmdAlignTopLeft.Image = ContextResources.ctxAlignTopLeft;
+		cmdAlignTopLeft.Image = IconRes.ctxAlignTopLeft;
 		cmdAlignTopLeft.Click += CmdAlignTopLeft_Click;
 		lnkAlignTopLeft.Command = cmdAlignTopLeft;
 		cmdAlign.CommandLinks.Add(lnkAlignTopLeft);
 		cmdAlignTopCenter.Text = "中上对齐";
-		cmdAlignTopCenter.Image = ContextResources.ctxAlignTopCenter;
+		cmdAlignTopCenter.Image = IconRes.ctxAlignTopCenter;
 		cmdAlignTopCenter.Click += CmdAlignTopCenter_Click;
 		lnkAlignTopCenter.Command = cmdAlignTopCenter;
 		cmdAlign.CommandLinks.Add(lnkAlignTopCenter);
 		cmdAlignTopRight.Text = "右上对齐";
-		cmdAlignTopRight.Image = ContextResources.ctxAlignTopRight;
+		cmdAlignTopRight.Image = IconRes.ctxAlignTopRight;
 		cmdAlignTopRight.Click += CmdAlignTopRight_Click;
 		lnkAlignTopRight.Command = cmdAlignTopRight;
 		cmdAlign.CommandLinks.Add(lnkAlignTopRight);
 		cmdAlignMiddleLeft.Text = "左中对齐";
-		cmdAlignMiddleLeft.Image = ContextResources.ctxAlignMiddleLeft;
+		cmdAlignMiddleLeft.Image = IconRes.ctxAlignMiddleLeft;
 		cmdAlignMiddleLeft.Click += CmdAlignMiddleLeft_Click;
 		lnkAlignMiddleLeft.Command = cmdAlignMiddleLeft;
 		cmdAlign.CommandLinks.Add(lnkAlignMiddleLeft);
 		cmdAlignMiddleCenter.Text = "中中对齐";
-		cmdAlignMiddleCenter.Image = ContextResources.ctxAlignMiddleCenter;
+		cmdAlignMiddleCenter.Image = IconRes.ctxAlignMiddleCenter;
 		cmdAlignMiddleCenter.Click += CmdAlignMiddleCenter_Click;
 		lnkAlignMiddleCenter.Command = cmdAlignMiddleCenter;
 		cmdAlign.CommandLinks.Add(lnkAlignMiddleCenter);
 		cmdAlignMiddleRight.Text = "右中对齐";
-		cmdAlignMiddleRight.Image = ContextResources.ctxAlignMiddleRight;
+		cmdAlignMiddleRight.Image = IconRes.ctxAlignMiddleRight;
 		cmdAlignMiddleRight.Click += CmdAlignMiddleRight_Click;
 		lnkAlignMiddleRight.Command = cmdAlignMiddleRight;
 		cmdAlign.CommandLinks.Add(lnkAlignMiddleRight);
 		cmdAlignBottomLeft.Text = "左下对齐";
-		cmdAlignBottomLeft.Image = ContextResources.ctxAlignBottomLeft;
+		cmdAlignBottomLeft.Image = IconRes.ctxAlignBottomLeft;
 		cmdAlignBottomLeft.Click += CmdAlignBottomLeft_Click;
 		lnkAlignBottomLeft.Command = cmdAlignBottomLeft;
 		cmdAlign.CommandLinks.Add(lnkAlignBottomLeft);
 		cmdAlignBottomCenter.Text = "中下对齐";
-		cmdAlignBottomCenter.Image = ContextResources.ctxAlignBottomCenter;
+		cmdAlignBottomCenter.Image = IconRes.ctxAlignBottomCenter;
 		cmdAlignBottomCenter.Click += CmdAlignBottomCenter_Click;
 		lnkAlignBottomCenter.Command = cmdAlignBottomCenter;
 		cmdAlign.CommandLinks.Add(lnkAlignBottomCenter);
 		cmdAlignBottomRight.Text = "右下对齐";
-		cmdAlignBottomRight.Image = ContextResources.ctxAlignBottomRight;
+		cmdAlignBottomRight.Image = IconRes.ctxAlignBottomRight;
 		cmdAlignBottomRight.Click += CmdAlignBottomRight_Click;
 		lnkAlignBottomRight.Command = cmdAlignBottomRight;
 		cmdAlign.CommandLinks.Add(lnkAlignBottomRight);
@@ -1608,7 +1608,7 @@ public class TableTitleEditor
 	private void CmdRemoveRow_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRemoveRow.Text = "删除副标题行";
-		cmdRemoveRow.Image = ContextResources.ctxDeleteRow;
+		cmdRemoveRow.Image = IconRes.ctxDeleteRow;
 		HitTestInfo hitTestInfo = _grid.HitTest();
 		if (hitTestInfo.Row == 0)
 		{
@@ -1894,7 +1894,7 @@ public class TableTitleEditor
 			return;
 		}
 		cmdAppendRow.Text = "新增副标题行";
-		cmdAppendRow.Image = ContextResources.ctxAppendRow;
+		cmdAppendRow.Image = IconRes.ctxAppendRow;
 		e.Enabled = Title.CanAddRow;
 		e.Visible = true;
 	}
@@ -1959,7 +1959,7 @@ public class TableTitleEditor
 	{
 		if (!IsEditingFormula() && !_owner._isFormatBrushing && !_owner.AuxEditor.IsEditing && !_owner.LedgerCollectFormulaEditor.IsEditing && !AuxEditor.IsEditing && !_owner.FootEditor.AuxEditor.IsEditing && _owner.Table != null && !_gridResizingManager.IsResizing && e.Button == MouseButtons.Right && _grid.HitTest(e.Location).Type != 0 && _owner.HasSchemaPermission())
 		{
-			ctxTitle.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(ctxTitle, _grid, e.Location);
 		}
 	}
 
@@ -2102,7 +2102,7 @@ public class TableTitleEditor
 			else if (dataFormat.FormatType == DataFormatType.BoolOnOff)
 			{
 				e.Text = string.Empty;
-				e.Image = (cell.Value.Equals(true) ? Auditai.UI.Platform.Properties.Resources.On : Auditai.UI.Platform.Properties.Resources.Off);
+				e.Image = (cell.Value.Equals(true) ? Auditai.UI.Platform.IconRes.On : Auditai.UI.Platform.IconRes.Off);
 				styleNew.ImageAlign = C1FlexGridEx.ToImageAlign(cell.Align);
 			}
 			else

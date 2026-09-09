@@ -8,7 +8,7 @@ public class AppCommandInsertRefTable : AppCommandButton
 {
 	public override string Text => "引用表格";
 
-	public override Image LargeIcon => Auditai.UI.Platform.Properties.Resources.Intelliref;
+	public override Image LargeIcon => Auditai.UI.Platform.IconRes.Intelliref;
 
 	protected override string Tooltip => TipResource.引用表格按钮;
 

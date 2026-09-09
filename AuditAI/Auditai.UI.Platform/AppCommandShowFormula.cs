@@ -7,7 +7,7 @@ public class AppCommandShowFormula : AppCommandToggleButton
 {
 	public override string Text => "运算公式";
 
-	public override Image LargeIcon => Resources.ToggleFormula;
+	public override Image LargeIcon => IconRes.ToggleFormula;
 
 	public override void GenerateRibbonItem()
 	{

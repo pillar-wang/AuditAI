@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preflight</title>
+    <style id="theme-vars">
+/* ============================================================
+   AuditAI 账务数据页面 · 轻盈清新风 Design Tokens
+   brand prefix: audit
+   ============================================================ */
+:root {
+  /* ---- Semantic aliases (head contract) ---- */
+  --audit-background: #fafbfc;
+  --audit-foreground: #111827;
+  --audit-card: #ffffff;
+  --audit-card-foreground: #111827;
+  --audit-popover: #ffffff;
+  --audit-popover-foreground: #111827;
+  --audit-primary: #3b82f6;
+  --audit-primary-foreground: #ffffff;
+  --audit-muted: #f3f4f6;
+  --audit-muted-foreground: #6b7280;
+  --audit-border: #e5e7eb;
+  --audit-input: #d1d5db;
+  --audit-ring: #3b82f6;
+  --audit-radius-sm: 6px;
+  --audit-radius-md: 8px;
+  --audit-radius-lg: 12px;
+
+  /* ---- Brand scale (清新蓝) ---- */
+  --audit-brand: #3b82f6;
+  --audit-brand-hover: #2563eb;
+  --audit-brand-active: #1d4ed8;
+  --audit-brand-subtle: #eff6ff;
+  --audit-brand-border: #bfdbfe;
+  --audit-brand-foreground: #ffffff;
+
+  /* ---- State colors (status only) ---- */
+  --audit-success: #10b981;
+  --audit-success-hover: #059669;
+  --audit-success-subtle: #ecfdf5;
+  --audit-success-border: #a7f3d0;
+  --audit-success-foreground: #065f46;
+
+  --audit-warning: #f59e0b;
+  --audit-warning-hover: #d97706;
+  --audit-warning-subtle: #fffbeb;
+  --audit-warning-border: #fde68a;
+  --audit-warning-foreground: #92400e;
+
+  --audit-error: #ef4444;
+  --audit-error-hover: #dc2626;
+  --audit-error-subtle: #fef2f2;
+  --audit-error-border: #fecaca;
+  --audit-error-foreground: #991b1b;
+
+  --audit-info: #06b6d4;
+  --audit-info-subtle: #ecfeff;
+  --audit-info-border: #a5f3fc;
+  --audit-info-foreground: #155e75;
+
+  /* ---- Surfaces ---- */
+  --audit-surface: #ffffff;
+  --audit-surface-muted: #fafbfc;
+  --audit-surface-subtle: #f3f4f6;
+  --audit-surface-hover: #f9fafb;
+  --audit-surface-selected: #eff6ff;
+
+  /* ---- Text ---- */
+  --audit-text: #111827;
+  --audit-text-secondary: #374151;
+  --audit-text-tertiary: #6b7280;
+  --audit-text-muted: #9ca3af;
+  --audit-text-disabled: #d1d5db;
+  --audit-text-on-brand: #ffffff;
+
+  /* ---- Borders ---- */
+  --audit-border-subtle: #f3f4f6;
+  --audit-border-strong: #d1d5db;
+
+  /* ---- Sidebar ---- */
+  --audit-sidebar-bg: #fafbfc;
+  --audit-sidebar-item-hover: #f3f4f6;
+  --audit-sidebar-item-active: #eff6ff;
+  --audit-sidebar-text: #374151;
+  --audit-sidebar-text-active: #1d4ed8;
+
+  /* ---- Typography ---- */
+  --audit-font-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --audit-font-mono: "SF Mono", "Cascadia Code", Consolas, Monaco, "Courier New", monospace;
+
+  --audit-fs-display: 24px;
+  --audit-fs-h1: 20px;
+  --audit-fs-h2: 16px;
+  --audit-fs-h3: 14px;
+  --audit-fs-body: 13px;
+  --audit-fs-caption: 12px;
+  --audit-fs-tiny: 11px;
+
+  /* ---- Shadows (static alpha <= 0.05) ---- */
+  --audit-shadow-xs: 0 1px 2px 0 rgba(17, 24, 39, 0.04);
+  --audit-shadow-sm: 0 1px 3px 0 rgba(17, 24, 39, 0.05), 0 1px 2px -1px rgba(17, 24, 39, 0.03);
+  --audit-shadow-float: 0 8px 24px -6px rgba(17, 24, 39, 0.12), 0 2px 6px -2px rgba(17, 24, 39, 0.06);
+
+  /* ---- Layout ---- */
+  --audit-sidebar-width: 232px;
+  --audit-topbar-height: 56px;
+  --audit-statusbar-height: 32px;
+  --audit-content-padding: 20px;
+
+  /* ---- Motion ---- */
+  --audit-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --audit-dur-fast: 120ms;
+  --audit-dur-base: 160ms;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--audit-background);
+    --color-foreground: var(--audit-foreground);
+    --color-card: var(--audit-card);
+    --color-card-foreground: var(--audit-card-foreground);
+    --color-popover: var(--audit-popover);
+    --color-popover-foreground: var(--audit-popover-foreground);
+    --color-primary: var(--audit-primary);
+    --color-primary-foreground: var(--audit-primary-foreground);
+    --color-muted: var(--audit-muted);
+    --color-muted-foreground: var(--audit-muted-foreground);
+    --color-border: var(--audit-border);
+    --color-input: var(--audit-input);
+    --color-ring: var(--audit-ring);
+    --radius-sm: var(--audit-radius-sm);
+    --radius-md: var(--audit-radius-md);
+    --radius-lg: var(--audit-radius-lg);
+  }
+  @layer base {
+    body { background: var(--audit-background); color: var(--audit-foreground); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--audit-background); }
+      .text-background { color: var(--audit-background); }
+      .border-background { border-color: var(--audit-background); }
+      .ring-background { --tw-ring-color: var(--audit-background); }
+      .bg-foreground { background-color: var(--audit-foreground); }
+      .text-foreground { color: var(--audit-foreground); }
+      .border-foreground { border-color: var(--audit-foreground); }
+      .ring-foreground { --tw-ring-color: var(--audit-foreground); }
+      .bg-card { background-color: var(--audit-card); }
+      .text-card { color: var(--audit-card); }
+      .border-card { border-color: var(--audit-card); }
+      .ring-card { --tw-ring-color: var(--audit-card); }
+      .bg-card-foreground { background-color: var(--audit-card-foreground); }
+      .text-card-foreground { color: var(--audit-card-foreground); }
+      .border-card-foreground { border-color: var(--audit-card-foreground); }
+      .ring-card-foreground { --tw-ring-color: var(--audit-card-foreground); }
+      .bg-popover { background-color: var(--audit-popover); }
+      .text-popover { color: var(--audit-popover); }
+      .border-popover { border-color: var(--audit-popover); }
+      .ring-popover { --tw-ring-color: var(--audit-popover); }
+      .bg-popover-foreground { background-color: var(--audit-popover-foreground); }
+      .text-popover-foreground { color: var(--audit-popover-foreground); }
+      .border-popover-foreground { border-color: var(--audit-popover-foreground); }
+      .ring-popover-foreground { --tw-ring-color: var(--audit-popover-foreground); }
+      .bg-primary { background-color: var(--audit-primary); }
+      .text-primary { color: var(--audit-primary); }
+      .border-primary { border-color: var(--audit-primary); }
+      .ring-primary { --tw-ring-color: var(--audit-primary); }
+      .bg-primary-foreground { background-color: var(--audit-primary-foreground); }
+      .text-primary-foreground { color: var(--audit-primary-foreground); }
+      .border-primary-foreground { border-color: var(--audit-primary-foreground); }
+      .ring-primary-foreground { --tw-ring-color: var(--audit-primary-foreground); }
+      .bg-muted { background-color: var(--audit-muted); }
+      .text-muted { color: var(--audit-muted); }
+      .border-muted { border-color: var(--audit-muted); }
+      .ring-muted { --tw-ring-color: var(--audit-muted); }
+      .bg-muted-foreground { background-color: var(--audit-muted-foreground); }
+      .text-muted-foreground { color: var(--audit-muted-foreground); }
+      .border-muted-foreground { border-color: var(--audit-muted-foreground); }
+      .ring-muted-foreground { --tw-ring-color: var(--audit-muted-foreground); }
+      .bg-border { background-color: var(--audit-border); }
+      .text-border { color: var(--audit-border); }
+      .border-border { border-color: var(--audit-border); }
+      .ring-border { --tw-ring-color: var(--audit-border); }
+      .bg-input { background-color: var(--audit-input); }
+      .text-input { color: var(--audit-input); }
+      .border-input { border-color: var(--audit-input); }
+      .ring-input { --tw-ring-color: var(--audit-input); }
+      .bg-ring { background-color: var(--audit-ring); }
+      .text-ring { color: var(--audit-ring); }
+      .border-ring { border-color: var(--audit-ring); }
+      .ring-ring { --tw-ring-color: var(--audit-ring); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased">
+    <main>
+    </main>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

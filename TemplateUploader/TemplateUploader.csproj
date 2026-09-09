@@ -12,15 +12,9 @@
     <ProjectReference Include="..\ProjectModel\ProjectModel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="AuditAI.LocalDataStore">
-      <HintPath>..\Libs\AuditAI.LocalDataStore.dll</HintPath>
-    </Reference>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
-    <Reference Include="WebApiLib">
-      <HintPath>..\Libs\WebApiLib.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
+    <ProjectReference Include="..\DTO\DTO.csproj" />
+    <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
     <Reference Include="Google.Protobuf">
       <HintPath>..\Libs\Google.Protobuf.dll</HintPath>
     </Reference>

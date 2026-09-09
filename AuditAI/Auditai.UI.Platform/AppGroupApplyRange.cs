@@ -7,7 +7,7 @@ public class AppGroupApplyRange : AppCommandGroup
 {
 	public override string Text => "应用范围";
 
-	public override Image Image => Resources.DocPrintSettingSelection;
+	public override Image Image => IconRes.DocPrintSettingSelection;
 
 	public AppGroupApplyRange()
 	{

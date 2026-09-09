@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Auditai.PlatformResource;
 using Auditai.UI.Platform.Properties;
 
@@ -8,7 +8,7 @@ public class AppGroupCustomFill : AppCommandGroup
 {
 	public override string Text => "自定义填充";
 
-	public override Image Image => Resources.TableCollect;
+	public override Image Image => IconRes.TableCollect;
 
 	public AppGroupCustomFill()
 	{

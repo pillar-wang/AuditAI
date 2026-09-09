@@ -1,0 +1,181 @@
+{
+  "data": [
+    {
+      "id": "page-trial-balance",
+      "title": "科目余额表",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788163200000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-2af353b5",
+          "measuredAt": 1788747713459
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/trial-balance.html",
+        "interactions": [
+          {
+            "id": "trial-to-journal",
+            "domId": "nav-journal",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-journal",
+            "targetPageId": "page-voucher-journal",
+            "label": "跳转到凭证序时簿"
+          },
+          {
+            "id": "trial-to-ledger",
+            "domId": "nav-ledger",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-ledger",
+            "targetPageId": "page-subsidiary-ledger",
+            "label": "跳转到明细账"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-subsidiary-ledger",
+      "title": "明细账",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788163200000,
+      "canvasData": {
+        "x": 480,
+        "y": 373,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-573924de",
+          "measuredAt": 1788747713459
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/subsidiary-ledger.html",
+        "interactions": [
+          {
+            "id": "ledger-to-trial",
+            "domId": "nav-trial",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-trial",
+            "targetPageId": "page-trial-balance",
+            "label": "跳转到科目余额表"
+          },
+          {
+            "id": "ledger-to-journal",
+            "domId": "nav-journal",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-journal",
+            "targetPageId": "page-voucher-journal",
+            "label": "跳转到凭证序时簿"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-voucher-journal",
+      "title": "凭证序时簿",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788163200000,
+      "canvasData": {
+        "x": 480,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-168a4c20",
+          "measuredAt": 1788747713459
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/voucher-journal.html",
+        "interactions": [
+          {
+            "id": "journal-to-trial",
+            "domId": "nav-trial",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-trial",
+            "targetPageId": "page-trial-balance",
+            "label": "跳转到科目余额表"
+          },
+          {
+            "id": "journal-to-ledger",
+            "domId": "nav-ledger",
+            "type": "navigate",
+            "trigger": "click",
+            "sourceSelector": "#nav-ledger",
+            "targetPageId": "page-subsidiary-ledger",
+            "label": "跳转到明细账"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-spreadsheet-editor",
+      "title": "底稿表格编辑器",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788249600000,
+      "canvasData": {
+        "x": 0,
+        "y": 746,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-d7cd785a",
+          "measuredAt": 1788748051537
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/spreadsheet-editor.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-document-editor",
+      "title": "文档编辑器",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1788249600000,
+      "canvasData": {
+        "x": 480,
+        "y": 746,
+        "group": 1,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-54ac123f",
+          "measuredAt": 1788748051537
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/document-editor.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": false,
+    "deviceType": "desktop",
+    "projectName": "AuditAI 账务数据页面精修"
+  }
+}

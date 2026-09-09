@@ -7,7 +7,7 @@ public class AppCommandTablePrintPreview : AppCommandToggleButton
 {
 	public override string Text => "打印预览";
 
-	public override Image LargeIcon => Resources.PrintPreview;
+	public override Image LargeIcon => IconRes.PrintPreview;
 
 	protected override void Pressed()
 	{

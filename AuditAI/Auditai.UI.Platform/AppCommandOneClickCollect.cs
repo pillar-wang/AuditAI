@@ -12,7 +12,7 @@ public class AppCommandOneClickCollect : AppCommandButton
 {
 	public override string Text => "一键批量生成底稿";
 
-	public override Image LargeIcon => Resources.OneClickCollect;
+	public override Image LargeIcon => IconRes.OneClickCollect;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

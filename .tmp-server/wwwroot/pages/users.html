@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - AuditAI 管理后台</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <script src="/js/common.js?v=20260703b"></script>
+    <script>
+        // 页面渲染前立即检查权限，未登录或无权限直接跳转
+        if (!requireAdmin()) {
+            // 如果 requireAdmin 返回 false，它内部已经调用了 redirectToLogin
+            // 这里阻止后续渲染
+            document.documentElement.innerHTML = '';
+            throw new Error('unauthorized');
+        }
+    </script>
+    <style>
+        /* iframe 内页面布局：去除侧边栏边距，仅保留内容区内边距 */
+        body {
+            min-width: auto;
+        }
+        .page-container {
+            padding: 20px;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .toolbar .search-input {
+            width: 260px;
+            flex-shrink: 0;
+        }
+        .toolbar .status-select {
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .ops-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .loading-tip,
+        .empty-tip {
+            text-align: center;
+            color: var(--text-gray);
+            padding: 30px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .name-cell .sys-badge {
+            background: var(--primary);
+            color: #fff;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-title">用户管理</div>
+        </div>
+
+        <!-- 顶部工具栏 -->
+        <div class="card mb-16">
+            <div class="toolbar">
+                <button class="btn btn-primary" id="addUserBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>新增用户</button>
+                <input type="search" id="searchInput" class="search-input" placeholder="搜索用户名/姓名/手机号">
+                <select id="statusFilter" class="status-select">
+                    <option value="">全部</option>
+                    <option value="true">启用</option>
+                    <option value="false">禁用</option>
+                </select>
+                <button class="btn" id="searchBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>搜索</button>
+                <button class="btn" id="resetBtn"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>重置</button>
+            </div>
+        </div>
+
+        <!-- 用户表格 -->
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>手机号</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>团队</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+            <div id="loadingTip" class="loading-tip" style="display:none;">加载中...</div>
+            <div id="emptyTip" class="empty-tip" style="display:none;">暂无用户数据</div>
+        </div>
+
+        <!-- 分页 -->
+        <div id="pagination" class="pagination"></div>
+    </div>
+
+    <script src="/js/users.js"></script>
+</body>
+</html>

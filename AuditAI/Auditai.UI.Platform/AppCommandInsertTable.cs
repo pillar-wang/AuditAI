@@ -7,7 +7,7 @@ public class AppCommandInsertTable : AppCommandButton
 {
 	public override string Text => "插入表格";
 
-	public override Image LargeIcon => ContextResources.ctxInsertTable;
+	public override Image LargeIcon => IconRes.ctxInsertTable;
 
 	protected override void Clicked()
 	{

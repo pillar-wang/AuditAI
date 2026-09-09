@@ -7,7 +7,7 @@ public class AppGroupValidateDocument : AppCommandGroup
 {
 	public override string Text => "文档校验";
 
-	public override Image Image => Resources.ValidateDocument;
+	public override Image Image => IconRes.ValidateDocument;
 
 	public AppGroupValidateDocument()
 	{

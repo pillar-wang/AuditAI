@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -22,6 +22,12 @@ namespace Auditai.LocalDataStore
 
         /// <summary>是否已初始化为本地模式</summary>
         public static bool IsLocalMode => _isLocalMode;
+
+        /// <summary>
+        /// Server 模式激活时的回调（由宿主程序注册，用于启用云端同步等依赖 ProjectModel 的逻辑；
+        /// LocalDataStore 不直接引用 ProjectModel，避免项目循环引用）
+        /// </summary>
+        public static Action OnServerModeActivated { get; set; }
 
         /// <summary>
         /// 初始化存储模式
@@ -57,6 +63,7 @@ namespace Auditai.LocalDataStore
                 WebApiClient.LocalTableCollectDicHandler = LocalDataStore.GetTableCollectDic;
                 WebApiClient.LocalCellCollectDicHandler = LocalDataStore.GetCellCollectDic;
                 WebApiClient.LocalLedgerValidateDicHandler = LocalDataStore.GetLedgerValidateDic;
+                WebApiClient.LocalStandardAccountDicHandler = LocalDataStore.GetStandardAccountDic;
                 WebApiClient.LocalGetTeamUsersWithPicHandler = LocalDataStore.GetTeamUsersWithPic;
                 WebApiClient.LocalGetUserTeamsHandler = LocalDataStore.GetUserTeams;
                 WebApiClient.LocalUploadFileHandler = LocalDataStore.UploadFile;
@@ -64,8 +71,8 @@ namespace Auditai.LocalDataStore
             }
             else
             {
-                // 非本地模式（Server 模式）启用 Syncer，允许 Push/Pull 与服务器同步
-                Syncer.Disabled = false;
+                // 非本地模式（Server 模式）：通知宿主启用 Syncer，允许 Push/Pull 与服务器同步
+                OnServerModeActivated?.Invoke();
             }
         }
 
@@ -161,6 +168,27 @@ namespace Auditai.LocalDataStore
             if (_isLocalMode)
                 return await LocalDataStore.GetLedgerValidateDic(version);
             return await WebApiClient.LedgerValidateDic(version);
+        }
+
+        /// <summary>
+        /// 获取标准科目字典（Server 分支失败/未部署时回退本地 config 文件）
+        /// </summary>
+        public static async Task<JObject> GetStandardAccountDic(int version = 0)
+        {
+            if (_isLocalMode)
+                return await LocalDataStore.GetStandardAccountDic(version);
+            try
+            {
+                var result = await WebApiClient.StandardAccountDic(version);
+                if (result != null && result.TryGetValue("Accounts", out _))
+                    return result;
+            }
+            catch { }
+            // 服务器未部署/失败时回退本地 config 文件
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "StandardAccountDic.json");
+            if (File.Exists(configPath))
+                return JObject.Parse(File.ReadAllText(configPath));
+            return new JObject { ["Version"] = 0, ["Accounts"] = new JArray() };
         }
 
         public static async Task<IEnumerable<Auditai.DTO.User>> GetTeamUsersWithPic()

@@ -7,7 +7,7 @@ public class AppCommandApplyDocument : AppCommandToggleButton
 {
 	public override string Text => "整篇文档";
 
-	public override Image LargeIcon => Resources.DocPrintSettingDocument;
+	public override Image LargeIcon => IconRes.DocPrintSettingDocument;
 
 	public override void GenerateRibbonItem()
 	{

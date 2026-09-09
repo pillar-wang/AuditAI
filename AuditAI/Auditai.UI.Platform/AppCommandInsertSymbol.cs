@@ -7,7 +7,7 @@ public class AppCommandInsertSymbol : AppCommandButton
 {
 	public override string Text => "特殊符号";
 
-	public override Image LargeIcon => Resources.Symbols;
+	public override Image LargeIcon => IconRes.Symbols;
 
 	protected override void Clicked()
 	{

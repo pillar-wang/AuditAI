@@ -6,7 +6,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandAlignMiddleRight : AppCommandButton
 {
-	public override System.Drawing.Image SmallIcon => Resources.tb_AlignMiddleRight;
+	public override System.Drawing.Image SmallIcon => IconRes.tb_AlignMiddleRight;
 
 	protected override void Clicked()
 	{

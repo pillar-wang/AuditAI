@@ -7,7 +7,7 @@ public class AppCommandTicketDesign : AppCommandButton
 {
 	public override string Text => "设计表单";
 
-	public override Image LargeIcon => Resources.TicketDesign;
+	public override Image LargeIcon => IconRes.TicketDesign;
 
 	protected override void Clicked()
 	{

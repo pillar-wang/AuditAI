@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,6 +104,11 @@ public static class DictionarySync
 	public static CellCollector CellCollector { get; set; }
 
 	public static LedgerValidator LedgerValidator { get; set; }
+
+	/// <summary>
+	/// 标准科目字典 code 集合（科目标红校验用：code 命中视为标准科目；加载失败/为空时回退名称别名匹配）
+	/// </summary>
+	public static HashSet<string> StandardAccountCodes { get; private set; } = new HashSet<string>();
 
 	public static Tuple<DateTime, DateTime> GetAuditYear(Table table)
 	{
@@ -318,6 +323,8 @@ public static class DictionarySync
 		TableCollector = LoadFromLocalFile<TableCollector>("./config/TableCollectDic.json") ?? new TableCollector();
 		CellCollector = LoadFromLocalFile<CellCollector>("./config/CellCollectDic.json") ?? new CellCollector();
 		LedgerValidator = LoadFromLocalFile<LedgerValidator>("./config/LedgerValidateDic.json") ?? new LedgerValidator();
+		// 标准科目字典 code 集合：静态构造中仅同步读本地 config 文件，不触发远程调用
+		StandardAccountCodes = LoadStandardAccountCodesFromLocalFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "StandardAccountDic.json"));
 		
 		// 确保版本号不为0（为0会触发远程更新）
 		if (TableCollector.Version == 0) TableCollector.Version = 1;
@@ -386,6 +393,68 @@ public static class DictionarySync
 			LedgerValidator = ledgerValidator;
 			File.WriteAllText("./config/LedgerValidateDic.json", JsonConvert.SerializeObject(LedgerValidator));
 		}
+	}
+
+	/// <summary>
+	/// 从本地 config 文件同步加载标准科目 code 集合（不触发网络请求，失败返回空集合）
+	/// </summary>
+	private static HashSet<string> LoadStandardAccountCodesFromLocalFile(string filePath)
+	{
+		HashSet<string> codes = new HashSet<string>();
+		try
+		{
+			if (File.Exists(filePath))
+			{
+				codes = ExtractStandardAccountCodes(JObject.Parse(File.ReadAllText(filePath)));
+			}
+		}
+		catch
+		{
+			// 文件损坏或格式错误，忽略（空集合 = 不做 code 判定，回退名称别名匹配）
+		}
+		return codes;
+	}
+
+	/// <summary>
+	/// 刷新标准科目 code 集合缓存：经 StorageRouter 获取标准科目字典
+	/// （本地模式读本地数据源；服务器模式失败自动回退本地 config 文件）。刷新失败保留现有缓存
+	/// </summary>
+	public static async Task RefreshStandardAccountCodes()
+	{
+		try
+		{
+			JObject ret = await Auditai.LocalDataStore.StorageRouter.GetStandardAccountDic();
+			HashSet<string> codes = ExtractStandardAccountCodes(ret);
+			// 仅在拿到有效数据时覆盖缓存，避免空结果清掉已加载的本地数据
+			if (codes.Count > 0)
+			{
+				StandardAccountCodes = codes;
+			}
+		}
+		catch
+		{
+			// 刷新失败静默处理，不影响主流程
+		}
+	}
+
+	/// <summary>
+	/// 从标准科目字典 JObject（{ "Version": n, "Accounts": [ { code, name, dc, parentCode } ] }）提取所有科目 code
+	/// </summary>
+	private static HashSet<string> ExtractStandardAccountCodes(JObject dic)
+	{
+		HashSet<string> codes = new HashSet<string>();
+		if (dic != null && dic["Accounts"] is JArray accounts)
+		{
+			foreach (JToken item in accounts)
+			{
+				string code = item?.Value<string>("code");
+				if (!string.IsNullOrEmpty(code))
+				{
+					codes.Add(code);
+				}
+			}
+		}
+		return codes;
 	}
 
 	private static async void InitializeTableCollector()

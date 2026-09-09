@@ -7,7 +7,7 @@ public class AppGroupDisplayOptions : AppCommandGroup
 {
 	public override string Text => "显示选项";
 
-	public override Image Image => Resources.IndexNumber;
+	public override Image Image => IconRes.IndexNumber;
 
 	public AppGroupDisplayOptions()
 	{

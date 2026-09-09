@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandTicketItalic : AppCommandToggleButton
 {
-	public override Image SmallIcon => Resources.Italic;
+	public override Image SmallIcon => IconRes.Italic;
 
 	protected override void Pressed()
 	{

@@ -18,9 +18,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="AuditAI.LocalDataStore">
-      <HintPath>..\Libs\AuditAI.LocalDataStore.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\AuditAI.LocalDataStore\AuditAI.LocalDataStore.csproj" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
   </ItemGroup>
   <ItemGroup>
@@ -30,14 +28,10 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="DTO">
-      <HintPath>..\Libs\DTO.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="WebApiLib">
-      <HintPath>..\Libs\WebApiLib.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
     <Reference Include="Google.Protobuf">

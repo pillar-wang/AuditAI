@@ -20,11 +20,11 @@ public class AppCommandPaperDirection : AppCommandMenu
 	{
 		if (direction == Direction.Vertical)
 		{
-			base.Menu.LargeImage = Resources.Portrait;
+			base.Menu.LargeImage = IconRes.Portrait;
 		}
 		else
 		{
-			base.Menu.LargeImage = Resources.Landscape;
+			base.Menu.LargeImage = IconRes.Landscape;
 		}
 	}
 }

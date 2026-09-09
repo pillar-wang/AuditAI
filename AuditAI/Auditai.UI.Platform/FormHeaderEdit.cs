@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -7,6 +7,7 @@ using C1.Win.C1Command;
 using C1.Win.C1Input;
 using C1.Win.C1SplitContainer;
 using Auditai.Model;
+using Auditai.UI.Controls;
 using Auditai.UI.Platform.Properties;
 using TXTextControl;
 
@@ -175,13 +176,13 @@ public class FormHeaderEdit
 		_cmdFont = new C1Command
 		{
 			Text = "字体",
-			Image = ContextResources.ctxFont
+			Image = IconRes.ctxFont
 		};
 		_cmdFont.Click += _cmdFont_Click;
 		_cmdParagraph = new C1Command
 		{
 			Text = "段落",
-			Image = ContextResources.ctxParagraph
+			Image = IconRes.ctxParagraph
 		};
 		_cmdParagraph.Click += _cmdParagraph_Click;
 		_cmdInsertPageNo = new C1Command
@@ -207,13 +208,13 @@ public class FormHeaderEdit
 		_cmdInsertTable = new C1Command
 		{
 			Text = "插入表格",
-			Image = ContextResources.ctxInsertTable
+			Image = IconRes.ctxInsertTable
 		};
 		_cmdInsertTable.Click += _cmdInsertTable_Click;
 		_cmdInsertImage = new C1Command
 		{
 			Text = "插入图片",
-			Image = ContextResources.ctxInsertImage
+			Image = IconRes.ctxInsertImage
 		};
 		_cmdInsertImage.Click += _cmdInsertImage_Click;
 		_lnkFont = new C1CommandLink(_cmdFont);
@@ -312,7 +313,7 @@ public class FormHeaderEdit
 	private void _tx_TextContextMenuOpening(object sender, TextContextMenuEventArgs e)
 	{
 		e.Cancel = true;
-		_ctx.ShowContextMenu(_tx, _tx.PointToClient(e.Location));
+		NativeMenuShim.Show(_ctx, _tx, _tx.PointToClient(e.Location));
 	}
 
 	private void _form_Load(object sender, EventArgs e)

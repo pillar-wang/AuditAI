@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,7 +11,7 @@ public class AppCommandLedgerOneClickCollect : AppCommandButton
 {
 	public override string Text => "一键批量生成底稿";
 
-	public override Image LargeIcon => Resources.OneClickCollect;
+	public override Image LargeIcon => IconRes.OneClickCollect;
 
 	protected override Func<Task> ClickedTask => async delegate
 	{

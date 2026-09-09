@@ -8,7 +8,7 @@ public class AppCommandTicketMode : AppCommandButton
 {
 	public override string Text => "设计单据";
 
-	public override System.Drawing.Image LargeIcon => Resources.TicketMode;
+	public override System.Drawing.Image LargeIcon => IconRes.TicketMode;
 
 	protected override void Clicked()
 	{

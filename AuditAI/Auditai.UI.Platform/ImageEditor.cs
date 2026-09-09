@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -36,7 +36,7 @@ public class ImageEditor
 	private C1Command cmdRotate90T = new C1Command
 	{
 		Text = "顺转90度",
-		Image = Resources.Rotate90
+		Image = IconRes.Rotate90
 	};
 
 	private C1CommandLink lnkRotate90T = new C1CommandLink();
@@ -52,7 +52,7 @@ public class ImageEditor
 	private C1Command cmdFlipHoriT = new C1Command
 	{
 		Text = "水平翻转",
-		Image = Resources.FlipHori32
+		Image = IconRes.FlipHori32
 	};
 
 	private C1CommandLink lnkFlipHoriT = new C1CommandLink();
@@ -60,14 +60,14 @@ public class ImageEditor
 	private C1Command cmdFlipVertT = new C1Command
 	{
 		Text = "垂直翻转",
-		Image = Resources.FlipVert32
+		Image = IconRes.FlipVert32
 	};
 
 	private C1CommandLink lnkFlipVertT = new C1CommandLink();
 
 	private readonly C1Command cmdBack = new C1Command
 	{
-		Image = Resources.back32,
+		Image = IconRes.back32,
 		Text = "后退"
 	};
 
@@ -75,7 +75,7 @@ public class ImageEditor
 
 	private readonly C1Command cmdForward = new C1Command
 	{
-		Image = Resources.forward32,
+		Image = IconRes.forward32,
 		Text = "前进"
 	};
 
@@ -84,7 +84,7 @@ public class ImageEditor
 	private readonly C1Command cmdHideToolbar = new C1Command
 	{
 		Text = "隐藏侧边栏",
-		Image = Resources.HideSideToolbar
+		Image = IconRes.HideSideToolbar
 	};
 
 	private readonly C1CommandLink lnkZoomIn = new C1CommandLink();
@@ -92,7 +92,7 @@ public class ImageEditor
 	private readonly C1Command cmdZoomIn = new C1Command
 	{
 		Text = "放大显示",
-		Image = Resources.ZoomIn
+		Image = IconRes.ZoomIn
 	};
 
 	private readonly C1CommandLink lnkZoomOut = new C1CommandLink();
@@ -100,7 +100,7 @@ public class ImageEditor
 	private readonly C1Command cmdZoomOut = new C1Command
 	{
 		Text = "缩小显示",
-		Image = Resources.ZoomOut
+		Image = IconRes.ZoomOut
 	};
 
 	private readonly C1CommandLink lnkExportImage = new C1CommandLink();
@@ -108,7 +108,7 @@ public class ImageEditor
 	private readonly C1Command cmdExportImage = new C1Command
 	{
 		Text = "导出图片",
-		Image = Resources.ExportImage
+		Image = IconRes.ExportImage
 	};
 
 	private readonly C1CommandLink lnkHideToolbar = new C1CommandLink();
@@ -327,7 +327,7 @@ public class ImageEditor
 	{
 		if (e.Button == MouseButtons.Right && ShouldShowContextMenu())
 		{
-			_ctx.ShowContextMenu(_pb, e.Location);
+			NativeMenuShim.Show(_ctx, _pb, e.Location);
 		}
 	}
 
@@ -471,7 +471,7 @@ public class ImageEditor
 	private void CmdFlipVert_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdFlipVert.Text = "垂直翻转";
-		cmdFlipVert.Image = ContextResources.FlipVert;
+		cmdFlipVert.Image = IconRes.FlipVert;
 	}
 
 	private void CmdFlipHori_Click(object sender, ClickEventArgs e)
@@ -482,7 +482,7 @@ public class ImageEditor
 	private void CmdFlipHori_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdFlipHori.Text = "水平翻转";
-		cmdFlipHori.Image = ContextResources.FlipHori;
+		cmdFlipHori.Image = IconRes.FlipHori;
 	}
 
 	private void CmdRotate90_Click(object sender, ClickEventArgs e)
@@ -493,7 +493,7 @@ public class ImageEditor
 	private void CmdRotate90_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRotate90.Text = "顺转90度";
-		cmdRotate90.Image = ContextResources.ctxReloadFile;
+		cmdRotate90.Image = IconRes.ctxReloadFile;
 	}
 
 	private void CmdRotate270_Click(object sender, ClickEventArgs e)
@@ -504,7 +504,7 @@ public class ImageEditor
 	private void CmdRotate270_CommandStateQuery(object sender, CommandStateQueryEventArgs e)
 	{
 		cmdRotate270.Text = "逆转90度";
-		cmdRotate270.Image = ContextResources.ctxRotate270;
+		cmdRotate270.Image = IconRes.ctxRotate270;
 	}
 
 	private void CmdFlipVertT_Click(object sender, ClickEventArgs e)

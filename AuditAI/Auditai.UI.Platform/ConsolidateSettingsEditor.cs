@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -309,7 +309,7 @@ public class ConsolidateSettingsEditor
 	private C1Command cmdAdd = new C1Command
 	{
 		Text = "新增行",
-		Image = ContextResources.ctxAppendRow
+		Image = IconRes.ctxAppendRow
 	};
 
 	private C1CommandLink lnkAdd = new C1CommandLink();
@@ -319,7 +319,7 @@ public class ConsolidateSettingsEditor
 	private C1Command cmdRemove = new C1Command
 	{
 		Text = "删除行",
-		Image = ContextResources.ctxDeleteRow
+		Image = IconRes.ctxDeleteRow
 	};
 
 	private C1CommandLink lnkRemove = new C1CommandLink();
@@ -611,11 +611,11 @@ public class ConsolidateSettingsEditor
 		case HitTestTypeEnum.RowHeader:
 			if (_grid.MouseRow >= _grid.Rows.Fixed)
 			{
-				_ctxCell.ShowContextMenu(_grid, e.Location);
+				NativeMenuShim.Show(_ctxCell, _grid, e.Location);
 			}
 			break;
 		case HitTestTypeEnum.None:
-			_ctxEmpty.ShowContextMenu(_grid, e.Location);
+			NativeMenuShim.Show(_ctxEmpty, _grid, e.Location);
 			break;
 		}
 	}

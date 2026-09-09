@@ -7,7 +7,7 @@ public class AppCommandPageView : AppCommandButton
 {
 	public override string Text => "页面模式";
 
-	public override Image LargeIcon => Resources.PageView;
+	public override Image LargeIcon => IconRes.PageView;
 
 	protected override void Clicked()
 	{

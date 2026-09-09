@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -122,17 +122,17 @@ public class UpdateForm : C1RibbonForm
 		var theme = Theme.SelectedAuditaiTheme;
 		if (theme != null && theme.Name == "auditai_GoogleBlue")
 		{
-			// Google Blue 色板
-			Surface0 = Color.FromArgb(248, 250, 252);      // #f8fafc
+			// 清新蓝色板
+			Surface0 = Color.FromArgb(250, 251, 252);      // #fafbfc
 			Surface1 = Color.FromArgb(255, 255, 255);       // #ffffff
-			Surface2 = Color.FromArgb(241, 245, 249);       // #f1f5f9
-			LineColor = Color.FromArgb(26, 115, 232);       // #1a73e8
-			TextPrimary = Color.FromArgb(15, 23, 42);       // #0f172a
-			TextSecondary = Color.FromArgb(51, 65, 85);     // #334155
+			Surface2 = Color.FromArgb(243, 244, 246);       // #f3f4f6
+			LineColor = Color.FromArgb(59, 130, 246);       // #3b82f6
+			TextPrimary = Color.FromArgb(30, 41, 59);       // #1e293b
+			TextSecondary = Color.FromArgb(71, 85, 105);    // #475569
 			// 主按钮悬停/按下变体 + 次按钮边框色
-			PrimaryDark = Color.FromArgb(21, 87, 176);
-			PrimaryLight = Color.FromArgb(23, 101, 204);
-			LineColorDefault = Color.FromArgb(226, 232, 240);
+			PrimaryDark = Color.FromArgb(29, 78, 216);
+			PrimaryLight = Color.FromArgb(37, 99, 235);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
 		}
 		else
 		{
@@ -146,7 +146,7 @@ public class UpdateForm : C1RibbonForm
 			// 主按钮悬停/按下变体 + 次按钮边框色
 			PrimaryDark = Color.FromArgb(53, 123, 189);
 			PrimaryLight = Color.FromArgb(90, 160, 230);
-			LineColorDefault = Color.FromArgb(208, 215, 222);
+			LineColorDefault = Color.FromArgb(229, 231, 235);
 		}
 	}
 
@@ -182,7 +182,7 @@ public class UpdateForm : C1RibbonForm
 			ReadOnly = true,
 			ScrollBars = ScrollBars.Vertical,
 			Visible = false,
-			Font = new Font("Noto Sans SC", 10.5f), // 字体统一 Noto Sans SC（字号不变）
+			Font = new Font("微软雅黑", 10.5f), // 字体统一 微软雅黑（字号不变）
 			Name = "txtNoticeScroll"
 		};
 		pnlContent.Controls.Add(_txtNoticeScroll);
@@ -190,7 +190,7 @@ public class UpdateForm : C1RibbonForm
 
 	private void UpdateForm_Shown(object sender, EventArgs e)
 	{
-		base.Icon = Resources.UpdateIcon;
+		base.Icon = IconLibrary.CreateIcon("arrows-clockwise", 32, IconLibrary.DefaultColor);
 	}
 
 	/// <summary>
@@ -219,7 +219,7 @@ public class UpdateForm : C1RibbonForm
 	private void ApplyButtonStyle(C1Button btn, bool isPrimary)
 	{
 		btn.FlatStyle = FlatStyle.Flat;
-		btn.Font = new Font("Noto Sans SC", 10.5f, FontStyle.Regular); // 字体统一 Noto Sans SC
+		btn.Font = new Font("微软雅黑", 10.5f, FontStyle.Regular); // 字体统一 微软雅黑
 		if (isPrimary)
 		{
 			// 主按钮：LineColor 即主题主色 Primary，蓝填充 + 白字（悬停/按下深浅变体）
@@ -347,7 +347,7 @@ public class UpdateForm : C1RibbonForm
 	private bool ContentNeedsScroll()
 	{
 		string message = lblNotice.Text ?? "";
-		Font font = new Font("Noto Sans SC", 10.5f); // 字体统一 Noto Sans SC（字号不变）
+		Font font = new Font("微软雅黑", 10.5f); // 字体统一 微软雅黑（字号不变）
 		const int dialogWidth = 680;
 		int contentTextWidth = dialogWidth - ImagePanelWidth - ContentPaddingX * 2;
 		int maxContentH = MaxDialogSize.Height - ButtonPanelHeight;
@@ -384,7 +384,7 @@ public class UpdateForm : C1RibbonForm
 	private void AutoSizeDialog()
 	{
 		string message = lblNotice.Text ?? "";
-		Font font = new Font("Noto Sans SC", 10.5f); // 字体统一 Noto Sans SC（字号不变）
+		Font font = new Font("微软雅黑", 10.5f); // 字体统一 微软雅黑（字号不变）
 		const int dialogWidth = 680;
 		int contentTextWidth = dialogWidth - ImagePanelWidth - ContentPaddingX * 2;
 		int textH;
@@ -479,11 +479,11 @@ public class UpdateForm : C1RibbonForm
 
 	private void StandardView()
 	{
-		// 字体统一 Noto Sans SC（字号不变）
-		lblNotice.Font = new Font("Noto Sans SC", 10.5f);
-		btnDetail.Font = new Font("Noto Sans SC", 10.5f);
-		btnConfirm.Font = new Font("Noto Sans SC", 10.5f);
-		btnCancel.Font = new Font("Noto Sans SC", 10.5f);
+		// 字体统一 微软雅黑（字号不变）
+		lblNotice.Font = new Font("微软雅黑", 10.5f);
+		btnDetail.Font = new Font("微软雅黑", 10.5f);
+		btnConfirm.Font = new Font("微软雅黑", 10.5f);
+		btnCancel.Font = new Font("微软雅黑", 10.5f);
 		// C1SplitterPanel 内按钮使用显式 Location，必须 Anchor=None
 		btnDetail.Anchor = AnchorStyles.None;
 		btnConfirm.Anchor = AnchorStyles.None;
@@ -540,7 +540,7 @@ public class UpdateForm : C1RibbonForm
 		this.ctnAll.BorderColor = LineColor;
 		this.ctnAll.CollapsingCueColor = System.Drawing.Color.FromArgb(133, 133, 150);
 		this.ctnAll.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.ctnAll.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.ctnAll.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.ctnAll.ForeColor = TextPrimary;
 		this.ctnAll.Location = new System.Drawing.Point(0, 0);
 		this.ctnAll.Name = "ctnAll";
@@ -569,7 +569,7 @@ public class UpdateForm : C1RibbonForm
 		this.pnlButtons.TabIndex = 1;
 		// === 按钮：Anchor=None（显式定位）+ 高对比度文字 + 统一尺寸 ===
 		this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnCancel.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.btnCancel.ForeColor = TextPrimary;
 		this.btnCancel.Location = new System.Drawing.Point(547, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnCancel.Name = "btnCancel";
@@ -578,7 +578,7 @@ public class UpdateForm : C1RibbonForm
 		this.btnCancel.Text = "取消";
 		// 去除 UseVisualStyleBackColor，改用统一次按钮样式（ApplyButtonStyle 应用）
 		this.btnConfirm.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnConfirm.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.btnConfirm.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.btnConfirm.ForeColor = TextPrimary;
 		this.btnConfirm.Location = new System.Drawing.Point(418, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnConfirm.Name = "btnConfirm";
@@ -587,7 +587,7 @@ public class UpdateForm : C1RibbonForm
 		this.btnConfirm.Text = "确定";
 		// 去除 UseVisualStyleBackColor，改用统一主按钮样式（ApplyButtonStyle 应用）
 		this.btnDetail.Anchor = System.Windows.Forms.AnchorStyles.None;
-		this.btnDetail.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.btnDetail.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.btnDetail.ForeColor = TextPrimary;
 		this.btnDetail.Location = new System.Drawing.Point(290, (ButtonPanelHeight - ButtonHeight) / 2); // 垂直居中改用 ButtonHeight 常量（高度 36→40 自适配）
 		this.btnDetail.Name = "btnDetail";
@@ -600,7 +600,7 @@ public class UpdateForm : C1RibbonForm
 		this.pnlImage.BackColor = Surface0;
 		this.pnlImage.Controls.Add(this.imgBox);
 		this.pnlImage.Dock = C1.Win.C1SplitContainer.PanelDockStyle.Left;
-		this.pnlImage.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.pnlImage.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.pnlImage.Width = ImagePanelWidth;
 		this.pnlImage.Location = new System.Drawing.Point(0, 0);
 		this.pnlImage.Size = new System.Drawing.Size(ImagePanelWidth, 300 - ButtonPanelHeight);
@@ -630,7 +630,7 @@ public class UpdateForm : C1RibbonForm
 		this.lblNotice.ForeColor = TextPrimary;
 		this.lblNotice.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblNotice.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.lblNotice.Font = new System.Drawing.Font("Noto Sans SC", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 Noto Sans SC
+		this.lblNotice.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134); // 字体统一 微软雅黑
 		this.lblNotice.Location = new System.Drawing.Point(0, 0);
 		this.lblNotice.Name = "lblNotice";
 		// Padding 不在此处设置，避免 Theme 设置期间控件尺寸 < Padding 总和触发校验异常

@@ -7,7 +7,7 @@ public class AppCommandMergeCells : AppCommandButton
 {
 	public override string Text => "合并单元格";
 
-	public override Image LargeIcon => Resources.MergeCells;
+	public override Image LargeIcon => IconRes.MergeCells;
 
 	protected override void Clicked()
 	{

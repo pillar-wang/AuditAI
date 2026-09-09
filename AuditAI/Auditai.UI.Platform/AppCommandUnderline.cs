@@ -5,7 +5,7 @@ namespace Auditai.UI.Platform;
 
 public class AppCommandUnderline : AppCommandSplitButton
 {
-	public override Image SmallIcon => Resources.Underline;
+	public override Image SmallIcon => IconRes.Underline;
 
 	public AppCommandUnderline()
 		: base(new AppCommandBase[1] { AppCommands.DoubleUnderline })

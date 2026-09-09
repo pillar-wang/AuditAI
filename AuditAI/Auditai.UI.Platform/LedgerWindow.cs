@@ -1,7 +1,8 @@
-﻿using System;
+﻿﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using C1.Win.C1Ribbon;
 
 namespace Auditai.UI.Platform;
 
@@ -10,6 +11,9 @@ public class LedgerWindow : Form
 {
 	// 真关闭标志：false 时点 X 仅隐藏窗口（账套保持打开），true 时允许真正关闭销毁
 	private bool _realClose;
+
+	// 顶部 Ribbon 工具栏：主窗口的"账务数据"标签（含全部命令组）随窗口显隐迁移到这里
+	public C1Ribbon LedgerRibbon { get; }
 
 	// 窗口被隐藏（用户点 X）时触发，主窗口借此隐藏关联账套提示
 	public event EventHandler WindowHidden;
@@ -22,6 +26,15 @@ public class LedgerWindow : Form
 		_mainForm = owner;
 		// 主窗口是普通类，其 Form 为 View 属性（C1RibbonForm），窗口外观属性从其上获取
 		Form form = owner?.View;
+		// 顶部 Ribbon：与主窗口一致隐藏应用菜单和 QAT，样式跟随主窗口 Custom 主题
+		LedgerRibbon = new C1Ribbon
+		{
+			Dock = DockStyle.Top,
+			AllowContextMenu = false,
+			VisualStyle = VisualStyle.Custom
+		};
+		LedgerRibbon.ApplicationMenu.Visible = false;
+		LedgerRibbon.Qat.MenuVisible = false;
 		Text = "账务数据";
 		Icon = form?.Icon;
 		Size = new Size(1100, 720);
@@ -72,6 +85,8 @@ public class LedgerWindow : Form
 	{
 		viewer.Dock = DockStyle.Fill;
 		Controls.Add(viewer);
+		// Ribbon 最后加入（后加入者先布局）：占据顶部区域，viewer 填充其余空间
+		Controls.Add(LedgerRibbon);
 	}
 
 	// 点 X 关闭时仅隐藏不销毁，已打开账套保持在内存中；程序退出走 RealClose 真关闭
