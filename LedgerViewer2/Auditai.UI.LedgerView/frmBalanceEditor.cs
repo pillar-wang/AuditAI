@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -109,6 +109,10 @@ public class frmBalanceEditor : C1RibbonForm
 	{
 		_owner = owner;
 		InitializeComponent();
+
+		// ★ 替换 C1ToolBar 为原生 ToolStrip —— 获得 ClearType 渲染 + 解决按钮下边缘遮挡
+		ReplaceToolbarWithNativeToolStrip();
+
 		base.WindowState = FormWindowState.Maximized;
 		base.StartPosition = FormStartPosition.CenterScreen;
 		grdBalance.BindAutoSizeColsFill(this);
@@ -765,9 +769,73 @@ public class frmBalanceEditor : C1RibbonForm
 					col.Width = kvp.Value;
 				}
 			}
-		}
+	}
 
-		private void Populate(bool onlyLastLevelDisplay)
+	// 原生 ToolStrip 按钮引用（替代 C1ToolBar 获得 ClearType 渲染）
+	private ToolStrip _nativeToolStrip;
+	private ToolStripButton _btnBalanceValidate;
+	private ToolStripButton _btnSaveData;
+	private ToolStripButton _btnCancelSave;
+
+	/// <summary>
+	/// 用原生 System.Windows.Forms.ToolStrip 替换 c1ToolBar1。
+	/// C1ToolBar (C1Command 2.x) 不支持 PerMonitorV2 ClearType，
+	/// 在高 DPI 下文字模糊且按钮底部易被截断。原生 ToolStrip 自动 ClearType + DPI 缩放。
+	/// </summary>
+	private void ReplaceToolbarWithNativeToolStrip()
+	{
+		pnlToolBar.Controls.Remove(c1CommandDock1);
+
+		_nativeToolStrip = new ToolStrip
+		{
+			Dock = DockStyle.Fill,
+			RenderMode = ToolStripRenderMode.System,
+			GripStyle = ToolStripGripStyle.Hidden,
+			Text = string.Empty
+		};
+
+		_btnBalanceValidate = new ToolStripButton("校验数据")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.balanceCheck,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "校验数据"
+		};
+		_btnBalanceValidate.Click += cmdBalanceValidate_Click;
+
+		_btnSaveData = new ToolStripButton("保存数据")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.saveData,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "保存数据"
+		};
+		_btnSaveData.Click += cmdSaveData_Click;
+
+		_btnCancelSave = new ToolStripButton("取消保存")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeCancelSave,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "取消保存"
+		};
+		_btnCancelSave.Click += cmdCancelSave_Click;
+
+		_nativeToolStrip.Items.AddRange(new ToolStripItem[]
+		{
+			_btnBalanceValidate, _btnSaveData, _btnCancelSave
+		});
+
+		pnlToolBar.Controls.Add(_nativeToolStrip);
+	}
+
+	private void Populate(bool onlyLastLevelDisplay)
 		{
 			grdBalance.BeginUpdate();
 			try
@@ -1102,7 +1170,7 @@ public class frmBalanceEditor : C1RibbonForm
 		}
 	}
 
-	private void cmdSaveData_Click(object sender, ClickEventArgs e)
+	private void cmdSaveData_Click(object sender, EventArgs e)
 	{
 		if (!ValidateData())
 		{
@@ -1142,7 +1210,7 @@ public class frmBalanceEditor : C1RibbonForm
 		Close();
 	}
 
-	private void cmdBalanceValidate_Click(object sender, ClickEventArgs e)
+	private void cmdBalanceValidate_Click(object sender, EventArgs e)
 	{
 		if (ValidateData())
 		{
@@ -1150,7 +1218,7 @@ public class frmBalanceEditor : C1RibbonForm
 		}
 	}
 
-	private void cmdCancelSave_Click(object sender, ClickEventArgs e)
+	private void cmdCancelSave_Click(object sender, EventArgs e)
 	{
 		Populate(onlyDisplayLastLevel);
 	}
@@ -1203,7 +1271,7 @@ public class frmBalanceEditor : C1RibbonForm
 		this.c1SplitContainer1.SplitterWidth = 5;
 		this.c1SplitContainer1.TabIndex = 0;
 		this.pnlToolBar.Controls.Add(this.c1CommandDock1);
-		this.pnlToolBar.Height = 82;
+		this.pnlToolBar.Height = 90;
 		this.pnlToolBar.KeepRelativeSize = false;
 		this.pnlToolBar.Location = new System.Drawing.Point(0, 0);
 		this.pnlToolBar.MinHeight = 68;

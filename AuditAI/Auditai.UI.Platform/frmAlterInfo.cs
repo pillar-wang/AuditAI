@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -243,9 +243,9 @@ public class frmAlterInfo : C1RibbonForm
 			g.FillRectangle(topBrush, topBar);
 		}
 		// 白色圆角卡片（与登录界面卡片一致）：内阴影 + 白底 + 浅蓝描边，使表单收拢精致
-		int cardX = 14, cardY = 14;
-		int cardW = base.ClientSize.Width - 28;
-		int cardH = base.ClientSize.Height - 28;
+		int cardX = 16, cardY = 16;
+		int cardW = base.ClientSize.Width - 32;
+		int cardH = base.ClientSize.Height - 32;
 		int radius = 12;
 		using (var path = new System.Drawing.Drawing2D.GraphicsPath())
 		{
@@ -664,7 +664,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.btnConfirm.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnConfirm.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		// 统一样式调整：主按钮高度统一 40
-		this.btnConfirm.Location = new System.Drawing.Point(86, 404);
+		this.btnConfirm.Location = new System.Drawing.Point(86, 422);
 		this.btnConfirm.Name = "btnConfirm";
 		this.btnConfirm.Size = new System.Drawing.Size(96, 32);
 		this.btnConfirm.TabIndex = 7;
@@ -674,7 +674,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.radMale.AutoSize = true;
 		this.radMale.BackColor = System.Drawing.Color.Transparent;
 		this.radMale.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.radMale.Location = new System.Drawing.Point(118, 226);
+		this.radMale.Location = new System.Drawing.Point(118, 234);
 		this.radMale.Name = "radMale";
 		this.radMale.Size = new System.Drawing.Size(49, 27);
 		this.radMale.TabIndex = 4;
@@ -684,7 +684,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.radFemale.AutoSize = true;
 		this.radFemale.BackColor = System.Drawing.Color.Transparent;
 		this.radFemale.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.radFemale.Location = new System.Drawing.Point(188, 226);
+		this.radFemale.Location = new System.Drawing.Point(188, 234);
 		this.radFemale.Name = "radFemale";
 		this.radFemale.Size = new System.Drawing.Size(49, 27);
 		this.radFemale.TabIndex = 4;
@@ -696,7 +696,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblUserName.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblUserName.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblUserName.ForeColor = System.Drawing.Color.Black;
-		this.lblUserName.Location = new System.Drawing.Point(52, 98);
+		this.lblUserName.Location = new System.Drawing.Point(52, 103);
 		this.lblUserName.Name = "lblUserName";
 		this.lblUserName.Size = new System.Drawing.Size(44, 17);
 		this.lblUserName.TabIndex = 18;
@@ -708,7 +708,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblName.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblName.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblName.ForeColor = System.Drawing.Color.Black;
-		this.lblName.Location = new System.Drawing.Point(52, 144);
+		this.lblName.Location = new System.Drawing.Point(52, 146);
 		this.lblName.Name = "lblName";
 		this.lblName.Size = new System.Drawing.Size(42, 22);
 		this.lblName.TabIndex = 20;
@@ -720,7 +720,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblEmail.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblEmail.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblEmail.ForeColor = System.Drawing.Color.Black;
-		this.lblEmail.Location = new System.Drawing.Point(52, 190);
+		this.lblEmail.Location = new System.Drawing.Point(52, 192);
 		this.lblEmail.Name = "lblEmail";
 		this.lblEmail.Size = new System.Drawing.Size(42, 22);
 		this.lblEmail.TabIndex = 21;
@@ -732,7 +732,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblSex.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblSex.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.lblSex.ForeColor = System.Drawing.Color.Black;
-		this.lblSex.Location = new System.Drawing.Point(52, 236);
+		this.lblSex.Location = new System.Drawing.Point(52, 237);
 		this.lblSex.Name = "lblSex";
 		this.lblSex.Size = new System.Drawing.Size(42, 22);
 		this.lblSex.TabIndex = 23;
@@ -767,7 +767,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblMustInputStar1.BackColor = System.Drawing.Color.Transparent;
 		this.lblMustInputStar1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.lblMustInputStar1.ForeColor = System.Drawing.Color.Black;
-		this.lblMustInputStar1.Location = new System.Drawing.Point(30, 88);
+		this.lblMustInputStar1.Location = new System.Drawing.Point(30, 103);
 		this.lblMustInputStar1.Name = "lblMustInputStar1";
 		this.lblMustInputStar1.Size = new System.Drawing.Size(14, 16);
 		this.lblMustInputStar1.TabIndex = 42;
@@ -788,7 +788,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.lblSMS.Text = "短信验证码";
 		this.lblSMS.TextDetached = true;
 		this.pictureHead.Cursor = System.Windows.Forms.Cursors.Hand;
-		this.pictureHead.Location = new System.Drawing.Point(172, 8);
+		this.pictureHead.Location = new System.Drawing.Point(172, 26);
 		this.pictureHead.Name = "pictureHead";
 		this.pictureHead.Size = new System.Drawing.Size(36, 36);
 		this.pictureHead.TabIndex = 50;
@@ -803,9 +803,9 @@ public class frmAlterInfo : C1RibbonForm
 		this.btnSMS.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.btnSMS.Format = "(0s)";
 		// 统一样式调整：次按钮高度统一 40
-		this.btnSMS.Location = new System.Drawing.Point(272, 364);
+		this.btnSMS.Location = new System.Drawing.Point(272, 370);
 		this.btnSMS.Name = "btnSMS";
-		this.btnSMS.Size = new System.Drawing.Size(90, 30);
+		this.btnSMS.Size = new System.Drawing.Size(96, 32);
 		this.btnSMS.TabIndex = 49;
 		this.btnSMS.Text = "获取验证码";
 		this.btnSMS.UseVisualStyleBackColor = false;
@@ -814,7 +814,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtSMS.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtSMS.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtSMS.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtSMS.Location = new System.Drawing.Point(118, 364);
+		this.txtSMS.Location = new System.Drawing.Point(118, 370);
 		this.txtSMS.Name = "txtSMS";
 		this.txtSMS.Size = new System.Drawing.Size(150, 30);
 		this.txtSMS.TabIndex = 48;
@@ -825,7 +825,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtCity.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtCity.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtCity.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtCity.Location = new System.Drawing.Point(118, 318);
+		this.txtCity.Location = new System.Drawing.Point(118, 324);
 		this.txtCity.Name = "txtCity";
 		this.txtCity.Size = new System.Drawing.Size(220, 30);
 		this.txtCity.TabIndex = 6;
@@ -836,7 +836,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtPhone.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtPhone.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtPhone.Location = new System.Drawing.Point(118, 272);
+		this.txtPhone.Location = new System.Drawing.Point(118, 278);
 		this.txtPhone.Name = "txtPhone";
 		this.txtPhone.Size = new System.Drawing.Size(220, 30);
 		this.txtPhone.TabIndex = 5;
@@ -848,7 +848,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtEmail.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtEmail.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtEmail.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtEmail.Location = new System.Drawing.Point(118, 180);
+		this.txtEmail.Location = new System.Drawing.Point(118, 188);
 		this.txtEmail.Name = "txtEmail";
 		this.txtEmail.Size = new System.Drawing.Size(220, 30);
 		this.txtEmail.TabIndex = 3;
@@ -859,7 +859,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtName.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtName.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtName.Location = new System.Drawing.Point(118, 134);
+		this.txtName.Location = new System.Drawing.Point(118, 142);
 		this.txtName.Name = "txtName";
 		this.txtName.Size = new System.Drawing.Size(220, 30);
 		this.txtName.TabIndex = 1;
@@ -870,7 +870,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.txtUserName.BackColor = System.Drawing.Color.FromArgb(234, 242, 251);
 		this.txtUserName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this.txtUserName.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
-		this.txtUserName.Location = new System.Drawing.Point(118, 88);
+		this.txtUserName.Location = new System.Drawing.Point(118, 96);
 		this.txtUserName.Name = "txtUserName";
 		this.txtUserName.Size = new System.Drawing.Size(220, 30);
 		this.txtUserName.TabIndex = 0;
@@ -883,7 +883,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.c1Label1.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label1.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.c1Label1.ForeColor = System.Drawing.Color.Black;
-		this.c1Label1.Location = new System.Drawing.Point(138, 48);
+		this.c1Label1.Location = new System.Drawing.Point(138, 68);
 		this.c1Label1.Name = "c1Label1";
 		this.c1Label1.Size = new System.Drawing.Size(104, 22);
 		this.c1Label1.TabIndex = 51;
@@ -898,7 +898,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 		this.btnCancel.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		// 统一样式调整：次按钮高度统一 40
-		this.btnCancel.Location = new System.Drawing.Point(198, 404);
+		this.btnCancel.Location = new System.Drawing.Point(198, 422);
 		this.btnCancel.Name = "btnCancel";
 		this.btnCancel.Size = new System.Drawing.Size(96, 32);
 		this.btnCancel.TabIndex = 8;
@@ -909,7 +909,7 @@ public class frmAlterInfo : C1RibbonForm
 		this.c1Label2.BackColor = System.Drawing.Color.Transparent;
 		this.c1Label2.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.c1Label2.ForeColor = System.Drawing.Color.Black;
-		this.c1Label2.Location = new System.Drawing.Point(30, 134);
+		this.c1Label2.Location = new System.Drawing.Point(30, 146);
 		this.c1Label2.Name = "c1Label2";
 		this.c1Label2.Size = new System.Drawing.Size(14, 16);
 		this.c1Label2.TabIndex = 52;
@@ -920,7 +920,7 @@ public class frmAlterInfo : C1RibbonForm
 		base.AutoScaleDimensions = new System.Drawing.SizeF(6f, 12f);
 		base.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-		base.ClientSize = new System.Drawing.Size(380, 452);
+		base.ClientSize = new System.Drawing.Size(380, 472);
 		base.Controls.Add(this.c1Label2);
 		base.Controls.Add(this.c1Label1);
 		base.Controls.Add(this.pictureHead);

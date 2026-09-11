@@ -21,8 +21,8 @@ namespace Auditai.UI.Platform;
 /// <summary>项目卡片流共享字体（进程级缓存，与 AuditTheme 字体同策略：常驻不随控件释放）。</summary>
 internal static class CardFlowFonts
 {
-	/// <summary>项目名（9.75pt Bold）。</summary>
-	public static readonly Font Title = new Font("微软雅黑", 9.75f, FontStyle.Bold);
+	/// <summary>项目名（8.5pt Bold：保证每行容纳更多字符，长名称完整显示）。</summary>
+	public static readonly Font Title = new Font("微软雅黑", 8.5f, FontStyle.Bold);
 
 	/// <summary>次要文字（编号/被审计单位/分组计数/收藏标题/KPI 标签，8.5pt）。</summary>
 	public static readonly Font Secondary = new Font("微软雅黑", 8.5f);
@@ -79,6 +79,15 @@ public class ProjectCard : Control
 
 	private const TextFormatFlags TextFlagsRight = TextFlags | TextFormatFlags.Right;
 
+	/// <summary>卡片标题多行格式：自动换行、末尾省略、顶部对齐（绘制用）。</summary>
+	private const TextFormatFlags TextFlagsTitleMulti = TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
+
+	/// <summary>卡片标题多行测量格式：同 WordBreak/NoPadding 但无 EndEllipsis，保证 MeasureText 返回完整换行后的实际高度（不被截断测量）。</summary>
+	private const TextFormatFlags TextFlagsTitleMeasure = TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix;
+
+	/// <summary>标题最多容纳的行数上限（3 行，8.5pt Bold 每行约 17px → 3×17=51px + 19px 余量 = 70px，底部两行有充足呼吸空间）。</summary>
+	private const int TitleMaxHeight = 70;
+
 	/// <summary>成员头像固定柔和色板（按名字字符和取色，白字可读）。</summary>
 	private static readonly Color[] AvatarPalette = new Color[]
 	{
@@ -93,6 +102,12 @@ public class ProjectCard : Control
 	};
 
 	private readonly ProjectCardItem _item;
+
+	/// <summary>共享 ToolTip：仅当名称超长被省略时绑定，悬停显示完整名称兜底（进程级复用，不随卡片释放）。</summary>
+	private static readonly ToolTip SharedTip = new ToolTip();
+
+	/// <summary>是否已在 ToolTip 上注册过名称（避免每次 Paint 重复设置）。</summary>
+	private bool _toolTipResolved;
 
 	private bool _favoriteEnabled;
 
@@ -157,6 +172,16 @@ public class ProjectCard : Control
 		Size = new Size(CardWidth, CardHeight);
 		BackColor = AuditTheme.SurfaceMuted;
 		Cursor = Cursors.Hand;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing && _toolTipResolved)
+		{
+			// 解除共享 ToolTip 对卡片的引用，避免卡片随 SetGroups 反复重建时控件句柄/引用泄漏
+			SharedTip.SetToolTip(this, "");
+		}
+		base.Dispose(disposing);
 	}
 
 	protected override void OnMouseEnter(EventArgs e)
@@ -268,9 +293,23 @@ public class ProjectCard : Control
 		}
 		int nameX = hasIcon ? padLeft + 34 : padLeft;
 		int nameW = Math.Max(12, rightX - 6 - nameX);
-		TextRenderer.DrawText(g, p.Name, CardFlowFonts.Title, new Rectangle(nameX, body.Y + 8, nameW, 26), AuditTheme.Text, TextFlags);
-		// 第二行：编号（8.5f Slate 系次要色）+ 类别药丸
-		int row2Y = body.Y + 42;
+		// 标题自适应：先按实际宽度测量完整名称所需高度（无 EndEllipsis，返回真实换行高度），
+		// 再钳制到最多 3 行（TitleMaxHeight）。这样短名称紧凑、长名称完整显示、超长才省略。
+		Size nameExt = TextRenderer.MeasureText(p.Name, CardFlowFonts.Title, new Size(nameW, int.MaxValue), TextFlagsTitleMeasure);
+		int nameH = Math.Min(nameExt.Height, TitleMaxHeight);
+		int nameTop = body.Y + 4;
+		TextRenderer.DrawText(g, p.Name, CardFlowFonts.Title, new Rectangle(nameX, nameTop, nameW, nameH), AuditTheme.Text, TextFlagsTitleMulti);
+		// 名称超长（完整高度超过分配高度，被省略）时，悬停 ToolTip 显示完整名称兜底
+		if (!_toolTipResolved)
+		{
+			_toolTipResolved = true;
+			if (nameExt.Height > nameH)
+			{
+				SharedTip.SetToolTip(this, p.Name);
+			}
+		}
+		// 第二行：编号（8.5f Slate 系次要色）+ 类别药丸（距名称底部 6px，随名称行数浮动）
+		int row2Y = nameTop + nameH + 6;
 		int x = padLeft;
 		if (!string.IsNullOrEmpty(p.Number))
 		{
@@ -278,14 +317,15 @@ public class ProjectCard : Control
 			x += TextRenderer.MeasureText(p.Number, CardFlowFonts.Secondary, new Size(int.MaxValue, int.MaxValue), TextFlagsPlain).Width;
 		}
 		DrawCategoryPill(g, p, x + 8, row2Y, body.Right - 10, dark);
-		// 第三行：被审计单位（空则整行省略、下方行上移）
+		// 第三行：被审计单位（可选，row2 底部后 14px 起，高 46px 可容纳两行半）
 		bool hasAuditee = !string.IsNullOrWhiteSpace(p.Auditee);
+		int auditeeTop = row2Y + 30;
 		if (hasAuditee)
 		{
-			TextRenderer.DrawText(g, "被审计单位：" + p.Auditee, CardFlowFonts.Secondary, new Rectangle(padLeft, body.Y + 82, body.Right - 10 - padLeft, 56), AuditTheme.Slate, TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+			TextRenderer.DrawText(g, "被审计单位：" + p.Auditee, CardFlowFonts.Secondary, new Rectangle(padLeft, auditeeTop, body.Right - 10 - padLeft, 46), AuditTheme.Slate, TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
 		}
-		// 第四行：成员头像组（前 3 个 + "+N"）+ 右下角相对时间（8f 淡色）
-		int row4Y = body.Y + (hasAuditee ? 168 : 144);
+		// 第四行：成员头像组 + 右下角相对时间（固定在 body 底部上方 28px，给上面区块留足空间）
+		int row4Y = body.Y + 186;
 		DrawMembers(g, p, new Rectangle(padLeft, row4Y, 0, 18), body.Right - 10);
 		TextRenderer.DrawText(g, ResolveTimeText(), CardFlowFonts.Tiny, new Rectangle(padLeft, row4Y + 1, body.Right - 10 - padLeft, 16), AuditTheme.TextMuted, TextFlagsRight);
 		// 付费角标（左上角）

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -222,12 +222,146 @@ public class frmVoucherEditor : C1RibbonForm
 	{
 		_owner = owner;
 		InitializeComponent();
+
+		// ★ 替换 C1ToolBar 为原生 ToolStrip —— 获得 ClearType 渲染 + 解决按钮下边缘遮挡
+		ReplaceToolbarWithNativeToolStrip();
+
 		base.Shown += FrmVoucherEditor_Shown;
 		base.StartPosition = FormStartPosition.CenterScreen;
 		SpecificalControlFactory.CreateDateInputTextBox(txtVoucherDate);
 		Ledger = ledger;
 		Initialize(ledger);
 		AttachEvent();
+	}
+
+	// 原生 ToolStrip 按钮引用（替代 C1ToolBar 获得 ClearType 渲染）
+	private ToolStrip _nativeToolStrip;
+	private ToolStripButton _btnAddVoucher;
+	private ToolStripButton _btnModifyVoucher;
+	private ToolStripButton _btnDeleteVoucher;
+	private ToolStripButton _btnSaveVoucher;
+	private ToolStripButton _btnCancelSave;
+	private ToolStripButton _btnPreviousVoucher;
+	private ToolStripButton _btnNextVoucher;
+
+	/// <summary>
+	/// 用原生 System.Windows.Forms.ToolStrip 替换 c1ToolBar1。
+	/// C1ToolBar (C1Command 2.x) 不支持 PerMonitorV2 ClearType，
+	/// 在高 DPI 下文字模糊且按钮底部易被截断。原生 ToolStrip 自动 ClearType + DPI 缩放。
+	/// </summary>
+	private void ReplaceToolbarWithNativeToolStrip()
+	{
+		// 移除 C1CommandDock
+		pnlToolbar.Controls.Remove(c1CommandDock1);
+
+		_nativeToolStrip = new ToolStrip
+		{
+			Dock = DockStyle.Fill,
+			RenderMode = ToolStripRenderMode.System,
+			GripStyle = ToolStripGripStyle.Hidden,
+			Text = string.Empty
+		};
+
+		// ★ 1. 新增凭证
+		_btnAddVoucher = new ToolStripButton("新增凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeCreateVoucher,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "新增凭证"
+		};
+		_btnAddVoucher.Click += cmdAddVoucher_Click;
+
+		// ★ 2. 修改凭证
+		_btnModifyVoucher = new ToolStripButton("修改凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeModifyVoucher,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "修改凭证"
+		};
+		_btnModifyVoucher.Click += cmdModifyVoucher_Click;
+
+		// ★ 3. 删除凭证
+		_btnDeleteVoucher = new ToolStripButton("删除凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeRemoveVoucher,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "删除凭证"
+		};
+		_btnDeleteVoucher.Click += cmdDeleteVoucher_Click;
+
+		// ★ 分隔
+		var sep1 = new ToolStripSeparator { Margin = new Padding(8, 6, 8, 6) };
+
+		// ★ 4. 保存凭证
+		_btnSaveVoucher = new ToolStripButton("保存凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.saveData,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "保存凭证"
+		};
+		_btnSaveVoucher.Click += cmdSaveVoucher_Click;
+
+		// ★ 5. 取消保存
+		_btnCancelSave = new ToolStripButton("取消保存")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeCancelSave,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "取消保存"
+		};
+		_btnCancelSave.Click += cmdCancelSave_Click;
+
+		// ★ 分隔
+		var sep2 = new ToolStripSeparator { Margin = new Padding(8, 6, 8, 6) };
+
+		// ★ 6. 上一个凭证
+		_btnPreviousVoucher = new ToolStripButton("上一个凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largePreviousVoucher,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "上一个凭证"
+		};
+		_btnPreviousVoucher.Click += cmdPreviousVoucher_Click;
+
+		// ★ 7. 下一个凭证
+		_btnNextVoucher = new ToolStripButton("下一个凭证")
+		{
+			Image = Auditai.UI.LedgerView.Properties.Resources.largeNextVoucher,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "下一个凭证"
+		};
+		_btnNextVoucher.Click += cmdNextVoucher_Click;
+
+		_nativeToolStrip.Items.AddRange(new ToolStripItem[]
+		{
+			_btnAddVoucher, _btnModifyVoucher, _btnDeleteVoucher,
+			sep1,
+			_btnSaveVoucher, _btnCancelSave,
+			sep2,
+			_btnPreviousVoucher, _btnNextVoucher
+		});
+
+		pnlToolbar.Controls.Add(_nativeToolStrip);
 	}
 
 	private void FrmVoucherEditor_Shown(object sender, EventArgs e)
@@ -1135,12 +1269,12 @@ public class frmVoucherEditor : C1RibbonForm
 		}
 	}
 
-	private void cmdNextVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdNextVoucher_Click(object sender, EventArgs e)
 	{
 		NextVoucherGroup();
 	}
 
-	private void cmdPreviousVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdPreviousVoucher_Click(object sender, EventArgs e)
 	{
 		PreviousVoucherGroup();
 	}
@@ -1242,22 +1376,22 @@ public class frmVoucherEditor : C1RibbonForm
 		}
 	}
 
-	private void cmdSaveVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdSaveVoucher_Click(object sender, EventArgs e)
 	{
 		Save();
 	}
 
-	private void cmdAddVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdAddVoucher_Click(object sender, EventArgs e)
 	{
 		SwitchViewTo(ViewEnum.Add);
 	}
 
-	private void cmdModifyVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdModifyVoucher_Click(object sender, EventArgs e)
 	{
 		SwitchViewTo(ViewEnum.Modify);
 	}
 
-	private void cmdDeleteVoucher_Click(object sender, ClickEventArgs e)
+	private void cmdDeleteVoucher_Click(object sender, EventArgs e)
 	{
 		if (DialogResult.OK != Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "凭证删除后无法恢复，确定要删除该凭证吗？", MessageBoxButtons.OKCancel))
 		{
@@ -1283,7 +1417,7 @@ public class frmVoucherEditor : C1RibbonForm
 		SwitchViewTo(ViewEnum.ReadOnly);
 	}
 
-	private void cmdCancelSave_Click(object sender, ClickEventArgs e)
+	private void cmdCancelSave_Click(object sender, EventArgs e)
 	{
 		switch (currentView)
 		{
@@ -1482,7 +1616,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.txtBooker.Tag = null;
 		this.txtBooker.TextDetached = true;
 		this.pnlToolbar.Controls.Add(this.c1CommandDock1);
-		this.pnlToolbar.Height = 82;
+		this.pnlToolbar.Height = 90;
 		this.pnlToolbar.KeepRelativeSize = false;
 		this.pnlToolbar.Location = new System.Drawing.Point(0, 0);
 		this.pnlToolbar.Name = "pnlToolbar";

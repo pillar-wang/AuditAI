@@ -1,4 +1,4 @@
-﻿﻿﻿﻿extern alias CrawlerModelAlias;
+﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -330,6 +330,10 @@ public class frmImport : C1RibbonForm
 	public frmImport()
 	{
 		InitializeComponent();
+
+		// ★ 替换 C1ToolBar 为原生 ToolStrip —— 获得 ClearType 渲染 + 解决按钮下边缘遮挡
+		ReplaceToolbarWithNativeToolStrip();
+
 		base.Shown += FrmImport_Shown;
 		grdBalance.BindAutoSizeColsFill(this);
 		grdVoucher.BindAutoSizeColsFill(this);
@@ -542,6 +546,102 @@ public class frmImport : C1RibbonForm
 		cboAuxStyle.SelectedIndex = 1;
 		cboAuxStyle.Visible = false;
 		cboAuxStyle.SelectedIndexChanged += CboAuxStyle_SelectedIndexChanged;
+	}
+
+	// 原生 ToolStrip 按钮引用（替代 C1ToolBar 获得 ClearType 渲染）
+	private ToolStrip _nativeToolStrip;
+	private ToolStripButton _btnGenerate;
+	private ToolStripButton _btnValidate;
+	private ToolStripButton _btnReplace;
+	private ToolStripButton _btnHelpDoc;
+	private ToolStripButton _btnFilltip;
+
+	/// <summary>
+	/// 用原生 System.Windows.Forms.ToolStrip 替换 c1ToolBar1。
+	/// C1ToolBar (C1Command 2.x) 不支持 PerMonitorV2 ClearType，
+	/// 在高 DPI 下文字模糊且按钮底部易被截断。原生 ToolStrip 自动 ClearType + DPI 缩放。
+	/// </summary>
+	private void ReplaceToolbarWithNativeToolStrip()
+	{
+		// 先把 C1 的 c1CommandDock1 从工具栏面板移除（不再需要）
+		pnlTools.Controls.Remove(c1CommandDock1);
+
+		_nativeToolStrip = new ToolStrip
+		{
+			Dock = DockStyle.Fill,
+			RenderMode = ToolStripRenderMode.System,
+			GripStyle = ToolStripGripStyle.Hidden,
+			Text = string.Empty
+		};
+
+		// ★ 1. 生成账套
+		_btnGenerate = new ToolStripButton("生成账套")
+		{
+			Image = IconLibrary.CreateBitmap("folder-plus", 24, Color.FromArgb(22, 163, 74)),
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "生成账套"
+		};
+		_btnGenerate.Click += cmdGenerate_Click;
+
+		// ★ 2. 校验数据
+		_btnValidate = new ToolStripButton("校验数据")
+		{
+			Image = IconLibrary.CreateBitmap("check-circle", 24, Color.FromArgb(22, 163, 74)),
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "校验数据"
+		};
+		_btnValidate.Click += cmdValidate_Click;
+
+		// ★ 3. 填表提示（CheckBox）
+		_btnFilltip = new ToolStripButton("填表提示")
+		{
+			Image = IconLibrary.CreateBitmap("lightbulb", 24, Color.FromArgb(217, 119, 6)),
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			CheckOnClick = true,
+			Checked = cmdFilltip.Checked, // 继承原 CheckBox 状态
+			ToolTipText = "填表提示"
+		};
+		_btnFilltip.CheckedChanged += cmdFilltip_CheckedChanged;
+
+		// ★ 4. 查找替换
+		_btnReplace = new ToolStripButton("查找替换")
+		{
+			Image = IconLibrary.CreateBitmap("swap", 24, IconLibrary.DefaultColor),
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "查找替换"
+		};
+		_btnReplace.Click += cmdReplace_Click;
+
+		// ★ 5. 帮助中心
+		_btnHelpDoc = new ToolStripButton("帮助中心")
+		{
+			Image = IconLibrary.CreateBitmap("question", 24, Color.FromArgb(59, 130, 246)),
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "帮助中心"
+		};
+		_btnHelpDoc.Click += cmdHelpDoc_Click;
+
+		_nativeToolStrip.Items.AddRange(new ToolStripItem[]
+		{
+			_btnGenerate, _btnValidate, _btnFilltip, _btnReplace, _btnHelpDoc
+		});
+
+		pnlTools.Controls.Add(_nativeToolStrip);
 	}
 
 	private void _cmdAppendRowAux_Click(object sender, ClickEventArgs e)
@@ -3373,7 +3473,7 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
-	private async void cmdValidate_Click(object sender, ClickEventArgs e)
+	private async void cmdValidate_Click(object sender, EventArgs e)
 	{
 		try
 		{
@@ -3389,7 +3489,7 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
-	private async void cmdGenerate_Click(object sender, ClickEventArgs e)
+	private async void cmdGenerate_Click(object sender, EventArgs e)
 	{
 		try
 		{
@@ -3410,9 +3510,9 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
-	private void cmdFilltip_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void cmdFilltip_CheckedChanged(object sender, EventArgs e)
 	{
-		displayFilltip = e.NewValue;
+		displayFilltip = ((ToolStripButton)sender).Checked;
 		if (!displayFilltip)
 		{
 			_tooltip.Hide();
@@ -4225,12 +4325,12 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
-	private void cmdHelpDoc_Click(object sender, ClickEventArgs e)
+	private void cmdHelpDoc_Click(object sender, EventArgs e)
 	{
 		// 已禁用远程帮助页面
 	}
 
-	private void cmdReplace_Click(object sender, ClickEventArgs e)
+	private void cmdReplace_Click(object sender, EventArgs e)
 	{
 		if (HotGrid != null)
 		{
@@ -4345,7 +4445,7 @@ public class frmImport : C1RibbonForm
 		this.ctnAll.TabIndex = 1;
 		this.ctnAll.ToolTipGradient = C1.Win.C1SplitContainer.ToolTipGradient.Blue;
 		this.pnlTools.Controls.Add(this.c1CommandDock1);
-		this.pnlTools.Height = 82;
+		this.pnlTools.Height = 88;
 		this.pnlTools.KeepRelativeSize = false;
 		this.pnlTools.Location = new System.Drawing.Point(0, 0);
 		this.pnlTools.Name = "pnlTools";

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Auditai.UI.Platform;
 
@@ -26,7 +26,9 @@ public static class IconRes
 	public static System.Drawing.Bitmap SaveAsTemplate16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("floppy-disk", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap SaveProject => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("floppy-disk", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap tileMode => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("squares-four", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap tileMode16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("squares-four", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap listMode => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("list", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap listMode16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("list", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap RefreshProject => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-clockwise", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap RefreshTemplate => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-clockwise", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap Users => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("users", 32, AuditTheme.Slate, global::Auditai.UI.Controls.IconLibrary.StyleFill);
@@ -316,15 +318,22 @@ public static class IconRes
 	public static System.Drawing.Bitmap SearchTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("magnifying-glass", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap TeamManage => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("users-three", 32, AuditTheme.Slate, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolAddUserToTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-plus", 32, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolAddUserToTeam16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-plus", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolCreateTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("plus", 32, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolDeleteGroup => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("trash", 32, AuditTheme.ErrorText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolDeleteGroup16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("trash", 16, AuditTheme.ErrorText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolDismissTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("trash-simple", 32, AuditTheme.Rose, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolDismissTeam16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("trash-simple", 16, AuditTheme.Rose, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolListMode => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("list", 15, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolMergeTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-merge", 32, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolMergeTeam16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("arrows-merge", 16, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolOpenTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("sign-in", 32, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolQuitTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("sign-out", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolQuitTeam16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("sign-out", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolRemoveUserFromTeam => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-minus", 32, AuditTheme.ErrorText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolRemoveUserFromTeam16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-minus", 16, AuditTheme.ErrorText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolRenameGroup => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("pencil", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap toolRenameGroup16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("pencil", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap toolTileMode => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("squares-four", 15, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap AccessControl => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("lock-key", 32, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap AccessControl16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("lock-key", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
@@ -334,7 +343,9 @@ public static class IconRes
 	public static System.Drawing.Bitmap CreateProject16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("folder-plus", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap CreateProjectFromTemplate16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("browsers", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap addChildGroup => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("folder-plus", 32, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap addChildGroup16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("folder-plus", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap addUserGroup => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-plus", 32, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap addUserGroup16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("user-plus", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap AddTicketNav => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("plus", 16, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap ModifyTicketNav => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("pencil", 16, global::Auditai.UI.Controls.IconLibrary.DefaultColor, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap RemoveTicketNav => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("trash", 16, AuditTheme.ErrorText, global::Auditai.UI.Controls.IconLibrary.StyleFill);

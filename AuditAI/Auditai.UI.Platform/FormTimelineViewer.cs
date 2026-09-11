@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -51,22 +51,6 @@ public class FormTimelineViewer
 
 	private readonly C1FlexGridEx _gridTitle;
 
-	private readonly C1ToolBar _tbr;
-
-	private readonly C1Command _cmdPrevious;
-
-	private readonly C1CommandLink _lnkPrevious;
-
-	private readonly C1Command _cmdNext;
-
-	private readonly C1CommandLink _lnkNext;
-
-	private readonly C1Command _cmdRevert;
-
-	private readonly C1CommandLink _lnkRevert;
-
-	private readonly C1CommandDock _dock;
-
 	private readonly Template _template;
 
 	private bool _isControlCreated;
@@ -96,45 +80,54 @@ public class FormTimelineViewer
 		_pnlToolbar = new C1SplitterPanel
 		{
 			Dock = PanelDockStyle.Top,
-			Height = 30,
+			Height = 52,
 			KeepRelativeSize = false,
 			Resizable = false
 		};
-		_tbr = new C1ToolBar
+		// ★ 原生 ToolStrip —— 获得 ClearType 渲染 + 解决按钮下边缘遮挡
+		var nativeToolStrip = new ToolStrip
 		{
 			Dock = DockStyle.Fill,
-			ButtonLayoutHorz = ButtonLayoutEnum.TextBelow,
-			ButtonLookHorz = ButtonLookFlags.TextAndImage,
-			MinButtonSize = 42,
-			AutoSize = true
+			RenderMode = ToolStripRenderMode.System,
+			GripStyle = ToolStripGripStyle.Hidden,
+			Text = string.Empty
 		};
-		_cmdPrevious = new C1Command
+
+		var btnPrevious = new ToolStripButton("上一个版本")
 		{
-			Text = "上一个版本",
-			Image = IconRes.PreviousError
+			Image = IconRes.PreviousError,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "上一个版本"
 		};
-		_cmdPrevious.Click += _cmdPrevious_Click;
-		_lnkPrevious = new C1CommandLink(_cmdPrevious);
-		_tbr.CommandLinks.Add(_lnkPrevious);
-		_cmdNext = new C1Command
+		btnPrevious.Click += _cmdPrevious_Click;
+
+		var btnNext = new ToolStripButton("下一个版本")
 		{
-			Text = "下一个版本",
-			Image = IconRes.NextError
+			Image = IconRes.NextError,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "下一个版本"
 		};
-		_cmdNext.Click += _cmdNext_Click;
-		_lnkNext = new C1CommandLink(_cmdNext);
-		_tbr.CommandLinks.Add(_lnkNext);
-		_cmdRevert = new C1Command
+		btnNext.Click += _cmdNext_Click;
+
+		var btnRevert = new ToolStripButton("恢复历史版本")
 		{
-			Text = "恢复当前历史版本",
-			Image = IconRes.RevertTable
+			Image = IconRes.RevertTable,
+			ImageScaling = ToolStripItemImageScaling.None,
+			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
+			AutoSize = true,
+			ToolTipText = "恢复当前历史版本"
 		};
-		_cmdRevert.Click += _cmdRevert_Click;
-		_lnkRevert = new C1CommandLink(_cmdRevert);
-		_tbr.CommandLinks.Add(_lnkRevert);
-		_dock = new C1CommandDock();
-		_dock.Controls.Add(_tbr);
-		_pnlToolbar.Controls.Add(_dock);
+		btnRevert.Click += _cmdRevert_Click;
+
+		nativeToolStrip.Items.AddRange(new ToolStripItem[] { btnPrevious, btnNext, btnRevert });
+		_pnlToolbar.Controls.Add(nativeToolStrip);
 		_grid = new C1FlexGridEx
 		{
 			Dock = DockStyle.Fill,
@@ -282,7 +275,6 @@ public class FormTimelineViewer
 		_pnlEntity.Controls.Add(_tx);
 		_form.Controls.Add(_ctn);
 		_form.Shown += _form_Shown;
-		_form.Layout += _form_Layout;
 		_grid.OwnerDrawCell += _grid_OwnerDrawCell;
 		_grid.BodyOwnerDrawCell += _grid_BodyOwnerDrawCell;
 	}
@@ -557,7 +549,7 @@ public class FormTimelineViewer
 		}
 	}
 
-	private async void _cmdRevert_Click(object sender, ClickEventArgs e)
+	private async void _cmdRevert_Click(object sender, EventArgs e)
 	{
 		if (TemporaryTable != null)
 		{
@@ -569,7 +561,7 @@ public class FormTimelineViewer
 		}
 	}
 
-	private void _cmdNext_Click(object sender, ClickEventArgs e)
+	private void _cmdNext_Click(object sender, EventArgs e)
 	{
 		if (SelectedIndex < Metas.Count - 1)
 		{
@@ -578,7 +570,7 @@ public class FormTimelineViewer
 		}
 	}
 
-	private void _cmdPrevious_Click(object sender, ClickEventArgs e)
+	private void _cmdPrevious_Click(object sender, EventArgs e)
 	{
 		if (SelectedIndex > 0)
 		{
@@ -587,18 +579,10 @@ public class FormTimelineViewer
 		}
 	}
 
-	private void _form_Layout(object sender, LayoutEventArgs e)
-	{
-		_pnlToolbar.Height = _dock.Height;
-	}
-
 	private async void _form_Shown(object sender, EventArgs e)
 	{
 		Theme.SetCurrentTree(_form);
 		_form.Icon = Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Snapshots);
-		_cmdPrevious.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.PreviousError);
-		_cmdNext.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.NextError);
-		_cmdRevert.Image = Theme.SelectedAuditaiTheme.GetThemedBitmap(IconRes.RevertTable);
 		_tile.TileBorderColor = Color.Transparent;
 		if (TemporaryTable != null)
 		{

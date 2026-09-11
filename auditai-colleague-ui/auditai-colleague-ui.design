@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "page-colleague-management",
+      "title": "同事管理界面精修",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1757496000000,
+      "canvasData": {
+        "x": -876,
+        "y": 36,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-618f6447",
+          "measuredAt": 1789033176282
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/colleague-management.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": false,
+    "deviceType": "desktop",
+    "projectName": "同事管理界面UI精修"
+  }
+}
