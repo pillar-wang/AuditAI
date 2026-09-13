@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -131,6 +131,8 @@ public class dlgProjectEditor : C1RibbonForm
 	{
 		base.ShowInTaskbar = false;
 		InitializeComponent();
+		// 为搜索框设置独立编辑菜单：避免访问进程内可能已被释放的共享 ContextMenuStrip（点击搜索按钮显示搜索框时曾抛 ObjectDisposedException）
+		txbSearch.ContextMenuStrip = BuildSearchBoxContextMenu();
 		base.Load += DlgProjectEditor_Load;
 		ckbSearch.CheckedChanged += CkbSearch_CheckedChanged;
 		txbSearch.TextChanged += TxbSearch_TextChanged;
@@ -155,6 +157,22 @@ public class dlgProjectEditor : C1RibbonForm
 	private void DlgProjectEditor_Load(object sender, EventArgs e)
 	{
 		ToListOrTile(_ListOrTile);
+	}
+
+	/// <summary>构建搜索框独立编辑菜单（剪切/复制/粘贴/全选），避免依赖进程内共享 ContextMenuStrip。</summary>
+	private static ContextMenuStrip BuildSearchBoxContextMenu()
+	{
+		ContextMenuStrip menu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
+		ToolStripMenuItem cut = new ToolStripMenuItem("剪切", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Cut(); });
+		ToolStripMenuItem copy = new ToolStripMenuItem("复制", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Copy(); });
+		ToolStripMenuItem paste = new ToolStripMenuItem("粘贴", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Paste(); });
+		ToolStripMenuItem selectAll = new ToolStripMenuItem("全选", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.SelectAll(); });
+		menu.Items.Add(cut);
+		menu.Items.Add(copy);
+		menu.Items.Add(paste);
+		menu.Items.Add(new ToolStripSeparator());
+		menu.Items.Add(selectAll);
+		return menu;
 	}
 
 	private void TxbSearch_TextChanged(object sender, EventArgs e)
@@ -864,16 +882,16 @@ public class dlgProjectEditor : C1RibbonForm
 		this.pnlUserHeader.TabIndex = 3;
 		this.pnlUserHeader.Width = 450;
 		this.txbSearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.txbSearch.Location = new System.Drawing.Point(83, 5);
+		this.txbSearch.Location = new System.Drawing.Point(120, 5);
 		this.txbSearch.Name = "txbSearch";
-		this.txbSearch.Size = new System.Drawing.Size(295, 27);
+		this.txbSearch.Size = new System.Drawing.Size(260, 27);
 		this.txbSearch.TabIndex = 3;
 		this.txbSearch.Tag = null;
 		this.txbSearch.Visible = false;
 		this.ckbSearch.Appearance = System.Windows.Forms.Appearance.Button;
 		this.ckbSearch.BackColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.IconRes.btnSearch;
-		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		this.ckbSearch.BorderColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.ckbSearch.FlatAppearance.BorderSize = 0;
@@ -897,14 +915,14 @@ public class dlgProjectEditor : C1RibbonForm
 		this.btnSwitchUserSelector.Click += new System.EventHandler(btnSwitchUserSelector_Click);
 		this.c1InputPanel1.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.c1InputPanel1.DesignScaleFactor = 1.293737f;
-		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+		this.c1InputPanel1.Dock = System.Windows.Forms.DockStyle.None;
 		this.c1InputPanel1.Font = new System.Drawing.Font("微软雅黑", 10.5f);
 		this.c1InputPanel1.Items.Add(this.inputGroupHeader2);
 		this.c1InputPanel1.Location = new System.Drawing.Point(0, 0);
 		this.c1InputPanel1.Margin = new System.Windows.Forms.Padding(0, 4, 3, 4);
 		this.c1InputPanel1.Name = "c1InputPanel1";
 		this.c1InputPanel1.Padding = new System.Windows.Forms.Padding(0, 2, 2, 2);
-		this.c1InputPanel1.Size = new System.Drawing.Size(450, 52);
+		this.c1InputPanel1.Size = new System.Drawing.Size(115, 52);
 		this.c1InputPanel1.TabIndex = 0;
 		this.inputGroupHeader2.Name = "inputGroupHeader2";
 		this.inputGroupHeader2.Text = "选择成员";

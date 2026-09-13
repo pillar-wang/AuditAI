@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -149,12 +149,14 @@ public class LedgerAgingEditor : ISetTheme
 		pnlAnalyzeTitle.Size = new Size(927, 39);
 		pnlAnalyzeTitle.SizeRatio = 4.769;
 		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		// 高 DPI 适配：页眉控件尺寸/位置按 DPI 比例缩放（字体按 Point 随 DPI 放大，像素尺寸写死会导致文字显示不全、高度不足）
+		float dpi = Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		lblAnalyzeAccount.TextDetached = true;
 		lblAnalyzeAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblAnalyzeAccount.BorderStyle = BorderStyle.None;
 		lblAnalyzeAccount.Font = font2;
-		lblAnalyzeAccount.Location = new Point(5, 8);
-		lblAnalyzeAccount.Size = new Size(420, 22);
+		lblAnalyzeAccount.Location = new Point((int)(5 * dpi), (int)(8 * dpi));
+		lblAnalyzeAccount.Size = new Size((int)(420 * dpi), (int)(22 * dpi));
 		lblAnalyzeAccount.Text = "科目名称：";
 		lblAnalyzeAccount.TextAlign = ContentAlignment.MiddleLeft;
 		dteAnalyzeDate.AllowSpinLoop = false;
@@ -163,13 +165,13 @@ public class LedgerAgingEditor : ISetTheme
 		dteAnalyzeDate.CustomFormat = "yyyy-MM-dd";
 		dteAnalyzeDate.FormatType = FormatTypeEnum.CustomFormat;
 		dteAnalyzeDate.ImagePadding = new Padding(0);
-		dteAnalyzeDate.Location = new Point(426, 5);
-		dteAnalyzeDate.Size = new Size(100, 26);
+		dteAnalyzeDate.Location = new Point((int)(426 * dpi), (int)(5 * dpi));
+		dteAnalyzeDate.Size = new Size((int)(140 * dpi), (int)(26 * dpi));
 		dteAnalyzeDate.VisibleButtons = DropDownControlButtonFlags.None;
-		pnlAnalyzeHead.Height = 40;
+		pnlAnalyzeHead.Height = (int)(40 * dpi);
 		pnlAnalyzeHead.KeepRelativeSize = false;
-		pnlAnalyzeHead.Location = new Point(0, 40);
-		pnlAnalyzeHead.MinHeight = 40;
+		pnlAnalyzeHead.Location = new Point(0, (int)(40 * dpi));
+		pnlAnalyzeHead.MinHeight = (int)(40 * dpi);
 		pnlAnalyzeHead.Resizable = false;
 		pnlAnalyzeHead.Size = new Size(927, 33);
 		pnlAnalyzeHead.Controls.Add(dteAnalyzeDate);

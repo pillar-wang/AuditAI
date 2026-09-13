@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -1010,15 +1010,17 @@ public class LedgerDefaultPanel : ISetTheme
 		}
 		void appendOther()
 		{
-			Group item = CreateTitleGroup("其他位置");
-			_tileControl.Groups.Add(item);
-			Group group = CreateFilesGroup(null, new string[1] { "打开其他账套" }, Auditai.UI.LedgerView.Properties.Resources.GraphDir);
-			group.Tiles[0].Tag = new TileInfo
-			{
-				TileFlag = TileFlag.OtherPositionButton
-			};
-			_tileControl.Groups.Add(group);
-		}
+				Group item = CreateTitleGroup("其他位置");
+				_tileControl.Groups.Add(item);
+				Group group = CreateFilesGroup(null, new string[1] { "打开其他账套" }, Auditai.UI.LedgerView.Properties.Resources.GraphDir);
+				group.Tiles[0].Tag = new TileInfo
+				{
+					TileFlag = TileFlag.OtherPositionButton
+				};
+				// 去掉"打开其他账套"磁贴默认的浅蓝灰卡片底色：卡片边缘与页面背景之间不再有线框感
+				group.Tiles[0].BackColor = Color.Transparent;
+				_tileControl.Groups.Add(group);
+			}
 	}
 
 	public Tile GetTileByTag(object file)

@@ -36,14 +36,33 @@ namespace Auditai.UI.Controls
 			ContextMenuStrip strip = new ContextMenuStrip
 			{
 				Font = MenuFont,
-				ShowImageMargin = true
+				ShowImageMargin = true,
+				RenderMode = ToolStripRenderMode.System,
+				ImageScalingSize = new Size(24, 24),
+				AutoSize = true
 			};
 			AppendLinks(menu, strip.Items);
 			// 菜单关闭时桥接 C1 的 Closed 事件（原保存/清理逻辑照常执行），并释放构建的临时菜单
 			strip.Closed += delegate
 			{
 				FireClosed(menu);
-				strip.Dispose();
+				// 延迟 Dispose：WinForms 的 ModalMenuFilter 在菜单 Closed 后仍会处理后续鼠标消息，
+				// 同步 Dispose 会导致 ObjectDisposedException（无法访问已释放的 ContextMenuStrip 句柄）。
+				// 通过 BeginInvoke 投递到 UI 消息队列末尾，待框架完成内部清理后再释放。
+				if (strip.IsHandleCreated)
+				{
+					strip.BeginInvoke(new Action(() =>
+					{
+						if (!strip.IsDisposed)
+						{
+							strip.Dispose();
+						}
+					}));
+				}
+				else
+				{
+					strip.Dispose();
+				}
 			};
 			strip.Show(host, clientPoint);
 		}

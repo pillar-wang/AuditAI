@@ -226,7 +226,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		ValidationFormula = new C1CheckBox
 		{
 			Appearance = Appearance.Button,
-			BackgroundImageLayout = ImageLayout.Center,
+			BackgroundImageLayout = ImageLayout.Zoom,
 			Dock = DockStyle.Left,
 			AutoCheck = false,
 			BackgroundImage = Auditai.UI.Platform.IconRes.ValidationFormula16,
@@ -240,7 +240,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		TableNote = new C1CheckBox
 		{
 			Appearance = Appearance.Button,
-			BackgroundImageLayout = ImageLayout.Center,
+			BackgroundImageLayout = ImageLayout.Zoom,
 			Dock = DockStyle.Left,
 			AutoCheck = false,
 			BackgroundImage = Auditai.UI.Platform.IconRes.TableNote16,
@@ -253,7 +253,7 @@ public class SplitContainerRibbonControlHost : RibbonControlHost, ISetTheme
 		{
 			Appearance = Appearance.Button,
 			BackgroundImage = Auditai.UI.Platform.IconRes.TableFoot16,
-			BackgroundImageLayout = ImageLayout.Center,
+			BackgroundImageLayout = ImageLayout.Zoom,
 			Dock = DockStyle.Left,
 			FlatStyle = FlatStyle.Flat,
 			AutoCheck = false

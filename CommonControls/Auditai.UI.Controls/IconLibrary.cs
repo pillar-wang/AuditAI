@@ -320,6 +320,65 @@ public static class IconLibrary
 		return Icon.FromHandle(bmp.GetHicon());
 	}
 
+	/// <summary>
+	/// 生成"圆角彩色底 + 白色 Phosphor 字形"位图（Office 365 / Material 风格）。
+	/// 语义：圆角色块承载白色实心字形，视觉上有"块感"，比透明底单色字形更精致醒目。
+	/// 位图按 DPI 缩放并缓存，key = "tiled|name|size|pixel|bg|fg"。
+	/// </summary>
+	public static Bitmap CreateTiledBitmap(string semanticName, int size, Color backColor)
+	{
+		return CreateTiledBitmap(semanticName, size, backColor, Color.White);
+	}
+
+	/// <summary>生成带指定前景色的圆角彩色底图标（默认前景白）。</summary>
+	public static Bitmap CreateTiledBitmap(string semanticName, int size, Color backColor, Color glyphColor)
+	{
+		int pixel = Math.Max(1, (int)Math.Round((float)size * DpiScale));
+		// 圆角半径占 14%：够圆润，但安全区大，字形能撑满
+		int radius = Math.Max(2, (int)Math.Round(pixel * 0.14f));
+		// 字形最大化到安全区上限（pixel - 2*radius - 2px padding），饱满且绝不裁切
+		int glyphPixel = Math.Max(4, pixel - 2 * radius - 2);
+
+		string key = "tiled|" + semanticName + "|" + size + "|p" + pixel + "|" + backColor.ToArgb() + "|" + glyphColor.ToArgb();
+		lock (_lock)
+		{
+			if (_bitmapCache.TryGetValue(key, out Bitmap cached) && !IsDisposed(cached))
+			{
+				return cached;
+			}
+			Bitmap bmp = new Bitmap(pixel, pixel, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			using (Graphics g = Graphics.FromImage(bmp))
+			{
+				g.SmoothingMode = SmoothingMode.AntiAlias;
+				// 1) 画圆角矩形底
+				var rect = new Rectangle(0, 0, pixel - 1, pixel - 1);
+				using (GraphicsPath path = new GraphicsPath())
+				{
+					path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
+				AddRoundedRect(path, rect, radius);
+					using (SolidBrush brush = new SolidBrush(backColor))
+						g.FillPath(brush, path);
+				}
+				// 2) 白色 Phosphor 字形居中
+				int offset = (pixel - glyphPixel) / 2;
+				DrawGlyph(g, semanticName, new Rectangle(offset, offset, glyphPixel, glyphPixel), glyphColor, StyleFill);
+			}
+			_bitmapCache[key] = bmp;
+			return bmp;
+		}
+	}
+
+	/// <summary>向 GraphicsPath 添加一个圆角矩形（四角半径统一）。</summary>
+	private static void AddRoundedRect(GraphicsPath path, Rectangle r, int radius)
+	{
+		int d = radius * 2;
+		path.AddArc(r.X, r.Y, d, d, 180, 90);
+		path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+		path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+		path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+		path.CloseFigure();
+	}
+
 	private static bool IsDisposed(Bitmap bmp)
 	{
 		try

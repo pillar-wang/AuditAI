@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -259,7 +259,8 @@ public class frmVoucherEditor : C1RibbonForm
 			Dock = DockStyle.Fill,
 			RenderMode = ToolStripRenderMode.System,
 			GripStyle = ToolStripGripStyle.Hidden,
-			Text = string.Empty
+			Text = string.Empty,
+			ImageScalingSize = new Size(24, 24)
 		};
 
 		// ★ 1. 新增凭证
@@ -1481,6 +1482,8 @@ public class frmVoucherEditor : C1RibbonForm
 		this.pnlVoucherGrid = new C1.Win.C1SplitContainer.C1SplitterPanel();
 		this.grdVoucher = new Auditai.UI.Controls.C1FlexGridEx();
 		this.c1CommandHolder1 = new C1.Win.C1Command.C1CommandHolder();
+		// 高 DPI 适配：页眉标题/日期输入控件按 DPI 比例缩放（字体按 Point 随 DPI 放大，固定像素尺寸会导致文字显示不全、高度不足）
+		float dpi = System.Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		((System.ComponentModel.ISupportInitialize)this.ctnVoucher).BeginInit();
 		this.ctnVoucher.SuspendLayout();
 		this.pnlVoucherFoot.SuspendLayout();
@@ -1731,14 +1734,14 @@ public class frmVoucherEditor : C1RibbonForm
 		this.pnlVoucherHead.Controls.Add(this.txtVoucherNumber);
 		this.pnlVoucherHead.Controls.Add(this.txtNumAttachments);
 		this.pnlVoucherHead.HeaderTextAlign = C1.Win.C1SplitContainer.PanelTextAlign.Center;
-		this.pnlVoucherHead.Height = 39;
+		this.pnlVoucherHead.Height = (int)(39 * dpi);
 		this.pnlVoucherHead.KeepRelativeSize = false;
 		this.pnlVoucherHead.Location = new System.Drawing.Point(0, 118);
-		this.pnlVoucherHead.MinHeight = 39;
+		this.pnlVoucherHead.MinHeight = (int)(39 * dpi);
 		this.pnlVoucherHead.MinWidth = 52;
 		this.pnlVoucherHead.Name = "pnlVoucherHead";
 		this.pnlVoucherHead.Resizable = false;
-		this.pnlVoucherHead.Size = new System.Drawing.Size(1030, 39);
+		this.pnlVoucherHead.Size = new System.Drawing.Size(1030, (int)(39 * dpi));
 		this.pnlVoucherHead.SizeRatio = 12.146;
 		this.pnlVoucherHead.TabIndex = 3;
 		this.pnlVoucherHead.Width = 1030;
@@ -1750,7 +1753,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.comboVoucherType.ItemsValueMember = "";
 		this.comboVoucherType.Location = new System.Drawing.Point(48, 7);
 		this.comboVoucherType.Name = "comboVoucherType";
-		this.comboVoucherType.Size = new System.Drawing.Size(79, 27);
+		this.comboVoucherType.Size = new System.Drawing.Size(79, (int)(27 * dpi));
 		this.comboVoucherType.TabIndex = 10;
 		this.comboVoucherType.Tag = null;
 		this.txtVoucherDate.AllowSpinLoop = false;
@@ -1762,7 +1765,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.txtVoucherDate.ImagePadding = new System.Windows.Forms.Padding(0);
 		this.txtVoucherDate.Location = new System.Drawing.Point(477, 7);
 		this.txtVoucherDate.Name = "txtVoucherDate";
-		this.txtVoucherDate.Size = new System.Drawing.Size(104, 27);
+		this.txtVoucherDate.Size = new System.Drawing.Size((int)(140 * dpi), (int)(27 * dpi));
 		this.txtVoucherDate.TabIndex = 9;
 		this.txtVoucherDate.Tag = null;
 		this.lblVoucherDate.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom;
@@ -1821,7 +1824,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.txtVoucherNumber.Location = new System.Drawing.Point(182, 7);
 		this.txtVoucherNumber.Margin = new System.Windows.Forms.Padding(12, 0, 3, 0);
 		this.txtVoucherNumber.Name = "txtVoucherNumber";
-		this.txtVoucherNumber.Size = new System.Drawing.Size(60, 27);
+		this.txtVoucherNumber.Size = new System.Drawing.Size(60, (int)(27 * dpi));
 		this.txtVoucherNumber.TabIndex = 1;
 		this.txtVoucherNumber.Tag = null;
 		this.txtVoucherNumber.TextDetached = true;
@@ -1830,7 +1833,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.txtNumAttachments.Location = new System.Drawing.Point(901, 7);
 		this.txtNumAttachments.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.txtNumAttachments.Name = "txtNumAttachments";
-		this.txtNumAttachments.Size = new System.Drawing.Size(113, 27);
+		this.txtNumAttachments.Size = new System.Drawing.Size(113, (int)(27 * dpi));
 		this.txtNumAttachments.TabIndex = 3;
 		this.txtNumAttachments.Tag = null;
 		this.txtNumAttachments.TextDetached = true;

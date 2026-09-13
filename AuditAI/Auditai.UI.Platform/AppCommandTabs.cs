@@ -11,6 +11,9 @@ public static class AppCommandTabs
 	public static AppTabLedger Ledger { get; } = new AppTabLedger();
 
 
+	public static AppTabAuditCheck AuditCheck { get; } = new AppTabAuditCheck();
+
+
 	public static AppTabView View { get; } = new AppTabView();
 
 

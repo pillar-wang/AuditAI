@@ -68,7 +68,7 @@ public class EmojiManager
 		controlHost = new ToolStripControlHost(_emojiTable);
 		controlHost.Width = width;
 		controlHost.Height = height;
-		dropDown = new ToolStripDropDown();
+		dropDown = new ToolStripDropDown { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24) };
 		dropDown.Width = width;
 		dropDown.Height = height;
 		dropDown.Items.Add(controlHost);

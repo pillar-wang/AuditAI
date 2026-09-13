@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -500,7 +500,7 @@ public class UpdateForm : C1RibbonForm
 		// 按钮区顶部细线分隔（视觉层次）
 		pnlButtons.BorderWidth = 1;
 		pnlButtons.BorderColor = LineColor;
-		imgBox.BackgroundImageLayout = ImageLayout.Center;
+		imgBox.BackgroundImageLayout = ImageLayout.Zoom;
 	}
 
 	protected override void Dispose(bool disposing)
@@ -611,7 +611,7 @@ public class UpdateForm : C1RibbonForm
 		this.pnlImage.Name = "pnlImage";
 		this.pnlImage.TabIndex = 0;
 		this.imgBox.BackColor = System.Drawing.Color.Transparent;
-		this.imgBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.imgBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		this.imgBox.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.imgBox.Location = new System.Drawing.Point(0, 0);
 		this.imgBox.Name = "imgBox";

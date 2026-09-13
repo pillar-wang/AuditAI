@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -791,7 +791,7 @@ public class frmBalanceEditor : C1RibbonForm
 			Dock = DockStyle.Fill,
 			RenderMode = ToolStripRenderMode.System,
 			GripStyle = ToolStripGripStyle.Hidden,
-			Text = string.Empty
+			Text = string.Empty, ImageScalingSize = new Size(24, 24)
 		};
 
 		_btnBalanceValidate = new ToolStripButton("校验数据")

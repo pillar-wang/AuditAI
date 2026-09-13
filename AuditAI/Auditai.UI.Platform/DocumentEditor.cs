@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -4183,18 +4183,18 @@ public class DocumentEditor : UserControl
 	/// </summary>
 	private void InitializeValidationContextMenu()
 	{
-		_validationContextMenu = new ContextMenuStrip();
+		_validationContextMenu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
 		_validationContextMenu.Items.Add("添加为校验点", null, (s, e) => AddValidationPoint());
 		_validationContextMenu.Items.Add(new ToolStripSeparator());
 		_validationContextMenu.Items.Add("复制", null, (s, e) => { try { _textControl.Copy(); } catch { } });
 		_validationContextMenu.Items.Add("剪切", null, (s, e) => { try { _textControl.Cut(); } catch { } });
 		_validationContextMenu.Items.Add("粘贴", null, (s, e) => { try { _textControl.Paste(); } catch { } });
 
-		_removeValidationContextMenu = new ContextMenuStrip();
+		_removeValidationContextMenu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
 		_removeValidationContextMenu.Items.Add("解除校验点", null, (s, e) => RemoveValidationPoint());
 
 		// Formula 域右键菜单：添加稽核规则
-		_formulaValidationContextMenu = new ContextMenuStrip();
+		_formulaValidationContextMenu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
 		_formulaValidationContextMenu.Items.Add("添加稽核规则", null, (s, e) => AddValidationRuleToFormulaField());
 		_formulaValidationContextMenu.Items.Add(new ToolStripSeparator());
 		_formulaValidationContextMenu.Items.Add("复制", null, (s, e) => { try { _textControl.Copy(); } catch { } });

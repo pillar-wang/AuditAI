@@ -1706,7 +1706,7 @@ public class frmLogin : Form
 		this.pnlUserName.TabIndex = 0;
 		this.pnlUserName.Click += new System.EventHandler(pnlUserName_Click);
 		this.picturePhone.BackgroundImage = Auditai.UI.Platform.IconRes.phoneLogin;
-		this.picturePhone.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.picturePhone.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		// 紧凑化：向左上收缩内边距
 		this.picturePhone.Location = new System.Drawing.Point(14, 12);
 		this.picturePhone.Name = "picturePhone";
@@ -1727,7 +1727,7 @@ public class frmLogin : Form
 		this.txtPhoneNumber.TextDetached = true;
 		this.txtPhoneNumber.VerticalAlign = C1.Win.C1Input.VerticalAlignEnum.Middle;
 		this.picUserName.BackgroundImage = Auditai.UI.Platform.IconRes.userlogin;
-		this.picUserName.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.picUserName.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		// 紧凑化：向左上收缩内边距
 		this.picUserName.Location = new System.Drawing.Point(14, 12);
 		this.picUserName.Name = "picUserName";
@@ -1804,7 +1804,7 @@ public class frmLogin : Form
 		this.btnSendCode.UseVisualStyleBackColor = false;
 		this.btnSendCode.Click += new System.EventHandler(btnSendCode_Click);
 		this.picPassword.BackgroundImage = Auditai.UI.Platform.IconRes.password;
-		this.picPassword.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.picPassword.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		// 紧凑化：向左上收缩内边距
 		this.picPassword.Location = new System.Drawing.Point(14, 12);
 		this.picPassword.Name = "picPassword";

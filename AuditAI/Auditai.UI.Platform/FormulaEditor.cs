@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
@@ -361,7 +361,9 @@ public class FormulaEditor : ISetTheme
 		{
 			Text = "函数",
 			Dock = DockStyle.Fill,
-			Font = new Font("微软雅黑", 9f)
+			Font = new Font("微软雅黑", 9f),
+			FlatStyle = FlatStyle.Flat,
+			FlatAppearance = { BorderSize = 0, MouseDownBackColor = Color.Empty, MouseOverBackColor = Color.Empty }
 		};
 		btnSelector.Click += Button_Click;
 		_functionSelectDropDownForm = new FunctionSelector();

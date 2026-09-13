@@ -55,7 +55,7 @@ public class DropFlexGrid : C1ComboBox
 		flex.Dock = DockStyle.Fill;
 		flex.DoubleClick += Flex_DoubleClick;
 		controlHost = new ToolStripControlHost(flex);
-		dropDown = new ToolStripDropDown();
+		dropDown = new ToolStripDropDown { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24) };
 		dropDown.Items.Clear();
 		dropDown.Items.Add(controlHost);
 		DropWidth = width;

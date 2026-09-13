@@ -1376,7 +1376,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnAddTeamUser = new ToolStripButton("新增同事")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolAddUserToTeam16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1389,7 +1389,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnRemoveTeamUser = new ToolStripButton(toolCmdRemoveTeamUser.Text)
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolRemoveUserFromTeam16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1405,7 +1405,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnAddUserGroup = new ToolStripButton("新建分组")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.addUserGroup16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1418,7 +1418,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnAddChildGroup = new ToolStripButton("下增分组")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.addChildGroup16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1431,7 +1431,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnRemoveUserGroup = new ToolStripButton("删除分组")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolDeleteGroup16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1444,7 +1444,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnRenameUserGroup = new ToolStripButton("重命名分组")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolRenameGroup16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1460,7 +1460,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnDisplayMode = new ToolStripButton("列表模式")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.listMode),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1476,7 +1476,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnRenameTeam = new ToolStripButton("重命名组织")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolRenameGroup16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1489,7 +1489,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnMergeTeam = new ToolStripButton("合并组织")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolMergeTeam16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1502,7 +1502,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnDismissTeam = new ToolStripButton("解散组织")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolDismissTeam16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,
@@ -1515,7 +1515,7 @@ public class dlgTeamUserManagement : C1RibbonForm
 		_btnLeaveTeam = new ToolStripButton("退出组织")
 		{
 			Image = new Bitmap(Auditai.UI.Platform.IconRes.toolQuitTeam16),
-			ImageScaling = ToolStripItemImageScaling.None,
+			ImageScaling = ToolStripItemImageScaling.SizeToFit,
 			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
 			TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText,
 			AutoSize = true,

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -101,7 +101,7 @@ public class frmCustomFillConfig : C1RibbonForm
 		{
 			Dock = DockStyle.Top,
 			GripStyle = ToolStripGripStyle.Hidden,
-			ImageScalingSize = new Size(16, 16)
+			ImageScalingSize = new Size(24, 24), RenderMode = ToolStripRenderMode.System
 		};
 
 		var btnAdd = new ToolStripButton("添加行") { ToolTipText = "添加一行填充规则 (Ctrl+N)" };
@@ -184,7 +184,7 @@ public class frmCustomFillConfig : C1RibbonForm
 		_grid.Cols[ColCondValue].UserData = "条件比较值（为空/非空时忽略）";
 
 		// ===== ContextMenu =====
-		_contextMenu = new ContextMenuStrip();
+		_contextMenu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
 		_contextMenu.Items.Add("添加行", null, (s, e) => BtnAddRow_Click(s, e));
 		_contextMenu.Items.Add("删除行", null, (s, e) => BtnDeleteRow_Click(s, e));
 		_contextMenu.Items.Add("复制行", null, (s, e) => BtnDuplicateRow_Click(s, e));
@@ -198,7 +198,7 @@ public class frmCustomFillConfig : C1RibbonForm
 		_grid.ContextMenuStrip = _contextMenu;
 
 		// ===== StatusStrip (底部状态栏) =====
-		_statusStrip = new StatusStrip { Dock = DockStyle.Bottom };
+		_statusStrip = new StatusStrip { Dock = DockStyle.Bottom, RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24) };
 		_lblRuleCount = new ToolStripStatusLabel { Text = "规则数: 0", Spring = false, Margin = new Padding(4, 0, 16, 0) };
 		_lblValidation = new ToolStripStatusLabel { Text = "✓", Spring = true, TextAlign = ContentAlignment.MiddleLeft };
 		_lblCurrentTable = new ToolStripStatusLabel { Text = "当前表格: -", Spring = false, Margin = new Padding(16, 0, 4, 0) };

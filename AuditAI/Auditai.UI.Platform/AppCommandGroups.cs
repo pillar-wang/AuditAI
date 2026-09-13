@@ -1,4 +1,4 @@
-﻿﻿﻿namespace Auditai.UI.Platform;
+﻿﻿namespace Auditai.UI.Platform;
 
 public static class AppCommandGroups
 {
@@ -24,6 +24,9 @@ public static class AppCommandGroups
 
 
 	public static AppGroupMakeLedger MakeLedger { get; } = new AppGroupMakeLedger();
+
+
+	public static AppGroupLedgerWindow LedgerWindow { get; } = new AppGroupLedgerWindow();
 
 
 	public static AppGroupManageLedgers ManageLedgers { get; } = new AppGroupManageLedgers();

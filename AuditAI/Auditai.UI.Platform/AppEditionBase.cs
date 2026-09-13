@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using C1.Win.C1Ribbon;
@@ -110,7 +110,6 @@ public abstract class AppEditionBase
 		foreach (AppCommandTab tab in Tabs)
 		{
 			tab.GenerateRibbonTab();
-			Ribbon.Tabs.Add(tab.RibbonTab);
 			foreach (AppCommandGroup group in tab.Groups)
 			{
 				group.GenerateRibbonGroup();
@@ -120,6 +119,11 @@ public abstract class AppEditionBase
 					command.GenerateRibbonItem();
 					group.RibbonGroup.Items.Add(command.RibbonItem);
 				}
+			}
+			// 非主 Ribbon 的标签（如账务窗口工具栏标签）只生成结构，不加入主 Ribbon
+			if (tab.InMainRibbon)
+			{
+				Ribbon.Tabs.Add(tab.RibbonTab);
 			}
 		}
 		Ribbon.Qat.MenuVisible = false;
@@ -173,6 +177,8 @@ public abstract class AppEditionBase
 		Tabs.Add(AppCommandTabs.Projects);
 		Tabs.Add(AppCommandTabs.File);
 		Tabs.Add(AppCommandTabs.Members);
+		Tabs.Add(AppCommandTabs.AuditCheck);
+		// 账务窗口工具栏标签：仅承载命令供状态刷新，不随主 Ribbon 显示（InMainRibbon=false）
 		Tabs.Add(AppCommandTabs.Ledger);
 		Tabs.Add(AppCommandTabs.View);
 		Tabs.Add(AppCommandTabs.Table);

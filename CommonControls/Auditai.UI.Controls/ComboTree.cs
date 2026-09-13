@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using C1.Win.C1Input;
@@ -65,7 +65,7 @@ public class ComboTree : C1ComboBox
 			this.SelectNodeChanged?.Invoke(TreeView, e);
 		};
 		treeViewHost = new ToolStripControlHost(TreeView);
-		dropDown = new ToolStripDropDown();
+		dropDown = new ToolStripDropDown { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24) };
 		dropDown.Width = base.Width;
 		dropDown.Items.Add(treeViewHost);
 		dropDown.Font = new Font("微软雅黑", 9f);

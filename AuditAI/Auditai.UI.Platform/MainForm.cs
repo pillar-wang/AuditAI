@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -59,10 +59,7 @@ public class MainForm
 	// 账务数据独立窗口（单实例），承载 MultiLedgerViewer.View
 	private LedgerWindow _ledgerWindow;
 
-	// "账务数据"标签迁移到账务窗口期间，在主窗口 Ribbon 中的原始位置（迁回时还原）
-	private int _ledgerTabMainIndex = -1;
-
-	// 账务窗口当前是否处于显示状态（账务数据标签已随页面迁入，不应再随主窗口视图模式隐藏）
+	// 账务窗口当前是否处于显示状态（其顶部工具栏标签不随主窗口视图模式隐藏）
 	public bool LedgerWindowActive => _ledgerWindow != null && _ledgerWindow.Visible && !_ledgerWindow.IsDisposed;
 
 	private C1SplitterPanel pnlMain;
@@ -4505,9 +4502,9 @@ public class MainForm
 			ttp.LinkClicked += delegate(object s1, object e1)
 			{
 				if (e1?.ToString() == "openledger")
-				{
-					AppCommandTabs.Ledger.Select();
-				}
+					{
+						Program.MainForm.ShowLedgerWindow();
+					}
 			};
 			XElement xElement = new XElement("p");
 			xElement.Add(new XElement("span", new XAttribute("style", "color: red"), "请先打开账套"), new XEntity("nbsp"), new XEntity("nbsp"), new XEntity("nbsp"), new XEntity("nbsp"), new XElement("a", new XAttribute("href", "openledger"), "打开账套"));
@@ -4523,9 +4520,9 @@ public class MainForm
 			ttp.LinkClicked += delegate(object s1, object e1)
 			{
 				if (e1?.ToString() == "openledger")
-				{
-					AppCommandTabs.Ledger.Select();
-				}
+					{
+						Program.MainForm.ShowLedgerWindow();
+					}
 			};
 			XElement xElement = new XElement("p");
 			xElement.Add(new XElement("span", new XAttribute("style", "color:red;"), "未找到该" + StringConstBase.Current.Project + "自动关联的账套"), new XEntity("nbsp"), new XEntity("nbsp"), new XEntity("nbsp"), new XEntity("nbsp"), new XElement("a", new XAttribute("href", "openledger"), "打开账套"));
@@ -7599,23 +7596,26 @@ public class MainForm
 		{
 			_ledgerWindow = new LedgerWindow(this);
 			_ledgerWindow.AttachViewer(MultiLedgerViewer.View);
-			// 窗口被隐藏（点 X）时：账务数据标签迁回主窗口 Ribbon（作为再次打开的入口），并收起关联账套提示
+			// 窗口被隐藏（点 X）时：收起关联账套提示
 			_ledgerWindow.WindowHidden += delegate
 			{
-				MoveLedgerTabToMainForm();
 				HideRelatedLedgerTip();
 			};
 		}
-		// 工具栏随页面走：把"账务数据"标签（含全部命令组）从主窗口 Ribbon 迁移到账务窗口
-		MoveLedgerTabToLedgerWindow();
-		// 账务窗口整体应用当前主题（Ribbon 与已 Reparent 进来的账套查看器不再属于主窗口控件树）
+		// 账务窗口整体应用当前主题（已 Reparent 进来的账套查看器不再属于主窗口控件树）
 		Theme.SetCurrentTree(_ledgerWindow);
+		// 主题应用会把磁贴细边框设为主题色，此处恢复透明边框，避免账套磁贴出现边缘线
+		MultiLedgerViewer.SetTheme();
 		if (CurrentLedgerViewer == null)
 		{
-			MultiLedgerViewer.LedgerDefaultPanel.Populate();
+			// 首次打开无账套时用 BringToFront（内部调用 ToLedgerPanel）隐藏 _pnlList/_pnlViewer，
+			// 否则这两个空面板会残留在工具栏右侧形成白色空隙，导致垂直工具栏不贴右边缘
+			MultiLedgerViewer.LedgerDefaultPanel.BringToFront();
 		}
 		MultiLedgerViewer.LedgerDefaultPanel.GetTileControl.Update();
 		_ledgerWindow.UpdateTitle(CurrentLedgerViewer?.CurrentFilePath);
+		// 账务窗口工具栏标签常驻窗口顶部：窗口显示期间保持命令可见
+		AppCommandTabs.Ledger.Visible = true;
 		if (_ledgerWindow.Visible)
 		{
 			_ledgerWindow.Activate();
@@ -7635,55 +7635,11 @@ public class MainForm
 		if (_ledgerWindow != null && _ledgerWindow.Visible)
 		{
 			_ledgerWindow.Hide();
-			// 与点 X 隐藏一致：账务数据标签迁回主窗口 Ribbon，保证有入口可再次打开
-			MoveLedgerTabToMainForm();
 			HideRelatedLedgerTip();
 		}
 		else
 		{
 			ShowLedgerWindow();
-		}
-	}
-
-	// 把"账务数据"标签从主窗口 Ribbon 迁到账务窗口 Ribbon：数据采集/账套管理等命令组随页面走
-	private void MoveLedgerTabToLedgerWindow()
-	{
-		C1Ribbon mainRibbon = CurrentEdition?.Ribbon;
-		RibbonTab tab = AppCommandTabs.Ledger.RibbonTab;
-		if (mainRibbon == null || tab == null || _ledgerWindow == null)
-		{
-			return;
-		}
-		int index = mainRibbon.Tabs.IndexOf(tab);
-		if (index < 0)
-		{
-			// 已在账务窗口中（或不在主窗口），无需迁移
-			return;
-		}
-		_ledgerTabMainIndex = index;
-		mainRibbon.Tabs.Remove(tab);
-		_ledgerWindow.LedgerRibbon.Tabs.Add(tab);
-		// 迁入即显示：此刻窗口尚未 Show，LedgerWindowActive 还为 false，防止状态刷新把标签藏掉（入口已做许可证防护）
-		AppCommandTabs.Ledger.Visible = true;
-	}
-
-	// 账务窗口隐藏时把"账务数据"标签迁回主窗口 Ribbon（还原原位置），点击可再次打开账务窗口
-	private void MoveLedgerTabToMainForm()
-	{
-		C1Ribbon mainRibbon = CurrentEdition?.Ribbon;
-		RibbonTab tab = AppCommandTabs.Ledger.RibbonTab;
-		if (mainRibbon == null || tab == null || _ledgerWindow == null || !_ledgerWindow.LedgerRibbon.Tabs.Contains(tab))
-		{
-			return;
-		}
-		_ledgerWindow.LedgerRibbon.Tabs.Remove(tab);
-		if (_ledgerTabMainIndex >= 0 && _ledgerTabMainIndex <= mainRibbon.Tabs.Count)
-		{
-			mainRibbon.Tabs.Insert(_ledgerTabMainIndex, tab);
-		}
-		else
-		{
-			mainRibbon.Tabs.Add(tab);
 		}
 	}
 

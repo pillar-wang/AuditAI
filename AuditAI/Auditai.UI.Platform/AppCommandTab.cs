@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -11,6 +11,9 @@ namespace Auditai.UI.Platform;
 public abstract class AppCommandTab
 {
 	public abstract string Text { get; }
+
+	// 是否随主 Ribbon 显示（false 表示该标签仅承载命令供状态刷新，实际页面挂在账务窗口等其它 Ribbon）
+	public virtual bool InMainRibbon => true;
 
 	public RibbonTab RibbonTab { get; private set; }
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -97,15 +97,15 @@ public class FormProjectMembers
 		_szMain.AddControl(_szTop, 0, 0);
 		_btnToggleMode = new C1Button
 		{
-			Image = IconRes.toolListMode
+			Image = IconRes.listMode16
 		};
 		_btnToggleMode.Click += _btnToggleMode_Click;
 		_szTop.AddControl(_btnToggleMode, 0, 0);
 		_ckbSearch = new C1CheckBox
 		{
 			BackColor = Color.Transparent,
-			BackgroundImage = IconRes.btnSearch,
-			BackgroundImageLayout = ImageLayout.Center,
+			BackgroundImage = IconRes.ctxSearch,
+			BackgroundImageLayout = ImageLayout.Zoom,
 			Appearance = Appearance.Button,
 			FlatStyle = FlatStyle.Flat
 		};
@@ -332,11 +332,11 @@ public class FormProjectMembers
 		{
 		case ListTileViewMode.List:
 			projectUsersListSelector.GetControl().BringToFront();
-			_btnToggleMode.Image = IconRes.toolTileMode;
+			_btnToggleMode.Image = IconRes.tileMode16;
 			break;
 		case ListTileViewMode.Tile:
 			projectUsersTileSelector.GetControl().BringToFront();
-			_btnToggleMode.Image = IconRes.toolListMode;
+			_btnToggleMode.Image = IconRes.listMode16;
 			break;
 		}
 	}

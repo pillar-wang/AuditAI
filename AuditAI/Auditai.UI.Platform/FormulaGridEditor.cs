@@ -31,13 +31,13 @@ public class FormulaGridEditor : Control, IC1EmbeddedEditor
 		{
 			Dock = DockStyle.Fill
 		};
-		C1Button c1Button = new C1Button
+		Button c1Button = new Button
 		{
 			Text = "函数",
 			Dock = DockStyle.Fill,
-			FlatStyle = FlatStyle.Flat
+			FlatStyle = FlatStyle.Flat,
+			FlatAppearance = { BorderSize = 0, MouseDownBackColor = Color.Empty, MouseOverBackColor = Color.Empty }
 		};
-		c1Button.FlatAppearance.BorderSize = 0;
 		c1Button.Click += _btn_Click;
 		_functionSelectDropDownForm = new FunctionSelector();
 		_functionSelectDropDownForm.CheckFunctionIsVisibleCallback = Program.MainForm.IsAllowShowFunctionInfoInFunctionList;

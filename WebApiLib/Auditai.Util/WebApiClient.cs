@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -2579,8 +2579,14 @@ public static class WebApiClient
 	}
 
 	#region SendAsStream
-	/// <summary>401 已触发过一次自动重新登录的标志（进程内仅触发一次，防重入）</summary>
-	private static int _reloginTriggered;
+	/// <summary>401 自动重新登录协调信号量：保证同一时间只有一个线程在执行 Relogin，其他等待结果</summary>
+	private static readonly SemaphoreSlim _reloginLock = new SemaphoreSlim(1, 1);
+	/// <summary>标记 Relogin 正在执行中（1 = 进行中）</summary>
+	private static int _reloginInProgress;
+	/// <summary>标记 Relogin 是否成功完成</summary>
+	private static volatile bool _reloginSucceeded;
+	/// <summary>标记 Relogin 是否已尝试过（防止同一轮 Token 失效期间无限重试登录）</summary>
+	private static volatile bool _reloginAttempted;
 
 	private static async Task<Stream> SendAsStream(RequestOptions options)
 	{
@@ -2595,58 +2601,125 @@ public static class WebApiClient
 		}
 
 		// ★ 服务器模式：发送实际 HTTP 请求
+		bool hasRetried = false;
+		while (true)
+		{
+			try
+			{
+				HttpRequestMessage request = GetRequest(options);
+				DebugLog($"[SendAsStream] sending HTTP request to: {request.RequestUri}");
+				HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(continueOnCapturedContext: false);
+				DebugLog($"[SendAsStream] response: {(int)response.StatusCode} {response.StatusCode}");
+
+				// 检查响应状态码
+				if (!response.IsSuccessStatusCode)
+				{
+					// 401 Unauthorized：Token 失效，尝试自动重新登录后重试一次
+					if (response.StatusCode == HttpStatusCode.Unauthorized && !hasRetried && options.WithAuthorization)
+					{
+						response.Dispose();
+						DebugLog("[SendAsStream] 401 received, attempting auto relogin + retry");
+
+						// 等待 Relogin 完成（如果其他线程已经在执行，等它的结果）
+						bool reloginOk = await WaitOrPerformReloginAsync();
+						if (reloginOk)
+						{
+							hasRetried = true;
+							DebugLog("[SendAsStream] Relogin succeeded, retrying request");
+							continue;
+						}
+						// Relogin 也失败了，抛出 401 异常让用户手动登录
+						throw new HttpRequestException("登录状态已失效，请重新登录（HTTP 401 Unauthorized）");
+					}
+
+					string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+					DebugLog($"[SendAsStream] ERROR response body: {errorContent}");
+					// 先构造错误消息再 Dispose，避免访问已释放对象的属性
+					// 服务端错误体格式为 {"error":"forbidden","message":"无权访问该项目"}，优先提取 message 给用户看
+					string msg;
+					try
+					{
+						var errObj = JsonConvert.DeserializeObject<JObject>(errorContent);
+						string errMessage = errObj?["message"]?.ToString();
+						msg = string.IsNullOrEmpty(errMessage)
+							? $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}"
+							: $"HTTP {(int)response.StatusCode}: {errMessage}";
+					}
+					catch
+					{
+						msg = $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}";
+					}
+					if (response.StatusCode == HttpStatusCode.Unauthorized)
+					{
+						msg = "登录状态已失效，请重新登录（HTTP 401 Unauthorized）";
+					}
+					response.Dispose();
+					throw new HttpRequestException(msg);
+				}
+
+				return await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
+			}
+			catch (Exception ex)
+			{
+				DebugLog($"[SendAsStream] EXCEPTION: {ex.GetType().Name}: {ex.Message}");
+				throw;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 等待 Relogin 完成，或自己执行 Relogin（如果没有其他线程在执行）。
+	/// 返回 true 表示 Relogin 成功，false 表示 Relogin 失败。
+	/// 并发安全：多个线程同时收到 401 时，只有一个执行 Relogin，其他等待结果。
+	/// </summary>
+	private static async Task<bool> WaitOrPerformReloginAsync()
+	{
+		// SemaphoreSlim(1,1) 保证同一时间只有一个线程执行 Relogin，其他线程等待锁释放后拿结果
+		await _reloginLock.WaitAsync().ConfigureAwait(false);
 		try
 		{
-			HttpRequestMessage request = GetRequest(options);
-			DebugLog($"[SendAsStream] sending HTTP request to: {request.RequestUri}");
-			HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(continueOnCapturedContext: false);
-			DebugLog($"[SendAsStream] response: {(int)response.StatusCode} {response.StatusCode}");
-
-			// 检查响应状态码
-			if (!response.IsSuccessStatusCode)
+			// 如果 Relogin 正在被其他线程执行，等它完成后返回结果
+			if (_reloginInProgress != 0)
 			{
-				string errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
-				DebugLog($"[SendAsStream] ERROR response body: {errorContent}");
-				// 先构造错误消息再 Dispose，避免访问已释放对象的属性
-				// 服务端错误体格式为 {"error":"forbidden","message":"无权访问该项目"}，优先提取 message 给用户看
-				string msg;
-				try
-				{
-					var errObj = JsonConvert.DeserializeObject<JObject>(errorContent);
-					string errMessage = errObj?["message"]?.ToString();
-					msg = string.IsNullOrEmpty(errMessage)
-						? $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}"
-						: $"HTTP {(int)response.StatusCode}: {errMessage}";
-				}
-				catch
-				{
-					msg = $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}";
-				}
-				if (response.StatusCode == HttpStatusCode.Unauthorized)
-				{
-					// Token 失效：防重入触发一次自动重新登录（不重放当前请求，客户端下次调用自然成功）。
-					// Message 保留 "401/Unauthorized" 关键字，兼容 TokenUpdater 的失效检测逻辑。
-					if (Interlocked.CompareExchange(ref _reloginTriggered, 1, 0) == 0)
-					{
-						DebugLog("[SendAsStream] 401 received, triggering one-shot auto relogin");
-						_ = Task.Run(async () =>
-						{
-							try { await ReloginForTokenUpdate(); }
-							catch { }
-						});
-					}
-					msg = "登录状态已失效，请重新登录（HTTP 401 Unauthorized）";
-				}
-				response.Dispose();
-				throw new HttpRequestException(msg);
+				// 其他线程正在执行，SemaphoreSlim 保证我们必须等它释放锁
+				// 释放后 _reloginInProgress 应该为 0，_reloginSucceeded 已更新
+				DebugLog($"[SendAsStream] Another thread is doing relogin, waiting...");
+				return _reloginSucceeded;
 			}
 
-			return await response.Content.ReadAsStreamAsync().ConfigureAwait(continueOnCapturedContext: false);
+			// 之前已经尝试过 Relogin 但失败了（密码错误等），不再重试
+			if (_reloginAttempted && !_reloginSucceeded)
+			{
+				DebugLog("[SendAsStream] Relogin already attempted and failed, not retrying");
+				return false;
+			}
+
+			// 执行 Relogin
+			_reloginInProgress = 1;
+			DebugLog("[SendAsStream] Performing auto relogin...");
+			try
+			{
+				await ReloginForTokenUpdate();
+				_reloginSucceeded = true;
+				_reloginAttempted = false; // 成功后重置标记，下次 Token 过期可以再次 Relogin
+				DebugLog("[SendAsStream] Auto relogin succeeded");
+				return true;
+			}
+			catch (Exception ex)
+			{
+				DebugLog($"[SendAsStream] Auto relogin failed: {ex.Message}");
+				_reloginSucceeded = false;
+				_reloginAttempted = true; // 标记失败，避免无限重试
+				return false;
+			}
+			finally
+			{
+				_reloginInProgress = 0;
+			}
 		}
-		catch (Exception ex)
+		finally
 		{
-			DebugLog($"[SendAsStream] EXCEPTION: {ex.GetType().Name}: {ex.Message}");
-			throw;
+			_reloginLock.Release();
 		}
 	}
 	#endregion
@@ -2670,6 +2743,17 @@ public static class WebApiClient
 	public static async Task ReloginForTokenUpdate()
 	{
 		await Relogin();
+	}
+
+	/// <summary>
+	/// 重置 401 自动 Relogin 状态标记。
+	/// 在 Token 被成功更新时调用（手动登录/定时刷新/自动 Relogin 等任何方式），
+	/// 确保下次 Token 过期时可以再次尝试自动 Relogin。
+	/// </summary>
+	public static void ResetReloginFlags()
+	{
+		_reloginAttempted = false;
+		_reloginSucceeded = false;
 	}
 
 	private static async Task Relogin()

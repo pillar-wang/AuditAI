@@ -97,7 +97,7 @@ public class DropCheckBox<T> : C1ComboBox
 			}
 		};
 		controlHost = new ToolStripControlHost(ValueGrid);
-		dropDown = new ToolStripDropDown();
+		dropDown = new ToolStripDropDown { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24) };
 		dropDown.Items.Clear();
 		dropDown.Items.Add(controlHost);
 	}

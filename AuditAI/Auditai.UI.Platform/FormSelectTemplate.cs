@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -88,7 +88,7 @@ public class FormSelectTemplate
 		{
 			BackColor = Color.Transparent,
 			BackgroundImage = IconRes.btnSearch,
-			BackgroundImageLayout = ImageLayout.Center,
+			BackgroundImageLayout = ImageLayout.Zoom,
 			Appearance = Appearance.Button,
 			FlatStyle = FlatStyle.Flat
 		};

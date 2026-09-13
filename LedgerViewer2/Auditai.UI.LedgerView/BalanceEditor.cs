@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -239,19 +239,21 @@ internal class BalanceEditor : ISetTheme
 		pnlBalanceTitle.Controls.Add(btnBalanceBack);
 		pnlBalanceTitle.Controls.Add(lblAccountName);
 		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		// 高 DPI 适配：页眉控件尺寸/位置按 DPI 比例缩放（字体按 Point 随 DPI 放大，像素尺寸写死会导致文字显示不全、高度不足）
+		float dpi = Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		lblCurrency.TextDetached = true;
 		lblCurrency.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
 		lblCurrency.BorderStyle = BorderStyle.None;
 		lblCurrency.Font = font2;
-		lblCurrency.Location = new Point(727, 8);
-		lblCurrency.Size = new Size(180, 20);
+		lblCurrency.Location = new Point((int)(727 * dpi), (int)(8 * dpi));
+		lblCurrency.Size = new Size((int)(230 * dpi), (int)(20 * dpi));
 		lblCurrency.Text = "金额单位：";
 		lblCurrency.TextAlign = ContentAlignment.MiddleRight;
 		lblCompanyName.TextDetached = true;
 		lblCompanyName.BorderStyle = BorderStyle.None;
 		lblCompanyName.Font = font2;
-		lblCompanyName.Location = new Point(3, 6);
-		lblCompanyName.Size = new Size(343, 22);
+		lblCompanyName.Location = new Point((int)(3 * dpi), (int)(6 * dpi));
+		lblCompanyName.Size = new Size((int)(343 * dpi), (int)(22 * dpi));
 		lblCompanyName.Text = "核算单位：";
 		lblCompanyName.TextAlign = ContentAlignment.MiddleLeft;
 		dteStart.AllowSpinLoop = false;
@@ -260,8 +262,8 @@ internal class BalanceEditor : ISetTheme
 		dteStart.CustomFormat = "yyyy-MM-dd";
 		dteStart.FormatType = FormatTypeEnum.CustomFormat;
 		dteStart.ImagePadding = new Padding(0);
-		dteStart.Location = new Point(377, 4);
-		dteStart.Size = new Size(100, 26);
+		dteStart.Location = new Point((int)(377 * dpi), (int)(4 * dpi));
+		dteStart.Size = new Size((int)(140 * dpi), (int)(26 * dpi));
 		dteStart.VisibleButtons = DropDownControlButtonFlags.None;
 		dteStart.DisplayFormat.FormatType = FormatTypeEnum.CustomFormat;
 		dteStart.ValueChanged += DatStart_ValueChanged;
@@ -273,8 +275,8 @@ internal class BalanceEditor : ISetTheme
 		dteEnd.CustomFormat = "yyyy-MM-dd";
 		dteEnd.FormatType = FormatTypeEnum.CustomFormat;
 		dteEnd.ImagePadding = new Padding(0);
-		dteEnd.Location = new Point(504, 4);
-		dteEnd.Size = new Size(100, 26);
+		dteEnd.Location = new Point((int)(549 * dpi), (int)(4 * dpi));
+		dteEnd.Size = new Size((int)(140 * dpi), (int)(26 * dpi));
 		dteEnd.VisibleButtons = DropDownControlButtonFlags.None;
 		dteEnd.DisplayFormat.FormatType = FormatTypeEnum.CustomFormat;
 		dteEnd.ValueChanged += DatEnd_ValueChanged;
@@ -285,15 +287,15 @@ internal class BalanceEditor : ISetTheme
 		lblPeriod.AutoSize = true;
 		lblPeriod.Font = font2;
 		lblPeriod.BorderStyle = BorderStyle.None;
-		lblPeriod.Location = new Point(480, 8);
-		lblPeriod.Size = new Size(20, 20);
+		lblPeriod.Location = new Point((int)(521 * dpi), (int)(8 * dpi));
+		lblPeriod.Size = new Size((int)(24 * dpi), (int)(20 * dpi));
 		lblPeriod.Text = "至";
 		pnlBalanceHead.BackColor = Color.WhiteSmoke;
 		pnlBalanceHead.HeaderLineColor = Color.Transparent;
-		pnlBalanceHead.Height = 40;
+		pnlBalanceHead.Height = (int)(40 * dpi);
 		pnlBalanceHead.KeepRelativeSize = false;
-		pnlBalanceHead.Location = new Point(0, 40);
-		pnlBalanceHead.MinHeight = 40;
+		pnlBalanceHead.Location = new Point(0, (int)(40 * dpi));
+		pnlBalanceHead.MinHeight = (int)(40 * dpi);
 		pnlBalanceHead.Resizable = false;
 		pnlBalanceHead.Size = new Size(927, 33);
 		pnlBalanceHead.SizeRatio = 4.181;
@@ -1769,6 +1771,11 @@ internal class BalanceEditor : ISetTheme
 	private void UpdateTitle(Ledger ledger)
 	{
 		lblCompanyName.Text = "核算单位：" + ledger.CompanyName;
+		// 核算单位名称按文本实际宽度/高度自适应：固定像素尺寸在高 DPI 下会显示不全；最大宽度为日期控件起始位置（已按 DPI 缩放）
+		Size textSize = TextRenderer.MeasureText(lblCompanyName.Text, lblCompanyName.Font);
+		int maxWidth = (int)(360 * Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale));
+		lblCompanyName.Width = Math.Min(maxWidth, textSize.Width + 20);
+		lblCompanyName.Height = Math.Max(lblCompanyName.Height, lblCompanyName.Font.Height + 8);
 		lblCurrency.Text = "金额单位：" + (ledger.BaseCurrency?.Name ?? "人民币元");
 	}
 

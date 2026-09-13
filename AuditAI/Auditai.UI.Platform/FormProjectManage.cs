@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -5349,7 +5349,10 @@ public class FormProjectManage : ISetTheme
 		_nativeCtxMenu = new ContextMenuStrip
 		{
 			Font = new Font("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134),
-			ShowImageMargin = true
+			ShowImageMargin = true,
+			RenderMode = ToolStripRenderMode.System,
+			ImageScalingSize = new Size(24, 24),
+			AutoSize = true
 		};
 		AppendNativeLinks(_ctx.CommandLinks, _nativeCtxMenu.Items);
 		_nativeCtxMenu.Closed += NativeCtxMenu_Closed;

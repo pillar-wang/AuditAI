@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -35,6 +35,8 @@ public static class TokenTimer
 				}
 				_token = value;
 			}
+			// Token 更新成功，重置 401 自动 Relogin 标记，确保下次过期可以再次自动 Relogin
+			WebApiClient.ResetReloginFlags();
 			SaveCookieToMachine();
 		}
 	}

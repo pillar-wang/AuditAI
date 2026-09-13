@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -990,10 +990,17 @@ public class TableEditor : ISetTheme
 
 	public bool IsTableLocked => Table?.IsLocked == true;
 
-	public C1ToolBar ToolBar { get; } = new C1ToolBar
+	public ToolStrip ToolBar { get; } = new ToolStrip
 	{
-		HideFirstDelimiter = true,
-		ShowToolTips = false
+		LayoutStyle = ToolStripLayoutStyle.VerticalStackWithOverflow,
+		RenderMode = ToolStripRenderMode.System,
+		ShowItemToolTips = false,
+		GripStyle = ToolStripGripStyle.Hidden,
+		AutoSize = false,
+		Width = 94,
+		Font = new Font("微软雅黑", 9f),
+		ForeColor = Color.FromArgb(17, 24, 39),
+		ImageScalingSize = new Size(24, 24)
 	};
 
 	private readonly C1Command cmdCrossProjectDataRef = new C1Command
@@ -13277,7 +13284,7 @@ public class TableEditor : ISetTheme
 		{
 			Collapsible = false,
 			KeepRelativeSize = false,
-			Width = 104,
+			Width = 98,
 			Resizable = false,
 			Dock = PanelDockStyle.Right
 		};
@@ -13399,87 +13406,119 @@ public class TableEditor : ISetTheme
 		pnlGrid.MouseClick += PnlGrid_MouseClick;
 		c1SplitContainer2.Panels.Add(pnlGrid);
 		c1SplitContainer2.ResumeLayout();
-		ToolBar.Horizontal = false;
 		ToolBar.Dock = DockStyle.Fill;
-		ToolBar.ButtonLookVert = ButtonLookFlags.TextAndImage;
-		// 竖排工具栏：11pt 加粗(清晰且不撑大)、深色文字高对比、按钮高 52(32图标+4间距+15字高)紧凑协调
-		ToolBar.Font = new Font("微软雅黑", 11f, FontStyle.Bold);
-		ToolBar.ForeColor = Color.FromArgb(17, 24, 39);
-		ToolBar.MinButtonSize = 52;
-		RibbonImageProcess imageProcess = MainForm.ImageProcess;
-		lnkCollectFill2.Command = cmdCollectFill2;
-		cmdCollectFill2.Image = Auditai.UI.Platform.IconRes.GenerateWorkingPaper;
-		cmdCollectFill2.CommandStateQuery += CmdCollectFill2_CommandStateQuery;
-		cmdCollectFill2.Click += CmdCollectFill2_Click;
-		ToolBar.CommandLinks.Add(lnkCollectFill2);
-		lnkCalculateTable3.Command = cmdCalculateTable2;
-		cmdCalculateTable2.Image = Auditai.UI.Platform.IconRes.CalculateTable;
-		cmdCalculateTable2.CommandStateQuery += CmdCalculateTable2_CommandStateQuery;
-		cmdCalculateTable2.Click += CmdCalculateTable2_Click;
-		lnkCalculateTable3.Delimiter = true;
-		ToolBar.CommandLinks.Add(lnkCalculateTable3);
-		lnkValidateTable3.Command = cmdValidateTable2;
-		cmdValidateTable2.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("check-circle", 32, AuditTheme.SuccessText);
-		cmdValidateTable2.CommandStateQuery += CmdValidateTable2_CommandStateQuery;
-		cmdValidateTable2.Click += CmdValidateTable2_Click;
-		ToolBar.CommandLinks.Add(lnkValidateTable3);
-		lnkLockTable.Command = cmdLockTable;
-		cmdLockTable.Image = Auditai.UI.Platform.IconRes.ToggleLockTable;
-		cmdLockTable.CommandStateQuery += CmdLockTable_CommandStateQuery;
-		cmdLockTable.Click += CmdLockTable_Click;
-		ToolBar.CommandLinks.Add(lnkLockTable);
-		lnkExportTable.Command = cmdExportTable;
-		cmdExportTable.Image = Auditai.UI.Platform.IconRes.ExportExcel;
-		cmdExportTable.CommandStateQuery += CmdExportTable_CommandStateQuery;
-		cmdExportTable.Click += CmdExportTable_Click;
-		ToolBar.CommandLinks.Add(lnkExportTable);
-		lnkFoot.Command = cmdFoot;
-		cmdFoot.Image = Auditai.UI.Platform.IconRes.TableFoot;
-		cmdFoot.CommandStateQuery += CmdFoot_CommandStateQuery;
-		cmdFoot.Click += CmdFoot_Click;
-		lnkToolbarTables.Delimiter = true;
-		lnkToolbarTables.Command = cmdToolbarTables;
-		cmdToolbarTables.Image = Auditai.UI.Platform.IconRes.ToolbarTable;
-		cmdToolbarTables.Click += CmdToolbarTables_Click;
-		cmdToolbarTables.Text = "关联表格";
-		cmdToolbarTables.Image = Auditai.UI.Platform.IconRes.ToolbarTable;
-		lnkMakerSign.Command = cmdMakerSign;
-		cmdMakerSign.CommandStateQuery += CmdMakerSign_CommandStateQuery;
-		cmdMakerSign.Click += CmdMakerSign_Click;
-		lnkCheckerSign.Command = cmdCheckerSign;
-		cmdCheckerSign.CommandStateQuery += CmdCheckerSign_CommandStateQuery;
-		cmdCheckerSign.Click += CmdCheckerSign_Click;
-		lnkBack.Delimiter = true;
-		lnkBack.Command = cmdBack;
-		cmdBack.Image = Auditai.UI.Platform.IconRes.back32;
-		cmdBack.Click += CmdBack_Click;
-		lnkForward.Command = cmdForward;
-		cmdForward.Image = Auditai.UI.Platform.IconRes.forward32;
-		cmdForward.Click += CmdForward_Click;
-		lnkTicketInputMode.Command = cmdTicketInputMode;
-		lnkTicketInputMode.Delimiter = true;
-		cmdTicketInputMode.Image = Auditai.UI.Platform.IconRes.TicketMode;
-		cmdTicketInputMode.Click += CmdTicketInputMode_Click;
-		cmdDesignTicket.Click += CmdDesignTicket_Click;
-		cmdDesignTicket.CommandStateQuery += CmdDesignTicket_CommandStateQuery;
-		lnkDesignTicket.Delimiter = true;
-		lnkDesignTicket.Command = cmdDesignTicket;
-		ToolBar.CommandLinks.Add(lnkDesignTicket);
-		lnkHideToolbar.Delimiter = true;
-		lnkHideToolbar.Command = cmdHideToolbar;
-		cmdHideToolbar.Image = Auditai.UI.Platform.IconRes.HideSideToolbar;
-		cmdHideToolbar.CommandStateQuery += CmdHideToolbar_CommandStateQuery;
-		cmdHideToolbar.Click += CmdHideToolbar_Click;
-		// 跨项目数据引用工具栏按钮
-		lnkTB_CrossProjectDataRef.Delimiter = true;
-		lnkTB_CrossProjectDataRef.Command = cmdCrossProjectDataRef;
-		ToolBar.CommandLinks.Add(lnkTB_CrossProjectDataRef);
-		lnkTB_RefreshCrossProjectRefs.Command = cmdRefreshCrossProjectRefs;
-		ToolBar.CommandLinks.Add(lnkTB_RefreshCrossProjectRefs);
-		foreach (C1CommandLink commandLink in ToolBar.CommandLinks)
+		// 统一正方形按钮：按最长文字实测宽度 + 边距计算边长，
+		// 保证"跨项目引用"(5字) 在任意 DPI 下都完整显示、不截断
+		int squareSide = Math.Max(84, TextRenderer.MeasureText("跨项目引用", ToolBar.Font).Width + 18);
+		Size squareSize = new Size(squareSide, squareSide);
+		ToolBar.Width = squareSide + 8;
+		pnlToolbar.Width = squareSide + 14;
+		// 采账填充
+		var btnCollectFill = new ToolStripButton
 		{
-			imageProcess.Register(new C1CommandAdapter(commandLink.Command));
-		}
+			Text = "采账填充",
+			Image = Auditai.UI.Platform.IconRes.GenerateWorkingPaper,
+			ImageTransparentColor = Color.Magenta,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnCollectFill.Click += (s, e) => CmdCollectFill2_Click(s, null);
+		ToolBar.Items.Add(btnCollectFill);
+		// 运算表格
+		var btnCalcTable = new ToolStripButton
+		{
+			Text = "运算表格",
+			Image = Auditai.UI.Platform.IconRes.CalculateTable,
+			ImageTransparentColor = Color.Magenta,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnCalcTable.Click += (s, e) => CmdCalculateTable2_Click(s, null);
+		ToolBar.Items.Add(btnCalcTable);
+		// 校验表格
+		var btnValidate = new ToolStripButton
+		{
+			Text = "校验表格",
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("check-circle", 32, AuditTheme.SuccessText),
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnValidate.Click += (s, e) => CmdValidateTable2_Click(s, null);
+		ToolBar.Items.Add(btnValidate);
+		// 锁定表格
+		var btnLock = new ToolStripButton
+		{
+			Text = cmdLockTable.Text,
+			Image = Auditai.UI.Platform.IconRes.ToggleLockTable,
+			ImageTransparentColor = Color.Magenta,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			CheckOnClick = true,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnLock.Click += (s, e) =>
+		{
+			cmdLockTable.Checked = btnLock.Checked;
+			CmdLockTable_Click(s, null);
+		};
+		ToolBar.Items.Add(btnLock);
+		// 导出表格
+		var btnExport = new ToolStripButton
+		{
+			Text = cmdExportTable.Text,
+			Image = Auditai.UI.Platform.IconRes.ExportExcel,
+			ImageTransparentColor = Color.Magenta,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnExport.Click += (s, e) => CmdExportTable_Click(s, null);
+		ToolBar.Items.Add(btnExport);
+		// 关联表格
+		var btnToolbarTables = new ToolStripButton
+		{
+			Text = "关联表格",
+			Image = Auditai.UI.Platform.IconRes.ToolbarTable,
+			ImageTransparentColor = Color.Magenta,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnToolbarTables.Click += (s, e) => NativeMenuShim.Show(ctxToolbarTables, ToolBar, ToolBar.PointToClient(Cursor.Position));
+		ToolBar.Items.Add(btnToolbarTables);
+		// 跨项目数据引用
+		var btnCrossRef = new ToolStripButton
+		{
+			Text = cmdCrossProjectDataRef.Text,
+			Image = cmdCrossProjectDataRef.Image,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnCrossRef.Click += (s, e) => CmdCrossProjectDataRef_Click(s, null);
+		ToolBar.Items.Add(btnCrossRef);
+		// 刷新引用
+		var btnRefreshRef = new ToolStripButton
+		{
+			Text = cmdRefreshCrossProjectRefs.Text,
+			Image = cmdRefreshCrossProjectRefs.Image,
+			TextImageRelation = TextImageRelation.ImageAboveText,
+			AutoSize = false,
+			Size = squareSize,
+			Margin = new Padding(2, 4, 2, 4)
+		};
+		btnRefreshRef.Click += (s, e) => CmdRefreshCrossProjectRefs_Click(s, null);
+		ToolBar.Items.Add(btnRefreshRef);
 		HideValidationPane();
 		_grid.FilterManager.Changed += FilterManager_Changed;
 		InitializeContextMenu();
@@ -15459,64 +15498,6 @@ public class TableEditor : ISetTheme
 		_grid.MouseLeave += delegate
 		{
 			tooltipManager.Hide();
-		};
-		ToolBar.CurrentLinkChanged += delegate(object s1, CommandLinkEventArgs e1)
-		{
-			if (!tooltipManager.ShouldDisplay)
-			{
-				tooltipManager.Hide();
-			}
-			else if (e1.CommandLink == null)
-			{
-				tooltipManager.Hide();
-			}
-			else
-			{
-				string str = null;
-				switch (e1.CommandLink.Text.Replace("\n", ""))
-				{
-				case "填表提示":
-					str = TipResource.云表格_填表提示;
-					break;
-				case "列对应采账设置":
-					str = TipResource.列对应采数设置按钮;
-					break;
-				case "单元格采账设置":
-					str = TipResource.单元格采数设置按钮;
-					break;
-				case "采账填充":
-					str = TipResource.采数填充按钮;
-					break;
-				case "表底签名":
-					str = TipResource.云表格_表底签名;
-					break;
-				case "关联表格":
-					str = TipResource.云表格_侧边栏_关联表格;
-					break;
-				case "运算表格":
-					str = TipResource.当前表运算;
-					break;
-				case "校验表格":
-					str = TipResource.当前表校验;
-					break;
-				case "后退":
-					str = TipResource.Ribbon菜单_主窗体右上角配置栏_回退;
-					break;
-				case "前进":
-					str = TipResource.Ribbon菜单_主窗体右上角配置栏_前进;
-					break;
-				}
-				if (e1.CommandLink.Text.Replace("\n", "") == StringConstBase.Current.TableNote)
-				{
-					str = TipResource.底稿说明;
-				}
-				TipInfo tipInfo = TipInfo.Parse(str);
-				if (tipInfo != null)
-				{
-					Rectangle bounds = e1.CommandLink.Bounds;
-					tooltipManager.Show(tipInfo, ToolBar, bounds.Left, bounds.Top);
-				}
-			}
 		};
 	}
 

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -250,7 +250,7 @@ public class ProjectHierarchy
         _grid.Cols.Count = 1;
         _grid.Cols.Fixed = 0;
         _grid.Tree.Column = 0;
-        _grid.Rows.DefaultSize = 33;
+        _grid.Rows.DefaultSize = 40;
         _grid.Cols[0].Width = 200;
         _grid.MouseClick += _grid_MouseClick;
         _grid.MouseDoubleClick += _grid_MouseDoubleClick;

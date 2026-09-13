@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -90,7 +90,7 @@ public class FormTimelineViewer
 			Dock = DockStyle.Fill,
 			RenderMode = ToolStripRenderMode.System,
 			GripStyle = ToolStripGripStyle.Hidden,
-			Text = string.Empty
+			Text = string.Empty, ImageScalingSize = new Size(24, 24)
 		};
 
 		var btnPrevious = new ToolStripButton("上一个版本")

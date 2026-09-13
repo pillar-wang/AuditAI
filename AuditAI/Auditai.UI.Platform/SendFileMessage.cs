@@ -41,7 +41,7 @@ public class SendFileMessage : IActionMessage
 							Text = Auditai.Model.User.Current.Name + "接受了发送的文件",
 							Value = jObject.ToString()
 						}.ToString());
-						AppCommandTabs.Ledger.Select();
+						Program.MainForm.ShowLedgerWindow();
 					}
 				}
 				else

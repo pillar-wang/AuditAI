@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Auditai.UI.Platform;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿namespace Auditai.UI.Platform;
 
 public static class AppCommands
 {
@@ -108,6 +108,9 @@ public static class AppCommands
 
 
 	public static AppCommandLedgerPrint LedgerPrint { get; } = new AppCommandLedgerPrint();
+
+
+	public static AppCommandLedgerWindow LedgerWindow { get; } = new AppCommandLedgerWindow();
 
 
 	public static AppCommandExport Export { get; } = new AppCommandExport();

@@ -1,10 +1,9 @@
 using System.Drawing;
 using System.Windows.Forms;
-using C1.Win.C1Input;
 
 namespace Auditai.UI.Controls;
 
-public class C1ButtonEx_SupportSelfBorder : C1Button
+public class C1ButtonEx_SupportSelfBorder : Button
 {
 	public Color BorderColor { get; set; } = Color.Transparent;
 

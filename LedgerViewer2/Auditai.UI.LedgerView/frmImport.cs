@@ -1,4 +1,4 @@
-﻿extern alias CrawlerModelAlias;
+extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -571,7 +571,7 @@ public class frmImport : C1RibbonForm
 			Dock = DockStyle.Fill,
 			RenderMode = ToolStripRenderMode.System,
 			GripStyle = ToolStripGripStyle.Hidden,
-			Text = string.Empty
+			Text = string.Empty, ImageScalingSize = new Size(24, 24)
 		};
 
 		// ★ 1. 生成账套

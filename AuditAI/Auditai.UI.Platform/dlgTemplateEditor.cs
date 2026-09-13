@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -121,6 +121,8 @@ public class dlgTemplateEditor : C1RibbonForm
 	{
 		base.ShowInTaskbar = false;
 		InitializeComponent();
+		// 为搜索框设置独立编辑菜单：避免访问进程内可能已被释放的共享 ContextMenuStrip（点击搜索按钮显示搜索框时曾抛 ObjectDisposedException）
+		txbSearch.ContextMenuStrip = BuildSearchBoxContextMenu();
 		base.Load += DlgTemplateEditor_Load;
 		base.Shown += DlgTemplateEditor_Shown;
 		base.StartPosition = FormStartPosition.CenterScreen;
@@ -138,6 +140,22 @@ public class dlgTemplateEditor : C1RibbonForm
 	private void DlgTemplateEditor_Load(object sender, EventArgs e)
 	{
 		ToListOrTile(_ListOrTile);
+	}
+
+	/// <summary>构建搜索框独立编辑菜单（剪切/复制/粘贴/全选），避免依赖进程内共享 ContextMenuStrip。</summary>
+	private static ContextMenuStrip BuildSearchBoxContextMenu()
+	{
+		ContextMenuStrip menu = new ContextMenuStrip { RenderMode = ToolStripRenderMode.System, ImageScalingSize = new Size(24, 24), AutoSize = true };
+		ToolStripMenuItem cut = new ToolStripMenuItem("剪切", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Cut(); });
+		ToolStripMenuItem copy = new ToolStripMenuItem("复制", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Copy(); });
+		ToolStripMenuItem paste = new ToolStripMenuItem("粘贴", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.Paste(); });
+		ToolStripMenuItem selectAll = new ToolStripMenuItem("全选", null, (s, e) => { if (s is ToolStripMenuItem item && item.Owner is ContextMenuStrip owner && owner.SourceControl is C1.Win.C1Input.C1TextBox box) box.SelectAll(); });
+		menu.Items.Add(cut);
+		menu.Items.Add(copy);
+		menu.Items.Add(paste);
+		menu.Items.Add(new ToolStripSeparator());
+		menu.Items.Add(selectAll);
+		return menu;
 	}
 
 	private void TxbSearch_TextChanged(object sender, EventArgs e)
@@ -711,7 +729,7 @@ public class dlgTemplateEditor : C1RibbonForm
 		this.ckbSearch.Appearance = System.Windows.Forms.Appearance.Button;
 		this.ckbSearch.BackColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BackgroundImage = Auditai.UI.Platform.IconRes.btnSearch;
-		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+		this.ckbSearch.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 		this.ckbSearch.BorderColor = System.Drawing.Color.Transparent;
 		this.ckbSearch.BorderStyle = System.Windows.Forms.BorderStyle.None;
 		this.ckbSearch.FlatAppearance.BorderSize = 0;

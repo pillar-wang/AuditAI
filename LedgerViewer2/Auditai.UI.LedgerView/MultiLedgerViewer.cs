@@ -389,6 +389,8 @@ public class MultiLedgerViewer
 	public void SetTheme()
 	{
 		_tileList.TileBorderColor = Color.Transparent;
+		// 默认面板磁贴控件同样恢复透明边框：主题应用会把 TileBorderColor 设为主题色（非透明），覆盖程序设置的 Transparent
+		LedgerDefaultPanel?.SetTheme();
 		foreach (KeyValuePair<string, LedgerViewer> item in OpenedLedgerViewerDic)
 		{
 			item.Value.SetTheme();
