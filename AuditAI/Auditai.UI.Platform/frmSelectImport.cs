@@ -225,7 +225,7 @@ public class frmSelectImport : C1RibbonForm
 		}
 	}
 
-	private async Task<Auditai.Model.Table> OpenTableImpl(Auditai.Model.Table table)
+	private Task<Auditai.Model.Table> OpenTableImpl(Auditai.Model.Table table)
 	{
 		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
 		ProgressForm2 progressForm = new ProgressForm2();
@@ -241,7 +241,7 @@ public class frmSelectImport : C1RibbonForm
 			table.LoadAndReturn();
 			return Task.CompletedTask;
 		});
-		return table;
+		return Task.FromResult(table);
 	}
 
 	private void btnCertain_Click(object sender, EventArgs e)

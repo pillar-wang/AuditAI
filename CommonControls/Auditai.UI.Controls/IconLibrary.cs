@@ -307,6 +307,31 @@ public static class IconLibrary
 		}
 	}
 
+	/// <summary>生成固定像素大小的字形位图（不随 DPI 放大，尺寸即像素）。
+	/// 用于 C1FlexGrid 等"按原生位图尺寸绘制、不缩放图片"的宿主（如树形结构节点图标），
+	/// 避免 DPI 放大的位图超出容器/行高被裁剪。</summary>
+	public static Bitmap CreateFixedBitmap(string semanticName, int size, Color color, string style = StyleFill)
+	{
+		string normalizedStyle = string.IsNullOrEmpty(style) ? StyleFill : style;
+		int pixel = Math.Max(1, size);
+		string key = "fixed|" + semanticName + "|" + pixel + "|" + color.ToArgb() + "|" + normalizedStyle;
+		lock (_lock)
+		{
+			if (_bitmapCache.TryGetValue(key, out Bitmap cached) && !IsDisposed(cached))
+			{
+				return cached;
+			}
+			Bitmap bmp = new Bitmap(pixel, pixel, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			using (Graphics g = Graphics.FromImage(bmp))
+			{
+				g.SmoothingMode = SmoothingMode.AntiAlias;
+				DrawGlyph(g, semanticName, new Rectangle(0, 0, pixel, pixel), color, normalizedStyle);
+			}
+			_bitmapCache[key] = bmp;
+			return bmp;
+		}
+	}
+
 	/// <summary>生成窗体标题图标（Form.Icon，透明背景字形位图转换），Fill 实心。位图留在缓存中，不可释放。</summary>
 	public static Icon CreateIcon(string semanticName, int size, Color color)
 	{

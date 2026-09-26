@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -206,6 +206,60 @@ internal class SubsidiaryEditor : ISetTheme
 		InitComponent();
 		BindSubContexMenu();
 		Initialize();
+		// 订阅抽样完成事件：先减后加，防止重复订阅（该类无 Dispose 生命周期，静态事件需防叠加）
+		FilterManager.SampleExecuted -= OnFilterManagerSampleExecuted;
+		FilterManager.SampleExecuted += OnFilterManagerSampleExecuted;
+	}
+
+	// 解除静态事件订阅，避免关闭账套后编辑器实例被钉住泄漏
+	internal void UnsubscribeSampleExecuted()
+	{
+		FilterManager.SampleExecuted -= OnFilterManagerSampleExecuted;
+	}
+
+	// 统一标记写入：显式维护标记状态与来源（不使用 ToggleMark，其不维护来源）
+	private static void MarkVoucher(Voucher voucher, bool marked, int source)
+	{
+		voucher.VoucherMark = marked;
+		voucher.VoucherMarkSource = (marked ? source : 0);
+		voucher.Dirty = 2;
+	}
+
+	// 抽样完成：将本网格抽中的未标记凭证加入标记关注（来源=抽凭样本）
+	private void OnFilterManagerSampleExecuted(object sender, SampleExecutedEventArgs e)
+	{
+		try
+		{
+			if (e == null || !ReferenceEquals(e.Grid, grdSubsidiary) || e.RowIndexes == null)
+			{
+				return;
+			}
+			int num = 0;
+			foreach (int rowIndex in e.RowIndexes)
+			{
+				if (rowIndex < 0 || rowIndex >= grdSubsidiary.BodyRowsCount)
+				{
+					continue;
+				}
+				if (!(grdSubsidiary.BodyGetRow(rowIndex).UserData is Voucher voucher) || voucher.VoucherMark)
+				{
+					continue;
+				}
+				MarkVoucher(voucher, marked: true, Voucher.MARK_SOURCE_SAMPLE);
+				num++;
+			}
+			if (num > 0)
+			{
+				Ledger.Save();
+				RefreshSubsidiaryGridBackground();
+				grdSubsidiary.Invalidate();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"已将 {num} 张抽中凭证加入标记关注");
+			}
+		}
+		catch
+		{
+			// 异常隔离：不影响抽样主流程
+		}
 	}
 
 	public void ShowSideToolbar()
@@ -262,7 +316,7 @@ internal class SubsidiaryEditor : ISetTheme
 		pnlSubsidiaryTitle.SizeRatio = 5.025;
 		pnlSubsidiaryTitle.Controls.Add(btnSubsidiaryBack);
 		pnlSubsidiaryTitle.Controls.Add(lblSubsidiaryTitle);
-		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		// 高 DPI 适配：页眉控件尺寸/位置按 DPI 比例缩放（字体按 Point 随 DPI 放大，像素尺寸写死会导致文字显示不全、高度不足）
 		float dpi = Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		lblAccountName.TextDetached = true;
@@ -326,7 +380,7 @@ internal class SubsidiaryEditor : ISetTheme
 		grdSubsidiary.DrawMode = DrawModeEnum.OwnerDraw;
 		grdSubsidiary.ExtendLastCol = true;
 		grdSubsidiary.Font = font2;
-		grdSubsidiary.Rows.DefaultSize = 33;
+		grdSubsidiary.Rows.DefaultSize = 28;
 		grdSubsidiary.Tree.LineColor = Color.DimGray;
 		grdSubsidiary.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		grdSubsidiary.MouseDoubleClick += GrdSubsidiary_MouseDoubleClick;

@@ -393,15 +393,13 @@ public class DocumentSyncService
                 using (var verCmd = conn.CreateCommand())
                 {
                     verCmd.Transaction = transaction;
-                    if (hasDocument)
-                    {
-                        verCmd.CommandText = "UPDATE `Document` SET Version=@version WHERE Id=@id AND Version=@expected";
-                        verCmd.Parameters.AddWithValue("@expected", expectedVersion);
-                    }
-                    else
-                    {
-                        verCmd.CommandText = "UPDATE `Document` SET Version=@version WHERE Id=@id";
-                    }
+                    // 并发修复：新文档分支原先没有 AND Version=@expected，两个客户端同时首推同一文档时
+                    // 双方都返回成功，段落各自 INSERT OR REPLACE 造成交错/丢失。
+                    // 新插入的 Document.Version 默认即 0（建表 DEFAULT 0，=expectedVersion），
+                    // 统一带条件后单客户端语义不变，并发冲突时 affected=0 走 Rollback + 重试，
+                    // 重试时读到 hasDocument=true 转入带条件的 UPDATE 路径。
+                    verCmd.CommandText = "UPDATE `Document` SET Version=@version WHERE Id=@id AND Version=@expected";
+                    verCmd.Parameters.AddWithValue("@expected", expectedVersion);
                     verCmd.Parameters.AddWithValue("@version", newVersion);
                     verCmd.Parameters.AddWithValue("@id", documentId);
                     affected = await verCmd.ExecuteNonQueryAsync();
@@ -410,8 +408,8 @@ public class DocumentSyncService
                 if (affected == 0)
                 {
                     transaction.Rollback();
-                    _logger.LogWarning("PushDocument 乐观锁冲突，重试: DocumentId={DocumentId} Attempt={Attempt}",
-                        documentId, attempt + 1);
+                    _logger.LogWarning("PushDocument 乐观锁冲突，重试: DocumentId={DocumentId} Attempt={Attempt} HasDocument={HasDocument}",
+                        documentId, attempt + 1, hasDocument);
                     continue;
                 }
 

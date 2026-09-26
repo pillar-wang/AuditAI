@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System;
+﻿﻿﻿using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
@@ -586,7 +586,7 @@ public class TicketPrinter : IDisposable
 		};
 		if (saveFileDialog.ShowDialog() == DialogResult.OK)
 		{
-			using (FileStream stream = File.OpenWrite(saveFileDialog.FileName))
+			using (FileStream stream = File.Create(saveFileDialog.FileName))
 			{
 				_pd.Export(stream, _pdfExporterProvider, showProgress: true);
 			}
@@ -597,6 +597,7 @@ public class TicketPrinter : IDisposable
 	public void SetFitWidth(bool value)
 	{
 		PageSetup.FitPageWidth = value;
+		Ticket.Table.TagTicketDirty();
 		Populate();
 	}
 

@@ -17,6 +17,9 @@
     <Reference Include="Dapper">
       <HintPath>..\Libs\Dapper.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 </Project>

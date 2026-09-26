@@ -11636,7 +11636,7 @@ public class TableEditor : ISetTheme
 				Auditai.Model.Row row = Table.Rows[num];
 				if (!CanEditRow(row) || row.IsLocked)
 				{
-					e.Image = Auditai.UI.Platform.IconRes.TableLock;
+					e.Image = Auditai.UI.Platform.IconRes.TableLockHeader;
 					e.Style.ImageAlign = ImageAlignEnum.LeftCenter;
 					e.Style.Display = DisplayEnum.Overlay;
 				}
@@ -11649,7 +11649,7 @@ public class TableEditor : ISetTheme
 			Auditai.Model.Column column = Table.Columns[num2];
 			if (!CanEditColumn(column) || column.IsLocked)
 			{
-				e.Image = Auditai.UI.Platform.IconRes.TableLock;
+				e.Image = Auditai.UI.Platform.IconRes.TableLockHeader;
 				e.Style.Display = DisplayEnum.Overlay;
 			}
 		}
@@ -11873,13 +11873,17 @@ public class TableEditor : ISetTheme
 			}
 			else
 			{
-				styleNew.BackColor = GetBackColor();
-				if (Auditai.UI.Controls.Util.RgbEquals(styleNew.BackColor, Color.White))
+				Color rawBackColor = GetBackColor();
+				// 门卫：只要单元格/列没有手动设置背景色（Transparent 或纯白），就走自动着色逻辑。
+				// 用 A==0 判断 Transparent 不能少——默认样式背景是 Transparent，RGB(0,0,0) 无法用 RgbEquals 对齐 White
+				bool noManualBackColor = rawBackColor.A == 0 || Auditai.UI.Controls.Util.RgbEquals(rawBackColor, Color.White);
+				styleNew.BackColor = rawBackColor;
+				if (noManualBackColor)
 				{
 					Auditai.Model.Cell headerCell;
 					if (cell.HasFormula)
 					{
-						styleNew.BackColor = Auditai.UI.Controls.Util.DarkenColor(UserSet.Config.TableStyle.FormalaColor, 0.08);
+						styleNew.BackColor = UserSet.Config.TableStyle.FormalaColor;
 					}
 					else if (cell.HasColumnFormula())
 					{
@@ -15391,7 +15395,7 @@ public class TableEditor : ISetTheme
 	{
 		if (IsTableLocked)
 		{
-			_grid.SetCellImage(0, 0, Auditai.UI.Platform.IconRes.TableLock);
+			_grid.SetCellImage(0, 0, Auditai.UI.Platform.IconRes.TableLockHeader);
 		}
 		else
 		{

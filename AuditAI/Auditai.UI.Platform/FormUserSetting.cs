@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -19,7 +19,7 @@ public class FormUserSetting
 {
 	private const string DefaultFontFamily = "微软雅黑";
 
-	private readonly int DefaultHeight = 26;
+	private readonly int DefaultHeight = 32;
 
 	private readonly Dictionary<object, string> TotalDisplay = new Dictionary<object, string>
 	{
@@ -239,7 +239,7 @@ public class FormUserSetting
 		form.MinimizeBox = false;
 		form.MaximizeBox = false;
 		form.Icon = Auditai.UI.Controls.Theme.SelectedAuditaiTheme.GetThemedIcon(IconRes.Settings);
-		form.Size = new Size(750, 630);
+		form.Size = new Size(900, 680);
 		form.AcceptButton = btnConfirm;
 		form.Text = "系统设置";
 		form.ShowIcon = true;
@@ -262,7 +262,7 @@ public class FormUserSetting
 			Size = new Size(800, 350),
 			TabsSpacing = 10,
 			ShowTabList = false,
-			Font = new Font("微软雅黑", 10f),
+			Font = new Font("微软雅黑", 11f),
 			TabsShowFocusCues = false,
 			Indent = 0
 		};
@@ -270,7 +270,7 @@ public class FormUserSetting
 		{
 			BasicSettingPage = new C1DockingTabPage();
 			BasicSettingPage.Text = "基本设置";
-			BasicSettingPage.Font = new Font("微软雅黑", 9f);
+			BasicSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -279,7 +279,7 @@ public class FormUserSetting
 		{
 			MenuSettingPage = new C1DockingTabPage();
 			MenuSettingPage.Text = "菜单设置";
-			MenuSettingPage.Font = new Font("微软雅黑", 9f);
+			MenuSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -288,7 +288,7 @@ public class FormUserSetting
 		{
 			TableSettingPage = new C1DockingTabPage();
 			TableSettingPage.Text = "表格样式";
-			TableSettingPage.Font = new Font("微软雅黑", 9f);
+			TableSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -297,7 +297,7 @@ public class FormUserSetting
 		{
 			LedgerSettingPage = new C1DockingTabPage();
 			LedgerSettingPage.Text = "账套设置";
-			LedgerSettingPage.Font = new Font("微软雅黑", 9f);
+			LedgerSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -306,7 +306,7 @@ public class FormUserSetting
 		{
 			DocSettingPage = new C1DockingTabPage();
 			DocSettingPage.Text = "文档设置";
-			DocSettingPage.Font = new Font("微软雅黑", 9f);
+			DocSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -315,7 +315,7 @@ public class FormUserSetting
 		{
 			SignSettingPage = new C1DockingTabPage();
 			SignSettingPage.Text = "签名设置";
-			SignSettingPage.Font = new Font("微软雅黑", 9f);
+			SignSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -324,7 +324,7 @@ public class FormUserSetting
 		{
 			CollectSettingPage = new C1DockingTabPage();
 			CollectSettingPage.Text = "智能填充";
-			CollectSettingPage.Font = new Font("微软雅黑", 9f);
+			CollectSettingPage.Font = new Font("微软雅黑", 10.5f);
 		}
 		catch (NullReferenceException)
 		{
@@ -336,16 +336,16 @@ public class FormUserSetting
 		DockingTab.Controls.Add(DocSettingPage);
 		btnConfirm = new C1Button
 		{
-			Location = new Point(550, 8),
-			Font = new Font("微软雅黑", 9f),
-			Size = new Size(70, 26),
+			Anchor = AnchorStyles.Top | AnchorStyles.Right,
+			Font = new Font("微软雅黑", 10.5f),
+			Size = new Size(80, 32),
 			Text = "确定"
 		};
 		btnCancel = new C1Button
 		{
-			Location = new Point(650, 8),
-			Font = new Font("微软雅黑", 9f),
-			Size = new Size(70, 26),
+			Anchor = AnchorStyles.Top | AnchorStyles.Right,
+			Font = new Font("微软雅黑", 10.5f),
+			Size = new Size(80, 32),
 			Text = "取消"
 		};
 		btnConfirm.Click += btnConfirm_Click;
@@ -367,6 +367,16 @@ public class FormUserSetting
 		pnlBottomBtn.Controls.Add(btnCancel);
 		pnlBottomBtn.Controls.Add(btnConfirm);
 		ctnSetting.Panels.Add(pnlBottomBtn);
+		// 按钮右对齐（Cancel 在左，Confirm 在右，间距 10，右边距 15）——等父容器首次 Layout 后用 ClientSize 校准
+		bool calibrated = false;
+		pnlBottomBtn.Layout += delegate
+		{
+			if (calibrated) return;
+			calibrated = true;
+			int pw = pnlBottomBtn.ClientSize.Width;
+			btnConfirm.Location = new Point(pw - 15 - btnConfirm.Width, 8);
+			btnCancel.Location = new Point(btnConfirm.Location.X - 10 - btnCancel.Width, 8);
+		};
 		btnConfirm.BringToFront();
 		btnCancel.BringToFront();
 		form.Controls.Add(ctnSetting);
@@ -753,9 +763,11 @@ public class FormUserSetting
 		TableSettingPanel = new C1InputPanel
 		{
 			AutoSizeElement = AutoSizeElement.Both,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			ChildSpacing = new Size(4, 10),
-			Dock = DockStyle.Fill
+			Dock = DockStyle.Fill,
+			// 表格样式页行数较多、内容高，超出页面时出现纵向滚动条，避免底部控件被裁剪不可见
+			ScrollBars = ScrollBars.Vertical
 		};
 		int width = 90;
 		int width2 = 100;
@@ -963,11 +975,13 @@ public class FormUserSetting
 		return new C1InputPanel
 		{
 			AutoSizeElement = AutoSizeElement.Both,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			ChildSpacing = new Size(2, 10),
 			Dock = DockStyle.Fill,
 			BorderColor = Color.Transparent,
-			BorderThickness = 0
+			BorderThickness = 0,
+			// 内容超过页面高度时出现纵向滚动条，防止底部控件被裁剪
+			ScrollBars = ScrollBars.Vertical
 		};
 	}
 
@@ -979,7 +993,7 @@ public class FormUserSetting
 			Text = text,
 			Width = width,
 			Break = breakType,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -992,7 +1006,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Text = text,
 			Break = breakType,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -1005,7 +1019,7 @@ public class FormUserSetting
 			DropDownStyle = InputComboBoxStyle.DropDownList,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			Width = width,
 			Height = DefaultHeight
 		};
@@ -1027,22 +1041,26 @@ public class FormUserSetting
 		{
 			HorizontalAlign = InputContentAlignment.Far,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			Text = text,
 			Height = DefaultHeight
 		};
-		if (width > 0)
-		{
-			inputLabel.Width = width;
-		}
+		// 标签宽度必须能容纳其文字（中文按字号约 14px/字 + 边距），否则文字会截断或被相邻控件遮挡
+		int fit = MeasureTextWidth(inputLabel.Font, text) + 10;
+		inputLabel.Width = width > 0 ? Math.Max(width, fit) : fit;
 		return inputLabel;
+	}
+
+	private static int MeasureTextWidth(Font font, string text)
+	{
+		return TextRenderer.MeasureText(text, font).Width;
 	}
 
 	private InputGroupHeader MakeGroupHeader(string text, bool collapsed = false)
 	{
 		return new InputGroupHeader
 		{
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			Collapsible = true,
 			Collapsed = collapsed,
 			Text = text,
@@ -1057,7 +1075,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center
 		};
@@ -1070,7 +1088,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
 			Text = string.Empty
@@ -1084,7 +1102,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			Width = width,
 			Break = breakType,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
 			Text = text
@@ -1098,7 +1116,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			Break = breakType,
 			Width = width
 		};
@@ -1111,7 +1129,7 @@ public class FormUserSetting
 			Height = DefaultHeight,
 			HorizontalAlign = InputContentAlignment.Near,
 			VerticalAlign = InputContentAlignment.Center,
-			Font = new Font("微软雅黑", 9f),
+			Font = new Font("微软雅黑", 10.5f),
 			Break = breakType,
 			Width = width
 		};

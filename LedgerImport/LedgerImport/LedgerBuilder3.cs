@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -57,6 +57,8 @@ public class LedgerBuilder3
 		BuildBalances();
 		OnProgressChanged("正在读取辅助核算");
 		BuildAuxBalance();
+		OnProgressChanged("正在读取多维组合余额");
+		BuildCombo();
 		OnProgressChanged("正在读取会计凭证");
 		BuildVoucher();
 		OnProgressChanged("账套数据读取完成");
@@ -1626,6 +1628,303 @@ public class LedgerBuilder3
 					account.ItemBalance.Add(item, new ItemBalance());
 				}
 				account.ItemBalance[item].Balance += num;
+			}
+		}
+	}
+
+	// 年初多维组合余额表：同一套 tempAuxType 按「类别名+编码」找/建 Item，同类别同编码必须返回同一实例，禁止重复建档
+	private Item GetOrCreateComboItem(string className, string code, string name)
+	{
+		Dictionary<string, Item> dictionary;
+		if (!tempAuxType.TryGetValue(className, out dictionary))
+		{
+			ItemClass itemClass = new ItemClass
+			{
+				Code = (tempAuxType.Count + 1).ToString().PadLeft(3, '0'),
+				Name = className
+			};
+			Item item2 = new Item
+			{
+				Code = code,
+				Name = name,
+				ItemClass = itemClass
+			};
+			_ledger.Items.Add(item2);
+			itemClass.Items.Add(item2);
+			_ledger.ItemClasses.Add(itemClass);
+			dictionary = new Dictionary<string, Item>();
+			dictionary.Add(item2.Code, item2);
+			tempAuxType.Add(itemClass.Name, dictionary);
+			return item2;
+		}
+		Item item3;
+		if (dictionary.TryGetValue(code, out item3))
+		{
+			return item3;
+		}
+		item3 = new Item
+		{
+			Code = code,
+			Name = name,
+			ItemClass = dictionary.First().Value.ItemClass
+		};
+		item3.ItemClass.Items.Add(item3);
+		_ledger.Items.Add(item3);
+		dictionary.Add(item3.Code, item3);
+		return item3;
+	}
+
+	private void BuildCombo()
+	{
+		DataTable comboTable = DataSource.ComboTable;
+		if (comboTable == null || comboTable.Rows.Count == 0)
+		{
+			return;
+		}
+		DataColumn col = FindColumn(comboTable, "科目代码", throwExceptionWhenNotFound: true);
+		DataColumn colType = FindColumn(comboTable, "辅助核算类别", throwExceptionWhenNotFound: true);
+		DataColumn colCode = FindColumn(comboTable, "辅助核算代码", throwExceptionWhenNotFound: true);
+		DataColumn colName = FindColumn(comboTable, "辅助核算名称", throwExceptionWhenNotFound: true);
+		DataColumn colDebit = FindColumn(comboTable, "年初借方余额", throwExceptionWhenNotFound: true);
+		DataColumn colCredit = FindColumn(comboTable, "年初贷方余额", throwExceptionWhenNotFound: true);
+		Dictionary<string, Account> dictionary = _ledger.Accounts.ToDictionary((Account t) => t.Code, (Account t) => t);
+		Dictionary<Account, List<ItemComboBalance>> comboByAccount = new Dictionary<Account, List<ItemComboBalance>>();
+		Dictionary<Account, List<DataRow>> comboRows = new Dictionary<Account, List<DataRow>>();
+		List<Account> accountOrder = new List<Account>();
+		Dictionary<string, List<string>> baselineByCode = new Dictionary<string, List<string>>();
+		string text = null;
+		string text3 = null;
+		for (int i = 0; i < comboTable.Rows.Count; i++)
+		{
+			DataRow row = comboTable.Rows[i];
+			string accCode = row[col]?.ToString()?.Trim();
+			accCode = (string.IsNullOrEmpty(accCode) ? text : accCode);
+			text = accCode;
+			string auxType = row[colType]?.ToString()?.Trim();
+			auxType = (string.IsNullOrEmpty(auxType) ? text3 : auxType);
+			text3 = auxType;
+			string auxCode = row[colCode]?.ToString()?.Trim();
+			string auxName = row[colName]?.ToString()?.Trim();
+			// 全空行/分隔行：科目代码与辅助代码、名称均空，与辅助余额表 BuildAuxBalance 的跳过口径一致
+			if (string.IsNullOrEmpty(accCode) || (string.IsNullOrEmpty(auxCode) && string.IsNullOrEmpty(auxName)))
+			{
+				continue;
+			}
+			Account account;
+			if (!dictionary.TryGetValue(accCode, out account))
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboAccountNotFound,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(row),
+						ColTag = comboTable.GetTag(col),
+						UserData = accCode
+					}
+				};
+			}
+			if (account.Children.Count > 0)
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboAccountNotLeaf,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(row),
+						ColTag = comboTable.GetTag(col),
+						UserData = accCode
+					}
+				};
+			}
+			// 类别为空（且无上一行可下移）直接按段数不一致报错定位，避免 Split 空引用落到通用异常
+			if (string.IsNullOrEmpty(auxType))
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboSegmentMismatch,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(row),
+						ColTag = comboTable.GetTag(colType),
+						UserData = accCode
+					}
+				};
+			}
+			string[] array = auxType.Split(new char[1] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] array2 = auxCode.Split(new char[1] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] array3 = auxName.Split(new char[1] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+			if (array.Length < 1 || array.Length != array2.Length || array.Length != array3.Length)
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboSegmentMismatch,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(row),
+						ColTag = comboTable.GetTag(colType),
+						UserData = accCode
+					}
+				};
+			}
+			// 已挂接类别以该科目辅助余额表（ItemBalance）中出现过的 ItemClass 为准
+			HashSet<string> hashSet = new HashSet<string>(account.ItemBalance.Keys.Select((Item it) => it.ItemClass.Name));
+			for (int m = 0; m < array.Length; m++)
+			{
+				if (!hashSet.Contains(array[m]))
+				{
+					throw new ImportException2
+					{
+						FailureReason = FailureReasonEnum.ComboClassNotAttached,
+						FailureContext = new FailureContext
+						{
+							Table = TableEnum.COMBO,
+							RowTag = comboTable.GetTag(row),
+							ColTag = comboTable.GetTag(colType),
+							UserData = accCode + " " + array[m]
+						}
+					};
+				}
+			}
+			List<string> baseline;
+			if (!baselineByCode.TryGetValue(accCode, out baseline))
+			{
+				baseline = array.ToList();
+				baselineByCode.Add(accCode, baseline);
+			}
+			else if (!baseline.SequenceEqual(array))
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboClassSetInconsistent,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(row),
+						ColTag = comboTable.GetTag(colType),
+						UserData = accCode
+					}
+				};
+			}
+			// 余额归一与 BuildAuxBalance 的 num 完全一致：借正贷负原值，不按科目方向翻转
+			object obj = row[colDebit];
+			object obj2 = row[colCredit];
+			decimal num = ((decimal.TryParse(obj?.ToString(), out var result) && result != 0m) ? result : ((!decimal.TryParse(obj2?.ToString(), out var result2) || !(result2 != 0m)) ? default(decimal) : (-result2)));
+			ItemComboBalance combo = new ItemComboBalance
+			{
+				Balance = num
+			};
+			for (int n = 0; n < array.Length; n++)
+			{
+				combo.Items.Add(GetOrCreateComboItem(array[n], array2[n], array3[n]));
+			}
+			account.ComboBalances.Add(combo);
+			List<ItemComboBalance> list;
+			List<DataRow> list2;
+			if (!comboByAccount.TryGetValue(account, out list))
+			{
+				list = new List<ItemComboBalance>();
+				list2 = new List<DataRow>();
+				comboByAccount.Add(account, list);
+				comboRows.Add(account, list2);
+				accountOrder.Add(account);
+			}
+			else
+			{
+				list2 = comboRows[account];
+			}
+			list.Add(combo);
+			list2.Add(row);
+		}
+		if (comboByAccount.Count == 0)
+		{
+			return;
+		}
+		foreach (Account account2 in accountOrder)
+		{
+			List<ItemComboBalance> list3 = comboByAccount[account2];
+			List<DataRow> list4 = comboRows[account2];
+			DataRow firstRow = list4[0];
+			// 总额勾稽：组合期初合计必须等于科目年初余额（均为借正贷负口径，允许 0.01 误差）
+			decimal sum = list3.Sum((ItemComboBalance c) => c.Balance);
+			if (Math.Abs(sum - account2.Balance) > 0.01m)
+			{
+				throw new ImportException2
+				{
+					FailureReason = FailureReasonEnum.ComboTotalNotBalance,
+					FailureContext = new FailureContext
+					{
+						Table = TableEnum.COMBO,
+						RowTag = comboTable.GetTag(firstRow),
+						ColTag = comboTable.GetTag(colDebit),
+						UserData = $"科目 {account2.Code} 组合期初合计 {sum:N2} ≠ 科目年初余额 {account2.Balance:N2}，差额 {sum - account2.Balance:N2}"
+					}
+				};
+			}
+			// 逐轴勾稽：按类别把组合行汇总到每个 Item，与辅助余额表单项余额逐一比较（缺失项按 0 计）
+			List<string> list5 = baselineByCode[account2.Code];
+			foreach (string className in list5)
+			{
+				Dictionary<Item, decimal> marginal = new Dictionary<Item, decimal>();
+				Dictionary<Item, DataRow> marginalRow = new Dictionary<Item, DataRow>();
+				for (int p = 0; p < list3.Count; p++)
+				{
+					Item item4 = list3[p].Items.FirstOrDefault((Item it) => it.ItemClass.Name == className);
+					if (item4 == null)
+					{
+						continue;
+					}
+					decimal got0;
+					marginal.TryGetValue(item4, out got0);
+					marginal[item4] = got0 + list3[p].Balance;
+					if (!marginalRow.ContainsKey(item4))
+					{
+						marginalRow.Add(item4, list4[p]);
+					}
+				}
+				List<Item> list6 = new List<Item>();
+				foreach (Item it2 in marginal.Keys)
+				{
+					list6.Add(it2);
+				}
+				foreach (KeyValuePair<Item, ItemBalance> kv in account2.ItemBalance)
+				{
+					if (kv.Key.ItemClass.Name == className && !list6.Contains(kv.Key))
+					{
+						list6.Add(kv.Key);
+					}
+				}
+				foreach (Item item5 in list6)
+				{
+					ItemBalance itemBalance;
+					decimal expected = (account2.ItemBalance.TryGetValue(item5, out itemBalance) ? itemBalance.Balance : 0m);
+					decimal got;
+					marginal.TryGetValue(item5, out got);
+					if (Math.Abs(got - expected) <= 0.01m)
+					{
+						continue;
+					}
+					DataRow locRow;
+					if (!marginalRow.TryGetValue(item5, out locRow))
+					{
+						locRow = firstRow;
+					}
+					throw new ImportException2
+					{
+						FailureReason = FailureReasonEnum.ComboMarginalNotBalance,
+						FailureContext = new FailureContext
+						{
+							Table = TableEnum.COMBO,
+							RowTag = comboTable.GetTag(locRow),
+							ColTag = comboTable.GetTag(colDebit),
+							UserData = $"科目 {account2.Code} 类别「{className}」项目「{item5.Name}」组合汇总 {got:N2} ≠ 辅助余额表余额 {expected:N2}，差额 {got - expected:N2}"
+						}
+					};
+				}
 			}
 		}
 	}

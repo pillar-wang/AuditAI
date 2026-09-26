@@ -8,6 +8,10 @@ public class AppTabAuditCheck : AppCommandTab
 	{
 		// 首组：账务数据打开按钮（账套查看器独立窗口入口）
 		base.Groups.Add(AppCommandGroups.LedgerWindow);
+		// 风险检查组：账套打开后对账务数据执行风险检查
+		base.Groups.Add(AppCommandGroups.RiskCheck);
+		// 多维核算组：按辅助核算维度组合查询科目余额与明细
+		base.Groups.Add(AppCommandGroups.MultiDimension);
 	}
 
 	public override void OnAppStateChanged(AppState state)

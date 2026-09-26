@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -162,6 +162,7 @@ public class ValidateEditor : ISetTheme
 		grdValidate.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdValidate.Dock = DockStyle.Fill;
 		grdValidate.DrawMode = DrawModeEnum.OwnerDraw;
+		grdValidate.Font = new Font("微软雅黑", 9.5f);
 		grdValidate.Rows.DefaultSize = 20;
 		grdValidate.Size = new Size(927, 599);
 		grdValidate.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;

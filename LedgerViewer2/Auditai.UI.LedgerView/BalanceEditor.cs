@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -238,7 +238,7 @@ internal class BalanceEditor : ISetTheme
 		pnlBalanceTitle.SizeRatio = 4.815;
 		pnlBalanceTitle.Controls.Add(btnBalanceBack);
 		pnlBalanceTitle.Controls.Add(lblAccountName);
-		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		// 高 DPI 适配：页眉控件尺寸/位置按 DPI 比例缩放（字体按 Point 随 DPI 放大，像素尺寸写死会导致文字显示不全、高度不足）
 		float dpi = Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		lblCurrency.TextDetached = true;
@@ -316,7 +316,7 @@ internal class BalanceEditor : ISetTheme
 		grdBalance.DrawMode = DrawModeEnum.OwnerDraw;
 		grdBalance.ExtendLastCol = true;
 		grdBalance.Font = font2;
-		grdBalance.Rows.DefaultSize = 33;
+		grdBalance.Rows.DefaultSize = 28;
 		grdBalance.Tree.LineColor = Color.DimGray;
 		grdBalance.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		Auditai.UI.Controls.Theme.SetCurrentObject(grdBalance);

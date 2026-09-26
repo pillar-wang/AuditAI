@@ -20,7 +20,10 @@ namespace AuditAI.McpServer.Protocol
     /// </summary>
     public static class ToolRegistry
     {
-        private static readonly Dictionary<string, McpTool> _tools = new Dictionary<string, McpTool>();
+        // 修复：改用 ConcurrentDictionary。原 Dictionary 无锁，且 GetAll() 直接返回活动
+        // Values 视图——任何运行期注册都会让 tools/list 的 foreach 抛 InvalidOperationException。
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, McpTool> _tools =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, McpTool>();
 
         /// <summary>注册工具</summary>
         public static void Register(McpTool tool)

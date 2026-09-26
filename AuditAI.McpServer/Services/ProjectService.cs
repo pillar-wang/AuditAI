@@ -127,6 +127,58 @@ namespace AuditAI.McpServer.Services
         }
 
         /// <summary>
+        /// 项目库准入校验：扩展名 + SQLite 文件头。
+        /// 安全修复：open_project 此前接受任意路径，ProjectDAL 会对该文件建 schema，
+        /// 且库里没有 Project 行时还会写入 Project 行 —— 等于可以改写机器上任意 SQLite 文件
+        /// （包括其它应用的 .db）。这里只做最小准入，避免误伤无关文件。
+        /// </summary>
+        private static bool IsAcceptableProjectFile(string path, out string error)
+        {
+            error = null;
+            string ext = (Path.GetExtension(path) ?? "").ToLowerInvariant();
+            if (ext != ".db" && ext != ".s3db" && ext != ".sqlite" && ext != ".sqlite3")
+            {
+                error = $"仅允许打开项目库文件（扩展名 .db/.s3db/.sqlite/.sqlite3）：{path}";
+                return false;
+            }
+            long length;
+            try
+            {
+                length = new FileInfo(path).Length;
+            }
+            catch (Exception ex)
+            {
+                error = "读取目标文件信息失败：" + ex.Message;
+                return false;
+            }
+            if (length == 0) return true;   // 空文件视为新建项目库
+
+            try
+            {
+                byte[] head = new byte[16];
+                using (var fs = File.OpenRead(path))
+                {
+                    if (fs.Read(head, 0, head.Length) < 16)
+                    {
+                        error = "文件过小，不是有效的项目库：" + path;
+                        return false;
+                    }
+                }
+                if (!System.Text.Encoding.ASCII.GetString(head).StartsWith("SQLite format 3", StringComparison.Ordinal))
+                {
+                    error = "目标文件不是 SQLite 数据库，拒绝按项目库打开（避免改写无关文件）：" + path;
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = "读取目标文件失败：" + ex.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 打开项目
         /// </summary>
         public static string OpenProject(string projectPath)
@@ -145,6 +197,12 @@ namespace AuditAI.McpServer.Services
                 if (!File.Exists(projectPath))
                 {
                     return ErrorJson($"项目文件不存在: {projectPath}");
+                }
+
+                string fileError;
+                if (!IsAcceptableProjectFile(projectPath, out fileError))
+                {
+                    return ErrorJson(fileError);
                 }
 
                 // 如果当前已有打开的项目，先关闭

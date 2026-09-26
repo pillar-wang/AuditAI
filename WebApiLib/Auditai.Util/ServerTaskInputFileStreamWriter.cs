@@ -21,6 +21,14 @@ internal class ServerTaskInputFileStreamWriter
 		_outputStream.WriteMessage(message);
 	}
 
+	/// <summary>
+	/// 直接写出消息体（无长度前缀），用于上传"整表/整文档 Protobuf"（与服务器 ParseFrom 对齐）。
+	/// </summary>
+	public void WriteRaw(IMessage message)
+	{
+		message.WriteTo(_outputStream);
+	}
+
 	public void WriteData(int actionType, IMessage message)
 	{
 		_outputStream.WriteEnum(actionType);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
@@ -5901,32 +5901,6 @@ public class TicketInputEditor2 : ISetTheme
 	{
 		_isDirty = true;
 		SetCommandState();
-	}
-
-	public void PrintTableRowsData(string msg)
-	{
-		StringBuilder stringBuilder = new StringBuilder();
-		if (msg != null)
-		{
-			stringBuilder.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff "));
-			stringBuilder.Append(msg);
-			stringBuilder.Append("\r\n");
-		}
-		foreach (TicketFixedMultiRowVM fixedMultiRowVM in _vm.FixedMultiRowVMs)
-		{
-			if (fixedMultiRowVM.Row != null)
-			{
-				stringBuilder.Append(fixedMultiRowVM.Row.Index + 1).Append(":");
-				for (int i = 0; i < Table.Columns.Count; i++)
-				{
-					Auditai.Model.Cell cell = Table[fixedMultiRowVM.Row.Index, i];
-					stringBuilder.Append(cell.Value.ToString());
-					stringBuilder.Append(",");
-				}
-				stringBuilder.Append("\r\n");
-			}
-		}
-		stringBuilder.Append("\r\n");
 	}
 
 	private void ReCalculateTable()

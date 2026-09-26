@@ -213,6 +213,13 @@ namespace AuditAI.McpServer.Services
                 if (string.IsNullOrWhiteSpace(outputPath))
                     return ErrorJson("备份输出路径不能为空");
 
+                // 安全修复：输出路径此前未做任何校验，可被 ..\..\sensitive.xlsx 之类的路径穿越
+                // 或指向 C:\Windows\System32\ 覆盖系统文件。复用 ExportService 既有实现
+                // （该实现已在 4 处导出路径调用，此前唯独漏了这里与两个 ExportXxx）。
+                string pathError = ExportService.ValidateOutputPath(outputPath);
+                if (pathError != null)
+                    return pathError;
+
                 // 优先使用 LocalDataStore 的路径，回退到会话路径
                 string dbPath = GetProjectDbPath(projectId);
                 if (!File.Exists(dbPath) && SessionState.Current.HasProject && SessionState.Current.CurrentProject?.Id == projectId)

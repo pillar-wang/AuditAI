@@ -417,7 +417,7 @@ namespace AuditAI.McpServer.Services
         /// </summary>
         /// <param name="outputPath">用户提供的输出路径</param>
         /// <returns>null 表示验证通过，否则返回错误 JSON</returns>
-        private static string ValidateOutputPath(string outputPath)
+        internal static string ValidateOutputPath(string outputPath)
         {
             if (string.IsNullOrWhiteSpace(outputPath))
                 return ErrorJson("输出路径不能为空");

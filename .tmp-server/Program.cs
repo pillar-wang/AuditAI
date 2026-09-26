@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System.IO.Compression;
+﻿﻿﻿using System.IO.Compression;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
@@ -3842,10 +3842,18 @@ app.MapPost("/api/Project/PushTableQuick", async (HttpContext ctx, TableSyncServ
     var bytes = ms.ToArray();
     if (bytes.Length == 0) return ApiResponseHelper.Error("请求体为空");
 
-    // 解析 Protobuf 提取 projectId 进行跨团队访问校验
+    // 解析 Protobuf（仅一次）：同时用于提取 projectId 访问校验 + 业务处理
     PushTable pushTable;
     try { pushTable = PushTable.Parser.ParseFrom(bytes); }
-    catch { return ApiResponseHelper.Error("无效的 Protobuf 数据"); }
+    catch (InvalidProtocolBufferException ex)
+    {
+        // 诊断日志：记录前 32 字节 hex 便于排查客户端是否发错了格式
+        byte[] head = bytes.Length >= 32 ? bytes.AsSpan(0, 32).ToArray() : bytes;
+        app.Logger.LogWarning(ex,
+            "PushTableQuick Protobuf 解析失败: BytesLength={Len}, HeadHex={Head}, UserId={UserId}",
+            bytes.Length, Convert.ToHexString(head), userId);
+        return ApiResponseHelper.Error("无效的 Protobuf 数据: " + ex.Message);
+    }
     var projectId = new Guid(pushTable.ProjectId.ToByteArray());
     var accessDenied = await CheckProjectAccessAsync(ctx, projectId, projSvc, app.Logger);
     if (accessDenied != null) return accessDenied;
@@ -3859,7 +3867,8 @@ app.MapPost("/api/Project/PushTableQuick", async (HttpContext ctx, TableSyncServ
         && !await reviewRepo.IsProjectMemberAsync(projectId, userId))
         return ApiResponseHelper.JsonNet(new { Result = "ReadOnly", code = "ReadOnly", error = "审批人只读会话，禁止修改", message = "审批人只读会话，禁止修改" }, 409);
 
-    var result = await svc.PushTableQuickAsync(bytes, userId);
+    // 直接传入已解析的 PushTable 对象，避免 TableSyncService 里重复 ParseFrom 同一份 bytes
+    var result = await svc.PushTableQuickAsync(pushTable, userId);
     return ApiResponseHelper.JsonNet(result);
 });
 
@@ -3904,7 +3913,29 @@ app.MapGet("/api/Project/PushTable", async (
         return ApiResponseHelper.Error("任务输入文件不存在");
 
     using var cacheStream = taskSvc.OpenTaskInput(taskId);
-    var result = await svc.PushTableAsync(taskId, projectId, tableId, version, userId, cacheStream);
+    // 安全修复（跨租户越权写入）：TableSyncService.PushTableAsync 的参数仅用于日志，
+    // 实际写入目标取自 protobuf 内的 ProjectId（TableSyncService.cs 中 new Guid(pushTable.ProjectId...)）。
+    // 上面的访问校验却基于 URL 上的 projectId。两者必须一致，否则可用自己有权访问的 projectId
+    // 通过校验，却在 body 里填入他人项目 GUID 完成越权写入。
+    using var uploadedTableBody = new MemoryStream();
+    await cacheStream.CopyToAsync(uploadedTableBody);
+    uploadedTableBody.Position = 0;
+    PushTable uploadedPushTable;
+    try { uploadedPushTable = PushTable.Parser.ParseFrom(uploadedTableBody); }
+    catch (InvalidProtocolBufferException ex)
+    {
+        app.Logger.LogWarning(ex, "PushTable(GET) Protobuf 解析失败: TaskId={TaskId}", taskId);
+        return ApiResponseHelper.Error("无效的 Protobuf 数据: " + ex.Message);
+    }
+    var bodyProjectId = new Guid(uploadedPushTable.ProjectId.ToByteArray());
+    if (bodyProjectId != projectId)
+    {
+        app.Logger.LogWarning("PushTable(GET) 拒绝：请求体项目({BodyProjectId})与 URL 项目({UrlProjectId})不一致 UserId={UserId}",
+            bodyProjectId, projectId, userId);
+        return ApiResponseHelper.Forbidden("请求体中的项目与 URL 中的项目不一致");
+    }
+    uploadedTableBody.Position = 0;
+    var result = await svc.PushTableAsync(taskId, projectId, tableId, version, userId, uploadedTableBody);
     return ApiResponseHelper.JsonNet(result);
 });
 
@@ -4243,6 +4274,9 @@ app.MapPost("/api/Project/QueryTableVersions", async (HttpContext ctx, SqliteSto
         // 表格 Id 为 long，VersionHistory.TargetId 以 LongToGuid(id) 的 Guid 字符串存储，
         // 因此查询前需将 long 转换为对应 Guid 字符串。
         var result = new JArray();
+        // 先收集 long → Guid 字符串映射，再一次性批量查询（原为 foreach 逐条新建连接查询），
+        // 项目表很多时逐条查询会打满客户端 30 秒超时并中断整批同步。
+        var pending = new List<(long? LongId, string RawId, string TargetIdForQuery)>();
         foreach (var item in arr)
         {
             var idStr = (item["Id"] ?? item["id"])?.ToString() ?? "";
@@ -4255,8 +4289,13 @@ app.MapPost("/api/Project/QueryTableVersions", async (HttpContext ctx, SqliteSto
                 BitConverter.GetBytes(longId).CopyTo(bytes, 0);
                 targetIdForQuery = new Guid(bytes).ToString();
             }
-            var v = await QueryLatestTargetVersionAsync(db, projectId, targetIdForQuery, "Table");
-            result.Add(new JObject { ["Id"] = isLong ? longId : idStr, ["Version"] = v });
+            pending.Add((isLong ? longId : (long?)null, idStr, targetIdForQuery));
+        }
+        var versionMap = await QueryLatestTargetVersionsAsync(db, projectId, "Table", pending.Select(p => p.TargetIdForQuery));
+        foreach (var p in pending)
+        {
+            versionMap.TryGetValue(p.TargetIdForQuery, out var v);
+            result.Add(new JObject { ["Id"] = p.LongId.HasValue ? (JToken)p.LongId.Value : p.RawId, ["Version"] = v });
         }
         return ApiResponseHelper.JsonNet(result);
     }
@@ -4387,7 +4426,28 @@ app.MapGet("/api/Project/PushDocument", async (
         return ApiResponseHelper.Error("任务输入文件不存在");
 
     using var cacheStream = taskSvc.OpenTaskInput(taskId);
-    var result = await svc.PushDocumentAsync(taskId, projectId, documentId, version, userId, cacheStream);
+    // 安全修复（跨租户越权写入）：DocumentSyncService 内部同样以 protobuf 内的 ProjectId
+    // 作为实际写入目标（DocumentSyncService.cs 中 new Guid(pushDoc.ProjectId...)），
+    // 必须与上面已通过访问校验的 projectId 一致。
+    using var uploadedDocBody = new MemoryStream();
+    await cacheStream.CopyToAsync(uploadedDocBody);
+    uploadedDocBody.Position = 0;
+    PushDocument uploadedPushDocument;
+    try { uploadedPushDocument = PushDocument.Parser.ParseFrom(uploadedDocBody); }
+    catch (InvalidProtocolBufferException ex)
+    {
+        app.Logger.LogWarning(ex, "PushDocument(GET) Protobuf 解析失败: TaskId={TaskId}", taskId);
+        return ApiResponseHelper.Error("无效的 Protobuf 数据: " + ex.Message);
+    }
+    var bodyProjectId = new Guid(uploadedPushDocument.ProjectId.ToByteArray());
+    if (bodyProjectId != projectId)
+    {
+        app.Logger.LogWarning("PushDocument(GET) 拒绝：请求体项目({BodyProjectId})与 URL 项目({UrlProjectId})不一致 UserId={UserId}",
+            bodyProjectId, projectId, userId);
+        return ApiResponseHelper.Forbidden("请求体中的项目与 URL 中的项目不一致");
+    }
+    uploadedDocBody.Position = 0;
+    var result = await svc.PushDocumentAsync(taskId, projectId, documentId, version, userId, uploadedDocBody);
     return ApiResponseHelper.JsonNet(result);
 });
 
@@ -4534,6 +4594,8 @@ app.MapPost("/api/Project/QueryDocumentVersions", async (HttpContext ctx, Sqlite
         // 文档 Id 为 long，VersionHistory.TargetId 以 LongToGuid(id) 的 Guid 字符串存储，
         // 因此查询前需将 long 转换为对应 Guid 字符串。
         var result = new JArray();
+        // 批量查询：原为 foreach 逐条新建连接查询，文档很多时会打满客户端 30 秒超时
+        var pending = new List<(long? LongId, string RawId, string TargetIdForQuery)>();
         foreach (var item in arr)
         {
             var idStr = (item["Id"] ?? item["id"])?.ToString() ?? "";
@@ -4546,8 +4608,13 @@ app.MapPost("/api/Project/QueryDocumentVersions", async (HttpContext ctx, Sqlite
                 BitConverter.GetBytes(longId).CopyTo(bytes, 0);
                 targetIdForQuery = new Guid(bytes).ToString();
             }
-            var v = await QueryLatestTargetVersionAsync(db, projectId, targetIdForQuery, "Document");
-            result.Add(new JObject { ["Id"] = isLong ? longId : idStr, ["Version"] = v });
+            pending.Add((isLong ? longId : (long?)null, idStr, targetIdForQuery));
+        }
+        var versionMap = await QueryLatestTargetVersionsAsync(db, projectId, "Document", pending.Select(p => p.TargetIdForQuery));
+        foreach (var p in pending)
+        {
+            versionMap.TryGetValue(p.TargetIdForQuery, out var v);
+            result.Add(new JObject { ["Id"] = p.LongId.HasValue ? (JToken)p.LongId.Value : p.RawId, ["Version"] = v });
         }
         return ApiResponseHelper.JsonNet(result);
     }
@@ -4602,6 +4669,17 @@ app.MapPost("/api/Project/PushImage", async (HttpContext ctx, SqliteStorage db, 
     if (data["PageSetup"] != null) meta["PageSetup"] = data["PageSetup"];
     if (data["RotateFlip"] != null) meta["RotateFlip"] = data["RotateFlip"];
     var snapshotBytes = System.Text.Encoding.UTF8.GetBytes(meta.ToString(Formatting.None));
+
+    // 乐观锁（修复）：原先读取了 clientVersion 但从未使用，多客户端并发修改同一图片元数据时
+    // 后写者静默覆盖先写者，客户端却收到 Success。与 PushTable/PushDocument 对齐：
+    // 客户端版本落后时拒绝并回传服务端最新版本，由客户端 Pull 合并后重试（clientVersion=0 兼容旧客户端）。
+    var serverVersion = await QueryLatestTargetVersionAsync(db, projectId, idStr, "Image");
+    if (clientVersion > 0 && clientVersion < serverVersion)
+    {
+        app.Logger.LogWarning("PushImage 拒绝：版本落后（客户端={ClientVersion} 服务端={ServerVersion}）Id={Id} UserId={UserId}",
+            clientVersion, serverVersion, idStr, userId);
+        return ApiResponseHelper.JsonNet(new { Result = "OutOfDate", Version = serverVersion });
+    }
 
     // 写入版本快照
     // 安全审计修复（Med）：版本号在单条 INSERT..SELECT 内原子计算（不再先 SELECT MAX 再 INSERT），
@@ -4661,11 +4739,17 @@ app.MapPost("/api/Project/QueryImageVersions", async (HttpContext ctx, SqliteSto
     var result = new JArray();
     if (versionsArr is JArray arr)
     {
+        // 批量查询（原为逐条新建连接查询）
+        var ids = new List<string>();
         foreach (var item in arr)
         {
             var idStr = (item["Id"] ?? item["id"])?.ToString() ?? "";
-            if (string.IsNullOrEmpty(idStr)) continue;
-            var v = await QueryLatestTargetVersionAsync(db, projectId, idStr, "Image");
+            if (!string.IsNullOrEmpty(idStr)) ids.Add(idStr);
+        }
+        var versionMap = await QueryLatestTargetVersionsAsync(db, projectId, "Image", ids);
+        foreach (var idStr in ids)
+        {
+            versionMap.TryGetValue(idStr, out var v);
             result.Add(new JObject { ["Id"] = long.TryParse(idStr, out var lid) ? lid : idStr, ["Version"] = v });
         }
     }
@@ -4694,6 +4778,15 @@ app.MapPost("/api/Project/PushPdf", async (HttpContext ctx, SqliteStorage db, Pr
     var meta = new JObject();
     if (data["FileId"] != null) meta["FileId"] = data["FileId"];
     var snapshotBytes = System.Text.Encoding.UTF8.GetBytes(meta.ToString(Formatting.None));
+
+    // 乐观锁（修复）：同 PushImage，原先 clientVersion 读取后从未使用，并发推送静默覆盖。
+    var serverVersion = await QueryLatestTargetVersionAsync(db, projectId, idStr, "Pdf");
+    if (clientVersion > 0 && clientVersion < serverVersion)
+    {
+        app.Logger.LogWarning("PushPdf 拒绝：版本落后（客户端={ClientVersion} 服务端={ServerVersion}）Id={Id} UserId={UserId}",
+            clientVersion, serverVersion, idStr, userId);
+        return ApiResponseHelper.JsonNet(new { Result = "OutOfDate", Version = serverVersion });
+    }
 
     // 安全审计修复（Med）：版本号在单条 INSERT..SELECT 内原子计算（不再先 SELECT MAX 再 INSERT），
     // 写入后读回实际版本号用于响应，消除并发推送时的版本竞态。
@@ -4751,11 +4844,17 @@ app.MapPost("/api/Project/QueryPdfVersions", async (HttpContext ctx, SqliteStora
     var result = new JArray();
     if (versionsArr is JArray arr)
     {
+        // 批量查询（原为逐条新建连接查询）
+        var ids = new List<string>();
         foreach (var item in arr)
         {
             var idStr = (item["Id"] ?? item["id"])?.ToString() ?? "";
-            if (string.IsNullOrEmpty(idStr)) continue;
-            var v = await QueryLatestTargetVersionAsync(db, projectId, idStr, "Pdf");
+            if (!string.IsNullOrEmpty(idStr)) ids.Add(idStr);
+        }
+        var versionMap = await QueryLatestTargetVersionsAsync(db, projectId, "Pdf", ids);
+        foreach (var idStr in ids)
+        {
+            versionMap.TryGetValue(idStr, out var v);
             result.Add(new JObject { ["Id"] = long.TryParse(idStr, out var lid) ? lid : idStr, ["Version"] = v });
         }
     }
@@ -6039,6 +6138,62 @@ static async Task<int> QueryLatestTargetVersionAsync(SqliteStorage db, Guid proj
     var result = await cmd.ExecuteScalarAsync();
     if (result == null || result == DBNull.Value) return 0;
     return Convert.ToInt32(result);
+}
+
+/// <summary>
+/// 批量查询多个目标的最新版本号：单次连接 + 分组聚合 SQL（GROUP BY TargetId）。
+/// 逐条调用 QueryLatestTargetVersionAsync 时每个目标都要新建并 Open 一个 SQLite 连接，
+/// 项目节点多时（数百~上千张表/文档）串行累加，客户端 QueryVersion 的 30 秒超时会被打满，
+/// 超时异常会中断整批同步（客户端 MainForm.SyncProjectImpl 的版本查询段）。
+/// 返回 TargetId → 最新版本号；未命中的目标不在字典中（调用方按 0 处理）。
+/// </summary>
+static async Task<Dictionary<string, int>> QueryLatestTargetVersionsAsync(
+    SqliteStorage db, Guid projectId, string targetType, IEnumerable<string>? targetIds)
+{
+    var result = new Dictionary<string, int>(StringComparer.Ordinal);
+    if (targetIds == null) return result;
+
+    var ids = new List<string>();
+    var seen = new HashSet<string>(StringComparer.Ordinal);
+    foreach (var id in targetIds)
+    {
+        if (string.IsNullOrEmpty(id)) continue;
+        if (seen.Add(id)) ids.Add(id);
+    }
+    if (ids.Count == 0) return result;
+
+    using var conn = db.CreateConnection();
+    await conn.OpenAsync();
+    var pid = projectId.ToString("D");
+    // SQLite 默认变量上限 999：每批 400 个 Id + ProjectId + TargetType，留足余量
+    const int batchSize = 400;
+    for (var offset = 0; offset < ids.Count; offset += batchSize)
+    {
+        var chunk = ids.GetRange(offset, Math.Min(batchSize, ids.Count - offset));
+        using var cmd = conn.CreateCommand();
+        var inList = new List<string>(chunk.Count);
+        for (var i = 0; i < chunk.Count; i++)
+        {
+            var name = "@t" + i;
+            inList.Add(name);
+            cmd.Parameters.AddWithValue(name, chunk[i]);
+        }
+        cmd.CommandText = $@"
+        SELECT TargetId, MAX(Version) FROM VersionHistory
+        WHERE ProjectId = @pid AND TargetType = @ttype AND TargetId IN ({string.Join(",", inList)})
+        GROUP BY TargetId";
+        cmd.Parameters.AddWithValue("@pid", pid);
+        cmd.Parameters.AddWithValue("@ttype", targetType);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (reader.IsDBNull(0)) continue;
+            var tid = reader.GetString(0);
+            if (string.IsNullOrEmpty(tid)) continue;
+            result[tid] = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1));
+        }
+    }
+    return result;
 }
 
 /// <summary>

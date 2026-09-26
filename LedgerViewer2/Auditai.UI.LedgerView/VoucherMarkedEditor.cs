@@ -173,6 +173,18 @@ public class VoucherMarkedEditor : ISetTheme
 
 	private readonly C1CommandLink lnkCollaspeAll;
 
+	private C1Command cmdFilterAll;
+
+	private C1Command cmdFilterManual;
+
+	private C1Command cmdFilterRisk;
+
+	private C1Command cmdFilterSample;
+
+	private C1Command cmdClearSampleMarks;
+
+	private int _sourceFilter = -1;
+
 	private readonly SolidBrush _brushHoverBackground = new SolidBrush(Color.Transparent);
 
 	private SolidBrush _adjustLevelIconOnFocusBackgroundBrush = new SolidBrush(Color.Gray);
@@ -322,7 +334,7 @@ public class VoucherMarkedEditor : ISetTheme
 
 	public void PopulateVouchers()
 	{
-		IEnumerable<Voucher> source = Ledger.Vouchers.Where((Voucher v) => v.VoucherMark);
+		IEnumerable<Voucher> source = Ledger.Vouchers.Where((Voucher v) => v.VoucherMark && (_sourceFilter < 0 || v.VoucherMarkSource == _sourceFilter));
 		source = source.OrderBy((Voucher v) => v.Number, StringNumberComparer.Instance).ThenBy((Voucher v) => v.Type.Name);
 		PopulateVouchersImpl(grdVouchers, source);
 		PopulateNavTreeImpl();
@@ -601,8 +613,8 @@ public class VoucherMarkedEditor : ISetTheme
 			fixedWidth += grdVouchers.Cols[i].WidthDisplay;
 		int availableWidth = clientWidth - fixedWidth;
 		if (availableWidth <= 0) return;
-		string[] colNames = { "Index", "MyMark", "Date", "Type", "Number", "Digest", "Code", "Name", "Opposite", "Debit", "Credit", "Maker", "Checker", "Booker" };
-		double[] ratios = { 0.04, 0.05, 0.07, 0.03, 0.04, 0.16, 0.07, 0.10, 0.10, 0.08, 0.08, 0.05, 0.05, 0.08 };
+		string[] colNames = { "Index", "MyMark", "MarkSource", "Date", "Type", "Number", "Digest", "Code", "Name", "Opposite", "Debit", "Credit", "Maker", "Checker", "Booker" };
+		double[] ratios = { 0.04, 0.05, 0.05, 0.07, 0.03, 0.04, 0.14, 0.07, 0.09, 0.09, 0.08, 0.08, 0.05, 0.05, 0.07 };
 		grdVouchers.BeginUpdate();
 		try
 		{
@@ -722,6 +734,7 @@ public class VoucherMarkedEditor : ISetTheme
 		grdVouchers.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdVouchers.Dock = DockStyle.Fill;
 		grdVouchers.DrawMode = DrawModeEnum.OwnerDraw;
+		grdVouchers.Font = new Font("微软雅黑", 9.5f);
 		grdVouchers.Rows.Count = 1;
 		grdVouchers.Rows.DefaultSize = 20;
 		grdVouchers.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
@@ -748,6 +761,70 @@ public class VoucherMarkedEditor : ISetTheme
 		};
 		c1CommandLink2.Command = c1Command2;
 		c1ToolBar.CommandLinks.Add(c1CommandLink2);
+		C1CommandLink c1CommandLinkFilterDelimiter = new C1CommandLink
+		{
+			Delimiter = true
+		};
+		c1ToolBar.CommandLinks.Add(c1CommandLinkFilterDelimiter);
+		cmdFilterAll = new C1Command
+		{
+			Text = "全部",
+			CheckAutoToggle = false,
+			Checked = true,
+			UserData = -1,
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("funnel", 28, Auditai.UI.Controls.IconLibrary.DefaultColor)
+		};
+		cmdFilterAll.Click += CmdFilterSource_Click;
+		c1ToolBar.CommandLinks.Add(new C1CommandLink
+		{
+			Command = cmdFilterAll
+		});
+		cmdFilterManual = new C1Command
+		{
+			Text = "手动关注",
+			CheckAutoToggle = false,
+			UserData = Voucher.MARK_SOURCE_MANUAL,
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("star", 28, Color.FromArgb(217, 119, 6))
+		};
+		cmdFilterManual.Click += CmdFilterSource_Click;
+		c1ToolBar.CommandLinks.Add(new C1CommandLink
+		{
+			Command = cmdFilterManual
+		});
+		cmdFilterRisk = new C1Command
+		{
+			Text = "风险检查",
+			CheckAutoToggle = false,
+			UserData = Voucher.MARK_SOURCE_RISK_CHECK,
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("warning", 28, Color.FromArgb(239, 68, 68))
+		};
+		cmdFilterRisk.Click += CmdFilterSource_Click;
+		c1ToolBar.CommandLinks.Add(new C1CommandLink
+		{
+			Command = cmdFilterRisk
+		});
+		cmdFilterSample = new C1Command
+		{
+			Text = "抽凭样本",
+			CheckAutoToggle = false,
+			UserData = Voucher.MARK_SOURCE_SAMPLE,
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("tag", 28, Color.FromArgb(217, 119, 6))
+		};
+		cmdFilterSample.Click += CmdFilterSource_Click;
+		c1ToolBar.CommandLinks.Add(new C1CommandLink
+		{
+			Command = cmdFilterSample
+		});
+		cmdClearSampleMarks = new C1Command
+		{
+			Text = "清除抽凭样本标记",
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eraser", 28, Color.FromArgb(239, 68, 68))
+		};
+		cmdClearSampleMarks.Click += CmdClearSampleMarks_Click;
+		c1ToolBar.CommandLinks.Add(new C1CommandLink
+		{
+			Command = cmdClearSampleMarks
+		});
 		C1CommandLink c1CommandLink3 = new C1CommandLink();
 		c1CommandLink3.Delimiter = true;
 		C1Command c1Command3 = new C1Command();
@@ -803,7 +880,8 @@ public class VoucherMarkedEditor : ISetTheme
 		lblDetailDate.Anchor = AnchorStyles.Top;
 		lblDetailDate.BorderStyle = BorderStyle.None;
 		lblDetailDate.Location = new Point(395, 29);
-		lblDetailDate.Size = new Size(150, 17);
+		// 固定框宽需容纳 "制单日期：0000-00-00"（12pt 微软雅黑实测 176px，需≥185px），否则居中时两端截字
+		lblDetailDate.Size = new Size(190, 17);
 		lblDetailDate.Text = "制单日期：0000-00-00";
 		lblDetailDate.TextAlign = ContentAlignment.MiddleCenter;
 		lblDetailAttachNum.TextDetached = true;
@@ -829,6 +907,7 @@ public class VoucherMarkedEditor : ISetTheme
 		grdDetail.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdDetail.Dock = DockStyle.Fill;
 		grdDetail.DrawMode = DrawModeEnum.OwnerDraw;
+		grdDetail.Font = new Font("微软雅黑", 9.5f);
 		grdDetail.Rows.Count = 1;
 		grdDetail.Rows.DefaultSize = 20;
 		grdDetail.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
@@ -1180,6 +1259,93 @@ public class VoucherMarkedEditor : ISetTheme
 		}
 	}
 
+	private void CmdFilterSource_Click(object sender, ClickEventArgs e)
+	{
+		if (sender is C1Command command && command.UserData is int source && _sourceFilter != source)
+		{
+			_sourceFilter = source;
+			UpdateFilterCheckedState();
+			PopulateVouchers();
+		}
+	}
+
+	private void UpdateFilterCheckedState()
+	{
+		cmdFilterAll.Checked = _sourceFilter < 0;
+		cmdFilterManual.Checked = _sourceFilter == Voucher.MARK_SOURCE_MANUAL;
+		cmdFilterRisk.Checked = _sourceFilter == Voucher.MARK_SOURCE_RISK_CHECK;
+		cmdFilterSample.Checked = _sourceFilter == Voucher.MARK_SOURCE_SAMPLE;
+		if (pnlSidebar == null)
+		{
+			return;
+		}
+		foreach (Control control in pnlSidebar.Controls)
+		{
+			if (!(control is ToolStrip toolStrip))
+			{
+				continue;
+			}
+			foreach (ToolStripItem item in toolStrip.Items)
+			{
+				if (item is ToolStripButton button)
+				{
+					C1Command command = GetFilterCommandByText(button.Text);
+					if (command != null)
+					{
+						button.Checked = command.Checked;
+					}
+				}
+			}
+		}
+		C1Command GetFilterCommandByText(string text)
+		{
+			if (text == cmdFilterAll.Text)
+			{
+				return cmdFilterAll;
+			}
+			if (text == cmdFilterManual.Text)
+			{
+				return cmdFilterManual;
+			}
+			if (text == cmdFilterRisk.Text)
+			{
+				return cmdFilterRisk;
+			}
+			if (text == cmdFilterSample.Text)
+			{
+				return cmdFilterSample;
+			}
+			return null;
+		}
+	}
+
+	private void CmdClearSampleMarks_Click(object sender, ClickEventArgs e)
+	{
+		int count = Ledger.Vouchers.Count((Voucher v) => v.VoucherMark && v.VoucherMarkSource == Voucher.MARK_SOURCE_SAMPLE);
+		if (count == 0)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, "没有抽凭样本标记");
+			return;
+		}
+		DialogResult dialogResult = Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Question, $"将清除 {count} 条抽凭样本标记，手动关注与风险检查标记不受影响。是否继续？", MessageBoxButtons.YesNo, "清除抽凭样本标记");
+		if (dialogResult != DialogResult.Yes)
+		{
+			return;
+		}
+		foreach (Voucher voucher in Ledger.Vouchers)
+		{
+			if (voucher.VoucherMark && voucher.VoucherMarkSource == Voucher.MARK_SOURCE_SAMPLE)
+			{
+				voucher.VoucherMark = false;
+				voucher.VoucherMarkSource = Voucher.MARK_SOURCE_MANUAL;
+				voucher.Dirty = 2;
+			}
+		}
+		Ledger.Save();
+		PopulateVouchers();
+		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Information, $"已清除 {count} 条抽凭样本标记");
+	}
+
 	private void MarkSelectedRangeCancelImpl()
 	{
 		if (grdVouchers.Selection.BottomRow < grdVouchers.Rows.Fixed)
@@ -1193,7 +1359,9 @@ public class VoucherMarkedEditor : ISetTheme
 			{
 				if (grdVouchers.Rows[i].UserData is Voucher { VoucherMark: not false } voucher)
 				{
-					voucher.ToggleMark();
+					voucher.VoucherMark = false;
+					voucher.VoucherMarkSource = Voucher.MARK_SOURCE_MANUAL; // 取消关注清空来源（0）
+					voucher.Dirty = 2;
 				}
 			}
 			Ledger.Save();
@@ -1376,7 +1544,7 @@ public class VoucherMarkedEditor : ISetTheme
 			Dictionary<Account, VoucherAccountTreeNodeData> dictionary = new Dictionary<Account, VoucherAccountTreeNodeData>();
 			foreach (Voucher voucher in Ledger.Vouchers)
 			{
-				if (voucher.VoucherMark)
+				if (voucher.VoucherMark && (_sourceFilter < 0 || voucher.VoucherMarkSource == _sourceFilter))
 				{
 					VoucherAccountTreeNodeData voucherAccountTreeNodeData2 = new VoucherAccountTreeNodeData(voucher);
 					for (Account account = voucher.Account; account != null; account = account.Parent)
@@ -1432,11 +1600,11 @@ public class VoucherMarkedEditor : ISetTheme
 					{
 						bool flag = false;
 						foreach (VoucherAccountTreeNodeData child in voucherAccountTreeNodeData2.children)
-						{
-							if (child.nodeType != NodeType.Voucher || !child.voucher.VoucherMark)
 							{
-								continue;
-							}
+								if (child.nodeType != NodeType.Voucher || !child.voucher.VoucherMark || (_sourceFilter >= 0 && child.voucher.VoucherMarkSource != _sourceFilter))
+								{
+									continue;
+								}
 							if (child.voucher.Details != null)
 							{
 								foreach (AuxiliaryItem detail in child.voucher.Details)
@@ -1469,13 +1637,13 @@ public class VoucherMarkedEditor : ISetTheme
 					{
 						bool flag2 = false;
 						foreach (VoucherAccountTreeNodeData child2 in voucherAccountTreeNodeData.children)
-						{
-							if (child2.nodeType == NodeType.Voucher && child2.voucher.VoucherMark)
 							{
-								flag2 = true;
-								break;
+								if (child2.nodeType == NodeType.Voucher && child2.voucher.VoucherMark && (_sourceFilter < 0 || child2.voucher.VoucherMarkSource == _sourceFilter))
+								{
+									flag2 = true;
+									break;
+								}
 							}
-						}
 						if (!flag2)
 						{
 							row.Node.RemoveNode();
@@ -1487,6 +1655,19 @@ public class VoucherMarkedEditor : ISetTheme
 		finally
 		{
 			tree.EndUpdate();
+		}
+	}
+
+	private static string GetMarkSourceText(int source)
+	{
+		switch (source)
+		{
+			case Voucher.MARK_SOURCE_RISK_CHECK:
+				return "风险检查";
+			case Voucher.MARK_SOURCE_SAMPLE:
+				return "抽凭样本";
+			default:
+				return "手动关注";
 		}
 	}
 
@@ -1514,6 +1695,13 @@ public class VoucherMarkedEditor : ISetTheme
 			column.Width = 65;
 			column.TextAlign = TextAlignEnum.CenterCenter;
 			column.ImageAlign = ImageAlignEnum.CenterCenter;
+			column = grid.Cols.Add();
+			column.Name = "MarkSource";
+			column.Caption = "来源";
+			column.DataType = typeof(string);
+			column.AllowMerging = true;
+			column.TextAlign = TextAlignEnum.CenterCenter;
+			column.Width = 70;
 			column = grid.Cols.Add();
 			column.Name = "Date";
 			column.Caption = "日期";
@@ -1600,6 +1788,7 @@ public class VoucherMarkedEditor : ISetTheme
 				C1.Win.C1FlexGrid.Row row = grid.Rows.Add();
 				row.UserData = voucher;
 				row["Index"] = num++;
+				row["MarkSource"] = GetMarkSourceText(voucher.VoucherMarkSource);
 				row["Date"] = voucher.Day;
 				row["Type"] = voucher.Type.Name;
 				row["Number"] = voucher.Number;

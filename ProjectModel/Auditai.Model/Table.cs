@@ -1062,32 +1062,89 @@ public class Table
 		}
 	}
 
+	/// <summary>
+	/// 同一 (Row, Column) 位置出现多个 Cell 时，用于决定保留哪一个的评分。
+	/// 规则：优先保留用户编辑过的格（Dirty 有设置或 Status=New），其次保留有内容/公式的格，
+	/// 防止"自动补全出来的空白格"挤掉真实数据。
+	/// 本策略同时被 EnsureAllCellsExist 与 TryRepairCellCountBeforeSave 使用，必须保持单一实现。
+	/// </summary>
+	private static int CellKeepScore(Cell c)
+	{
+		return (((c.Dirty.AnySet() || c.Status == SyncStatus.New) ? 2 : 0)
+			+ ((((c.Value is string sv) ? !string.IsNullOrEmpty(sv) : c.Value != null) || !string.IsNullOrEmpty(c.Formula)) ? 1 : 0));
+	}
+
 	internal void EnsureAllCellsExist()
 	{
-		var cellDic = new Dictionary<Tuple<Id64, Id64>, Cell>();
+		// 位置索引不变式：Cells._list[i] 必须对应
+		//   (Rows[i / Columns.Count], Columns[i % Columns.Count])
+		// 因为 CellCollection.GetCollectionIndex(row,col) = row * Columns.Count + col，
+		// 且 Table.this[row,col] => Cells.Get(row,col) => _list[row * Columns.Count + col]。
+		//
+		// 原实现：foreach(Rows × Columns) 发现缺格就 Cells._list.Add(cell) —— 追加到列表末尾。
+		// 当缺格位于中间（例如某个中间行的格未建全）时，补出来的格落到尾部会让其后所有格的
+		// 位置索引整体错位，table[row,col] 会静默读到"另一个格"的内容（越界原本返回 null，
+		// 是响亮的失败；错位返回别的格则是静默错误）。故改为按行主序整体重建列表。
+		//
+		// 重建顺带丢弃"同一 (Row, Column) 位置重复的 Cell"与孤儿 Cell（Row/Column 已不存在），
+		// 因为二者都无法满足上述位置公式；保留哪一个复用 CellKeepScore 策略，
+		// 与 TryRepairCellCountBeforeSave 完全一致，避免空白格挤掉用户编辑过的真实格。
+		var posCellMap = new Dictionary<Tuple<Id64, Id64>, Cell>();
 		foreach (Cell cell in Cells)
 		{
-			if (cell.Row != null && cell.Column != null)
+			if (cell.Row == null || cell.Column == null)
 			{
-				cellDic[Tuple.Create(cell.Row.Id, cell.Column.Id)] = cell;
+				continue;   // 孤儿，不进 posCellMap，下面统一登记待删
+			}
+			var key = Tuple.Create(cell.Row.Id, cell.Column.Id);
+			Cell keep;
+			if (!posCellMap.TryGetValue(key, out keep))
+			{
+				posCellMap[key] = cell;
+				continue;
+			}
+			Cell drop = ((CellKeepScore(keep) >= CellKeepScore(cell)) ? cell : keep);
+			if (drop == keep)
+			{
+				posCellMap[key] = cell;
 			}
 		}
+
+		var ordered = new List<Cell>(Rows.Count * Columns.Count);
 		foreach (Row row in Rows)
 		{
 			foreach (Column col in Columns)
 			{
 				var key = Tuple.Create(row.Id, col.Id);
-				if (!cellDic.ContainsKey(key))
+				Cell cell;
+				if (!posCellMap.TryGetValue(key, out cell))
 				{
-					Cell cell = MakeNewCell();
+					cell = MakeNewCell();
 					cell.Row = row;
 					cell.Column = col;
 					cell.Status = SyncStatus.Synced;
-					Cells._list.Add(cell);
-					cellDic[key] = cell;
+					posCellMap[key] = cell;
 				}
+				ordered.Add(cell);
 			}
 		}
+
+		// 登记落选者（重复格中未保留的那个、以及孤儿格）为待删，避免它们在服务端长期残留
+		var kept = new HashSet<Cell>(ordered);
+		foreach (Cell cell in Cells)
+		{
+			if (kept.Contains(cell))
+			{
+				continue;
+			}
+			if (!cell.Id.IsZero())
+			{
+				CellsToDelete.Add(cell.Id);
+			}
+		}
+
+		Cells._list.Clear();
+		Cells._list.AddRange(ordered);
 	}
 
 	/// <summary>
@@ -2088,8 +2145,6 @@ public class Table
 			// （Dirty 有设置或 Status=New），其次保留有内容/公式的格，防止空白格挤掉真实数据。
 			var posCellMap = new Dictionary<Tuple<Id64, Id64>, Cell>();
 			var duplicateCells = new List<Cell>();
-			int CellKeepScore(Cell c) => (((c.Dirty.AnySet() || c.Status == SyncStatus.New) ? 2 : 0)
-				+ ((((c.Value is string sv) ? !string.IsNullOrEmpty(sv) : c.Value != null) || !string.IsNullOrEmpty(c.Formula)) ? 1 : 0));
 			foreach (Cell c in Cells)
 			{
 				if (c.Row == null || c.Column == null)

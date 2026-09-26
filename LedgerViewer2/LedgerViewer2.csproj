@@ -34,6 +34,7 @@
       <HintPath>..\Libs\C1.Win.C1FlexGrid.4.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="C1.Win.C1TileControl.4">
       <HintPath>..\Libs\C1.Win.C1TileControl.4.dll</HintPath>
     </Reference>
@@ -68,6 +69,7 @@
       <HintPath>..\Libs\C1.Win.4.dll</HintPath>
     </Reference>
     <ProjectReference Include="..\SignalRClient\SignalRClient.csproj" />
+    <ProjectReference Include="..\WebApiLib\WebApiLib.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- 嵌入预编译的许可证文件，包含 frmImport 所需的 C1 控件许可证密钥 -->

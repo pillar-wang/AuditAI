@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -210,7 +210,7 @@ public class frmVoucherView : Form
 		grid.Dock = DockStyle.Fill;
 		grid.DrawMode = DrawModeEnum.OwnerDraw;
 		grid.ExtendLastCol = true;
-		grid.Font = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		grid.Font = new Font("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		grid.Rows.DefaultSize = 20;
 		grid.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		return grid;

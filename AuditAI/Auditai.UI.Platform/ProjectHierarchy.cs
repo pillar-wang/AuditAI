@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -243,7 +243,7 @@ public class ProjectHierarchy
             ExtendLastCol = true,
             BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None,
             SelectionMode = SelectionModeEnum.Cell,
-            Font = new Font("微软雅黑", 10.5f)
+            Font = new Font("微软雅黑", 10f)
         };
         _grid.Rows.Count = 0;
         _grid.Rows.Fixed = 0;
@@ -251,7 +251,7 @@ public class ProjectHierarchy
         _grid.Cols.Fixed = 0;
         _grid.Tree.Column = 0;
         _grid.Rows.DefaultSize = 40;
-        _grid.Cols[0].Width = 200;
+        _grid.Cols[0].Width = 260;
         _grid.MouseClick += _grid_MouseClick;
         _grid.MouseDoubleClick += _grid_MouseDoubleClick;
         _grid.BeforeMouseDown += _grid_BeforeMouseDown;
@@ -1431,7 +1431,7 @@ public class ProjectHierarchy
 
         // === 字体与行高 ===
         _grid.Font = AuditTheme.FontBody;
-        _grid.Rows.DefaultSize = 28;
+        _grid.Rows.DefaultSize = 40;
 
         // === 基础样式 ===
         // 正常行：白底深字
@@ -1450,8 +1450,8 @@ public class ProjectHierarchy
         _grid.Styles.Focus.Font = AuditTheme.FontBodyBold;
 
         // === 树形结构样式 ===
-        // 缩进量（16px，4px 网格的 4 倍）
-        _grid.Tree.Indent = 16;
+        // 缩进量（18px，略放大后更舒展）
+        _grid.Tree.Indent = 18;
 
         // 树线样式：细灰线（Google 风格简洁、低调）
         _grid.Tree.Style = TreeStyleFlags.Simple;
@@ -1467,8 +1467,8 @@ public class ProjectHierarchy
         // 选中整行模式（更现代的选中方式）
         _grid.SelectionMode = SelectionModeEnum.Row;
 
-        // 行高微调：叶子节点和组节点统一 28px
-        _grid.Rows.DefaultSize = 28;
+        // 行高微调：叶子节点和组节点统一 34px（略放大更舒展）
+        _grid.Rows.DefaultSize = 34;
 
         // === C1OutBar 外层样式 ===
         if (View is C1OutBarEx outBar)

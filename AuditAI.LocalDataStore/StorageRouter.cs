@@ -36,7 +36,6 @@ namespace Auditai.LocalDataStore
         public static void Initialize()
         {
             if (_initialized) return;
-            _initialized = true;
 
             string mode = ConfigurationManager.AppSettings["StorageMode"] ?? "Server";
             _isLocalMode = mode.Equals("Local", StringComparison.OrdinalIgnoreCase);
@@ -74,6 +73,13 @@ namespace Auditai.LocalDataStore
                 // 非本地模式（Server 模式）：通知宿主启用 Syncer，允许 Push/Pull 与服务器同步
                 OnServerModeActivated?.Invoke();
             }
+
+            // 修复：原实现把 _initialized = true 放在方法开头，工作尚未完成即置位。
+            // 一旦 LocalDataStore.Initialize 或 WebApiClient 处理器注册抛异常并被宿主忽略，
+            // 再次调用会因 _initialized 直接 return，留下"_isLocalMode 已为 true、
+            // 但 WebApiClient 本地处理器一个都没注册"的半初始化状态，后续所有本地请求都会走空。
+            // 改为全部完成后才置位：失败时不置位，允许重试。
+            _initialized = true;
         }
 
         // =============================================

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -67,7 +67,7 @@ public class TreeListOperand : Operand
 
 	public override ValueOperand Multiply(Operand other)
 	{
-		throw new NotImplementedException();
+		throw new FormulaTypeMismatchException();
 	}
 
 	public override ValueOperand Negate()

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -126,6 +126,12 @@ public class MainForm
 	private bool _isInSyncingProject;
 
 	private object _syncLock = new object();
+
+	// 同步互斥闸：SyncProjects / SyncProject 可被四条路径并发触发
+	// （手动同步按钮、退出保存、网络恢复自动同步、关闭单个项目），
+	// 两路同时 LoadAndReturn + Push 同一 Table 会造成 OutOfDate 重试风暴与本地落盘竞争。
+	// 此处把整批同步串行化，同一时间只允许一路同步在跑。
+	private readonly System.Threading.SemaphoreSlim _syncGate = new System.Threading.SemaphoreSlim(1, 1);
 
 	private double _pnlNavLastSizeRatio = 15.0;
 
@@ -611,12 +617,25 @@ public class MainForm
 						MessageBoxButtons.YesNo);
 					if (result == DialogResult.Yes)
 					{
-						// 吞异常观察：避免未观察的 Task 异常逃逸触发进程级崩溃
-						_ = Task.Run(async () =>
+						// 必须在 UI 线程调度：SyncProjects 会操作 ProjectHierarchy/PopulateProject 并弹进度窗，
+						// 原先用 Task.Run 跑在线程池线程上，跨线程访问控件抛出的异常被吞进日志，
+						// 表现为"点了同步却什么都没发生"。
+						// 注意：本方法所在类型不是 MainForm 实例上下文，必须通过 View 访问窗体成员。
+						try
 						{
-							try { await SyncProjects(); }
-							catch (Exception ex) { ex.Log("网络恢复后自动同步项目失败"); }
-						});
+							if (View.IsHandleCreated)
+							{
+								View.BeginInvoke(new Action(async delegate
+								{
+									try { await SyncProjects(); }
+									catch (Exception ex) { ex.Log("网络恢复后自动同步项目失败"); }
+								}));
+							}
+						}
+						catch (Exception ex)
+						{
+							ex.Log("网络恢复后自动同步调度失败");
+						}
 					}
 				}
 			}
@@ -2556,7 +2575,7 @@ public class MainForm
 		ProjectHierarchy.FinishEditorInputStatus(isCancelInput);
 	}
 
-	public async void RemoveNodes()
+	public void RemoveNodes()
 	{
 		TreeNodeBase sn = ProjectHierarchy.SelectedNode;
 		frmNodeSelector form = new frmNodeSelector();
@@ -2751,6 +2770,20 @@ public class MainForm
 
 	public async Task SyncProjects()
 	{
+		// 串行化：避免与手动同步 / 退出保存 / 网络恢复自动同步 / 关闭项目并发操作同一批 Table
+		await _syncGate.WaitAsync().ConfigureAwait(true);
+		try
+		{
+			await SyncProjectsCore();
+		}
+		finally
+		{
+			_syncGate.Release();
+		}
+	}
+
+	private async Task SyncProjectsCore()
+	{
 		// 本地模式下跳过同步
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
 		{
@@ -2790,6 +2823,9 @@ public class MainForm
 		}
 		ProgressForm2 progressFrom = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime());
 		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
+		// 失败隔离：记录本次未能完整同步的项目，循环结束后在 UI 线程统一提示，
+		// 避免"某个项目异常 → 整批中断 → 后续项目静默不同步、用户却以为同步成功"。
+		List<string> syncFailedProjects = new List<string>();
 		try
 		{
 			progressRuntimeData.UpdateMessage("准备开始处理...");
@@ -2806,6 +2842,12 @@ public class MainForm
 						{
 							anyNodeUpdated = flag;
 						}
+					}
+					catch (Exception projEx)
+					{
+						// 单项目失败不中断整批：记录后继续处理后续项目
+						syncFailedProjects.Add(proj.Name + "：" + projEx.Message);
+						projEx.Log("[SyncProjects] 项目同步失败，已继续处理后续项目");
 					}
 					finally
 					{
@@ -2832,6 +2874,14 @@ public class MainForm
 		{
 			ex.Log("同步项目时发生错误");
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "同步项目时发生错误");
+		}
+		if (syncFailedProjects.Count > 0)
+		{
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning,
+				"以下" + StringConstBase.Current.Project + "本次未能完整同步（其余项目已正常处理）：\n\n"
+				+ string.Join("\n", syncFailedProjects)
+				+ "\n\n未同步的修改仍保留在本地，请检查网络后再次同步。",
+				MessageBoxButtons.OK, "同步完成（部分项目失败）", scroll: true);
 		}
 		if (anyNodeUpdated)
 		{
@@ -2865,6 +2915,20 @@ public class MainForm
 	}
 
 	public async Task<bool> SyncProject(Auditai.Model.Project proj)
+	{
+		// 串行化：与 SyncProjects 共用同一把闸，避免两条同步路径并发操作同一批 Table
+		await _syncGate.WaitAsync().ConfigureAwait(true);
+		try
+		{
+			return await SyncProjectCore(proj);
+		}
+		finally
+		{
+			_syncGate.Release();
+		}
+	}
+
+	private async Task<bool> SyncProjectCore(Auditai.Model.Project proj)
 	{
 		// 本地模式下跳过同步
 		if (Auditai.LocalDataStore.StorageRouter.IsLocalMode)
@@ -2908,6 +2972,16 @@ public class MainForm
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.InnerException?.Message ?? ex.Message);
 			}
 		}
+		// 兜底捕获：ServerException / InvalidOperationException / KeyNotFoundException 等
+		// 不是 HttpRequestException 的子类（ServerException : Exception），
+		// 不兜底会逃逸到调用方的 async void 事件处理器（如关闭项目的 ribbonButton.Click），
+		// 触发 Application.ThreadException 导致进程级异常对话框。
+		catch (Exception ex)
+		{
+			ex.Log("同步项目时发生错误");
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None,
+				"同步" + StringConstBase.Current.Project + "时发生错误，可能数据未完全同步成功，请再同步一次！\n\n" + ex.Message);
+		}
 		return anyNodeUpdated;
 	}
 
@@ -2945,12 +3019,44 @@ public class MainForm
 		progressRuntimeData.NextStep("正在保存" + StringConstBase.Current.Project + "数据...");
 		progressForm.SetProgressDisplayValueConverter(progressDisplayValueConverter);
 		LogWriter.Info($"[SyncProjectImpl] === 开始同步项目: {proj.Name} (Id={proj.Id}) ===");
-		await SaveProjectImpl(proj, progressUpdater);
-		LogWriter.Info($"[SyncProjectImpl] SaveProjectImpl 完成，开始 Pull 项目结构");
 		List<Tuple<TreeNodeBase, Exception>> le = new List<Tuple<TreeNodeBase, Exception>>();
-		bool anyNodeUpdated = (await Syncer.Pull(proj)).Item2;
+		// 项目级失败单独收集：le 的元素在收尾提示处会取 TreeNode.Name，项目级失败没有对应节点
+		List<string> projectErrors = new List<string>();
+		// 失败隔离：本方法内以下调用原先没有任何 try 包裹，网络抖动 / 服务端业务错误（如
+		// ServerException：不是 HttpRequestException 的子类）都会直接冒泡，
+		// 经 ProgressForm2.TaskRunner 重抛后中断整批同步。改为逐项兜底，失败降级继续。
+		try
+		{
+			await SaveProjectImpl(proj, progressUpdater);
+		}
+		catch (Exception saveEx)
+		{
+			// 本地落盘失败不阻断云端同步：GetTableTask 会用 table.NeedSave 兜底补存
+			projectErrors.Add("保存本地数据失败：" + saveEx.Message);
+			saveEx.Log("[SyncProjectImpl] SaveProjectImpl 失败");
+		}
+		LogWriter.Info($"[SyncProjectImpl] SaveProjectImpl 完成，开始 Pull 项目结构");
+		bool anyNodeUpdated = false;
+		try
+		{
+			anyNodeUpdated = (await Syncer.Pull(proj)).Item2;
+		}
+		catch (Exception pullProjEx)
+		{
+			projectErrors.Add("拉取云端" + StringConstBase.Current.Project + "结构失败：" + pullProjEx.Message);
+			pullProjEx.Log("[SyncProjectImpl] Pull 项目结构失败");
+		}
 		// 使用 PullAndRetryPush 处理乐观锁冲突：服务器返回 OutOfDate 时自动 Pull+重试
-		PushResult pushProjectResult = await Syncer.PullAndRetryPush(proj);
+		PushResult? pushProjectResult = null;
+		try
+		{
+			pushProjectResult = await Syncer.PullAndRetryPush(proj);
+		}
+		catch (Exception pushProjEx)
+		{
+			projectErrors.Add("推送" + StringConstBase.Current.Project + "结构失败：" + pushProjEx.Message);
+			pushProjEx.Log("[SyncProjectImpl] Push 项目结构失败");
+		}
 		if (pushProjectResult == PushResult.OutOfDate)
 		{
 			// 重试耗尽仍冲突，让用户选择：保留本地 或 采用云端
@@ -2967,28 +3073,34 @@ public class MainForm
 		proj.Save();
 		progressRuntimeData.UpdateMessage("准备开始同步数据...");
 		IEnumerable<TreeTableNode> tableNodes = proj.GetAllTableNodes();
-		Dictionary<Id64, int> tableVersions = (await Syncer.QueryVersion(proj.Id, tableNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
-		// 防御：服务器可能未对每个表都返回版本号，缺项按 0 处理，避免 KeyNotFoundException 中断整个同步
-		int ServerVersion(Id64 id) => tableVersions.TryGetValue(id, out int v) ? v : 0;
+		Dictionary<Id64, int> tableVersions = await QueryVersionsSafe(() => Syncer.QueryVersion(proj.Id, tableNodes), "表格", projectErrors);
+		// 防御：查询失败时返回 null（云端版本未知 → 一律按 int.MaxValue 处理，宁可多拉一次
+		// 也不能漏掉他人修改；服务端版本一致时 Pull 会直接返回 Latest，开销极小）。
+		// 查询成功时缺项按 0 处理，避免 KeyNotFoundException 中断整个同步。
+		int ServerVersion(Id64 id) => tableVersions == null ? int.MaxValue : (tableVersions.TryGetValue(id, out int v) ? v : 0);
 		List<Auditai.Model.Table> tables = (from n in tableNodes
 			where n.IsEntityDirty || ServerVersion(n.Id) > n.Version
 			select n.Table into t
 			select t).ToList();
 		IEnumerable<TreeDocumentNode> docNodes = proj.GetAllDocumentNodes();
-		Dictionary<Id64, int> docVersions = (await Syncer.QueryVersion(proj.Id, docNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
-		int DocServerVersion(Id64 id) => docVersions.TryGetValue(id, out int dv) ? dv : 0;
+		Dictionary<Id64, int> docVersions = await QueryVersionsSafe(() => Syncer.QueryVersion(proj.Id, docNodes), "文档", projectErrors);
+		int DocServerVersion(Id64 id) => docVersions == null ? int.MaxValue : (docVersions.TryGetValue(id, out int dv) ? dv : 0);
 		List<Auditai.Model.Document> documents = (from n in docNodes
 			where n.IsEntityDirty || DocServerVersion(n.Id) > n.Version
 			select n.Document).ToList();
 		IEnumerable<TreeImageNode> imageNodes = proj.GetAllImageNodes();
-		Dictionary<Id64, int> imageVersions = (await Syncer.QueryVersion(proj.Id, imageNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
+		Dictionary<Id64, int> imageVersions = await QueryVersionsSafe(() => Syncer.QueryVersion(proj.Id, imageNodes), "图片", projectErrors);
+		// 图片/PDF 原先直接索引字典（imageVersions[n.Id]）：云端漏返回该 Id 时会抛
+		// KeyNotFoundException，且不在任何 try 内，与表格/文档的处理方式不一致。统一走带兜底的方法。
+		int ImageServerVersion(Id64 id) => imageVersions == null ? int.MaxValue : (imageVersions.TryGetValue(id, out int iv) ? iv : 0);
 		List<Auditai.Model.Image> images = (from n in imageNodes
-			where n.IsEntityDirty || imageVersions[n.Id] > n.Version
+			where n.IsEntityDirty || ImageServerVersion(n.Id) > n.Version
 			select n.Image).ToList();
 		IEnumerable<TreePdfNode> pdfNodes = proj.GetAllPdfNodes();
-		Dictionary<Id64, int> pdfVersions = (await Syncer.QueryVersion(proj.Id, pdfNodes)).ToDictionary((Tuple<Id64, int> tup) => tup.Item1, (Tuple<Id64, int> tup) => tup.Item2);
+		Dictionary<Id64, int> pdfVersions = await QueryVersionsSafe(() => Syncer.QueryVersion(proj.Id, pdfNodes), "PDF", projectErrors);
+		int PdfServerVersion(Id64 id) => pdfVersions == null ? int.MaxValue : (pdfVersions.TryGetValue(id, out int pv) ? pv : 0);
 		List<Auditai.Model.Pdf> pdfs = (from n in pdfNodes
-			where n.IsEntityDirty || pdfVersions[n.Id] > n.Version
+			where n.IsEntityDirty || PdfServerVersion(n.Id) > n.Version
 			select n.Pdf).ToList();
 		int syncTotalCount = tables.Count + documents.Count + images.Count + pdfs.Count;
 		int hasProcessCount = 0;
@@ -3069,7 +3181,7 @@ public class MainForm
 			int num = hasProcessCount + 1;
 			hasProcessCount = num;
 			syncProgressValueRefresher.UpdateProgress(num, syncTotalCount);
-			if (imageVersions[image.Id] > image.Version)
+			if (ImageServerVersion(image.Id) > image.Version)
 			{
 				try
 				{
@@ -3109,7 +3221,7 @@ public class MainForm
 			int num = hasProcessCount + 1;
 			hasProcessCount = num;
 			syncProgressValueRefresher.UpdateProgress(num, syncTotalCount);
-			if (pdfVersions[pdf.Id] > pdf.Version)
+			if (PdfServerVersion(pdf.Id) > pdf.Version)
 			{
 				try
 				{
@@ -3147,21 +3259,57 @@ public class MainForm
 			await Syncer.UpdateDataVersion(proj);
 		}
 		proj.Save();
-		if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode && (pushProjectResult != PushResult.NoContent || anyEntityPushed))
+		// pushProjectResult 为 null 表示项目级 Push 已失败（异常已被兜底），此时不广播项目版本，
+		// 仅当本批确实推送过实体时广播一次兜底通知
+		if (!Auditai.LocalDataStore.StorageRouter.IsLocalMode
+			&& ((pushProjectResult.HasValue && pushProjectResult.Value != PushResult.NoContent) || anyEntityPushed))
 		{
 			// 阶段 3：兜底链路，传递 Version 用于其他客户端决策是否需要 Pull。
 			// 服务端 PushProjectQuick/PushProject 端点也会主动广播 ProjectSynced(version)，
 			// 此处保留客户端发起的兜底广播，避免服务端 SignalR 故障时通知链路完全失效。
 			await SignalRClient.SyncProject(proj.Id.ToString(), proj.Version.ToString());
 		}
-		if (le.Any())
+		// 失败汇总：项目级失败 + 实体级失败统一在一个可滚动对话框内提示，
+		// 明确告知"同步未完成"，避免用户误以为已全部同步成功。
+		List<string> failureDetails = new List<string>(projectErrors);
+		failureDetails.AddRange(le.Select((Tuple<TreeNodeBase, Exception> tup) =>
+			"同步\"" + (tup.Item1?.Name ?? "<未知节点>") + "\"时出现异常：" + tup.Item2.Message));
+		if (failureDetails.Count > 0)
 		{
-			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, string.Concat("同步过程中出现异常，可能数据未完全同步成功，请再同步一次！异常详细信息：", string.Concat(le.Select((Tuple<TreeNodeBase, Exception> tup) => "\n同步\"" + tup.Item1.Name + "\"时出现异常：" + tup.Item2.Message))));
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.Warning,
+				"同步过程中出现异常，可能数据未完全同步成功，请再同步一次！异常详细信息：\n"
+				+ string.Join("\n", failureDetails),
+				MessageBoxButtons.OK, "同步完成（存在异常）", scroll: true);
 		}
 		_serverDataChangedProject.Remove(proj.Id.ToString());
-		LogWriter.Info($"[SyncProjectImpl] === 项目同步完成: {proj.Name} (anyNodeUpdated={anyNodeUpdated}, 异常数={le.Count}) ===");
+		LogWriter.Info($"[SyncProjectImpl] === 项目同步完成: {proj.Name} (anyNodeUpdated={anyNodeUpdated}, 异常数={le.Count + projectErrors.Count}) ===");
 		return anyNodeUpdated;
-		static void ContinueWithTable(Auditai.Model.Table table)
+		async Task<Dictionary<Id64, int>> QueryVersionsSafe(Func<Task<IEnumerable<Tuple<Id64, int>>>> query, string label, List<string> errorSink)
+		{
+			try
+			{
+				IEnumerable<Tuple<Id64, int>> list = await query();
+				Dictionary<Id64, int> dictionary = new Dictionary<Id64, int>();
+				if (list != null)
+				{
+					foreach (Tuple<Id64, int> tup in list)
+					{
+						if (tup == null) continue;
+						// 覆盖式赋值替代 ToDictionary：云端重复返回同一 Id 时不再抛 ArgumentException
+						dictionary[tup.Item1] = tup.Item2;
+					}
+				}
+				return dictionary;
+			}
+			catch (Exception ex)
+			{
+				errorSink.Add("查询" + label + "云端版本失败：" + ex.Message);
+				ex.Log($"[SyncProjectImpl] 查询{label}云端版本失败");
+				return null;
+			}
+		}
+		// 去掉 static：失败分支需要把异常记入外层 SyncProjectImpl 的 le 清单（静态本地函数无法捕获 le）
+		void ContinueWithTable(Auditai.Model.Table table)
 		{
 			if (table == null || !table._loaded)
 			{
@@ -3188,7 +3336,9 @@ public class MainForm
 				table._loaded = false;
 				exUnk.Log($"[ContinueWithTable] {tname} - 未预期的异常");
 				LogWriter.Info($"[ContinueWithTable] {tname} - 未预期异常: {exUnk.GetType().Name}: {exUnk.Message}");
-				throw;
+				// 不再 rethrow：表格循环没有 try/catch，抛出会中断整批同步（剩余表格 + 全部文档/图片/PDF）。
+				// 与 GetTableTask 其他失败分支保持一致——记入异常清单后跳过该表。
+				le.Add(Tuple.Create((TreeNodeBase)table.TreeNode, (Exception)exUnk));
 			}
 		}
 		async Task<Auditai.Model.Table> GetTableTask(Auditai.Model.Table table)
@@ -3631,7 +3781,7 @@ public class MainForm
 		}
 	}
 
-	public async Task OneClickCollect()
+	public Task OneClickCollect()
 	{
 		bool tempShowTooltip = ShowHelperTooltip;
 		ShowHelperTooltip = false;
@@ -3766,6 +3916,7 @@ public class MainForm
 			}
 		});
 		ShowHelperTooltip = tempShowTooltip;
+		return Task.CompletedTask;
 	}
 
 	public async Task AutoImport()
@@ -7622,7 +7773,9 @@ public class MainForm
 		}
 		else
 		{
-			_ledgerWindow.Show(View);
+			// 独立窗口：不传 owner，解除 owned 关系，使 LedgerWindow 不再强制置顶于主窗口之上
+			// 这样用户可通过任务栏/Alt+Tab 自由在两个窗口间切换，无需先最小化 LedgerWindow
+			_ledgerWindow.Show();
 		}
 		// Show 之后再聚焦：首次打开时控件句柄随窗口显示才创建，提前 Focus 会静默失效
 		CurrentLedgerViewer?.GetMainView().Focus();

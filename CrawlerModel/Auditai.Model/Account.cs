@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Auditai.Model;
 
@@ -16,6 +16,8 @@ public class Account
 
 
 	public Dictionary<Item, ItemBalance> ItemBalance { get; set; } = new Dictionary<Item, ItemBalance>();
+
+	public List<ItemComboBalance> ComboBalances { get; set; } = new List<ItemComboBalance>();
 
 
 	public double Quantity { get; set; }

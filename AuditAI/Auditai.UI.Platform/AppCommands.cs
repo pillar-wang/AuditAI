@@ -113,6 +113,12 @@ public static class AppCommands
 	public static AppCommandLedgerWindow LedgerWindow { get; } = new AppCommandLedgerWindow();
 
 
+	public static AppCommandRiskCheck RiskCheck { get; } = new AppCommandRiskCheck();
+
+
+	public static AppCommandMultiDimension MultiDimension { get; } = new AppCommandMultiDimension();
+
+
 	public static AppCommandExport Export { get; } = new AppCommandExport();
 
 

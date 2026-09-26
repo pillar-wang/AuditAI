@@ -495,6 +495,14 @@ namespace AuditAI.McpServer.Services
                     return ErrorJson("输出路径不能为空");
                 }
 
+                // 安全修复：下方以 FileStream(..., FileMode.Create) 覆盖写目标，此前未做路径校验。
+                // 复用 ExportService 既有实现。
+                string pathError = ExportService.ValidateOutputPath(outputPath);
+                if (pathError != null)
+                {
+                    return pathError;
+                }
+
                 Table table = GetLoadedTable(tableNodeId);
 
                 // 确保目录存在

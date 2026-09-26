@@ -31,7 +31,10 @@ public static class Syncer
 
 	public static async Task<PushResult> Push(Table table, TaskProgressValueReportCallback reportCallback = null)
 	{
-		if (Disabled) return new PushResult();
+		// 修复：原为 new PushResult()（枚举默认值 = Success），在 Disabled 时对外报"推送成功"，
+		// 调用方据此置 anyEntityPushed=true 并提示"同步完成"，实际零数据上云。
+		// 改为 NoContent（语义：没有任何内容被推送），调用方对 NoContent 的既有处理即为"不计入已推送"。
+		if (Disabled) return PushResult.NoContent;
 		TaskProgressValueUpdater taskProgressValueUpdater = new TaskProgressValueUpdater(0f, 0.1f, reportCallback);
 		TaskProgressValueUpdater taskProgressValueUpdater2 = new TaskProgressValueUpdater(0.1f, 0.9f, reportCallback);
 		int num = table.Columns.Count + table.RemovedColumns.Count + table.Rows.Count + table.RemovedRows.Count + table.Cells.Count + table.RemovedRows.Count + table.CellStyles.Count() + table.MergedCells.Count + table.MergesToDelete.Count;
@@ -509,7 +512,10 @@ public static class Syncer
 
 	public static async Task<PushResult> Push(Project project)
 	{
-		if (Disabled) return new PushResult();
+		// 修复：原为 new PushResult()（枚举默认值 = Success），在 Disabled 时对外报"推送成功"，
+		// 调用方据此置 anyEntityPushed=true 并提示"同步完成"，实际零数据上云。
+		// 改为 NoContent（语义：没有任何内容被推送），调用方对 NoContent 的既有处理即为"不计入已推送"。
+		if (Disabled) return PushResult.NoContent;
 		JObject jObject = new JObject();
 		jObject.Add("Action", "PushProject");
 		jObject.Add("Id", project.Id);
@@ -770,7 +776,10 @@ public static class Syncer
 	/// </summary>
 	public static async Task<PushResult> PullAndRetryPush(Project project, int maxRetry = 3)
 	{
-		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		// 修复：原返回 PushResult.Success（枚举 0 即 Success），但此处根本没执行任何推送，
+		// 调用方（MainForm 的表格/文档/项目三处）会据此置 anyEntityPushed=true →
+		// "同步成功"却零数据上云。改为 NoContent。
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.NoContent;
 		for (int i = 0; i < maxRetry; i++)
 		{
 			PushResult result = await Push(project).ConfigureAwait(false);
@@ -1259,7 +1268,13 @@ public static class Syncer
 		if ((string)jObject["Result"] == "NeedUpdate")
 		{
 			pdf.TreeNode.Version = (int)jObject["Version"];
-			pdf.FileId = (Guid)jObject["FileId"];
+			// 修复：FileId 原先无条件用云端值覆盖。对照图片侧 Merge(JObject, Image) 的写法，
+			// 应加 IsFileIdDirty 守卫 —— 本地已替换但尚未推送的 PDF（Push 侧正是靠该脏位判断增量）
+			// 否则会被静默丢弃。
+			if (!pdf.IsFileIdDirty)
+			{
+				pdf.FileId = (Guid)jObject["FileId"];
+			}
 			return PullResult.Success;
 		}
 		if ((string)jObject["Result"] == "Latest")
@@ -1317,7 +1332,10 @@ public static class Syncer
 	/// </summary>
 	public static async Task<PushResult> PullAndRetryPush(Table table, int maxRetry = 3)
 	{
-		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		// 修复：原返回 PushResult.Success（枚举 0 即 Success），但此处根本没执行任何推送，
+		// 调用方（MainForm 的表格/文档/项目三处）会据此置 anyEntityPushed=true →
+		// "同步成功"却零数据上云。改为 NoContent。
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.NoContent;
 		for (int i = 0; i < maxRetry; i++)
 		{
 			PushResult result = await Push(table).ConfigureAwait(false);
@@ -1341,7 +1359,10 @@ public static class Syncer
 	/// </summary>
 	public static async Task<PushResult> PullAndRetryPush(Document document, int maxRetry = 3)
 	{
-		if (Disabled || StorageRouter.IsLocalMode) return PushResult.Success;
+		// 修复：原返回 PushResult.Success（枚举 0 即 Success），但此处根本没执行任何推送，
+		// 调用方（MainForm 的表格/文档/项目三处）会据此置 anyEntityPushed=true →
+		// "同步成功"却零数据上云。改为 NoContent。
+		if (Disabled || StorageRouter.IsLocalMode) return PushResult.NoContent;
 		for (int i = 0; i < maxRetry; i++)
 		{
 			PushResult result = await Push(document).ConfigureAwait(false);
@@ -1523,13 +1544,21 @@ public static class Syncer
 			}
 		}
 		long? defaultStyleId = ((pullTable.DefaultStyleId == null || pullTable.DefaultStyleId.IsNull) ? null : new long?(pullTable.DefaultStyleId.Value));
-		if (defaultStyleId.HasValue)
+		if (defaultStyleId.HasValue && !table.Dirty.IsDefaultStyleDirty)
 		{
 			// 防御：若服务端返回的 defaultStyleId 不在本次收到的 CellStyles 中，
-			// First 会抛 InvalidOperationException 中断整个 Pull。改用 FirstOrDefault
-			// 并置空，避免一闪而过的脏数据让整表同步失败。
-			table.DefaultStyle = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == defaultStyleId.Value);
-			table.Dirty.IsDefaultStyleDirty = false;
+			// First 会抛 InvalidOperationException 中断整个 Pull，故用 FirstOrDefault。
+			// 修复两点：
+			//  1) 补 IsDefaultStyleDirty 守卫 —— 同函数其它字段一律 `!table.Dirty.IsXxxDirty`，
+			//     唯独这里没有：本地未推送的默认样式改动会被云端值覆盖并清零脏位（漏推且丢失）。
+			//  2) 取不到时保留本地现值，不再直接赋 null —— DefaultStyle 为 null 会让
+			//     后续 ColumnCollection.Insert 里的 DefaultStyle.Serialize() 抛 NRE。
+			CellStyle serverDefaultStyle = table.CellStyles.FirstOrDefault((CellStyle s) => s.Id.Value == defaultStyleId.Value);
+			if (serverDefaultStyle != null)
+			{
+				table.DefaultStyle = serverDefaultStyle;
+				table.Dirty.IsDefaultStyleDirty = false;
+			}
 		}
 		if (table.Rows.Count > 0)
 		{
@@ -2666,7 +2695,10 @@ public static class Syncer
 		}
 		if (response.MergeTable != null && !document.Dirty.IsMergeTableDirty)
 		{
-			document.MergeTable = new Id64(document.MergeTable.Value);
+			// 修复：原实现写成 document.MergeTable = new Id64(document.MergeTable.Value)，
+			// 取的是"本地值"赋回自己 —— 等于把服务端下发的 response.MergeTable 丢弃，
+			// 每次 Pull 后文档与"合并表格"的关联都停在本地旧值，与云端永久不一致。
+			document.MergeTable = new Id64(response.MergeTable.Value);
 		}
 		Dictionary<Id64, Paragraph> dictionary = document.Paragraphs.ToDictionary((Paragraph p) => p.Id, (Paragraph p) => p);
 		List<Paragraph> list = document.Paragraphs.ToList();

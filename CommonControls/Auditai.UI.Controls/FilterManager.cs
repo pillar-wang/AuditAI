@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +13,15 @@ using Auditai.Model;
 using Auditai.UI.Controls.Properties;
 
 namespace Auditai.UI.Controls;
+
+public class SampleExecutedEventArgs : EventArgs
+{
+	// 发起抽样的网格控件（C1FlexGridEx 实例），订阅方据此判断事件归属
+	public object Grid;
+
+	// 抽中的数据行号集合（网格数据行索引，不含固定行；与 BodyGetRow(i)/BodyRowsCount 对应）
+	public List<int> RowIndexes;
+}
 
 public class FilterManager
 {
@@ -557,6 +566,11 @@ public class FilterManager
 
 	public event EventHandler AfterFilterExecute;
 
+	// 抽样执行完成事件（PPS/等距/随机），静态：所有网格实例共用，订阅方通过 e.Grid 判断归属
+	public static event EventHandler<SampleExecutedEventArgs> SampleExecuted;
+
+	private HashSet<int> _lastFilteredRows;
+
 	public C1CommandLink GenLnkFilter()
 	{
 		return new C1CommandLink(_cmdFilter);
@@ -1010,11 +1024,13 @@ public class FilterManager
 		decimal? num = InputForm.Numeric("PPS抽样", "PPS抽样数量");
 		if (num.HasValue)
 		{
+			object lastExecuteToken = _lastFilteredRows;
 			Add(new PpsFilter
 			{
 				Kind = FilterKind.Pps,
 				Count = (int)num.Value
 			});
+			RaiseSampleExecuted(lastExecuteToken);
 		}
 	}
 
@@ -1023,11 +1039,13 @@ public class FilterManager
 		decimal? num = InputForm.Numeric("等距抽样", "等距抽样距离n（大于0，每n个样本取样，即第1个，第1+n个，第1+2n个，...）");
 		if (num.HasValue)
 		{
+			object lastExecuteToken = _lastFilteredRows;
 			Add(new EquidistanceFilter
 			{
 				Kind = FilterKind.Equidistance,
 				Count = (int)num.Value
 			});
+			RaiseSampleExecuted(lastExecuteToken);
 		}
 	}
 
@@ -1036,11 +1054,13 @@ public class FilterManager
 		decimal? num = InputForm.Numeric("随机抽样", "随机抽样数量");
 		if (num.HasValue)
 		{
+			object lastExecuteToken = _lastFilteredRows;
 			Add(new RandomFilter
 			{
 				Kind = FilterKind.Random,
 				Count = (int)num.Value
 			});
+			RaiseSampleExecuted(lastExecuteToken);
 		}
 	}
 
@@ -1812,6 +1832,7 @@ public class FilterManager
 	public void Execute()
 	{
 		HashSet<int> hashSet = ExecuteAllFilters();
+		_lastFilteredRows = hashSet;
 		ResultCount = hashSet.Count;
 		_grid.BeginUpdate();
 		for (int i = 0; i < _grid.BodyRowsCount; i++)
@@ -1823,6 +1844,27 @@ public class FilterManager
 		IsFilteredExternally = false;
 		Populate();
 		this.AfterFilterExecute?.Invoke(this, EventArgs.Empty);
+	}
+
+	// 抽样命令执行完成后触发 SampleExecuted；lastExecuteToken 用于确认 Add 确实触发了 Execute（防止使用过期行集合）
+	private void RaiseSampleExecuted(object lastExecuteToken)
+	{
+		if (SampleExecuted == null || ResultCount <= 0 || _lastFilteredRows == null || ReferenceEquals(lastExecuteToken, _lastFilteredRows))
+		{
+			return;
+		}
+		try
+		{
+			SampleExecuted?.Invoke(this, new SampleExecutedEventArgs
+			{
+				Grid = _grid,
+				RowIndexes = new List<int>(_lastFilteredRows)
+			});
+		}
+		catch
+		{
+			// 异常隔离：订阅方异常不得影响抽样主流程
+		}
 	}
 
 	private void OnChanged()

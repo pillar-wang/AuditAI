@@ -255,7 +255,82 @@ namespace AuditAI.McpServer.Protocol
                     }
                 }
             };
+            // 修复：本方法此前恒不设 isError，而各 Service 一律以"catch 后返回 success=false 的 JSON"
+            // 表达失败 —— 客户端在协议层看到的全是成功，无法用 isError 判定失败。
+            // 这里按工具返回文本判定并把结果写入 isError（不改动 content 文本，不影响既有文本断言）。
+            if (LooksLikeFailure(text))
+            {
+                result["isError"] = true;
+            }
             return MakeSuccess(idToken, result);
+        }
+
+        /// <summary>
+        /// 判定工具返回文本是否表示失败。
+        /// 仅识别 JSON 对象的 success / error 字段，纯文本返回不判定（避免误报）。
+        /// </summary>
+        private static bool LooksLikeFailure(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return true;   // 空返回视为失败
+            string t = text.TrimStart();
+            if (t[0] != '{') return false;                     // 非 JSON 对象不判定
+            try
+            {
+                var obj = JObject.Parse(t);
+                var success = obj["success"];
+                if (success != null && success.Type == JTokenType.Boolean)
+                {
+                    return !success.Value<bool>();
+                }
+                // 没有显式 success 时，才用 error 字段兜底
+                var error = obj["error"];
+                if (error != null && error.Type != JTokenType.Null && !string.IsNullOrWhiteSpace(error.ToString()))
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 从原始请求行中尽力取出 id（解析失败返回 null）。
+        /// 供 McpServer 主循环在最外层异常时回写带 id 的错误响应，避免请求永久无响应。
+        /// </summary>
+        public static JToken TryExtractId(string rawLine)
+        {
+            if (string.IsNullOrWhiteSpace(rawLine)) return null;
+            try
+            {
+                var obj = JObject.Parse(rawLine);
+                var id = obj["id"];
+                return (id == null || id.Type == JTokenType.Null) ? null : id;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 构造 JSON-RPC 内部错误响应（-32603）。供协议层在外层 catch 中直接回写。
+        /// </summary>
+        public static string MakeInternalError(JToken idToken, string message)
+        {
+            var response = new JObject
+            {
+                ["jsonrpc"] = "2.0",
+                ["id"] = idToken ?? JValue.CreateNull(),
+                ["error"] = new JObject
+                {
+                    ["code"] = -32603,
+                    ["message"] = string.IsNullOrEmpty(message) ? "服务器内部错误" : message
+                }
+            };
+            return response.ToString(Formatting.None);
         }
 
         /// <summary>

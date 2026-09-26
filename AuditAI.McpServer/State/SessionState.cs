@@ -34,8 +34,9 @@ namespace AuditAI.McpServer.State
         /// <summary>是否已导入账簿</summary>
         public bool HasLedger => !string.IsNullOrEmpty(CurrentLedgerFilePath);
 
-        /// <summary>采集任务状态字典（任务ID → 状态）</summary>
-        private readonly Dictionary<string, CollectionTaskStatus> _collectionTasks = new Dictionary<string, CollectionTaskStatus>();
+        /// <summary>采集任务状态字典（任务ID → 状态）。并发访问用 ConcurrentDictionary，避免容器损坏。</summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, CollectionTaskStatus> _collectionTasks =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, CollectionTaskStatus>();
 
         /// <summary>是否已打开项目</summary>
         public bool HasProject => CurrentProject != null;
@@ -68,7 +69,12 @@ namespace AuditAI.McpServer.State
             {
                 CurrentProject?.Dal?.Dispose();
             }
-            catch { /* 忽略 Dispose 异常，避免影响会话重置 */ }
+            catch (Exception ex)
+            {
+                // 原实现静默吞掉：Dispose 内部会做 wal_checkpoint(TRUNCATE)，
+                // 失败时不写日志会让"以为已 checkpoint 实际残留 -wal"无从排查。
+                Console.Error.WriteLine("[SessionState] CloseProject Dispose 异常（可能未完成 WAL checkpoint）: " + ex.Message);
+            }
             CurrentProject = null;
             CurrentProjectPath = null;
             CurrentDocumentNodeId = null;
@@ -175,13 +181,21 @@ namespace AuditAI.McpServer.State
         // 说明：管理后台（端口 8958）的测试上下文。AdminBaseUrl 由 App.config 加载，
         // AdminAuthToken/AdminUserId 在管理后台登录后由 AdminApiTools 设置。
 
-        /// <summary>管理后台 Token（默认 null）</summary>
-        public static string AdminAuthToken;
+        /// <summary>管理后台 Token（默认 null）。随会话隔离，避免跨会话泄露。</summary>
+        public static string AdminAuthToken
+        {
+            get => CurrentSession.AdminAuthToken;
+            set => CurrentSession.AdminAuthToken = value;
+        }
 
-        /// <summary>管理后台用户 ID（默认 0）</summary>
-        public static long AdminUserId;
+        /// <summary>管理后台用户 ID（默认 0）。随会话隔离。</summary>
+        public static long AdminUserId
+        {
+            get => CurrentSession.AdminUserId;
+            set => CurrentSession.AdminUserId = value;
+        }
 
-        /// <summary>管理后台地址（默认 null，由 App.config 加载）</summary>
+        /// <summary>管理后台地址（默认 null，由 App.config 加载）。属配置而非机密，保持进程级。</summary>
         public static string AdminBaseUrl;
 
         // 多会话隔离

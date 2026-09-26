@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
@@ -2122,6 +2122,10 @@ public class TableTitleEditor
 					styleNew.BackColor = (tuple.Item4.Passed ? UserSet.Config.TableStyle.CheckPassColor : UserSet.Config.TableStyle.CheckFailColor);
 				}
 			}
+			if (e.Row == 0)
+			{
+				styleNew.ForeColor = Color.Black; // 主表名强制黑色，覆盖可能的主题/样式
+			}
 		}
 		catch (ArgumentOutOfRangeException)
 		{
@@ -2991,6 +2995,7 @@ public class TableTitleEditor
 		styleNew.ForeColor = cell.ForeColor;
 		if (row == 0)
 		{
+			styleNew.ForeColor = Color.Black; // 主表名统一黑色
 			styleNew.TextAlign = TextAlignEnum.CenterCenter;
 		}
 		else

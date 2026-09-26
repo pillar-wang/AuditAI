@@ -22,7 +22,7 @@ public class ProjectExport
 
 	public event EventHandler<ProgressArgs> ProgressChanged;
 
-	public async Task<DialogResult> SaveDialog()
+	public Task<DialogResult> SaveDialog()
 	{
 		if (Project == null)
 		{
@@ -50,9 +50,9 @@ public class ProjectExport
 						ProgressChanged -= progressDeal(progress);
 					}
 				});
-				return DialogResult.OK;
+				return Task.FromResult(DialogResult.OK);
 			}
-			return DialogResult.Cancel;
+			return Task.FromResult(DialogResult.Cancel);
 		}
 		EventHandler<ProgressArgs> progressDeal(IProgress<ProgressInfo> progress)
 		{

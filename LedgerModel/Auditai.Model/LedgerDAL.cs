@@ -1,8 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Dapper;
+using Newtonsoft.Json;
 
 namespace Auditai.Model;
 
@@ -205,7 +208,7 @@ internal class LedgerDAL
 			currencyMap[(int)row.id] = currency;
 		}
 		Dictionary<int, Voucher> dictionary = new Dictionary<int, Voucher>();
-		IEnumerable<object> enumerable2 = cnn.Query("SELECT `id`,`type`,`number`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark` FROM `Voucher` ORDER BY `id`");
+		IEnumerable<object> enumerable2 = cnn.Query("SELECT `id`,`type`,`number`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark`,`VoucherMarkSource` FROM `Voucher` ORDER BY `id`");
 		Dictionary<string, Account> tempAccountMap = ret.Accounts.ToDictionary((Account a) => a.Code, (Account a) => a);
 		foreach (dynamic item2 in enumerable2)
 		{
@@ -228,6 +231,10 @@ internal class LedgerDAL
 			voucher.Booker = (string)item2.booker;
 			voucher.DirectionToggled = item2.DirectionToggled != 0;
 			voucher.VoucherMark = item2.VoucherMark != 0;
+			// 防御式：动态行理论上必含 VoucherMarkSource（UpdateSchema 已补列），列缺失时兜底 0
+			voucher.VoucherMarkSource = (item2 is IDictionary<string, object> markRow && markRow.ContainsKey("VoucherMarkSource"))
+				? Convert.ToInt32(markRow["VoucherMarkSource"])
+				: 0;
 			Voucher voucher2 = voucher;
 			string text = (string)item2.OppositeAccounts;
 			if (!string.IsNullOrWhiteSpace(text))
@@ -271,6 +278,64 @@ internal class LedgerDAL
 			}
 			value.Total += item4.Balance;
 			value.ItemBalances.Add(auxItem2, item4.Balance);
+		}
+		// 多类别辅助核算组合期初余额（科目×多个辅助项的联合余额）
+		try
+		{
+			Dictionary<int, List<int>> comboRelMap = new Dictionary<int, List<int>>();
+			foreach (dynamic relRow in cnn.Query("SELECT `comboId`,`itemId` FROM `ItemComboBalanceRel` ORDER BY `comboId`"))
+			{
+				int comboRelId = (int)relRow.comboId;
+				if (!comboRelMap.TryGetValue(comboRelId, out var comboRelItems))
+				{
+					comboRelItems = new List<int>();
+					comboRelMap.Add(comboRelId, comboRelItems);
+				}
+				comboRelItems.Add((int)relRow.itemId);
+			}
+			foreach (dynamic comboRow in cnn.Query("SELECT `id`,`accountId`,`balance` FROM `ItemComboBalance` ORDER BY `id`"))
+			{
+				if (!dicAcc.TryGetValue((int)comboRow.accountId, out var comboAccount))
+				{
+					Debug.WriteLine("ComboOpeningBalance skipped, accountId not found: " + (int)comboRow.accountId);
+					continue;
+				}
+				if (!comboRelMap.TryGetValue((int)comboRow.id, out var comboItemIds))
+				{
+					comboItemIds = new List<int>();
+				}
+				List<AuxiliaryItem> comboItems = new List<AuxiliaryItem>();
+				bool comboItemMissing = false;
+				foreach (int comboItemId in comboItemIds)
+				{
+					if (!itemMap.TryGetValue(comboItemId, out var comboAuxItem))
+					{
+						Debug.WriteLine("ComboOpeningBalance skipped, itemId not found: " + comboItemId);
+						comboItemMissing = true;
+						break;
+					}
+					comboItems.Add(comboAuxItem);
+				}
+				if (comboItemMissing)
+				{
+					continue;
+				}
+				ComboOpeningBalance comboOpeningBalance = new ComboOpeningBalance
+				{
+					Account = comboAccount,
+					Balance = (decimal)comboRow.balance
+				};
+				comboOpeningBalance.Items.AddRange(comboItems);
+				ret.ComboOpeningBalances.Add(comboOpeningBalance);
+			}
+		}
+		catch (Exception ex)
+		{
+			// 表缺失（如只读老库建表失败）时不阻断打开账套，组合期初余额留空。
+			// 但必须置标志：内存里这份是空的/不全的，而保存路径是"全删全插"重写，
+			// 不标记就会在用户下一次任意保存（哪怕只是标记一张凭证）时把库里的组合期初永久清空。
+			ret.ComboOpeningBalancesLoadFailed = true;
+			Debug.WriteLine("Load ComboOpeningBalances failed: " + ex.Message);
 		}
 		return ret;
 	}
@@ -391,11 +456,12 @@ internal class LedgerDAL
 					OppositeAccounts = string.Join(",", v.OppositeAccounts.Select((Account a) => a.Code)),
 					DirectionToggled = v.DirectionToggled,
 					VoucherMark = v.VoucherMark,
+					VoucherMarkSource = v.VoucherMarkSource,
 					Dirty = v.Dirty
 				};
 			sQLiteConnection.Execute("DELETE FROM `Voucher` WHERE id=@id", source2.Where(v => v.Dirty == -1), sQLiteTransaction);
-			sQLiteConnection.Execute("UPDATE `Voucher` SET `id`=@id,`number`=@number,`type`=@type,`day`=@day,`digest`=@digest,`dc`=@dc,`amount`=@amount,`quantity`=@quantity,`unitPrice`=@unitPrice,`accountId`=@accountId,`foreignId`=@foreignId,`foreignAmount`=@foreignAmount,`exchangeRate`=@exchangeRate,`maker`=@maker,`checker`=@checker,`booker`=@booker,`OppositeAccounts`=@OppositeAccounts,`DirectionToggled`=@DirectionToggled,`VoucherMark`=@VoucherMark WHERE id=@id", source2.Where(v => v.Dirty == 2), sQLiteTransaction);
-			sQLiteConnection.Execute("INSERT INTO `Voucher`(`id`,`number`,`type`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark`) VALUES(@id,@number,@type,@day,@digest,@dc,@amount,@quantity,@unitPrice,@accountId,@foreignId,@foreignAmount,@exchangeRate,@maker,@checker,@booker,@OppositeAccounts,@DirectionToggled,@VoucherMark)", source2.Where(v => v.Dirty == 1), sQLiteTransaction);
+			sQLiteConnection.Execute("UPDATE `Voucher` SET `id`=@id,`number`=@number,`type`=@type,`day`=@day,`digest`=@digest,`dc`=@dc,`amount`=@amount,`quantity`=@quantity,`unitPrice`=@unitPrice,`accountId`=@accountId,`foreignId`=@foreignId,`foreignAmount`=@foreignAmount,`exchangeRate`=@exchangeRate,`maker`=@maker,`checker`=@checker,`booker`=@booker,`OppositeAccounts`=@OppositeAccounts,`DirectionToggled`=@DirectionToggled,`VoucherMark`=@VoucherMark,`VoucherMarkSource`=@VoucherMarkSource WHERE id=@id", source2.Where(v => v.Dirty == 2), sQLiteTransaction);
+			sQLiteConnection.Execute("INSERT INTO `Voucher`(`id`,`number`,`type`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark`,`VoucherMarkSource`) VALUES(@id,@number,@type,@day,@digest,@dc,@amount,@quantity,@unitPrice,@accountId,@foreignId,@foreignAmount,@exchangeRate,@maker,@checker,@booker,@OppositeAccounts,@DirectionToggled,@VoucherMark,@VoucherMarkSource)", source2.Where(v => v.Dirty == 1), sQLiteTransaction);
 			sQLiteConnection.Execute("DELETE FROM `VoucherItemRel`");
 			foreach (Voucher voucher in ledger.Vouchers.Where((Voucher v) => v.Dirty != -1))
 			{
@@ -406,6 +472,7 @@ internal class LedgerDAL
 				});
 				sQLiteConnection.Execute("INSERT INTO `VoucherItemRel`(`voucherId`,`itemId`) VALUES(@voucherId,@itemId)", param7, sQLiteTransaction);
 			}
+			WriteComboOpeningBalances(sQLiteConnection, sQLiteTransaction, ledger, dicAcc, itemDic);
 			sQLiteTransaction.Commit();
 		}
 		foreach (Account account in ledger.Accounts)
@@ -526,9 +593,10 @@ internal class LedgerDAL
 			booker = v.Booker,
 			OppositeAccounts = string.Join(",", v.OppositeAccounts.Select((Account a) => a.Code)),
 			DirectionToggled = v.DirectionToggled,
-			VoucherMark = v.VoucherMark
+			VoucherMark = v.VoucherMark,
+			VoucherMarkSource = v.VoucherMarkSource
 		});
-		sQLiteConnection.Execute("INSERT INTO `Voucher`(`id`,`number`,`type`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark`) VALUES(@id,@number,@type,@day,@digest,@dc,@amount,@quantity,@unitPrice,@accountId,@foreignId,@foreignAmount,@exchangeRate,@maker,@checker,@booker,@OppositeAccounts,@DirectionToggled,@VoucherMark)", param8, sQLiteTransaction);
+		sQLiteConnection.Execute("INSERT INTO `Voucher`(`id`,`number`,`type`,`day`,`digest`,`dc`,`amount`,`quantity`,`unitPrice`,`accountId`,`foreignId`,`foreignAmount`,`exchangeRate`,`maker`,`checker`,`booker`,`OppositeAccounts`,`DirectionToggled`,`VoucherMark`,`VoucherMarkSource`) VALUES(@id,@number,@type,@day,@digest,@dc,@amount,@quantity,@unitPrice,@accountId,@foreignId,@foreignAmount,@exchangeRate,@maker,@checker,@booker,@OppositeAccounts,@DirectionToggled,@VoucherMark,@VoucherMarkSource)", param8, sQLiteTransaction);
 		sQLiteConnection.Execute("DELETE FROM `VoucherItemRel`");
 		int j;
 		for (j = 0; j < ledger.Vouchers.Count; j++)
@@ -541,7 +609,40 @@ internal class LedgerDAL
 			});
 			sQLiteConnection.Execute("INSERT INTO `VoucherItemRel`(`voucherId`,`itemId`) VALUES(@voucherId,@itemId)", param9, sQLiteTransaction);
 		}
+		WriteComboOpeningBalances(sQLiteConnection, sQLiteTransaction, ledger, dicAcc, itemDic);
 		sQLiteTransaction.Commit();
+	}
+
+	/// <summary>
+	/// 重写组合期初余额两张表（全删全插，与其它集合的保存策略一致）。
+	///
+	/// 关键防护：若本次加载该数据时失败过（<see cref="Ledger.ComboOpeningBalancesLoadFailed"/>），
+	/// 内存里那份是空的/不全的，此时**必须整体跳过**——否则用户任意一次 Ledger.Save()
+	/// （哪怕只是标记一张凭证）都会先 DELETE 再按内存重建，把库里的组合期初余额永久清空。
+	/// </summary>
+	private static void WriteComboOpeningBalances(SQLiteConnection conn, SQLiteTransaction tx, Ledger ledger,
+		Dictionary<Account, int> dicAcc, Dictionary<AuxiliaryItem, int> itemDic)
+	{
+		if (ledger.ComboOpeningBalancesLoadFailed)
+		{
+			Debug.WriteLine("Skip ItemComboBalance rewrite: ComboOpeningBalances 加载失败，保留库中原值");
+			return;
+		}
+		conn.Execute("DELETE FROM `ItemComboBalanceRel`", null, tx);
+		conn.Execute("DELETE FROM `ItemComboBalance`", null, tx);
+		var comboParam = ledger.ComboOpeningBalances.Select((ComboOpeningBalance co, int comboIdx) => new
+		{
+			id = comboIdx,
+			accountId = dicAcc[co.Account],
+			balance = co.Balance
+		});
+		conn.Execute("INSERT INTO `ItemComboBalance`(`id`,`accountId`,`balance`) VALUES(@id,@accountId,@balance)", comboParam, tx);
+		var comboRelParam = ledger.ComboOpeningBalances.SelectMany((ComboOpeningBalance co, int comboIdx) => co.Items.Select((AuxiliaryItem it) => new
+		{
+			comboId = comboIdx,
+			itemId = itemDic[it]
+		}));
+		conn.Execute("INSERT INTO `ItemComboBalanceRel`(`comboId`,`itemId`) VALUES(@comboId,@itemId)", comboRelParam, tx);
 	}
 
 	private void UpdateSchema()
@@ -574,6 +675,26 @@ internal class LedgerDAL
 			Update_AccountBalanceValue(sQLiteConnection);
 			num = 4;
 		}
+		try
+		{
+			CreateRiskCheckTables(sQLiteConnection);
+		}
+		catch (Exception ex)
+		{
+			// 建表失败（如账套文件只读）不阻断打开账套，仅记录日志（与 CreateComboOpeningTables 同口径）
+			Debug.WriteLine("CreateRiskCheckTables failed: " + ex.Message);
+		}
+		Update_RiskCheckScheme_Source(sQLiteConnection);
+		try
+		{
+			CreateComboOpeningTables(sQLiteConnection);
+		}
+		catch (Exception ex)
+		{
+			// 建表失败（如账套文件只读）不阻断打开账套，仅记录日志
+			Debug.WriteLine("CreateComboOpeningTables failed: " + ex.Message);
+		}
+		Update_Voucher_MarkSource(sQLiteConnection);
 		sQLiteConnection.Execute($"PRAGMA user_version={num}");
 	}
 
@@ -597,6 +718,56 @@ internal class LedgerDAL
 			c.Execute("create index if not exists `idx_v_number` on `Voucher`(`number`)", null, sQLiteTransaction);
 		}
 		sQLiteTransaction.Commit();
+	}
+
+	private void Update_Voucher_MarkSource(SQLiteConnection c)
+	{
+		try
+		{
+			var columns = (from row in c.Query("pragma table_info(`Voucher`)")
+				select new
+				{
+					Name = (string)row.name
+				}).ToList();
+			if (!columns.Any(col => col.Name.Equals("VoucherMarkSource", StringComparison.OrdinalIgnoreCase)))
+			{
+				c.Execute("ALTER TABLE `Voucher` ADD COLUMN `VoucherMarkSource` INTEGER NOT NULL DEFAULT 0");
+			}
+		}
+		catch (Exception exception)
+		{
+			// 补列失败（如账套文件只读）不阻断打开账套，仅记录日志
+			Debug.WriteLine("Update_Voucher_MarkSource failed: " + exception.Message);
+		}
+	}
+
+	private void Update_RiskCheckScheme_Source(SQLiteConnection c)
+	{
+		try
+		{
+			var columns = (from row in c.Query("pragma table_info(`RiskCheckScheme`)")
+				select new
+				{
+					Name = (string)row.name
+				}).ToList();
+			if (!columns.Any(col => col.Name.Equals("sourceScope", StringComparison.OrdinalIgnoreCase)))
+			{
+				c.Execute("ALTER TABLE `RiskCheckScheme` ADD COLUMN `sourceScope` INTEGER NOT NULL DEFAULT 0");
+			}
+			if (!columns.Any(col => col.Name.Equals("sourceSchemeId", StringComparison.OrdinalIgnoreCase)))
+			{
+				c.Execute("ALTER TABLE `RiskCheckScheme` ADD COLUMN `sourceSchemeId` INTEGER NOT NULL DEFAULT 0");
+			}
+			if (!columns.Any(col => col.Name.Equals("sourceVersion", StringComparison.OrdinalIgnoreCase)))
+			{
+				c.Execute("ALTER TABLE `RiskCheckScheme` ADD COLUMN `sourceVersion` INTEGER NOT NULL DEFAULT 0");
+			}
+		}
+		catch (Exception exception)
+		{
+			// 补列失败（如账套文件只读）不阻断打开账套，仅记录日志
+			Debug.WriteLine("Update_RiskCheckScheme_Source failed: " + exception.Message);
+		}
 	}
 
 	private void Update_0_1(SQLiteConnection c)
@@ -821,12 +992,256 @@ internal class LedgerDAL
 		}
 	}
 
-	public static void Main(string[] args)
+	private static void CreateRiskCheckTables(SQLiteConnection c)
 	{
-		LedgerDAL ledgerDAL = new LedgerDAL("C:\\Users\\Mr.Li\\Desktop\\北京A有限公司_2016-2017.db");
-		using (SQLiteConnection c = ledgerDAL.GetConnection())
+		c.Execute("CREATE TABLE IF NOT EXISTS `RiskCheckScheme`(`id` INTEGER PRIMARY KEY, `name` TEXT, `note` TEXT, `sourceScope` INTEGER NOT NULL DEFAULT 0, `sourceSchemeId` INTEGER NOT NULL DEFAULT 0, `sourceVersion` INTEGER NOT NULL DEFAULT 0)");
+		c.Execute("CREATE TABLE IF NOT EXISTS `RiskCheckRule`(`id` INTEGER PRIMARY KEY, `schemeId` INTEGER, `ruleType` INTEGER, `note` TEXT, `accountCodes` TEXT, `accountNames` TEXT, `requireLeaf` INTEGER, `openingEnabled` INTEGER, `openingDirection` INTEGER, `openingOp` INTEGER, `openingValue` TEXT, `closingEnabled` INTEGER, `closingDirection` INTEGER, `closingOp` INTEGER, `closingValue` TEXT, `debitEnabled` INTEGER, `debitScope` INTEGER, `debitOp` INTEGER, `debitValue` TEXT, `creditEnabled` INTEGER, `creditScope` INTEGER, `creditOp` INTEGER, `creditValue` TEXT, `auxNegativeEnabled` INTEGER, `auxOp` INTEGER, `auxValue` TEXT, `leftExpr` TEXT, `operatorCode` INTEGER, `rightExpr` TEXT)");
+		c.Execute("CREATE INDEX IF NOT EXISTS `idx_rcr_scheme` ON `RiskCheckRule`(`schemeId`)");
+	}
+
+	private static void CreateComboOpeningTables(SQLiteConnection c)
+	{
+		c.Execute("CREATE TABLE IF NOT EXISTS `ItemComboBalance`(`id` INTEGER PRIMARY KEY, `accountId` INTEGER NOT NULL REFERENCES `Account`(`id`), `balance` MONEY NOT NULL DEFAULT 0)");
+		c.Execute("CREATE TABLE IF NOT EXISTS `ItemComboBalanceRel`(`comboId` INTEGER NOT NULL REFERENCES `ItemComboBalance`(`id`), `itemId` INTEGER NOT NULL REFERENCES `Item`(`id`))");
+		c.Execute("CREATE INDEX IF NOT EXISTS `idx_icb_account` ON `ItemComboBalance`(`accountId`)");
+		c.Execute("CREATE INDEX IF NOT EXISTS `idx_icbr_combo` ON `ItemComboBalanceRel`(`comboId`)");
+	}
+
+	public List<RiskCheckScheme> GetRiskCheckSchemes(SQLiteConnection conn)
+	{
+		Dictionary<long, RiskCheckScheme> dic = new Dictionary<long, RiskCheckScheme>();
+		List<RiskCheckScheme> list = new List<RiskCheckScheme>();
+		foreach (var row in conn.Query("SELECT `id`,`name`,`note`,`sourceScope`,`sourceSchemeId`,`sourceVersion` FROM `RiskCheckScheme` ORDER BY `id`"))
 		{
-			ledgerDAL.Update_0_1(c);
+			RiskCheckScheme riskCheckScheme = new RiskCheckScheme
+			{
+				Id = (long)row.id,
+				Name = ReadText(row.name),
+				Note = ReadText(row.note),
+				SourceScope = (int)row.sourceScope,
+				SourceSchemeId = (long)row.sourceSchemeId,
+				SourceVersion = (int)row.sourceVersion
+			};
+			dic.Add(riskCheckScheme.Id, riskCheckScheme);
+			list.Add(riskCheckScheme);
 		}
+		foreach (var row2 in conn.Query("SELECT `id`,`schemeId`,`ruleType`,`note`,`accountCodes`,`accountNames`,`requireLeaf`,`openingEnabled`,`openingDirection`,`openingOp`,`openingValue`,`closingEnabled`,`closingDirection`,`closingOp`,`closingValue`,`debitEnabled`,`debitScope`,`debitOp`,`debitValue`,`creditEnabled`,`creditScope`,`creditOp`,`creditValue`,`auxNegativeEnabled`,`auxOp`,`auxValue`,`leftExpr`,`operatorCode`,`rightExpr` FROM `RiskCheckRule` ORDER BY `schemeId`,`id`"))
+		{
+			if (!dic.TryGetValue((long)row2.schemeId, out var value))
+			{
+				continue;
+			}
+			value.Rules.Add(new RiskCheckRule
+			{
+				Id = (long)row2.id,
+				SchemeId = (long)row2.schemeId,
+				RuleType = (int)row2.ruleType,
+				Note = ReadText(row2.note),
+				AccountCodes = ReadText(row2.accountCodes),
+				AccountNames = ReadText(row2.accountNames),
+				RequireLeaf = Convert.ToBoolean(row2.requireLeaf),
+				OpeningEnabled = Convert.ToBoolean(row2.openingEnabled),
+				OpeningDirection = (int)row2.openingDirection,
+				OpeningOp = (int)row2.openingOp,
+				OpeningValue = ReadDecimal(row2.openingValue),
+				ClosingEnabled = Convert.ToBoolean(row2.closingEnabled),
+				ClosingDirection = (int)row2.closingDirection,
+				ClosingOp = (int)row2.closingOp,
+				ClosingValue = ReadDecimal(row2.closingValue),
+				DebitEnabled = Convert.ToBoolean(row2.debitEnabled),
+				DebitScope = (int)row2.debitScope,
+				DebitOp = (int)row2.debitOp,
+				DebitValue = ReadDecimal(row2.debitValue),
+				CreditEnabled = Convert.ToBoolean(row2.creditEnabled),
+				CreditScope = (int)row2.creditScope,
+				CreditOp = (int)row2.creditOp,
+				CreditValue = ReadDecimal(row2.creditValue),
+				AuxNegativeEnabled = Convert.ToBoolean(row2.auxNegativeEnabled),
+				AuxOp = (int)row2.auxOp,
+				AuxValue = ReadDecimal(row2.auxValue),
+				LeftExpr = ReadText(row2.leftExpr),
+				OperatorCode = (int)row2.operatorCode,
+				RightExpr = ReadText(row2.rightExpr)
+			});
+		}
+		return list;
+	}
+
+	public void SaveRiskCheckScheme(SQLiteConnection conn, RiskCheckScheme scheme)
+	{
+		using SQLiteTransaction sQLiteTransaction = conn.BeginTransaction();
+		try
+		{
+			if (scheme.Id <= 0)
+			{
+				scheme.Id = conn.ExecuteScalar<long>("SELECT IFNULL(MAX(`id`),0)+1 FROM `RiskCheckScheme`", null, sQLiteTransaction);
+			}
+			conn.Execute("INSERT OR REPLACE INTO `RiskCheckScheme`(`id`,`name`,`note`,`sourceScope`,`sourceSchemeId`,`sourceVersion`) VALUES(@id,@name,@note,@sourceScope,@sourceSchemeId,@sourceVersion)", new
+			{
+				id = scheme.Id,
+				name = scheme.Name,
+				note = scheme.Note,
+				sourceScope = scheme.SourceScope,
+				sourceSchemeId = scheme.SourceSchemeId,
+				sourceVersion = scheme.SourceVersion
+			}, sQLiteTransaction);
+			conn.Execute("DELETE FROM `RiskCheckRule` WHERE `schemeId`=@id", new { id = scheme.Id }, sQLiteTransaction);
+			if (scheme.Rules.Count > 0)
+			{
+				// 新 Id 起点取「全表 MAX(id)」与「本方案保留 Id 的最大值」二者较大者。
+				// 本方案原有行已在上一步 DELETE 掉，因此全表 MAX 可能低于本方案保留的 Id
+				// （单方案场景下全表 MAX=0），若不取较大者，新规则会分到与保留规则相同的 Id，
+				// INSERT 时触发 UNIQUE constraint failed: RiskCheckRule.id 并整笔回滚。
+				long num = conn.ExecuteScalar<long>("SELECT IFNULL(MAX(`id`),0) FROM `RiskCheckRule`", null, sQLiteTransaction);
+				foreach (RiskCheckRule rule in scheme.Rules)
+				{
+					if (rule != null && rule.Id > num)
+					{
+						num = rule.Id;
+					}
+				}
+				foreach (RiskCheckRule rule in scheme.Rules)
+				{
+					if (rule.Id <= 0)
+					{
+						num++;
+						rule.Id = num;
+					}
+					rule.SchemeId = scheme.Id;
+				}
+				var param = scheme.Rules.Select((RiskCheckRule r) => new
+				{
+					id = r.Id,
+					schemeId = scheme.Id,
+					ruleType = r.RuleType,
+					note = r.Note,
+					accountCodes = r.AccountCodes,
+					accountNames = r.AccountNames,
+					requireLeaf = r.RequireLeaf,
+					openingEnabled = r.OpeningEnabled,
+					openingDirection = r.OpeningDirection,
+					openingOp = r.OpeningOp,
+					openingValue = DecimalToText(r.OpeningValue),
+					closingEnabled = r.ClosingEnabled,
+					closingDirection = r.ClosingDirection,
+					closingOp = r.ClosingOp,
+					closingValue = DecimalToText(r.ClosingValue),
+					debitEnabled = r.DebitEnabled,
+					debitScope = r.DebitScope,
+					debitOp = r.DebitOp,
+					debitValue = DecimalToText(r.DebitValue),
+					creditEnabled = r.CreditEnabled,
+					creditScope = r.CreditScope,
+					creditOp = r.CreditOp,
+					creditValue = DecimalToText(r.CreditValue),
+					auxNegativeEnabled = r.AuxNegativeEnabled,
+					auxOp = r.AuxOp,
+					auxValue = DecimalToText(r.AuxValue),
+					leftExpr = r.LeftExpr,
+					operatorCode = r.OperatorCode,
+					rightExpr = r.RightExpr
+				});
+				conn.Execute("INSERT INTO `RiskCheckRule`(`id`,`schemeId`,`ruleType`,`note`,`accountCodes`,`accountNames`,`requireLeaf`,`openingEnabled`,`openingDirection`,`openingOp`,`openingValue`,`closingEnabled`,`closingDirection`,`closingOp`,`closingValue`,`debitEnabled`,`debitScope`,`debitOp`,`debitValue`,`creditEnabled`,`creditScope`,`creditOp`,`creditValue`,`auxNegativeEnabled`,`auxOp`,`auxValue`,`leftExpr`,`operatorCode`,`rightExpr`) VALUES(@id,@schemeId,@ruleType,@note,@accountCodes,@accountNames,@requireLeaf,@openingEnabled,@openingDirection,@openingOp,@openingValue,@closingEnabled,@closingDirection,@closingOp,@closingValue,@debitEnabled,@debitScope,@debitOp,@debitValue,@creditEnabled,@creditScope,@creditOp,@creditValue,@auxNegativeEnabled,@auxOp,@auxValue,@leftExpr,@operatorCode,@rightExpr)", param, sQLiteTransaction);
+			}
+			sQLiteTransaction.Commit();
+		}
+		catch (Exception)
+		{
+			try
+			{
+				sQLiteTransaction.Rollback();
+			}
+			catch
+			{
+			}
+			throw;
+		}
+	}
+
+	public void DeleteRiskCheckScheme(SQLiteConnection conn, long schemeId)
+	{
+		using SQLiteTransaction sQLiteTransaction = conn.BeginTransaction();
+		try
+		{
+			conn.Execute("DELETE FROM `RiskCheckRule` WHERE `schemeId`=@schemeId", new { schemeId }, sQLiteTransaction);
+			conn.Execute("DELETE FROM `RiskCheckScheme` WHERE `id`=@schemeId", new { schemeId }, sQLiteTransaction);
+			sQLiteTransaction.Commit();
+		}
+		catch (Exception)
+		{
+			try
+			{
+				sQLiteTransaction.Rollback();
+			}
+			catch
+			{
+			}
+			throw;
+		}
+	}
+
+	public List<RiskCheckScheme> GetRiskCheckSchemes(string dbPath)
+	{
+		using SQLiteConnection sQLiteConnection = OpenConnection(dbPath);
+		CreateRiskCheckTables(sQLiteConnection);
+		CreateComboOpeningTables(sQLiteConnection);
+		return GetRiskCheckSchemes(sQLiteConnection);
+	}
+
+	public void SaveRiskCheckScheme(string dbPath, RiskCheckScheme scheme)
+	{
+		using SQLiteConnection sQLiteConnection = OpenConnection(dbPath);
+		CreateRiskCheckTables(sQLiteConnection);
+		CreateComboOpeningTables(sQLiteConnection);
+		SaveRiskCheckScheme(sQLiteConnection, scheme);
+	}
+
+	public void DeleteRiskCheckScheme(string dbPath, long schemeId)
+	{
+		using SQLiteConnection sQLiteConnection = OpenConnection(dbPath);
+		CreateRiskCheckTables(sQLiteConnection);
+		CreateComboOpeningTables(sQLiteConnection);
+		DeleteRiskCheckScheme(sQLiteConnection, schemeId);
+	}
+
+	public static string ExportRiskCheckSchemesJson(List<RiskCheckScheme> schemes)
+	{
+		return JsonConvert.SerializeObject(schemes);
+	}
+
+	public static List<RiskCheckScheme> ImportRiskCheckSchemesJson(string json)
+	{
+		return JsonConvert.DeserializeObject<List<RiskCheckScheme>>(json);
+	}
+
+	private static SQLiteConnection OpenConnection(string dbPath)
+	{
+		return new SQLiteConnection(new SQLiteConnectionStringBuilder
+		{
+			DataSource = dbPath
+		}.ConnectionString).OpenAndReturn();
+	}
+
+	private static string ReadText(object value)
+	{
+		if (value == null || value is DBNull)
+		{
+			return null;
+		}
+		return (string)value;
+	}
+
+	private static decimal ReadDecimal(object value)
+	{
+		if (value == null || value is DBNull)
+		{
+			return 0m;
+		}
+		return decimal.Parse((string)value, CultureInfo.InvariantCulture);
+	}
+
+	private static string DecimalToText(decimal value)
+	{
+		return value.ToString(CultureInfo.InvariantCulture);
 	}
 }

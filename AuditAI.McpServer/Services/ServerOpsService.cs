@@ -245,12 +245,15 @@ namespace AuditAI.McpServer.Services
                 if (lines <= 0) lines = 100;
                 if (lines > 10000) lines = 10000;
 
-                // journalctl 命令，filter 通过 grep -i 过滤
+                // journalctl 命令，filter 通过 grep -i 过滤。
+                // 安全修复（命令注入）：filter 是外部输入，且整条 cmd 会被 BuildSshArgs 用双引号包裹后
+                // 交给远端 shell。原实现只把 " 转义成 \"，那是给 Windows 本地命令行用的转义，对远端 bash
+                // 无效——双引号内的 $(...) 与反引号仍会展开，可构造 filter="$(任意命令)" 以 root 执行。
+                // 现改为按远端 shell 的"单引号"语义包裹（内部 ' 转义为 '\''），使 shell 元字符全部成为字面量。
                 string cmd = $"journalctl -u auditapi -n {lines} --no-pager";
                 if (!string.IsNullOrWhiteSpace(filter))
                 {
-                    string safeFilter = filter.Replace("\"", "\\\"");
-                    cmd += $" | grep -i \"{safeFilter}\"";
+                    cmd += " | grep -i " + QuoteForRemoteShell(filter);
                 }
 
                 string sshArgs = BuildSshArgs(cfg.SshBin, cfg.Port, cfg.KeyPath, cfg.User, cfg.Host, cmd, cfg.IsPutty);
@@ -272,17 +275,20 @@ namespace AuditAI.McpServer.Services
 
         /// <summary>
         /// 通过 SSH 在服务端执行 SQLite 查询（sqlite3）。
-        /// 仅建议用于只读 SELECT。
+        /// 默认只允许只读语句（SELECT / PRAGMA / EXPLAIN / WITH / VALUES 且不含多语句分号）；
+        /// 确需写入时显式传 allowWrite=true。
         /// </summary>
         /// <param name="sql">SQL 语句</param>
+        /// <param name="allowWrite">是否放行写入/DDL（默认 false）</param>
         /// <returns>SSH 命令执行结果</returns>
-        public static ServerOpsResult QueryServerDb(string sql)
+        public static ServerOpsResult QueryServerDb(string sql, bool allowWrite = false)
         {
-            Console.Error.WriteLine($"[ServerOps] QueryServerDb start");
+            Console.Error.WriteLine($"[ServerOps] QueryServerDb start, allowWrite={allowWrite}");
             try
             {
-                if (string.IsNullOrWhiteSpace(sql))
-                    return Fail("sql is required");
+                string readOnlyError;
+                if (!IsReadOnlySql(sql, allowWrite, out readOnlyError))
+                    return Fail(readOnlyError);
 
                 var cfg = ReadSshConfig();
                 if (cfg.Error != null) return Fail(cfg.Error);
@@ -291,9 +297,9 @@ namespace AuditAI.McpServer.Services
                 if (string.IsNullOrWhiteSpace(dbPath))
                     return Fail("ServerDbPath not configured in App.config");
 
-                // 转义 SQL 中的双引号
-                string safeSql = sql.Replace("\"", "\\\"");
-                string cmd = $"sqlite3 \"{dbPath}\" \"{safeSql}\"";
+                // 安全修复（命令注入）：sql/dbPath 均为外部或配置输入，原实现只把 " 转义成 \" 后拼进
+                // 远端 shell，可被 $(...)/反引号逃逸（同 GetServerLogs）。改为远端 shell 单引号包裹。
+                string cmd = "sqlite3 " + QuoteForRemoteShell(dbPath) + " " + QuoteForRemoteShell(sql);
 
                 string sshArgs = BuildSshArgs(cfg.SshBin, cfg.Port, cfg.KeyPath, cfg.User, cfg.Host, cmd, cfg.IsPutty);
                 Console.Error.WriteLine($"[ServerOps] SSH query db");
@@ -599,6 +605,141 @@ namespace AuditAI.McpServer.Services
         {
             if (s == null) return "";
             return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+        }
+
+        /// <summary>
+        /// 把参数安全嵌入远端 shell 命令：用单引号包裹，内部单引号写成 '\''（POSIX 标准写法）。
+        /// 必须用单引号——双引号内 $(...)、`...` 与 \ 仍会被 bash 展开/转义，
+        /// 所以"只把 " 转义成 \" "对远端 shell 起不到任何防护作用。
+        /// 调用方 BuildSshArgs 会再对整串做一次 Windows 侧 " 转义，两者作用域不同、互不干扰。
+        /// </summary>
+        internal static string QuoteForRemoteShell(string value)
+        {
+            if (value == null) return "''";
+            return "'" + value.Replace("'", "'\\''") + "'";
+        }
+
+        /// <summary>
+        /// 只读 SQL 判定：默认拒绝写入/DDL 与多语句，避免运维查询误伤生产库。
+        /// allowWrite=true 时不做限制（调用方显式选择写入）。
+        /// 判定顺序：① 多语句分号 ② 首关键字白名单 ③ PRAGMA 带 = 视为写
+        /// ④ 语句主体（已剥离引号内容）中出现写关键字（堵住 "WITH x AS (...) DELETE FROM t"）。
+        /// </summary>
+        internal static bool IsReadOnlySql(string sql, bool allowWrite, out string error)
+        {
+            error = null;
+            if (string.IsNullOrWhiteSpace(sql))
+            {
+                error = "sql is required";
+                return false;
+            }
+            if (allowWrite) return true;
+
+            const string optInHint = "如确需写入，请显式传 allowWrite=true。";
+            string trimmed = sql.Trim();
+            string body = trimmed.TrimEnd(';').Trim();
+            // 去掉末尾可选的单个分号后仍含分号 => 多语句，如 "SELECT 1; DROP TABLE x"
+            if (body.IndexOf(';') >= 0)
+            {
+                error = "只读模式拒绝多语句 SQL（检测到分号）。" + optInHint;
+                return false;
+            }
+
+            string head = FirstToken(body);
+            string[] allowed = { "SELECT", "PRAGMA", "EXPLAIN", "WITH", "VALUES" };
+            bool headAllowed = false;
+            foreach (string a in allowed)
+            {
+                if (string.Equals(a, head, StringComparison.OrdinalIgnoreCase)) { headAllowed = true; break; }
+            }
+            if (!headAllowed)
+            {
+                error = "只读模式仅允许 SELECT / PRAGMA / EXPLAIN / WITH / VALUES。" + optInHint;
+                return false;
+            }
+
+            // 剥离字符串/标识符引用内的内容，再做关键字检测（避免 SELECT 'DROP' 这类误判）
+            string stripped = StripQuotedSpans(body);
+
+            // PRAGMA 带赋值即为写操作（如 PRAGMA user_version=5、PRAGMA journal_mode=WAL、
+            // PRAGMA writable_schema=1）；只读用法是 PRAGMA table_info(x) 这类不带 = 的形式
+            if (string.Equals("PRAGMA", head, StringComparison.OrdinalIgnoreCase) && stripped.IndexOf('=') >= 0)
+            {
+                error = "只读模式拒绝带赋值的 PRAGMA（属写操作）。" + optInHint;
+                return false;
+            }
+
+            string writeKeyword = FindWriteKeyword(stripped);
+            if (writeKeyword != null)
+            {
+                error = "只读模式拒绝含写操作关键字的语句（检测到 " + writeKeyword + "，例如 WITH 子句里藏 DELETE/UPDATE）。" + optInHint;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>取语句首个字母数字/下划线标记（跳过空白与左括号）。</summary>
+        private static string FirstToken(string body)
+        {
+            int start = 0;
+            while (start < body.Length && !IsWordChar(body[start])) start++;
+            int end = start;
+            while (end < body.Length && IsWordChar(body[end])) end++;
+            return body.Substring(start, end - start);
+        }
+
+        private static bool IsWordChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_';
+        }
+
+        /// <summary>剥离 '...'、"..."、`...`、[...] 内的内容（含双写引号转义），其余原样保留。</summary>
+        private static string StripQuotedSpans(string s)
+        {
+            var sb = new System.Text.StringBuilder(s.Length);
+            char closing = '\0';
+            for (int i = 0; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (closing != '\0')
+                {
+                    if (c == closing)
+                    {
+                        if (i + 1 < s.Length && s[i + 1] == closing) i++;   // 双写表示转义
+                        else closing = '\0';
+                    }
+                    continue;
+                }
+                if (c == '\'' || c == '"' || c == '`') { closing = c; continue; }
+                if (c == '[') { closing = ']'; continue; }
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>在已剥离引号内容的文本中查找写操作关键字（按词边界），返回命中的关键字或 null。</summary>
+        private static string FindWriteKeyword(string stripped)
+        {
+            string[] keywords =
+            {
+                "INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "REPLACE",
+                "ATTACH", "DETACH", "VACUUM", "REINDEX", "TRUNCATE", "GRANT", "REVOKE"
+            };
+            foreach (string kw in keywords)
+            {
+                int from = 0;
+                while (true)
+                {
+                    int idx = stripped.IndexOf(kw, from, StringComparison.OrdinalIgnoreCase);
+                    if (idx < 0) break;
+                    bool leftOk = (idx == 0) || !IsWordChar(stripped[idx - 1]);
+                    int after = idx + kw.Length;
+                    bool rightOk = (after >= stripped.Length) || !IsWordChar(stripped[after]);
+                    if (leftOk && rightOk) return kw;
+                    from = idx + 1;
+                }
+            }
+            return null;
         }
 
         /// <summary>

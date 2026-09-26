@@ -70,6 +70,9 @@ public class FormulaManagerTransitional
 		int totalCount = _hosts.Count();
 		HashSet<Id64> hasEvalTableNameSet = new HashSet<Id64>();
 		int pass = 0;
+		// 首轮全量求值；后续轮只重算"本轮值发生变化的宿主"及其所有传递依赖方（引用它们的宿主），
+		// 避免每轮把全部宿主重算一遍导致跨表公式收敛时耗时放大（最多 10 轮防止循环）。
+		List<FormulaHost> toEvalHosts = new List<FormulaHost>(_hosts);
 		do
 		{
 			pass++;
@@ -83,27 +86,48 @@ public class FormulaManagerTransitional
 			evaled.Clear();
 			hasEvalTableNameSet.Clear();
 			i = 0;
-			foreach (FormulaHost host in _hosts)
+			// 本轮求值的目标集合：递归求值时只允许在本集合内发散，避免把未变化的
+			// 上游依赖宿主重新求值一遍（首轮为全部宿主，后续轮为受影响宿主闭包）。
+			HashSet<FormulaHost> roundTargetSet = new HashSet<FormulaHost>(toEvalHosts);
+			HashSet<FormulaHost> roundChangedHosts = new HashSet<FormulaHost>();
+			foreach (FormulaHost host in toEvalHosts)
 			{
-				await Eval(host);
+				await Eval(host, roundChangedHosts, roundTargetSet);
+			}
+			// 下一轮只需重算：本轮值有变化的宿主 + 引用这些宿主的所有宿主（传递依赖闭包）。
+			// 若本轮没有任何宿主的值发生变化，收敛结束。
+			if (roundChangedHosts.Count != 0)
+			{
+				toEvalHosts = ComputeAffectedHosts(roundChangedHosts);
+			}
+			else
+			{
+				toEvalHosts.Clear();
 			}
 		}
-		while (Cell.UpdateValueSuccessFlag && pass <= 10);
-		async Task Eval(FormulaHost host)
+		while (toEvalHosts.Count != 0 && pass <= 10);
+		async Task Eval(FormulaHost host, HashSet<FormulaHost> roundChangedHosts, HashSet<FormulaHost> roundTargetSet)
 		{
 			if (!evaling.Contains(host) && !evaled.Contains(host))
 			{
 				evaling.Add(host);
 				foreach (FormulaHost item in _hosts.Where(ShouldEval))
 				{
-					await Eval(item);
+					await Eval(item, roundChangedHosts, roundTargetSet);
 				}
 				string evalHostTableName = GetEvalHostTableName(host);
 				if (evalHostTableName != null)
 				{
 					progressValueUpdater.UpdateMessage("正在运算 " + evalHostTableName);
 				}
+				// 宿主级变化捕获：求值前复位全局标志，求值后标志为 true 说明该宿主的公式
+				// 导致至少一个单元格值发生变化，将其纳入下一轮重算范围。
+				Cell.UpdateValueSuccessFlag = false;
 				host.Eval();
+				if (Cell.UpdateValueSuccessFlag)
+				{
+					roundChangedHosts.Add(host);
+				}
 				evaling.Remove(host);
 				evaled.Add(host);
 				i++;
@@ -117,6 +141,11 @@ public class FormulaManagerTransitional
 			{
 				try
 				{
+					// 只在本轮目标集合内递归求值：避免把已求值且未变化的宿主连带重算一遍。
+					if (!roundTargetSet.Contains(d))
+					{
+						return false;
+					}
 					return d.ReferredBy(host);
 				}
 				catch (FormulaException)
@@ -124,6 +153,47 @@ public class FormulaManagerTransitional
 					return false;
 				}
 			}
+		}
+		// 计算下一轮需要重算的宿主集合：changedHosts 及其传递依赖方（引用它们的宿主）。
+		// 复用原有 EvalHostSet 的拓扑策略：谁的值变化，谁的下游公式宿主都要重算。
+		List<FormulaHost> ComputeAffectedHosts(HashSet<FormulaHost> changedHosts)
+		{
+			HashSet<FormulaHost> affected = new HashSet<FormulaHost>();
+			Queue<FormulaHost> queue = new Queue<FormulaHost>();
+			foreach (FormulaHost item in changedHosts)
+			{
+				if (affected.Add(item))
+				{
+					queue.Enqueue(item);
+				}
+			}
+			while (queue.Count != 0)
+			{
+				FormulaHost changed = queue.Dequeue();
+				foreach (FormulaHost other in _hosts)
+				{
+					if (affected.Contains(other))
+					{
+						continue;
+					}
+					bool isDependent = false;
+					try
+					{
+						// changed.ReferredBy(other) 表示 other 引用了 changed（other 依赖 changed），
+						// changed 值已变，依赖它的宿主需要下一轮重算。
+						isDependent = changed.ReferredBy(other);
+					}
+					catch (FormulaException)
+					{
+					}
+					if (isDependent)
+					{
+						affected.Add(other);
+						queue.Enqueue(other);
+					}
+				}
+			}
+			return affected.ToList();
 		}
 		string GetEvalHostTableName(FormulaHost target)
 		{

@@ -470,7 +470,7 @@ public class frmBalanceEditor : C1RibbonForm
 		};
 	}
 
-	private async Task PasteClipboard(C1FlexGrid grid)
+	private Task PasteClipboard(C1FlexGrid grid)
 	{
 		List<GridCellInfo> cellInfos = new List<GridCellInfo>();
 		grid.BeginUpdate();
@@ -496,7 +496,7 @@ public class frmBalanceEditor : C1RibbonForm
 			});
 			if (list == null)
 			{
-				return;
+				return Task.CompletedTask;
 			}
 			if (list.Count == 1 && list[0].Count == 1 && !grid.Selection.IsSingleCell)
 			{
@@ -609,6 +609,7 @@ public class frmBalanceEditor : C1RibbonForm
 				return value;
 			}
 		}
+		return Task.CompletedTask;
 	}
 
 	private void DeleteSelection(C1FlexGrid grid)

@@ -1,4 +1,4 @@
-namespace LedgerImport;
+﻿namespace LedgerImport;
 
 public class DataSource
 {
@@ -7,4 +7,6 @@ public class DataSource
 	public DataTable VoucherTable { get; set; }
 
 	public DataTable AuxiliaryTable { get; set; }
+
+	public DataTable ComboTable { get; set; }
 }

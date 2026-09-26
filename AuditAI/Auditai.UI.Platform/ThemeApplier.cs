@@ -54,6 +54,7 @@ public static class ThemeApplier
 
 			// 列头样式微调 — 字重适中，颜色更清晰
 			var fixedStyle = grid.Styles.Fixed;
+			fixedStyle.BackColor = Color.FromArgb(215, 232, 250); // 清爽浅蓝灰
 			fixedStyle.Font = AuditTheme.FontSmallBold;
 			fixedStyle.ForeColor = AuditTheme.TextSecondary;
 			fixedStyle.TextAlign = TextAlignEnum.LeftCenter;

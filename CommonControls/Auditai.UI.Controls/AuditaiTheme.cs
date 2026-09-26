@@ -12,6 +12,8 @@ public class AuditaiTheme
 {
 	private C1Theme _c1theme;
 
+	private string _registeredName;
+
 	public string Id { get; set; }
 
 	public string Name { get; set; }
@@ -30,12 +32,30 @@ public class AuditaiTheme
 		{
 			return _c1theme;
 		}
-		if (!C1ThemeController.IsThemeRegistered(Name))
+		try
 		{
-			using MemoryStream stream = new MemoryStream(ThemeBytes);
-			C1ThemeController.RegisterTheme(stream, C1ThemeFormat.Xml);
+			if (_registeredName == null)
+			{
+				if (!C1ThemeController.IsThemeRegistered(Name))
+				{
+					using MemoryStream stream = new MemoryStream(ThemeBytes ?? Array.Empty<byte>());
+					_registeredName = C1ThemeController.RegisterTheme(stream, C1ThemeFormat.Xml);
+				}
+				else
+				{
+					_registeredName = Name;
+				}
+			}
+			_c1theme = C1ThemeController.GetThemeByName(_registeredName, throwException: false);
 		}
-		_c1theme = C1ThemeController.GetThemeByName(Name, throwException: false);
+		catch
+		{
+			_c1theme = null;
+		}
+		if (_c1theme == null && Theme.ThemePool.Count > 0 && !ReferenceEquals(Theme.ThemePool[0], this))
+		{
+			_c1theme = Theme.ThemePool[0].GetC1Theme();
+		}
 		return _c1theme;
 	}
 

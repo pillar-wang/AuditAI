@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +11,10 @@ public class Voucher
 	public const int VOUCHER_DIRTY_MODIFY = 2;
 
 	public const int VOUCHER_DIRTY_DELETE = -1;
+
+	public const int MARK_SOURCE_MANUAL = 0;      // 手动关注
+	public const int MARK_SOURCE_RISK_CHECK = 1;  // 风险检查
+	public const int MARK_SOURCE_SAMPLE = 2;      // 抽凭样本
 
 	public int Dirty { get; set; }
 
@@ -31,6 +35,8 @@ public class Voucher
 	public bool DirectionToggled { get; set; }
 
 	public bool VoucherMark { get; set; }
+
+	public int VoucherMarkSource { get; set; }
 
 	public decimal Amount { get; set; }
 

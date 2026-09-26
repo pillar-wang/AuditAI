@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -179,7 +179,10 @@ internal static class Program
 		Theme.SelectedThemeById(UserSet.Config.CurrentTheme);
 		// 注册 Google Blue 主题精修回调（所有调用 SetCurrentTree 的窗体自动生效）
 		Theme.ThemeRefineAction = ThemeApplier.ApplyDialogStyle;
-		
+
+		// ★ 风险检查：注册公式检查项执行器（UI.Platform 求值编排层，须在任何风险检查执行前完成注册）
+		RiskCheckEngine.FormulaRuleExecutor = RiskCheckFormulaEvaluator.EvaluateRuleForLedger;
+
 		StartAuditaiPlatform();
 		if (!ApplicationExitMark)
 		{
@@ -214,7 +217,7 @@ internal static class Program
 		UserSet.Config.TableStyle.MainTitleHeight = 45;
 		UserSet.Config.TableStyle.TitleStyle.FontSize = 14f;
 		UserSet.Config.TableStyle.TitleStyle.Bold = true;
-		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.FromArgb(49, 133, 156);
+		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.Black;
 		UserSet.Config.TableStyle.TitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.SubTitleHeight = 30;
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = 10.5f;
@@ -233,7 +236,7 @@ internal static class Program
 		UserSet.Config.TableStyle.MainTitleHeight = 45;
 		UserSet.Config.TableStyle.TitleStyle.FontSize = 14f;
 		UserSet.Config.TableStyle.TitleStyle.Bold = true;
-		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.FromArgb(0, 102, 0);
+		UserSet.Config.TableStyle.TitleStyle.FontColor = Color.Black;
 		UserSet.Config.TableStyle.TitleStyle.FontFamily = "微软雅黑";
 		UserSet.Config.TableStyle.SubTitleHeight = 30;
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = 10.5f;
@@ -259,7 +262,7 @@ internal static class Program
 		UserSet.Config.TableStyle.MainTitleHeight = current.GetOptionValueInSettingIniFile_Int("TableStyle.MainTitleHeight", 45);
 		UserSet.Config.TableStyle.TitleStyle.FontSize = current.GetOptionValueInSettingIniFile_Float("TableStyle_TitleStyle_FontSize", 14f);
 		UserSet.Config.TableStyle.TitleStyle.Bold = current.GetOptionValueInSettingIniFile_Bool("TableStyle_TitleStyle_Bold", defaultValue: true);
-		UserSet.Config.TableStyle.TitleStyle.FontColor = GetClientCustomizeOptionValue_Color(current, "TableStyle_TitleStyle_FontColor", Color.FromArgb(0, 102, 0));
+		UserSet.Config.TableStyle.TitleStyle.FontColor = GetClientCustomizeOptionValue_Color(current, "TableStyle_TitleStyle_FontColor", Color.Black);
 		UserSet.Config.TableStyle.TitleStyle.FontFamily = current.GetOptionValueInSettingIniFile_String("TableStyle_TitleStyle_FontFamily", "微软雅黑");
 		UserSet.Config.TableStyle.SubTitleHeight = current.GetOptionValueInSettingIniFile_Int("TableStyle_SubTitleHeight ", 30);
 		UserSet.Config.TableStyle.SubTitleStyle.FontSize = current.GetOptionValueInSettingIniFile_Float("TableStyle_SubTitleStyle_FontSize", 10.5f);

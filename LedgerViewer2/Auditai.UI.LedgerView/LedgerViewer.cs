@@ -1,4 +1,4 @@
-﻿extern alias CrawlerModelAlias;
+﻿﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections;
@@ -71,6 +71,10 @@ public class LedgerViewer
 
 	internal Lazy<VoucherMarkedEditor> lazyVoucherMarkedEditor;
 
+	internal Lazy<RiskCheckEditor> lazyRiskCheckEditor;
+
+	private Lazy<MultiDimEditor> lazyMultiDimEditor;
+
 	internal Lazy<PreviewEditor> lazyPreviewEditor;
 
 	public static Func<int, bool> LicenseCheckHandleOnCopyLedgerData;
@@ -106,6 +110,10 @@ public class LedgerViewer
 	internal ValidateEditor ValidateEditor => lazyValidateEditor.Value;
 
 	internal VoucherMarkedEditor VoucherMarkedEditor => lazyVoucherMarkedEditor.Value;
+
+	internal RiskCheckEditor RiskCheckEditor => lazyRiskCheckEditor.Value;
+
+	internal MultiDimEditor MultiDimEditor => lazyMultiDimEditor.Value;
 
 	internal PreviewEditor PreviewEditor => lazyPreviewEditor.Value;
 
@@ -464,6 +472,24 @@ public class LedgerViewer
 			Auditai.UI.Controls.Theme.SetCurrentTree(voucherMarkedEditor.View);
 			voucherMarkedEditor.SetTheme();
 			return voucherMarkedEditor;
+		});
+		lazyRiskCheckEditor = new Lazy<RiskCheckEditor>(delegate
+		{
+			RiskCheckEditor riskCheckEditor = new RiskCheckEditor(this);
+			pnlData.Controls.Add(riskCheckEditor.View);
+			pnlTree.Controls.Add(riskCheckEditor.Tree);
+			riskCheckEditor.Tree.Dock = DockStyle.Fill;
+			Auditai.UI.Controls.Theme.SetCurrentTree(riskCheckEditor.View);
+			riskCheckEditor.SetTheme();
+			return riskCheckEditor;
+		});
+		lazyMultiDimEditor = new Lazy<MultiDimEditor>(delegate
+		{
+			MultiDimEditor multiDimEditor = new MultiDimEditor(this);
+			pnlData.Controls.Add(multiDimEditor.View);
+			Auditai.UI.Controls.Theme.SetCurrentTree(multiDimEditor.View);
+			multiDimEditor.SetTheme();
+			return multiDimEditor;
 		});
 		lazyPreviewEditor = new Lazy<PreviewEditor>(delegate
 		{
@@ -1265,6 +1291,46 @@ public class LedgerViewer
 			else
 			{
 				SwitchToView(ActiveView.Validate);
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
+		}
+	}
+
+	public void ShowRiskCheck()
+	{
+		try
+		{
+			if (Ledger == null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先打开账套文件后操作");
+			}
+			else
+			{
+				SwitchToView(ActiveView.RiskCheck);
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.Log();
+			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex.Message);
+		}
+	}
+
+	public void ShowMultiDimension()
+	{
+		try
+		{
+			if (Ledger == null)
+			{
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先打开账套文件后操作");
+			}
+			else
+			{
+				SwitchToView(ActiveView.MultiDimension);
 			}
 		}
 		catch (Exception ex)
@@ -2290,9 +2356,18 @@ public class LedgerViewer
 		CurrentAccount = null;
 		CacheManager = null;
 		BalanceEditor.Dispose();
+		// 解除静态事件订阅，避免关闭账套后编辑器实例被钉住泄漏
+		if (lazyVoucherListEditor != null && lazyVoucherListEditor.IsValueCreated)
+		{
+			lazyVoucherListEditor.Value.UnsubscribeSampleExecuted();
+		}
+		if (lazySubsidiaryEditor != null && lazySubsidiaryEditor.IsValueCreated)
+		{
+			lazySubsidiaryEditor.Value.UnsubscribeSampleExecuted();
+		}
 	}
 
-	private async Task OpenLedgerFileImpl(string fullPath)
+	private Task OpenLedgerFileImpl(string fullPath)
 	{
 		if (!File.Exists(fullPath))
 		{
@@ -2333,6 +2408,7 @@ public class LedgerViewer
 			SetTheme();
 			await Task.CompletedTask;
 		});
+		return Task.CompletedTask;
 	}
 
 	private void InitStatus()
@@ -2587,6 +2663,19 @@ public class LedgerViewer
 			ShowTree(ValidateEditor.Tree);
 			OnPreparePrintGridChanged();
 			break;
+		case ActiveView.RiskCheck:
+			RiskCheckEditor.View.BringToFront();
+			ShowTree(RiskCheckEditor.Tree);
+			OnPreparePrintGridChanged();
+			break;
+		case ActiveView.MultiDimension:
+			// 多维核算复用科目树勾选筛选科目：进入时清空旧勾选并开启 checkbox 可编辑（未勾选=全部叶子科目）
+			Common.SetTreeCheck(AccountTreeEditor.Tree, CheckEnum.Unchecked);
+			MultiDimEditor.OnViewShown();
+			MultiDimEditor.View.BringToFront();
+			ShowTree(AccountTreeEditor.Tree);
+			OnPreparePrintGridChanged();
+			break;
 		case ActiveView.Empty:
 			OnPreparePrintGridChanged();
 			break;
@@ -2656,6 +2745,10 @@ public class LedgerViewer
 		if (lazyLedgerAgingEditor.IsValueCreated)
 		{
 			LedgerAgingEditor.SetTheme();
+		}
+		if (lazyRiskCheckEditor.IsValueCreated)
+		{
+			RiskCheckEditor.SetTheme();
 		}
 	}
 
@@ -2738,11 +2831,19 @@ public class LedgerViewer
 		}
 	}
 
+	// 统一标记写入：显式维护标记状态与来源（不使用 ToggleMark，其不维护来源）
+	private static void MarkVoucher(Voucher voucher, bool marked, int source)
+	{
+		voucher.VoucherMark = marked;
+		voucher.VoucherMarkSource = (marked ? source : 0);
+		voucher.Dirty = 2;
+	}
+
 	internal void MarkGridRowImpl(C1.Win.C1FlexGrid.Row row)
 	{
 		if (row.UserData is Voucher { VoucherMark: false } voucher && row.Visible)
 		{
-			voucher.ToggleMark();
+			MarkVoucher(voucher, marked: true, Voucher.MARK_SOURCE_MANUAL);
 			row.StyleNew.BackColor = Common.MarkBackColor;
 			row.StyleNew.ForeColor = Common.MarkForeColor;
 		}
@@ -2864,7 +2965,7 @@ public class LedgerViewer
 		{
 			return;
 		}
-		voucher.ToggleMark();
+		MarkVoucher(voucher, marked: false, Voucher.MARK_SOURCE_MANUAL);
 		Color color = Color.White;
 		try
 		{

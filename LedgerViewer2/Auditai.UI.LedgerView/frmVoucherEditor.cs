@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -1854,7 +1854,7 @@ public class frmVoucherEditor : C1RibbonForm
 		this.grdVoucher.ColumnInfo = "10,1,0,0,0,100,Columns:";
 		this.grdVoucher.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.grdVoucher.DrawMode = C1.Win.C1FlexGrid.DrawModeEnum.OwnerDraw;
-		this.grdVoucher.Font = new System.Drawing.Font("微软雅黑", 10.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.grdVoucher.Font = new System.Drawing.Font("微软雅黑", 9.5f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
 		this.grdVoucher.Location = new System.Drawing.Point(0, 0);
 		this.grdVoucher.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 		this.grdVoucher.Name = "grdVoucher";

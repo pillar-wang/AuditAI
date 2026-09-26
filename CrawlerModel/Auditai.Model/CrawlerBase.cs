@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -255,9 +255,5 @@ public abstract class CrawlerBase
 			Tuple.Create("4Fang\\4Finance\\Data", "DB4F_*.mdb", "SiFang_Jet", "四方"),
 			Tuple.Create("eabax\\AC98STD\\data", "*.gdb", "eAbax_Erpb_Jet", "金算盘ERPB")
 		};
-	}
-
-	private static void Main(string[] args)
-	{
 	}
 }

@@ -30,6 +30,11 @@ namespace AuditAI.McpServer.State
 
         public string AuthToken { get; set; }
         public long UserId { get; set; }
+        // 管理后台（8958）凭据：修复前放在 SessionState 的进程级 static 字段里，
+        // 与"多会话隔离"的声明冲突（A 会话登录管理后台会把 Token 泄露给 B 会话）。
+        // 改为随会话保存，SessionState 侧以属性形式委托到 CurrentSession。
+        public string AdminAuthToken { get; set; }
+        public long AdminUserId { get; set; }
         public string UserName { get; set; }
         public Guid? TeamId { get; set; }
         public Guid? ProjectId { get; set; }

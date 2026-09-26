@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -452,35 +452,6 @@ public class XinJiYuan : CrawlerBase
 				arrayList3.Add(item2.DataValues[item3.Value]);
 			}
 			arrayList.Add(arrayList3);
-		}
-	}
-
-	public static void Main()
-	{
-		XinJiYuan xinJiYuan = new XinJiYuan();
-		DatabaseInfo dbInfo = new DatabaseInfo
-		{
-			DataSource = "C:\\Xsj_Soft\\Xsjzb\\Bak\\MyData\\CwV131_忠县畅达建设投资有限公司.gdb2017"
-		};
-		List<LedgerInfo> list = xinJiYuan.ScanRemote(dbInfo).ToList();
-		if (list.Count == 0)
-		{
-		}
-		else
-		{
-			foreach (LedgerInfo item in list)
-			{
-			}
-			foreach (LedgerInfo item2 in list)
-			{
-				try
-				{
-					xinJiYuan.GetLedger(item2);
-				}
-				catch (Exception)
-				{
-				}
-			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -185,6 +185,15 @@ public class Ledger
 
 	public List<AuxiliaryItem> AuxiliaryItems { get; }
 
+	public List<ComboOpeningBalance> ComboOpeningBalances { get; }
+
+	/// <summary>
+	/// 组合期初余额读取是否失败（表缺失/权限/半途异常）。
+	/// 为 true 时 <see cref="ComboOpeningBalances"/> 内容不可信，保存时必须跳过
+	/// ItemComboBalance/ItemComboBalanceRel 的"全删全插"重写，否则会把库中原值永久清空。
+	/// </summary>
+	public bool ComboOpeningBalancesLoadFailed { get; internal set; }
+
 	public List<Currency> Currencies { get; }
 
 	public IEnumerable<Account> GetLevelOrderAccounts()
@@ -203,6 +212,7 @@ public class Ledger
 		VoucherTypes = new List<VoucherType>();
 		AuxiliaryClasses = new List<AuxiliaryClass>();
 		AuxiliaryItems = new List<AuxiliaryItem>();
+		ComboOpeningBalances = new List<ComboOpeningBalance>();
 		Currencies = new List<Currency>();
 		InitialBalance = new DateBalance();
 	}
@@ -459,6 +469,17 @@ public class Ledger
 	private DateBalance GetDateBalance(DateTime date)
 	{
 		return GetDateBalance(InitialBalance, StartDate, date);
+	}
+
+	/// <summary>
+	/// 取"账期起始日前一日"的余额，即本期期初余额。
+	/// 与 GetTrialBalanceSheet(start,end).Start 计算式完全一致（同一表达式），
+	/// 但不计算发生额与期末，省掉 2 次全量凭证扫描 + 1 次整棵科目余额克隆。
+	/// 供只需要期初的快照口径查询（如多维核算查询）使用。
+	/// </summary>
+	public DateBalance GetStartBalance(DateTime start)
+	{
+		return GetDateBalance(start - TimeSpan.FromDays(1.0));
 	}
 
 	public TrialBalanceSheet GetTrialBalanceSheet(DateTime start, DateTime end)

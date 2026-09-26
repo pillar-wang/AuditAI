@@ -1,4 +1,9 @@
 <Project>
+  <PropertyGroup>
+    <!-- NU1900：构建时 NuGet 审计需向 http-cache 缓存目录写入漏洞库，被系统权限拒绝（Access denied）。
+         内网/受限缓存环境下禁用审计，避免每次构建刷屏警告；如需审计可恢复此项。 -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
   <ItemGroup>
     <!-- SecurityCodeScan：检测 SQL注入、XSS、弱加密等安全漏洞 -->
     <!-- 注意：.NET SDK 9.0 已内置 Roslyn 代码分析器，无需额外引用 -->

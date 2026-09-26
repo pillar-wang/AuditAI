@@ -14,11 +14,14 @@ public abstract class AppCommandBase
 	{
 		get
 		{
-			return RibbonItem.Visible;
+			return RibbonItem?.Visible ?? true;
 		}
 		set
 		{
-			RibbonItem.Visible = value;
+			if (RibbonItem != null)
+			{
+				RibbonItem.Visible = value;
+			}
 		}
 	}
 
@@ -26,11 +29,14 @@ public abstract class AppCommandBase
 	{
 		get
 		{
-			return RibbonItem.Enabled;
+			return RibbonItem?.Enabled ?? true;
 		}
 		set
 		{
-			RibbonItem.Enabled = value;
+			if (RibbonItem != null)
+			{
+				RibbonItem.Enabled = value;
+			}
 		}
 	}
 

@@ -1116,7 +1116,13 @@ public class frmLogin : Form
 		{
 			string serverUrl = WebApiClient.BaseAddress?.ToString() ?? "未知";
 			string msg;
-			if (ex3.InnerException is TimeoutException)
+			if (ex3.Message.StartsWith("HTTP "))
+			{
+				// 服务器已响应（4xx/5xx），直接显示服务端返回的错误信息（如"用户名或密码错误"），
+				// 避免把密码错误误当作"无法连接到服务器"的网络故障提示
+				msg = "登录失败：" + ex3.Message;
+			}
+			else if (ex3.InnerException is TimeoutException)
 			{
 				msg = $"连接服务器超时，请检查网络连接或联系管理员。\r\n\r\n服务器地址：{serverUrl}\r\n错误详情：请求超时（30秒无响应）";
 			}

@@ -327,6 +327,12 @@ public class SqliteStorage
             CREATE INDEX IF NOT EXISTS idx_files_project ON ProjectFiles(ProjectId);
             CREATE INDEX IF NOT EXISTS idx_history_project ON VersionHistory(ProjectId);
             CREATE INDEX IF NOT EXISTS idx_history_target ON VersionHistory(TargetId, TargetType);
+            -- 版本号批量查询专用可覆盖索引：QueryTableVersions/QueryDocumentVersions 等按
+            -- (ProjectId, TargetType, TargetId IN (...)) 分组取 MAX(Version)。
+            -- 旧索引无法覆盖 SELECT 的 Version 列，SQLite 必须回表读取整行（含 Snapshot BLOB），
+            -- 项目节点多、历史版本累积后单次查询会扫描大量宽行。此索引让查询变成索引内扫描，
+            -- 不回表，是"项目表很多时版本查询超时"的根本解法。
+            CREATE INDEX IF NOT EXISTS idx_history_version_lookup ON VersionHistory(ProjectId, TargetType, TargetId, Version);
             CREATE INDEX IF NOT EXISTS idx_validatecodes_key ON ValidateCodes(Key);
             CREATE INDEX IF NOT EXISTS idx_loginlogs_user ON LoginLogs(UserId);
             CREATE INDEX IF NOT EXISTS idx_projectmembers_project ON ProjectMembers(ProjectId);

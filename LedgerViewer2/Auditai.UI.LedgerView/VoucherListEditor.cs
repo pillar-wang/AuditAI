@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -128,11 +128,64 @@ public class VoucherListEditor : ISetTheme
 		_grid.KeyDown += _grid_KeyDown;
 		_grid.Resize += _grid_Resize;
 		_grid.FilterManager.Context = new VoucherFilterContext(this);
+		// 订阅抽样完成事件：先减后加，防止重复订阅（该类无 Dispose 生命周期，静态事件需防叠加）
+		FilterManager.SampleExecuted -= OnFilterManagerSampleExecuted;
+		FilterManager.SampleExecuted += OnFilterManagerSampleExecuted;
+	}
+
+	// 解除静态事件订阅，避免关闭账套后编辑器实例被钉住泄漏
+	internal void UnsubscribeSampleExecuted()
+	{
+		FilterManager.SampleExecuted -= OnFilterManagerSampleExecuted;
 	}
 
 	private void _grid_Resize(object sender, EventArgs e)
 	{
 		AutoSizeColumns();
+	}
+
+	// 统一标记写入：显式维护标记状态与来源（不使用 ToggleMark，其不维护来源）
+	private static void MarkVoucher(Voucher voucher, bool marked, int source)
+	{
+		voucher.VoucherMark = marked;
+		voucher.VoucherMarkSource = (marked ? source : 0);
+		voucher.Dirty = 2;
+	}
+
+	// 抽样完成：将本网格抽中的未标记凭证加入标记关注（来源=抽凭样本）
+	private void OnFilterManagerSampleExecuted(object sender, SampleExecutedEventArgs e)
+	{
+		try
+		{
+			if (e == null || !ReferenceEquals(e.Grid, _grid) || e.RowIndexes == null)
+			{
+				return;
+			}
+			int num = 0;
+			foreach (int rowIndex in e.RowIndexes)
+			{
+				if (rowIndex < 0 || rowIndex >= Vouchers.Count)
+				{
+					continue;
+				}
+				Voucher voucher = Vouchers[rowIndex];
+				if (!voucher.VoucherMark)
+				{
+					MarkVoucher(voucher, marked: true, Voucher.MARK_SOURCE_SAMPLE);
+					num++;
+				}
+			}
+			if (num > 0)
+			{
+				Ledger.Save();
+				_grid.Invalidate();
+				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"已将 {num} 张抽中凭证加入标记关注");
+			}
+		}
+		catch
+		{
+			// 异常隔离：不影响抽样主流程
+		}
 	}
 
 	private void AutoSizeColumns()
@@ -221,14 +274,14 @@ public class VoucherListEditor : ISetTheme
 						Voucher voucher2 = Vouchers[i - _grid.Rows.Fixed];
 						if (voucher2.VoucherMark != flag)
 						{
-							voucher2.ToggleMark();
+							MarkVoucher(voucher2, flag, Voucher.MARK_SOURCE_MANUAL);
 						}
 					}
 				}
 			}
 			else if (_grid.Rows[clickRowIndex].Visible && voucher.VoucherMark != flag)
 			{
-				voucher.ToggleMark();
+				MarkVoucher(voucher, flag, Voucher.MARK_SOURCE_MANUAL);
 			}
 			Ledger.Save();
 		}
@@ -535,6 +588,7 @@ public class VoucherListEditor : ISetTheme
 		_grid.AllowSorting = AllowSortingEnum.None;
 		_grid.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		_grid.Dock = DockStyle.Fill;
+		_grid.Font = new Font("微软雅黑", 9.5f);
 		_grid.Location = new Point(0, 0);
 		_grid.Rows.DefaultSize = 20;
 		_grid.Size = new Size(927, 599);
@@ -675,7 +729,7 @@ public class VoucherListEditor : ISetTheme
 					Voucher voucher = Vouchers[i];
 					if (!voucher.VoucherMark)
 					{
-						voucher.ToggleMark();
+						MarkVoucher(voucher, marked: true, Voucher.MARK_SOURCE_MANUAL);
 					}
 				}
 			}
@@ -700,7 +754,7 @@ public class VoucherListEditor : ISetTheme
 					Voucher voucher = Vouchers[i];
 					if (voucher.VoucherMark)
 					{
-						voucher.ToggleMark();
+						MarkVoucher(voucher, marked: false, Voucher.MARK_SOURCE_MANUAL);
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -148,7 +148,7 @@ public class LedgerAgingEditor : ISetTheme
 		pnlAnalyzeTitle.Resizable = false;
 		pnlAnalyzeTitle.Size = new Size(927, 39);
 		pnlAnalyzeTitle.SizeRatio = 4.769;
-		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new Font("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		// 高 DPI 适配：页眉控件尺寸/位置按 DPI 比例缩放（字体按 Point 随 DPI 放大，像素尺寸写死会导致文字显示不全、高度不足）
 		float dpi = Math.Max(1f, Auditai.UI.Controls.IconLibrary.DpiScale);
 		lblAnalyzeAccount.TextDetached = true;

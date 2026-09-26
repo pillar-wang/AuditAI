@@ -1,4 +1,4 @@
-namespace Auditai.UI.LedgerView;
+﻿namespace Auditai.UI.LedgerView;
 
 public enum ActiveView
 {
@@ -11,5 +11,7 @@ public enum ActiveView
 	TrendChart,
 	PieChart,
 	Validate,
+	RiskCheck,
+	MultiDimension,
 	Empty
 }

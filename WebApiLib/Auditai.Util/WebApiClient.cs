@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -475,6 +476,89 @@ public static class WebApiClient
 				["id"] = templateId,
 				["enabled"] = enabled
 			},
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>风险检查方案云端共享库：获取方案列表（团队库 + 系统库）</summary>
+	public static async Task<List<RiskCheckSchemeSummaryDto>> GetRiskCheckSchemes()
+	{
+		if (IsLocalMode)
+		{
+			return new List<RiskCheckSchemeSummaryDto>();
+		}
+		return await SendAsObject<List<RiskCheckSchemeSummaryDto>>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "RiskCheck/GetSchemes",
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		}) ?? new List<RiskCheckSchemeSummaryDto>();
+	}
+
+	/// <summary>风险检查方案云端共享库：获取方案详情（含规则清单）</summary>
+	public static async Task<RiskCheckSchemeDetailDto> GetRiskCheckSchemeDetail(long id)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<RiskCheckSchemeDetailDto>(new RequestOptions
+		{
+			Method = HttpMethod.Get,
+			Url = "RiskCheck/GetSchemeDetail?id=" + id,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>风险检查方案云端共享库：保存到团队库（Id=0 新建/非 0 更新），返回方案 Id 与版本号</summary>
+	public static async Task<RiskCheckSchemeSaveResultDto> SaveRiskCheckScheme(RiskCheckSchemeSaveRequestDto request)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<RiskCheckSchemeSaveResultDto>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "RiskCheck/SaveScheme",
+			Body = request,
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>风险检查方案云端共享库：删除团队库方案</summary>
+	public static async Task DeleteRiskCheckScheme(long id)
+	{
+		if (IsLocalMode)
+		{
+			return;
+		}
+		await Send(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "RiskCheck/DeleteScheme",
+			Body = new { id },
+			Timeout = TimeSpan.FromSeconds(30.0),
+			WithAuthorization = true
+		});
+	}
+
+	/// <summary>风险检查方案云端共享库：发布为系统库方案（全团队可见、只读）</summary>
+	public static async Task<RiskCheckSchemeSaveResultDto> PublishRiskCheckSchemeAsSystem(RiskCheckSchemeSaveRequestDto request)
+	{
+		if (IsLocalMode)
+		{
+			return null;
+		}
+		return await SendAsObject<RiskCheckSchemeSaveResultDto>(new RequestOptions
+		{
+			Method = HttpMethod.Post,
+			Url = "RiskCheck/PublishSystemScheme",
+			Body = request,
 			Timeout = TimeSpan.FromSeconds(30.0),
 			WithAuthorization = true
 		});
@@ -1200,7 +1284,9 @@ public static class WebApiClient
 			Method = HttpMethod.Post,
 			Url = "Project/QueryTableVersions",
 			Body = request,
-			Timeout = TimeSpan.FromSeconds(30.0),
+			// 版本查询是批量接口：项目节点多（数百~上千）时服务端分组聚合耗时上升，
+			// 30 秒偏紧，超时会中断整批同步。放宽到 3 分钟。
+			Timeout = TimeSpan.FromMinutes(3.0),
 			WithAuthorization = true
 		}) ?? new JArray();
 	}
@@ -1216,7 +1302,7 @@ public static class WebApiClient
 			Method = HttpMethod.Post,
 			Url = "Project/QueryDocumentVersions",
 			Body = request,
-			Timeout = TimeSpan.FromSeconds(30.0),
+			Timeout = TimeSpan.FromMinutes(3.0),
 			WithAuthorization = true
 		}) ?? new JArray();
 	}
@@ -1232,7 +1318,7 @@ public static class WebApiClient
 			Method = HttpMethod.Post,
 			Url = "Project/QueryImageVersions",
 			Body = request,
-			Timeout = TimeSpan.FromSeconds(30.0),
+			Timeout = TimeSpan.FromMinutes(3.0),
 			WithAuthorization = true
 		}) ?? new JArray();
 	}
@@ -1248,7 +1334,7 @@ public static class WebApiClient
 			Method = HttpMethod.Post,
 			Url = "Project/QueryPdfVersions",
 			Body = request,
-			Timeout = TimeSpan.FromSeconds(30.0),
+			Timeout = TimeSpan.FromMinutes(3.0),
 			WithAuthorization = true
 		}) ?? new JArray();
 	}
@@ -2640,7 +2726,12 @@ public static class WebApiClient
 					try
 					{
 						var errObj = JsonConvert.DeserializeObject<JObject>(errorContent);
+						// 优先取 message；缺失时回退到 error 字段（如登录 401 的错误体 {"error":"用户名或密码错误"} 没有 message）
 						string errMessage = errObj?["message"]?.ToString();
+						if (string.IsNullOrEmpty(errMessage))
+						{
+							errMessage = errObj?["error"]?.ToString();
+						}
 						msg = string.IsNullOrEmpty(errMessage)
 							? $"HTTP {(int)response.StatusCode} {response.StatusCode}: {errorContent}"
 							: $"HTTP {(int)response.StatusCode}: {errMessage}";
@@ -2839,6 +2930,19 @@ public static class WebApiClient
 				using JsonTextWriter jsonWriter = new JsonTextWriter(textWriter);
 				jsonSerializer.Serialize(jsonWriter, options.Body);
 			});
+			// 设置正确的 Content-Type，帮助中间件/服务端正确识别请求体格式
+			if (options.Body is Google.Protobuf.IMessage)
+			{
+				httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-protobuf");
+			}
+			else if (options.Body is Stream)
+			{
+				httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+			}
+			else
+			{
+				httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+			}
 		}
 		return httpRequestMessage;
 	}
@@ -2971,81 +3075,13 @@ public static class WebApiClient
 	{
 		try
 		{
-			TaskProgressValueUpdater dataGenerateProgressUpdater = new TaskProgressValueUpdater(0f, 0.2f, progressReportCallback);
 			TaskProgressValueUpdater fileUploadProgressUpdater = new TaskProgressValueUpdater(0.2f, 0.1f, progressReportCallback);
 			TaskProgressValueUpdater serverProcessProgressUpdater = new TaskProgressValueUpdater(0.3f, 0.7f, progressReportCallback);
 			long taskId = await SendTaskInputFileToServer(fileUploadProgressUpdater, delegate(ServerTaskInputFileStreamWriter streamWriter)
 			{
-				int value = request.Columns.Count((PushColumn c) => c.Action == 1);
-				int value2 = request.Columns.Count((PushColumn c) => c.Action == 3);
-				int value3 = request.Rows.Count((PushRow c) => c.Action == 1);
-				int value4 = request.Rows.Count((PushRow c) => c.Action == 3);
-				int value5 = request.Cells.Count((PushCell c) => c.Action == 1);
-				int value6 = request.Cells.Count((PushCell c) => c.Action == 3);
-				streamWriter.WriteCount(value);
-				streamWriter.WriteCount(value2);
-				streamWriter.WriteCount(value3);
-				streamWriter.WriteCount(value4);
-				streamWriter.WriteCount(value5);
-				streamWriter.WriteCount(value6);
-				PushTable pushTable = new PushTable();
-				pushTable.MergeFrom(request);
-				pushTable.Columns.Clear();
-				pushTable.Rows.Clear();
-				pushTable.Cells.Clear();
-				pushTable.CellAttachments.Clear();
-				pushTable.CellStyles.Clear();
-				pushTable.Merges.Clear();
-				streamWriter.WriteData(pushTable);
-				int num = request.Columns.Count + request.Rows.Count + request.Cells.Count + request.CellStyles.Count + request.Merges.Count + request.CellAttachments.Count;
-				int num2 = 0;
-				streamWriter.WriteCount(num);
-				int count = request.Columns.Count;
-				streamWriter.WriteCount(count);
-				for (int i = 0; i < count; i++)
-				{
-					streamWriter.WriteData(request.Columns[i]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				int count2 = request.Rows.Count;
-				streamWriter.WriteCount(count2);
-				for (int j = 0; j < count2; j++)
-				{
-					streamWriter.WriteData(request.Rows[j]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				int count3 = request.Cells.Count;
-				streamWriter.WriteCount(count3);
-				for (int k = 0; k < count3; k++)
-				{
-					streamWriter.WriteData(request.Cells[k]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				int count4 = request.CellStyles.Count;
-				streamWriter.WriteCount(count4);
-				for (int l = 0; l < count4; l++)
-				{
-					streamWriter.WriteData(request.CellStyles[l]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				int count5 = request.Merges.Count;
-				streamWriter.WriteCount(count5);
-				for (int m = 0; m < count5; m++)
-				{
-					streamWriter.WriteData(request.Merges[m]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				int count6 = request.CellAttachments.Count;
-				streamWriter.WriteCount(count6);
-				for (int n = 0; n < count6; n++)
-				{
-					streamWriter.WriteData(request.CellAttachments[n]);
-					dataGenerateProgressUpdater.UpdateProgress(num2++, num);
-				}
-				if (num2 != num)
-				{
-					throw new NormalException("任务数据的实际个数与查询到的总数不一致！");
-				}
+				// 上传整表 PushTable Protobuf（与 PushTableQuick 格式一致）。服务端 GET PushTable 端点按整表 ParseFrom，
+				// 若按旧的"逐集合增量"格式写入会导致服务端解析出 invalid wire type。
+				streamWriter.WriteRaw(request);
 			}).ConfigureAwait(continueOnCapturedContext: false);
 			string text = new Guid(request.ProjectId.ToByteArray()).ToString("D");
 			var tableIdBytes = new byte[16];
@@ -3623,27 +3659,12 @@ public static class WebApiClient
 	{
 		try
 		{
-			TaskProgressValueUpdater dataGenerateProgressUpdater = new TaskProgressValueUpdater(0f, 0.2f, progressReportCallback);
 			TaskProgressValueUpdater fileUploadProgressUpdater = new TaskProgressValueUpdater(0.2f, 0.1f, progressReportCallback);
 			TaskProgressValueUpdater serverProcessProgressUpdater = new TaskProgressValueUpdater(0.3f, 0.7f, progressReportCallback);
 			long taskId = await SendTaskInputFileToServer(fileUploadProgressUpdater, delegate(ServerTaskInputFileStreamWriter streamWriter)
 			{
-				PushDocument pushDocument = new PushDocument();
-				pushDocument.MergeFrom(request);
-				pushDocument.Paragraphs.Clear();
-				streamWriter.WriteData(pushDocument);
-				int count = request.Paragraphs.Count;
-				int num = 0;
-				streamWriter.WriteCount(count);
-				for (int i = 0; i < count; i++)
-				{
-					streamWriter.WriteData(request.Paragraphs[i]);
-					dataGenerateProgressUpdater.UpdateProgress(num++, count);
-				}
-				if (num != count)
-				{
-					throw new NormalException("任务数据的实际个数与查询到的总数不一致！");
-				}
+				// 上传整文档 PushDocument Protobuf（与 PushDocumentQuick 格式一致），与服务器 ParseFrom 对齐。
+				streamWriter.WriteRaw(request);
 			}).ConfigureAwait(continueOnCapturedContext: false);
 			string text = new Guid(request.ProjectId.ToByteArray()).ToString("D");
 			options.Method = HttpMethod.Get;

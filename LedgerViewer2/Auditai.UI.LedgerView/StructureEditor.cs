@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -128,6 +128,7 @@ public class StructureEditor : ISetTheme
 		grdStructureTable.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdStructureTable.Dock = DockStyle.Fill;
 		grdStructureTable.DrawMode = DrawModeEnum.OwnerDraw;
+		grdStructureTable.Font = new Font("微软雅黑", 9.5f);
 		grdStructureTable.Rows.DefaultSize = 20;
 		grdStructureTable.AllowSorting = AllowSortingEnum.None;
 		grdStructureTable.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;

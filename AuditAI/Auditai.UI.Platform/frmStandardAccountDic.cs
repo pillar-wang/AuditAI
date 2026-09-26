@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -34,7 +34,6 @@ public class frmStandardAccountDic : Form
 	private Panel _pnlGrid;
 	private C1FlexGridEx _grid;
 	private Panel _pnlRowTools;
-	private Panel _pnlRowData;
 
 	private C1Button _btnAddRoot;
 	private C1Button _btnAddChild;
@@ -63,13 +62,13 @@ public class frmStandardAccountDic : Form
 	private void InitializeComponent()
 	{
 		Text = "标准科目字典";
-		ClientSize = new Size(620, 640);
-		MinimumSize = new Size(620, 640);
+		ClientSize = new Size(960, 700);
+		MinimumSize = new Size(820, 620);
 		StartPosition = FormStartPosition.CenterScreen;
-		MaximizeBox = false;
+		MaximizeBox = true;
 		MinimizeBox = false;
 		ShowInTaskbar = false;
-		Font = _fontNormal;
+		Font = new Font("微软雅黑", 9.5f);
 		BackColor = Color.White;
 
 		// ---- 顶部标题栏（浅蓝背景，标题有内边距不紧贴边缘） ----
@@ -83,7 +82,7 @@ public class frmStandardAccountDic : Form
 		{
 			Text = "标准科目字典",
 			Location = new Point(20, 8),
-			Size = new Size(300, 28),
+			Size = new Size(400, 28),
 			TextAlign = ContentAlignment.MiddleLeft,
 			Font = new Font("微软雅黑", 12f, FontStyle.Bold),
 			ForeColor = AuditTheme.BrandActive
@@ -92,9 +91,9 @@ public class frmStandardAccountDic : Form
 		{
 			Text = "加载中…",
 			Location = new Point(22, 38),
-			Size = new Size(570, 18),
+			Size = new Size(900, 18),
 			TextAlign = ContentAlignment.MiddleLeft,
-			Font = AuditTheme.FontCaption,
+			Font = new Font("微软雅黑", 9f),
 			ForeColor = AuditTheme.TextMuted
 		};
 		_pnlHeader.Controls.Add(_lblTitle);
@@ -105,7 +104,7 @@ public class frmStandardAccountDic : Form
 		_pnlGrid = new Panel
 		{
 			Dock = DockStyle.Fill,
-			Padding = new Padding(15, 8, 15, 8),
+			Padding = new Padding(12, 8, 12, 8),
 			BackColor = Color.White
 		};
 		_grid = new C1FlexGridEx
@@ -120,87 +119,114 @@ public class frmStandardAccountDic : Form
 			AllowSorting = AllowSortingEnum.None,
 			ExtendLastCol = true,
 			SelectionMode = SelectionModeEnum.Row,
-			Font = _fontNormal,
+			Font = new Font("微软雅黑", 9.5f),
 			BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None
 		};
 		_grid.Cols.Count = 0;
 		_grid.Cols.Fixed = 0;
 		_grid.Rows.Count = 1;
 		_grid.Rows.Fixed = 1;
-		_grid.Rows.DefaultSize = 28;
+		_grid.Rows.DefaultSize = 32;
 		// 树形列放在第 0 列（科目编码），参照 AccountTreeEditor 的树形用法
 		_grid.Tree.Column = 0;
 		C1.Win.C1FlexGrid.Column colCode = _grid.Cols.Add();
 		colCode.Name = "Code";
 		colCode.Caption = "科目编码";
-		colCode.Width = 150;
+		colCode.Width = 200;
 		C1.Win.C1FlexGrid.Column colName = _grid.Cols.Add();
 		colName.Name = "Name";
 		colName.Caption = "科目名称";
-		colName.Width = 240;
+		colName.Width = 380;
 		C1.Win.C1FlexGrid.Column colDc = _grid.Cols.Add();
 		colDc.Name = "Dc";
 		colDc.Caption = "借贷方向";
-		colDc.Width = 80;
+		colDc.Width = 100;
 		colDc.TextAlign = TextAlignEnum.CenterCenter;
 		_grid.MouseDoubleClick += Grid_MouseDoubleClick;
 		_pnlGrid.Controls.Add(_grid);
 		Controls.Add(_pnlGrid);
 
-		// ---- 工具按钮行（添加/修改/删除） ----
+		// ---- 底部操作栏（左提示 + 右对齐两行按钮组，单行 8 按钮共 964px 超窗宽会与提示重叠、被裁切） ----
 		_pnlRowTools = new Panel
 		{
 			Dock = DockStyle.Bottom,
-			Height = 56,
+			Height = 98,
 			BackColor = AuditTheme.SurfaceMuted
 		};
 		Label lblHint = new Label
 		{
 			Text = "双击科目可修改；选中科目后可添加下级",
-			Location = new Point(15, 8),
-			Size = new Size(230, 40),
+			Location = new Point(15, 6),
+			Size = new Size(255, 86),
 			TextAlign = ContentAlignment.MiddleLeft,
-			Font = AuditTheme.FontCaption,
+			Font = new Font("微软雅黑", 9f),
 			ForeColor = AuditTheme.TextMuted
 		};
 		_pnlRowTools.Controls.Add(lblHint);
-		_btnAddRoot = MakeButton("添加一级科目", new Point(94, 8), BtnAddRoot_Click);
-		_btnAddChild = MakeButton("添加子科目", new Point(216, 8), BtnAddChild_Click);
-		_btnModify = MakeButton("修改", new Point(338, 8), BtnModify_Click);
-		_btnDelete = MakeButton("删除", new Point(460, 8), BtnDelete_Click);
-		_pnlRowTools.Controls.AddRange(new Control[] { _btnAddRoot, _btnAddChild, _btnModify, _btnDelete });
-		Controls.Add(_pnlRowTools);
 
-		// ---- 数据按钮行（导入/导出/保存/关闭） ----
-		_pnlRowData = new Panel
-		{
-			Dock = DockStyle.Bottom,
-			Height = 56,
-			BackColor = AuditTheme.SurfaceMuted
-		};
-		_btnImport = MakeButton("导入 JSON", new Point(94, 8), BtnImport_Click);
-		_btnExport = MakeButton("导出 JSON", new Point(216, 8), BtnExport_Click);
-		_btnSave = MakeButton("保存", new Point(338, 8), BtnSave_Click);
-		_btnClose = MakeButton("关闭", new Point(460, 8), BtnClose_Click);
-		_pnlRowData.Controls.AddRange(new Control[] { _btnImport, _btnExport, _btnSave, _btnClose });
-		Controls.Add(_pnlRowData);
+		const int row1Y = 6;
+		const int row2Y = 52;
+		// 数据操作行（下）：关闭、保存、导出、导入
+		int right = RightMargin;
+		_btnClose = MakeButtonRAnchor("关闭", row2Y, right, BtnClose_Click);
+		right += BtnWidth + BtnGap;
+		_btnSave = MakeButtonRAnchor("保存", row2Y, right, BtnSave_Click);
+		right += BtnWidth + BtnGap;
+		_btnExport = MakeButtonRAnchor("导出 JSON", row2Y, right, BtnExport_Click);
+		right += BtnWidth + BtnGap;
+		_btnImport = MakeButtonRAnchor("导入 JSON", row2Y, right, BtnImport_Click);
+		// 编辑工具行（上）：删除、修改、添加子科目、添加一级科目
+		right = RightMargin;
+		_btnDelete = MakeButtonRAnchor("删除", row1Y, right, BtnDelete_Click);
+		right += BtnWidth + BtnGap;
+		_btnModify = MakeButtonRAnchor("修改", row1Y, right, BtnModify_Click);
+		right += BtnWidth + BtnGap;
+		_btnAddChild = MakeButtonRAnchor("添加子科目", row1Y, right, BtnAddChild_Click);
+		right += BtnWidth + BtnGap;
+		_btnAddRoot = MakeButtonRAnchor("添加一级科目", row1Y, right, BtnAddRoot_Click);
+
+		_pnlRowTools.Controls.AddRange(new Control[] { _btnAddRoot, _btnAddChild, _btnModify, _btnDelete, _btnImport, _btnExport, _btnSave, _btnClose });
+		// 底部面板首次布局时把按钮校准到正确的距右位置，后续 Anchor Top|Right 自动随缩放保持对齐
+		AttachRightAnchorCalibrator(_pnlRowTools);
+		Controls.Add(_pnlRowTools);
 
 		CancelButton = _btnClose;
 	}
 
-	/// <summary>统一设计语言：创建按钮（110×40、右对齐锚定，后续统一配色）</summary>
-	private C1Button MakeButton(string text, Point location, EventHandler onClick)
+	/// <summary>统一设计语言：创建按钮（110×40，先设 Anchor Top|Right + 初始占位 Location，后续由底部面板的 Layout 事件统一校准右对齐）</summary>
+	private C1Button MakeButtonRAnchor(string text, int y, int distanceFromRight, EventHandler onClick)
 	{
 		C1Button btn = new C1Button
 		{
 			Text = text,
-			Location = location,
 			Size = new Size(BtnWidth, BtnHeight),
 			Anchor = AnchorStyles.Top | AnchorStyles.Right,
-			Font = new Font("微软雅黑", 9.5f)
+			Font = new Font("微软雅黑", 9.5f),
+			// 初始占位 X=0 会在 Layout 时被校准
+			Location = new Point(0, y)
 		};
+		// 把 distanceFromRight 暂存到 Tag 里，供面板 Layout 时读取
+		btn.Tag = distanceFromRight;
 		btn.Click += onClick;
 		return btn;
+	}
+
+	/// <summary>给底部操作面板注册 Layout 事件，首次布局时把所有带 right-anchor Tag 的按钮校准到正确的距右位置</summary>
+	private static void AttachRightAnchorCalibrator(Panel panel)
+	{
+		bool calibrated = false;
+		panel.Layout += delegate
+		{
+			if (calibrated) return;
+			calibrated = true;
+			foreach (Control c in panel.Controls)
+			{
+				if (c.Tag is int dist && dist >= 0)
+				{
+					c.Location = new Point(panel.ClientSize.Width - dist - c.Width, c.Location.Y);
+				}
+			}
+		};
 	}
 
 	/// <summary>统一设计语言：给按钮应用 8px 圆角区域（与 frmFindPwd 保持一致）</summary>
@@ -652,28 +678,28 @@ public class frmStandardAccountEdit : Form
 	private void InitializeComponent()
 	{
 		Text = "科目编辑";
-		ClientSize = new Size(460, 310);
+		ClientSize = new Size(540, 360);
 		FormBorderStyle = FormBorderStyle.FixedDialog;
 		StartPosition = FormStartPosition.CenterParent;
 		MaximizeBox = false;
 		MinimizeBox = false;
 		ShowInTaskbar = false;
-		Font = new Font("微软雅黑", 9f);
+		Font = new Font("微软雅黑", 9.5f);
 
 		// ---- 顶部标题栏（浅蓝背景，内边距 20 不紧贴边缘） ----
 		Panel pnlHeader = new Panel
 		{
 			Dock = DockStyle.Top,
-			Height = 44,
+			Height = 52,
 			BackColor = AuditTheme.BrandSubtle
 		};
 		_lblDlgTitle = new Label
 		{
 			Text = "添加科目",
 			Location = new Point(20, 0),
-			Size = new Size(380, 44),
+			Size = new Size(440, 52),
 			TextAlign = ContentAlignment.MiddleLeft,
-			Font = new Font("微软雅黑", 11f, FontStyle.Bold),
+			Font = new Font("微软雅黑", 12f, FontStyle.Bold),
 			ForeColor = AuditTheme.BrandActive
 		};
 		pnlHeader.Controls.Add(_lblDlgTitle);
@@ -681,44 +707,45 @@ public class frmStandardAccountEdit : Form
 
 		// ---- 表单区 ----
 		Panel pnlBody = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
-		Label lblParent = MakeLabel("父级科目", 12);
+		Label lblParent = MakeLabel("父级科目", 14);
 		_lblParentValue = new Label
 		{
-			Location = new Point(118, 12),
-			Size = new Size(300, 26),
+			Location = new Point(128, 14),
+			Size = new Size(380, 28),
 			TextAlign = ContentAlignment.MiddleLeft,
+			Font = new Font("微软雅黑", 9.5f),
 			ForeColor = AuditTheme.TextSecondary
 		};
-		Label lblCode = MakeLabel("科目编码 *", 52);
+		Label lblCode = MakeLabel("科目编码 *", 60);
 		_txtCode = new TextBox
 		{
-			Location = new Point(118, 50),
-			Size = new Size(300, 36),
-			Font = new Font("微软雅黑", 9.5f)
+			Location = new Point(128, 54),
+			Size = new Size(380, 30),
+			Font = new Font("微软雅黑", 10f)
 		};
-		Label lblName = MakeLabel("科目名称 *", 100);
+		Label lblName = MakeLabel("科目名称 *", 108);
 		_txtName = new TextBox
 		{
-			Location = new Point(118, 98),
-			Size = new Size(300, 36),
-			Font = new Font("微软雅黑", 9.5f)
+			Location = new Point(128, 104),
+			Size = new Size(380, 30),
+			Font = new Font("微软雅黑", 10f)
 		};
-		Label lblDc = MakeLabel("借贷方向", 148);
+		Label lblDc = MakeLabel("借贷方向", 158);
 		_cmbDc = new ComboBox
 		{
-			Location = new Point(118, 144),
-			Size = new Size(300, 36),
+			Location = new Point(128, 154),
+			Size = new Size(380, 30),
 			DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList,
-			Font = new Font("微软雅黑", 9.5f)
+			Font = new Font("微软雅黑", 10f)
 		};
 		_cmbDc.Items.AddRange(new object[] { "未指定", "借方", "贷方" });
 		_cmbDc.SelectedIndex = 0;
 		Label lblRequired = new Label
 		{
 			Text = "带 * 为必填项",
-			Location = new Point(118, 186),
-			Size = new Size(300, 18),
-			Font = AuditTheme.FontCaption,
+			Location = new Point(128, 202),
+			Size = new Size(380, 20),
+			Font = new Font("微软雅黑", 9f),
 			ForeColor = AuditTheme.TextMuted
 		};
 		pnlBody.Controls.AddRange(new Control[] { lblParent, _lblParentValue, lblCode, _txtCode, lblName, _txtName, lblDc, _cmbDc, lblRequired });
@@ -728,13 +755,12 @@ public class frmStandardAccountEdit : Form
 		Panel pnlButtons = new Panel
 		{
 			Dock = DockStyle.Bottom,
-			Height = 56,
+			Height = 64,
 			BackColor = AuditTheme.SurfaceMuted
 		};
 		_btnOk = new C1Button
 		{
 			Text = "确定",
-			Location = new Point(204, 8),
 			Size = new Size(110, 40),
 			Anchor = AnchorStyles.Top | AnchorStyles.Right,
 			Font = new Font("微软雅黑", 9.5f, FontStyle.Bold)
@@ -743,11 +769,21 @@ public class frmStandardAccountEdit : Form
 		_btnCancel = new C1Button
 		{
 			Text = "取消",
-			Location = new Point(326, 8),
 			Size = new Size(110, 40),
 			Anchor = AnchorStyles.Top | AnchorStyles.Right,
 			Font = new Font("微软雅黑", 9.5f),
 			DialogResult = DialogResult.Cancel
+		};
+		// 右对齐定位：btnCancel 在左、btnOk 在右，间距 12，右边距 20
+		// 父容器 Width 在首次 Layout 后才正确，用委托一次性校准
+		bool calibrated = false;
+		pnlButtons.Layout += delegate
+		{
+			if (calibrated) return;
+			calibrated = true;
+			int pw = pnlButtons.ClientSize.Width;
+			_btnOk.Location = new Point(pw - 20 - _btnOk.Width, 12);
+			_btnCancel.Location = new Point(_btnOk.Location.X - 12 - _btnCancel.Width, 12);
 		};
 		pnlButtons.Controls.Add(_btnOk);
 		pnlButtons.Controls.Add(_btnCancel);
@@ -763,8 +799,9 @@ public class frmStandardAccountEdit : Form
 		{
 			Text = text,
 			Location = new Point(24, y),
-			Size = new Size(90, 26),
+			Size = new Size(104, 28),
 			TextAlign = ContentAlignment.MiddleLeft,
+			Font = new Font("微软雅黑", 9.5f),
 			ForeColor = AuditTheme.TextSecondary
 		};
 	}

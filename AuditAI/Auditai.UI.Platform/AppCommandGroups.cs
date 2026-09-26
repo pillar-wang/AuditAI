@@ -29,6 +29,12 @@ public static class AppCommandGroups
 	public static AppGroupLedgerWindow LedgerWindow { get; } = new AppGroupLedgerWindow();
 
 
+	public static AppGroupRiskCheck RiskCheck { get; } = new AppGroupRiskCheck();
+
+
+	public static AppGroupMultiDimension MultiDimension { get; } = new AppGroupMultiDimension();
+
+
 	public static AppGroupManageLedgers ManageLedgers { get; } = new AppGroupManageLedgers();
 
 

@@ -107,11 +107,15 @@ namespace AuditAI.McpServer.Licensing
                                 GetWindowText(hWnd, sb, 256);
                                 string title = sb.ToString();
 
-                                if (title.Contains("ComponentOne") ||
-                                    title.Contains("评估") ||
+                                // 修复：原实现为"或"关系（ComponentOne / 评估 / Evaluation / Trial / License
+                                // 任一命中即关闭），会误关应用自身的"关于"对话框与许可相关窗体。
+                                // 与主程序 Auditai.UI.Platform/Program.cs 的收窄口径对齐：仅当标题同时含
+                                // "ComponentOne" 且含评估/试用特征时才关闭。
+                                bool isComponentOne = title.IndexOf("ComponentOne", StringComparison.OrdinalIgnoreCase) >= 0;
+                                bool isEvalTrial = title.Contains("评估") ||
                                     title.IndexOf("Evaluation", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    title.IndexOf("Trial", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    title.IndexOf("License", StringComparison.OrdinalIgnoreCase) >= 0)
+                                    title.IndexOf("Trial", StringComparison.OrdinalIgnoreCase) >= 0;
+                                if (isComponentOne && isEvalTrial)
                                 {
                                     SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                                 }

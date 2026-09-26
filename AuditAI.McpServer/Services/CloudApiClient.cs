@@ -18,7 +18,11 @@ namespace AuditAI.McpServer.Services
     /// </summary>
     public static class CloudApiClient
     {
-        private const string DefaultBaseUrl = "http://82.156.108.218:8957";
+        // 安全修复：原默认值是生产机 IP 的明文 HTTP（http://82.156.108.218:8957），
+        // 一旦 App.config 的 ServerBaseUrl 缺失/为空就会静默回退到它，而登录会发出
+        // 用户名 + SHA256 口令（等价口令）→ 等价于把凭据走明文发到生产。
+        // 改为本机回环默认值（与 App.config 现值一致）：如需连生产请在配置里显式指定 HTTPS 地址。
+        private const string DefaultBaseUrl = "http://127.0.0.1:8957";
         private const string MainSessionName = "main";
 
         // 调用上下文（供 CaptureResponse 使用；线程静态以避免并发串扰）

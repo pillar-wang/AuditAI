@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System;
@@ -45,9 +45,13 @@ public static class Theme
 			_selectedAuditaiTheme = value;
 			try
 			{
-				_borderPen = new Pen(SelectedAuditaiTheme.GetC1Theme().GetColor("C1FlexGrid\\Styles\\Normal\\Border\\Color"), 1f);
-				_penGridTop.Color = SelectedAuditaiTheme.GetC1Theme().GetColor("C1FlexGrid\\Styles\\Fixed\\Border\\Color");
-				_themeBorderPen.Color = SelectedAuditaiTheme.GetC1Theme().GetColor("C1Input\\C1Button\\Default\\Border\\Color");
+				C1Theme c1Theme = SelectedAuditaiTheme?.GetC1Theme();
+				if (c1Theme != null)
+				{
+					_borderPen = new Pen(c1Theme.GetColor("C1FlexGrid\\Styles\\Normal\\Border\\Color"), 1f);
+					_penGridTop.Color = c1Theme.GetColor("C1FlexGrid\\Styles\\Fixed\\Border\\Color");
+					_themeBorderPen.Color = c1Theme.GetColor("C1Input\\C1Button\\Default\\Border\\Color");
+				}
 			}
 			catch
 			{

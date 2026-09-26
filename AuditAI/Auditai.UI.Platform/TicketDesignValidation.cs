@@ -1,6 +1,7 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using Auditai.DTO;
+using Auditai.Model;
 
 namespace Auditai.UI.Platform;
 
@@ -12,21 +13,15 @@ public class TicketDesignValidation
         public string Text { get; set; }
         public string InputValue { get; set; }
 
+        // 原反编译实现用反射写 TicketCell 上并不存在的 "Value" 属性，
+        // 静默失效导致字段单元格的静态文本/录入值（前缀与 ="..." 值）丢失，
+        // 单据中残留原始标记如 [科目]="123"。这里直接写入 Text / InputValue。
         public void WriteTo(object ticketCell)
         {
-            if (ticketCell == null) return;
-            try
+            if (ticketCell is TicketCell tc)
             {
-                // 通过反射设置 cell 的 Value 属性
-                var valueProp = ticketCell.GetType().GetProperty("Value");
-                if (valueProp != null)
-                {
-                    valueProp.SetValue(ticketCell, InputValue);
-                }
-            }
-            catch
-            {
-                // 写入失败时静默处理
+                tc.Text = Text ?? string.Empty;
+                tc.InputValue = InputValue ?? string.Empty;
             }
         }
     }

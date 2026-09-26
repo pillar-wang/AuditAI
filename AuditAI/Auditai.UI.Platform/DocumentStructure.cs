@@ -134,7 +134,7 @@ public class DocumentStructure : ISetTheme
 		ThemeManager.GetInstance().Register(this);
 	}
 
-	public async Task Populate()
+	public Task Populate()
 	{
 		int selStart = _tx.Selection.Start;
 		int selLen = _tx.Selection.Length;
@@ -201,6 +201,7 @@ public class DocumentStructure : ISetTheme
 		});
 		View.EndUpdate();
 		_tx.Select(selStart, selLen);
+		return Task.CompletedTask;
 	}
 
 	public int AutoNumber()

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Drawing;
 using C1.Win.C1FlexGrid;
 using C1.Win.C1FlexGrid.Util.BaseControls;
@@ -20,7 +20,7 @@ public class GridFactory
 				Visible = false,
 				AllowEditing = false,
 				ExtendLastCol = true,
-				Font = new Font("微软雅黑", 10.5f),
+				Font = new Font("微软雅黑", 9.5f),
 				ColumnInfo = "1,0,0,0,0,100,Columns:",
 				SelectionMode = SelectionModeEnum.Row,
 				BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None

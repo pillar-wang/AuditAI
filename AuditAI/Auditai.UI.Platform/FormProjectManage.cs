@@ -3602,12 +3602,12 @@ public class FormProjectManage : ISetTheme
 
 	private List<Auditai.DTO.ValidationFormula> SelectedValidationRules => _lvValidation.SelectedItems.Cast<ListViewItem>().Select((ListViewItem i) => i.Tag as Auditai.DTO.ValidationFormula).Where((Auditai.DTO.ValidationFormula v) => v != null).ToList();
 
-	private async Task RunProjectValidation()
+	private Task RunProjectValidation()
 	{
 		if (_validationStore == null)
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "请先选中一个" + StringConstBase.Current.Project);
-			return;
+			return Task.CompletedTask;
 		}
 		ProgressForm2 progressForm = new ProgressForm2(new ProgressDisplayValueConverter_SmoothByTime(0.1f));
 		ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
@@ -3629,7 +3629,7 @@ public class FormProjectManage : ISetTheme
 		if (runError != null)
 		{
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, "校验执行失败：" + runError);
-			return;
+			return Task.CompletedTask;
 		}
 		_validationOutcomes = outcomes ?? new List<ValidationRuleStore.ValidationOutcome>();
 		PopulateValidationList();
@@ -3637,6 +3637,7 @@ public class FormProjectManage : ISetTheme
 		int failed = _validationOutcomes.Count((ValidationRuleStore.ValidationOutcome o) => !o.Passed && o.Error == null);
 		int errors = _validationOutcomes.Count((ValidationRuleStore.ValidationOutcome o) => o.Error != null);
 		Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, $"稽核校验完成。\r\n\r\n通过：{passed} 项\r\n未通过：{failed} 项\r\n求值错误：{errors} 项\r\n\r\n文档域稽核规则请在打开文档后执行\"文档校验\"。");
+		return Task.CompletedTask;
 	}
 
 	private void ExportValidationReport()

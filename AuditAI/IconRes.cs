@@ -55,11 +55,11 @@ public static class IconRes
 	public static System.Drawing.Bitmap VirtualTicketNavTreeListCollapsed => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("caret-right", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap VirtualTicketNavTreeListExpanded => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("caret-down", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap TreeDir => global::Auditai.UI.Controls.FileIcons.GetFolder(24);
-	public static System.Drawing.Bitmap TreeDoc => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("file-doc", 24, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap TreeDoc => global::Auditai.UI.Controls.IconLibrary.CreateFixedBitmap("file-doc", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap TreeGroup => global::Auditai.UI.Controls.FileIcons.GetFolder(24);
-	public static System.Drawing.Bitmap TreeImage => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("file-image", 24, AuditTheme.Amber, global::Auditai.UI.Controls.IconLibrary.StyleFill);
-	public static System.Drawing.Bitmap TreePdf => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("file-pdf", 24, AuditTheme.Rose, global::Auditai.UI.Controls.IconLibrary.StyleFill);
-	public static System.Drawing.Bitmap TreeTable => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("file-xls", 24, AuditTheme.SuccessText, global::Auditai.UI.Controls.IconLibrary.StyleFill);
+	public static System.Drawing.Bitmap TreeImage => global::Auditai.UI.Controls.IconLibrary.CreateFixedBitmap("file-image", 24, AuditTheme.Amber);
+	public static System.Drawing.Bitmap TreePdf => global::Auditai.UI.Controls.IconLibrary.CreateFixedBitmap("file-pdf", 24, AuditTheme.Rose);
+	public static System.Drawing.Bitmap TreeTable => global::Auditai.UI.Controls.IconLibrary.CreateFixedBitmap("file-xls", 24, AuditTheme.SuccessText);
 	public static System.Drawing.Bitmap menuMoreOperation => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("dots-three", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap back => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("arrow-left", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap forward => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("arrow-right", 24, AuditTheme.Brand);
@@ -231,6 +231,7 @@ public static class IconRes
 	public static System.Drawing.Bitmap ToggleMarker => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("highlighter", 24, AuditTheme.Amber);
 	public static System.Drawing.Bitmap ToggleValidation => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("check-circle", 24, AuditTheme.SuccessText);
 	public static System.Drawing.Bitmap TableLock => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("lock", 24, AuditTheme.Indigo);
+	public static System.Drawing.Bitmap TableLockHeader => global::Auditai.UI.Controls.IconLibrary.CreateFixedBitmap("lock", 10, AuditTheme.Indigo);
 	public static System.Drawing.Bitmap FormulaCommit => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("function", 32, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);
 	public static System.Drawing.Bitmap FormulaCancel => global::Auditai.UI.Controls.IconLibrary.CreateTiledBitmap("function", 24, AuditTheme.Brand);
 	public static System.Drawing.Bitmap FormulaMap16 => global::Auditai.UI.Controls.IconLibrary.CreateBitmap("function", 16, AuditTheme.Brand, global::Auditai.UI.Controls.IconLibrary.StyleFill);

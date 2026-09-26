@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -29,15 +29,15 @@ internal class SummaryEditor : ISetTheme
 
 	public LedgerViewer _owner;
 
-	private C1ContextMenu ctxCell = new C1ContextMenu();
+	private readonly C1ContextMenu ctxCell = new();
 
-	private C1ContextMenu ctxFixed = new C1ContextMenu();
+	private readonly C1ContextMenu ctxFixed = new();
 
-	private C1ContextMenu ctxEmpty = new C1ContextMenu();
+	private readonly C1ContextMenu ctxEmpty = new();
 
-	private C1Command cmdCopy = new C1Command();
+	private readonly C1Command cmdCopy = new();
 
-	private C1CommandLink lnkCopy = new C1CommandLink();
+	private readonly C1CommandLink lnkCopy = new();
 
 	private readonly C1CommandLink _lnkFilter;
 
@@ -61,9 +61,9 @@ internal class SummaryEditor : ISetTheme
 
 	private C1SplitterPanel pnlSidebar;
 
-	private C1ContextMenu ctxSidebarAnalyzyProject = new C1ContextMenu();
+	private readonly C1ContextMenu ctxSidebarAnalyzyProject = new();
 
-	private Pen panelBorderPen = new Pen(Color.FromArgb(169, 169, 169), 1f);
+	private readonly Pen panelBorderPen = new(Color.FromArgb(169, 169, 169), 1f);
 
 	private Ledger Ledger => _owner.Ledger;
 
@@ -113,9 +113,8 @@ internal class SummaryEditor : ISetTheme
 		pnlMonthGrid = new C1SplitterPanel();
 		lblSummaryTitle = new C1Label();
 		lblMonthAccount = new C1Label();
-		grdMonthSummary = new C1FlexGridEx();
-		grdMonthSummary.Name = "grdMonthSummary";
-		Font font = new Font("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		grdMonthSummary = new C1FlexGridEx { Name = "grdMonthSummary" };
+		Font font = new("微软雅黑", 12f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblSummaryTitle.TextDetached = true;
 		lblSummaryTitle.BorderStyle = BorderStyle.None;
 		lblSummaryTitle.Dock = DockStyle.Fill;
@@ -130,7 +129,7 @@ internal class SummaryEditor : ISetTheme
 		pnlMonthTitle.Size = new Size(927, 39);
 		pnlMonthTitle.SizeRatio = 4.769;
 		pnlMonthTitle.Controls.Add(lblSummaryTitle);
-		Font font2 = new Font("微软雅黑", 10.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
+		Font font2 = new("微软雅黑", 9.5f, FontStyle.Regular, GraphicsUnit.Point, 134);
 		lblMonthAccount.TextDetached = true;
 		lblMonthAccount.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 		lblMonthAccount.BorderStyle = BorderStyle.None;
@@ -162,47 +161,67 @@ internal class SummaryEditor : ISetTheme
 		grdMonthSummary.Rows.DefaultSize = 20;
 		grdMonthSummary.Tree.LineColor = Color.DimGray;
 		grdMonthSummary.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
-		C1ToolBar c1ToolBar = new C1ToolBar();
-		C1CommandLink c1CommandLink = new C1CommandLink();
-		C1Command c1Command = new C1Command();
-		c1Command.Text = "借方发生额";
-		c1Command.Image = null;
-		c1Command.UserData = AnalysisProject.Debits;
+		C1ToolBar c1ToolBar = new();
+		C1Command c1Command = new()
+		{
+			Text = "借方发生额",
+			Image = null,
+			UserData = AnalysisProject.Debits
+		};
 		c1Command.Click += CmdSidebarAnalyzyProject_Click;
-		c1CommandLink.Command = c1Command;
+		C1CommandLink c1CommandLink = new()
+		{
+			Command = c1Command
+		};
 		ctxSidebarAnalyzyProject.CommandLinks.Add(c1CommandLink);
-		C1CommandLink c1CommandLink2 = new C1CommandLink();
-		C1Command c1Command2 = new C1Command();
-		c1Command2.Text = "贷方发生额";
-		c1Command2.Image = null;
-		c1Command2.UserData = AnalysisProject.Credits;
+		C1Command c1Command2 = new()
+		{
+			Text = "贷方发生额",
+			Image = null,
+			UserData = AnalysisProject.Credits
+		};
 		c1Command2.Click += CmdSidebarAnalyzyProject_Click;
-		c1CommandLink2.Command = c1Command2;
+		C1CommandLink c1CommandLink2 = new()
+		{
+			Command = c1Command2
+		};
 		ctxSidebarAnalyzyProject.CommandLinks.Add(c1CommandLink2);
-		C1CommandLink c1CommandLink3 = new C1CommandLink();
-		C1Command c1Command3 = new C1Command();
-		c1Command3.Text = "分析选项";
-		c1Command3.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
+		C1Command c1Command3 = new()
+		{
+			Text = "分析选项",
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("gear", 28, Auditai.UI.Controls.IconLibrary.DefaultColor)
+		};
 		c1Command3.Click += CmdSidebarAnalyzyProject_Click1;
-		c1CommandLink3.Command = c1Command3;
+		C1CommandLink c1CommandLink3 = new()
+		{
+			Command = c1Command3
+		};
 		c1ToolBar.CommandLinks.Add(c1CommandLink3);
-		C1CommandLink c1CommandLink4 = new C1CommandLink();
-		C1Command c1Command4 = new C1Command();
-		c1Command4.Text = "切换样式";
-		c1Command4.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("swap", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
+		C1Command c1Command4 = new()
+		{
+			Text = "切换样式",
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("swap", 28, Auditai.UI.Controls.IconLibrary.DefaultColor)
+		};
 		c1Command4.Click += CmdDirection_Click;
-		c1CommandLink4.Command = c1Command4;
+		C1CommandLink c1CommandLink4 = new()
+		{
+			Command = c1Command4
+		};
 		c1ToolBar.CommandLinks.Add(c1CommandLink4);
-		C1CommandLink c1CommandLink5 = new C1CommandLink();
-		c1CommandLink5.Delimiter = true;
-		C1Command c1Command5 = new C1Command();
-		c1Command5.Text = "隐藏侧边栏";
-		c1Command5.Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor);
+		C1Command c1Command5 = new()
+		{
+			Text = "隐藏侧边栏",
+			Image = Auditai.UI.Controls.IconLibrary.CreateBitmap("eye-slash", 28, Auditai.UI.Controls.IconLibrary.DefaultColor)
+		};
 		c1Command5.Click += delegate
 		{
 			_owner.OnHideSidebarClick();
 		};
-		c1CommandLink5.Command = c1Command5;
+		C1CommandLink c1CommandLink5 = new()
+		{
+			Delimiter = true,
+			Command = c1Command5
+		};
 		C1SplitContainer value = ComponentFactory.BuildSidebar(grdMonthSummary, c1ToolBar, out pnlSidebar);
 		pnlMonthGrid.Height = 573;
 		pnlMonthGrid.KeepRelativeSize = true;
@@ -309,7 +328,7 @@ internal class SummaryEditor : ISetTheme
 
 	public List<object> GetSelectNodeChildren()
 	{
-		List<object> ret = new List<object>();
+		List<object> ret = new();
 		C1.Win.C1FlexGrid.Row currentOpendedRow = _owner.AccountTreeEditor.CurrentOpendedRow;
 		if (currentOpendedRow == null)
 		{
@@ -344,19 +363,27 @@ internal class SummaryEditor : ISetTheme
 		ctxCell.Popup += CtxCell_Popup;
 		ctxEmpty.CommandLinks.Add(grdMonthSummary.FilterManager.GenLnkCancelAll());
 		ctxFixed.HideFirstDelimiter = true;
-		C1Command c1Command = new C1Command();
-		c1Command.Text = "隐藏本列";
-		c1Command.UserData = grdMonthSummary;
+		C1Command c1Command = new()
+		{
+			Text = "隐藏本列",
+			UserData = grdMonthSummary
+		};
 		c1Command.Click += _owner.ColHide_Click;
-		C1CommandLink c1CommandLink = new C1CommandLink();
-		c1CommandLink.Command = c1Command;
+		C1CommandLink c1CommandLink = new()
+		{
+			Command = c1Command
+		};
 		ctxFixed.CommandLinks.Add(c1CommandLink);
-		C1Command c1Command2 = new C1Command();
-		c1Command2.Text = "取消隐藏";
-		c1Command2.UserData = grdMonthSummary;
+		C1Command c1Command2 = new()
+		{
+			Text = "取消隐藏",
+			UserData = grdMonthSummary
+		};
 		c1Command2.Click += _owner.CancelHide_Click;
-		C1CommandLink c1CommandLink2 = new C1CommandLink();
-		c1CommandLink2.Command = c1Command2;
+		C1CommandLink c1CommandLink2 = new()
+		{
+			Command = c1Command2
+		};
 		ctxFixed.CommandLinks.Add(c1CommandLink2);
 		grdMonthSummary.MouseClick += GrdMonthSummary_MouseClick;
 	}
@@ -394,7 +421,7 @@ internal class SummaryEditor : ISetTheme
 			grdMonthSummary.Cols.Count = 0;
 			grdMonthSummary.Rows.Count = 1;
 			grdMonthSummary.Rows.Fixed = 1;
-			grdMonthSummary.Rows.DefaultSize = 30;
+			grdMonthSummary.Rows.DefaultSize = 26;
 			C1.Win.C1FlexGrid.Column column = grdMonthSummary.Cols.Add();
 			column.Name = "index";
 			column.Caption = "序号";
@@ -421,7 +448,7 @@ internal class SummaryEditor : ISetTheme
 			column.DataType = typeof(decimal);
 			column.Format = "#,0.00;-#,0.00;#";
 			(column.Style ?? column.StyleNew).BackColor = Color.LightYellow;
-			Dictionary<string, decimal> dictionary = new Dictionary<string, decimal>();
+			Dictionary<string, decimal> dictionary = new();
 			for (int k = StartDate.Year; k <= EndDate.Year; k++)
 			{
 				for (int l = 1; l <= 12; l++)
@@ -434,9 +461,9 @@ internal class SummaryEditor : ISetTheme
 			{
 				SubsidiaryLedger subsidiaryLedger = null;
 				string empty = string.Empty;
-				if (!(accountOrAuxItem is Account account))
+				if (accountOrAuxItem is not Account account)
 				{
-					if (!(accountOrAuxItem is Tuple<Account, AuxiliaryItem> tuple))
+					if (accountOrAuxItem is not Tuple<Account, AuxiliaryItem> tuple)
 					{
 						continue;
 					}
@@ -452,13 +479,13 @@ internal class SummaryEditor : ISetTheme
 				row.UserData = accountOrAuxItem;
 				row["index"] = num++;
 				row["ProjectName"] = empty;
-				decimal num2 = default(decimal);
+				decimal num2 = default;
 				for (int y = StartDate.Year; y <= EndDate.Year; y++)
 				{
 					int month;
 					for (month = 1; month <= 12; month++)
 					{
-						MonthSubsidiaryLedger monthSubsidiaryLedger = subsidiaryLedger.Months.Find((MonthSubsidiaryLedger m) => m.Year == y && m.Month == month);
+						MonthSubsidiaryLedger monthSubsidiaryLedger = subsidiaryLedger.Months.Find(m => m.Year == y && m.Month == month);
 						if (monthSubsidiaryLedger != null)
 						{
 							decimal totalValue = GetTotalValue(monthSubsidiaryLedger.Total, AnalysisProject);
@@ -487,7 +514,7 @@ internal class SummaryEditor : ISetTheme
 					row2[text2] = dictionary[text2];
 				}
 			}
-			row2["MonthSum"] = dictionary.Sum((KeyValuePair<string, decimal> m) => m.Value);
+			row2["MonthSum"] = dictionary.Sum(m => m.Value);
 			grdMonthSummary.Rows.Fixed = 1;
 			grdMonthSummary.Cols.Fixed = 1;
 			grdMonthSummary.AutoSizeCols(0, grdMonthSummary.Cols.Count, 5);
@@ -513,13 +540,13 @@ internal class SummaryEditor : ISetTheme
 			grdMonthSummary.Cols.Count = 0;
 			grdMonthSummary.Rows.Count = 1;
 			grdMonthSummary.Rows.Fixed = 1;
-			grdMonthSummary.Rows.DefaultSize = 30;
+			grdMonthSummary.Rows.DefaultSize = 26;
 			C1.Win.C1FlexGrid.Column column = grdMonthSummary.Cols.Add();
 			column.Name = "MonthList";
 			column.Caption = "科目名称";
 			column.DataType = typeof(string);
 			column.TextAlign = TextAlignEnum.CenterCenter;
-			Dictionary<string, C1.Win.C1FlexGrid.Row> dictionary = new Dictionary<string, C1.Win.C1FlexGrid.Row>();
+			Dictionary<string, C1.Win.C1FlexGrid.Row> dictionary = new();
 			for (int i = StartDate.Year; i <= EndDate.Year; i++)
 			{
 				for (int j = 1; j <= 12; j++)
@@ -537,7 +564,7 @@ internal class SummaryEditor : ISetTheme
 			C1.Win.C1FlexGrid.CellStyle cellStyle2 = grdMonthSummary.Styles.Add("textCenterStyle");
 			cellStyle2.TextAlign = TextAlignEnum.CenterCenter;
 			grdMonthSummary.SetCellStyle(row2.Index, grdMonthSummary.Cols["MonthList"].Index, cellStyle2);
-			Dictionary<string, decimal> dictionary2 = new Dictionary<string, decimal>();
+			Dictionary<string, decimal> dictionary2 = new();
 			for (int k = StartDate.Year; k <= EndDate.Year; k++)
 			{
 				for (int l = 1; l <= 12; l++)
@@ -549,9 +576,9 @@ internal class SummaryEditor : ISetTheme
 			{
 				SubsidiaryLedger subsidiaryLedger = null;
 				string empty = string.Empty;
-				if (!(accountOrAuxItem is Account account))
+				if (accountOrAuxItem is not Account account)
 				{
-					if (!(accountOrAuxItem is Tuple<Account, AuxiliaryItem> tuple))
+					if (accountOrAuxItem is not Tuple<Account, AuxiliaryItem> tuple)
 					{
 						continue;
 					}
@@ -568,7 +595,7 @@ internal class SummaryEditor : ISetTheme
 				column.Caption = empty;
 				column.DataType = typeof(decimal);
 				column.Format = "#,0.00;-#,0.00;#";
-				decimal num = default(decimal);
+				decimal num = default;
 				for (int y = StartDate.Year; y <= EndDate.Year; y++)
 				{
 					int mon;
@@ -576,7 +603,7 @@ internal class SummaryEditor : ISetTheme
 					{
 						string key = $"y{y}m{mon}";
 						C1.Win.C1FlexGrid.Row row3 = dictionary[key];
-						MonthSubsidiaryLedger monthSubsidiaryLedger = subsidiaryLedger.Months.Find((MonthSubsidiaryLedger m) => m.Year == y && m.Month == mon);
+						MonthSubsidiaryLedger monthSubsidiaryLedger = subsidiaryLedger.Months.Find(m => m.Year == y && m.Month == mon);
 						if (monthSubsidiaryLedger != null)
 						{
 							decimal totalValue = GetTotalValue(monthSubsidiaryLedger.Total, AnalysisProject);
@@ -602,7 +629,7 @@ internal class SummaryEditor : ISetTheme
 					row4[column.Index] = dictionary2[key2];
 				}
 			}
-			grdMonthSummary.Rows[grdMonthSummary.Rows.Count - 1][column.Index] = dictionary2.Sum((KeyValuePair<string, decimal> m) => m.Value);
+			grdMonthSummary.Rows[grdMonthSummary.Rows.Count - 1][column.Index] = dictionary2.Sum(m => m.Value);
 			grdMonthSummary.AutoSizeCols(0, grdMonthSummary.Cols.Count, 5);
 			grdMonthSummary.Rows.Fixed = 1;
 			grdMonthSummary.Cols.Fixed = 1;

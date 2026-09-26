@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -147,6 +147,7 @@ public class TrendencyEditor : ISetTheme
 		grdTrendTable.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
 		grdTrendTable.Dock = DockStyle.Fill;
 		grdTrendTable.DrawMode = DrawModeEnum.OwnerDraw;
+		grdTrendTable.Font = new Font("微软雅黑", 9.5f);
 		grdTrendTable.Rows.DefaultSize = 20;
 		grdTrendTable.VisualStyle = C1.Win.C1FlexGrid.VisualStyle.Custom;
 		C1ToolBar c1ToolBar = new C1ToolBar();
@@ -342,12 +343,30 @@ public class TrendencyEditor : ISetTheme
 
 	private void CmdSidebarAnalyzyProject_Click1(object sender, ClickEventArgs e)
 	{
-		NativeMenuShim.Show(ctxSidebarAnalyzyProject, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		C1CommandLink callerLink = e.CallerLink;
+		if (callerLink?.Owner is C1ToolBar toolbar)
+		{
+			NativeMenuShim.Show(ctxSidebarAnalyzyProject, toolbar, new Point(callerLink.Bounds.Left, callerLink.Bounds.Bottom));
+		}
+		else
+		{
+			// CallerLink 为空（命令被键盘/间接触发时）→ 退化为在鼠标位置弹出
+			NativeMenuShim.Show(ctxSidebarAnalyzyProject, View, View.PointToClient(Cursor.Position));
+		}
 	}
 
 	private void CmdSidebarAnalyzyMethod_Click1(object sender, ClickEventArgs e)
 	{
-		NativeMenuShim.Show(ctxSidebarAnalyzeMethod, e.CallerLink.Owner as C1ToolBar, new Point(e.CallerLink.Bounds.Left, e.CallerLink.Bounds.Bottom));
+		C1CommandLink callerLink = e.CallerLink;
+		if (callerLink?.Owner is C1ToolBar toolbar)
+		{
+			NativeMenuShim.Show(ctxSidebarAnalyzeMethod, toolbar, new Point(callerLink.Bounds.Left, callerLink.Bounds.Bottom));
+		}
+		else
+		{
+			// CallerLink 为空（命令被键盘/间接触发时）→ 退化为在鼠标位置弹出
+			NativeMenuShim.Show(ctxSidebarAnalyzeMethod, View, View.PointToClient(Cursor.Position));
+		}
 	}
 
 	private void CmdSidebarAnalyzyProject_Click(object sender, ClickEventArgs e)

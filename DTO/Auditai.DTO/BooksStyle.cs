@@ -45,6 +45,8 @@ public class BooksStyle
 	public BooksStyle()
 	{
 		FontStyle = new FontSetting();
+		// 账务界面统一按科目树的字号（微软雅黑 9.5pt），行高维持原默认
+		FontStyle.FontSize = 9.5f;
 		BooksRowHeight = 30;
 		TotalDisplay = TotalDisplayFlags.MonthOnly;
 		SubDisplay = SubDisplayFlags.DataOnly;

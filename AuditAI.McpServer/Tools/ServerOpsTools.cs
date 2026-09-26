@@ -80,17 +80,20 @@ namespace AuditAI.McpServer.Tools
 
             // query_server_db
             ToolRegistry.Register("query_server_db",
-                "通过 SSH 在服务端执行 SQLite 查询（sqlite3 /opt/auditapi/Data/auditai_server.db）。仅用于只读 SELECT，避免执行写入/DDL。",
+                "通过 SSH 在服务端执行 SQLite 查询（sqlite3 /opt/auditapi/Data/auditai_server.db）。默认只读：仅允许 SELECT/PRAGMA/EXPLAIN/WITH/VALUES 且拒绝多语句；确需写入须显式传 allowWrite=true。",
                 new JObject
                 {
                     ["type"] = "object",
                     ["properties"] = new JObject
                     {
-                        ["sql"] = new JObject { ["type"] = "string", ["description"] = "SQL 查询语句（建议只读 SELECT，如 SELECT name FROM sqlite_master WHERE type='table';）" }
+                        ["sql"] = new JObject { ["type"] = "string", ["description"] = "SQL 语句（默认只读，如 SELECT name FROM sqlite_master WHERE type='table';）" },
+                        ["allowWrite"] = new JObject { ["type"] = "boolean", ["description"] = "是否放行写入/DDL（默认 false）。仅在有计划的数据修复时置 true" }
                     },
                     ["required"] = new JArray { "sql" }
                 },
-                (args) => ServerOpsService.QueryServerDb(args["sql"] != null ? args["sql"].ToString() : "").ToJson());
+                (args) => ServerOpsService.QueryServerDb(
+                    args["sql"] != null ? args["sql"].ToString() : "",
+                    args["allowWrite"] != null && args["allowWrite"].Value<bool>()).ToJson());
 
             // get_server_health
             ToolRegistry.Register("get_server_health",

@@ -1,4 +1,4 @@
-namespace LedgerImport;
+﻿namespace LedgerImport;
 
 public enum FailureReasonEnum
 {
@@ -30,5 +30,12 @@ public enum FailureReasonEnum
 	AccCodeNotBeInBalanceRule,
 	BalanceNotBeLastLevel,
 	SpecificMessage,
-	AuxBalanceWithoutVoucherAux
+	AuxBalanceWithoutVoucherAux,
+	ComboAccountNotFound,
+	ComboAccountNotLeaf,
+	ComboSegmentMismatch,
+	ComboClassNotAttached,
+	ComboClassSetInconsistent,
+	ComboTotalNotBalance,
+	ComboMarginalNotBalance
 }

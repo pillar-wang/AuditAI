@@ -1,4 +1,4 @@
-extern alias CrawlerModelAlias;
+﻿extern alias CrawlerModelAlias;
 
 using System;
 using System.Collections.Generic;
@@ -126,11 +126,15 @@ public class frmImport : C1RibbonForm
 
 	private readonly C1ContextMenu ctxCellAux = new C1ContextMenu();
 
+	private readonly C1ContextMenu ctxCellCombo = new C1ContextMenu();
+
 	private readonly C1ContextMenu ctxEmptyBalance = new C1ContextMenu();
 
 	private readonly C1ContextMenu ctxEmptyVoucher = new C1ContextMenu();
 
 	private readonly C1ContextMenu ctxEmptyAux = new C1ContextMenu();
+
+	private readonly C1ContextMenu ctxEmptyCombo = new C1ContextMenu();
 
 	private readonly C1Command _cmdCopyBalance;
 
@@ -144,6 +148,10 @@ public class frmImport : C1RibbonForm
 
 	private readonly C1CommandLink _lnkCopyAux;
 
+	private readonly C1Command _cmdCopyCombo;
+
+	private readonly C1CommandLink _lnkCopyCombo;
+
 	private readonly C1Command _cmdPasteBalance;
 
 	private readonly C1CommandLink _lnkPasteBalance;
@@ -156,6 +164,10 @@ public class frmImport : C1RibbonForm
 
 	private readonly C1CommandLink _lnkPasteAux;
 
+	private readonly C1Command _cmdPasteCombo;
+
+	private readonly C1CommandLink _lnkPasteCombo;
+
 	private readonly C1Command _cmdAppendRowBalance;
 
 	private readonly C1CommandLink _lnkAppendRowBalance;
@@ -167,6 +179,10 @@ public class frmImport : C1RibbonForm
 	private readonly C1Command _cmdAppendRowAux;
 
 	private readonly C1CommandLink _lnkAppendRowAux;
+
+	private readonly C1Command _cmdAppendRowCombo;
+
+	private readonly C1CommandLink _lnkAppendRowCombo;
 
 	private C1ContextMenu ctxFixedCol = new C1ContextMenu();
 
@@ -201,6 +217,8 @@ public class frmImport : C1RibbonForm
 	private GridCommandsManager commandManagerVoucher;
 
 	private GridCommandsManager commandManagerAuxiliary;
+
+	private GridCommandsManager commandManagerCombo;
 
 	private C1FlexGridEx HotGrid;
 
@@ -254,6 +272,12 @@ public class frmImport : C1RibbonForm
 	private C1DockingTabPage tabAuxiliary;
 
 	private C1FlexGridEx grdAuxiliary;
+
+	private C1DockingTabPage tabCombo;
+
+	private C1FlexGridEx grdCombo;
+
+	private Label lblComboTips;
 
 	private C1SplitterPanel pnlTools;
 
@@ -331,10 +355,35 @@ public class frmImport : C1RibbonForm
 	{
 		InitializeComponent();
 
+		// 组合表页签顶部红字说明：随页签宽度自适应换行（高度随内容自动变化）
+		tabCombo.Resize += delegate
+		{
+			lblComboTips.MaximumSize = new Size(Math.Max(200, tabCombo.Width - 16), 0);
+		};
+
 		// ★ 替换 C1ToolBar 为原生 ToolStrip —— 获得 ClearType 渲染 + 解决按钮下边缘遮挡
 		ReplaceToolbarWithNativeToolStrip();
 
+		// ★ 修复 pnlInput 布局：AutoSize 标签在高 DPI 下和 TextBox 重叠 → 运行时按实际宽度重新布局
+		FixPnlInputLayout();
+
+		// ★ 所有 C1CheckBox 移除 WinForms 经典灰底（改为透明/白色背景）
+		foreach (Control c in dockTabInput.Controls)
+		{
+			foreach (Control cc in c.Controls)
+			{
+				if (cc is C1CheckBox cb)
+				{
+					cb.BackColor = Color.Transparent;
+					cb.BorderColor = Color.Transparent;
+				}
+			}
+		}
+
 		base.Shown += FrmImport_Shown;
+		// 恢复：三张网格的"随窗体尺寸自动填充列宽"绑定此前被移除，
+		// 而同目录其它窗体（frmBalanceEditor.cs、MultiDimEditor.cs）仍在用同一方法。
+		// 不绑定则窗口改变大小时列宽不再自动填充。
 		grdBalance.BindAutoSizeColsFill(this);
 		grdVoucher.BindAutoSizeColsFill(this);
 		grdAuxiliary.BindAutoSizeColsFill(this);
@@ -372,6 +421,7 @@ public class frmImport : C1RibbonForm
 		InitializeBalance();
 		InitializeVoucher();
 		InitializeAuxiliary();
+		InitializeCombo();
 		dockTabInput.BorderStyle = BorderStyle.None;
 		dockTabInput.ShowTabs = false;
 		sourceConfig.BalanceAmountDirectionStyle = DirectionStyleEnum.NONE_DIRECTION;
@@ -383,15 +433,18 @@ public class frmImport : C1RibbonForm
 		grdBalance.KeyDown += Grd_KeyDown;
 		grdVoucher.KeyDown += Grd_KeyDown;
 		grdAuxiliary.KeyDown += Grd_KeyDown;
+		grdCombo.KeyDown += Grd_KeyDown;
 		grdVoucher.SetupEditor += GrdVoucher_SetupEditor;
 		grdBalance.AfterEdit += GrdBalance_AfterEdit;
 		grdVoucher.AfterEdit += GrdVoucher_AfterEdit;
 		grdBalance.MouseClick += _grid_MouseClick;
 		grdVoucher.MouseClick += _grid_MouseClick;
 		grdAuxiliary.MouseClick += _grid_MouseClick;
+		grdCombo.MouseClick += _grid_MouseClick;
 		grdBalance.AfterResizeRow += GrdBalance_AfterResizeRow;
 		grdVoucher.AfterResizeRow += GrdVoucher_AfterResizeRow;
 		grdAuxiliary.AfterResizeRow += GrdAuxiliary_AfterResizeRow;
+		grdCombo.AfterResizeRow += GrdCombo_AfterResizeRow;
 		grdBalance.Paint += delegate(object s1, PaintEventArgs e1)
 		{
 			Auditai.UI.Controls.Theme.DrawFormBorder(grdBalance, e1.Graphics);
@@ -404,20 +457,28 @@ public class frmImport : C1RibbonForm
 		{
 			Auditai.UI.Controls.Theme.DrawFormBorder(grdAuxiliary, e1.Graphics);
 		};
+		grdCombo.Paint += delegate(object s1, PaintEventArgs e1)
+		{
+			Auditai.UI.Controls.Theme.DrawFormBorder(grdCombo, e1.Graphics);
+		};
 		grdBalance.Rows.Count = 20;
 		grdVoucher.Rows.Count = 20;
 		grdAuxiliary.Rows.Count = 20;
+		grdCombo.Rows.Count = 20;
 		ReGenerateBalanceTotal();
 		ReGenerateVoucherTotal();
 		PopulateIndex(grdBalance);
 		PopulateIndex(grdVoucher);
 		PopulateIndex(grdAuxiliary);
+		PopulateIndex(grdCombo);
 		grdBalance.AutoSizeCol(0);
 		grdBalance.AutoSizeColsFill();
 		grdVoucher.AutoSizeCol(0);
 		grdVoucher.AutoSizeColsFill();
 		grdAuxiliary.AutoSizeCol(0);
 		grdAuxiliary.AutoSizeColsFill();
+		grdCombo.AutoSizeCol(0);
+		grdCombo.AutoSizeColsFill();
 		HotGrid = grdBalance;
 		dockTab.SelectedTabChanged += DockTab_SelectedTabChanged;
 		_cmdCopyBalance = new C1Command
@@ -477,6 +538,25 @@ public class frmImport : C1RibbonForm
 		ctxCellAux.CommandLinks.Add(grdAuxiliary.FilterManager.GenLnkFilter());
 		ctxCellAux.CommandLinks.Add(grdAuxiliary.FilterManager.GenLnkSelect());
 		ctxCellAux.CommandLinks.Add(grdAuxiliary.FilterManager.GenLnkCancelCurrentColumn());
+		_cmdCopyCombo = new C1Command
+		{
+			Text = "复制",
+			Image = ContextResources.ctxCopy
+		};
+		_cmdCopyCombo.Click += _cmdCopyCombo_Click;
+		_lnkCopyCombo = new C1CommandLink(_cmdCopyCombo);
+		ctxCellCombo.CommandLinks.Add(_lnkCopyCombo);
+		_cmdPasteCombo = new C1Command
+		{
+			Text = "粘贴",
+			Image = ContextResources.ctxPaste
+		};
+		_cmdPasteCombo.Click += _cmdPasteCombo_Click;
+		_lnkPasteCombo = new C1CommandLink(_cmdPasteCombo);
+		ctxCellCombo.CommandLinks.Add(_lnkPasteCombo);
+		ctxCellCombo.CommandLinks.Add(grdCombo.FilterManager.GenLnkFilter());
+		ctxCellCombo.CommandLinks.Add(grdCombo.FilterManager.GenLnkSelect());
+		ctxCellCombo.CommandLinks.Add(grdCombo.FilterManager.GenLnkCancelCurrentColumn());
 		cmdInsertRow.Text = "插入行...";
 		lnkInsertRow.Command = cmdInsertRow;
 		cmdInsertRow.Click += CmdInsertRow_Click;
@@ -519,6 +599,15 @@ public class frmImport : C1RibbonForm
 		_lnkAppendRowAux = new C1CommandLink(_cmdAppendRowAux);
 		ctxEmptyAux.CommandLinks.Add(_lnkAppendRowAux);
 		ctxEmptyAux.CommandLinks.Add(grdAuxiliary.FilterManager.GenLnkCancelAll());
+		_cmdAppendRowCombo = new C1Command
+		{
+			Text = "追加行...",
+			Image = ContextResources.ctxAppendRow
+		};
+		_cmdAppendRowCombo.Click += _cmdAppendRowCombo_Click;
+		_lnkAppendRowCombo = new C1CommandLink(_cmdAppendRowCombo);
+		ctxEmptyCombo.CommandLinks.Add(_lnkAppendRowCombo);
+		ctxEmptyCombo.CommandLinks.Add(grdCombo.FilterManager.GenLnkCancelAll());
 		cmdAddAuxColumn.Text = "添加辅助核算类别列";
 		lnkAddAuxColumn.Command = cmdAddAuxColumn;
 		cmdAddAuxColumn.Click += CmdAddAuxColumn_Click;
@@ -541,6 +630,7 @@ public class frmImport : C1RibbonForm
 		commandManagerBalance = new GridCommandsManager(grdBalance);
 		commandManagerVoucher = new GridCommandsManager(grdVoucher);
 		commandManagerAuxiliary = new GridCommandsManager(grdAuxiliary);
+		commandManagerCombo = new GridCommandsManager(grdCombo);
 		cboAuxStyle.DropDownStyle = DropDownStyle.DropDownList;
 		cboAuxStyle.Items.AddRange(AuxStyleDisplay);
 		cboAuxStyle.SelectedIndex = 1;
@@ -557,13 +647,34 @@ public class frmImport : C1RibbonForm
 	private ToolStripButton _btnFilltip;
 
 	/// <summary>
-	/// 用原生 System.Windows.Forms.ToolStrip 替换 c1ToolBar1。
-	/// C1ToolBar (C1Command 2.x) 不支持 PerMonitorV2 ClearType，
-	/// 在高 DPI 下文字模糊且按钮底部易被截断。原生 ToolStrip 自动 ClearType + DPI 缩放。
+	/// 修复 pnlInput 顶部输入区布局：AutoSize 标签在高 DPI 下宽度变大，
+	/// 但后续 TextBox 是硬编码位置，会被标签盖住 → 运行时按实际标签宽度重新排布。
 	/// </summary>
-	private void ReplaceToolbarWithNativeToolStrip()
+	private void FixPnlInputLayout()
 	{
-		// 先把 C1 的 c1CommandDock1 从工具栏面板移除（不再需要）
+		const int gap = 8; // 标签和控件之间的间距
+		const int leftMargin = 3;
+
+		// 1. 核算单位标签 + TextBox
+		int x = leftMargin;
+		lblCompany.Location = new Point(x, lblCompany.Location.Y);
+		x += lblCompany.Width + gap; // AutoSize 后的实际宽度
+		txtCompany.Location = new Point(x, txtCompany.Location.Y);
+		x += txtCompany.Width + gap;
+
+		// 2. 金额单位标签 + TextBox
+		lblCurrency.Location = new Point(x, lblCurrency.Location.Y);
+		x += lblCurrency.Width + gap;
+		txtCurrency.Location = new Point(x, txtCurrency.Location.Y);
+		x += txtCurrency.Width + gap;
+
+		// 3. dockTabInput 紧随其后
+		dockTabInput.Location = new Point(x, dockTabInput.Location.Y);
+	}
+
+    private void ReplaceToolbarWithNativeToolStrip()
+    {
+            // 先把 C1 的 c1CommandDock1 从工具栏面板移除（不再需要）
 		pnlTools.Controls.Remove(c1CommandDock1);
 
 		_nativeToolStrip = new ToolStrip
@@ -655,6 +766,17 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
+	private void _cmdAppendRowCombo_Click(object sender, ClickEventArgs e)
+	{
+		decimal? num = InputForm.Numeric("追加行", "请输入追加行数：");
+		if (num.HasValue)
+		{
+			grdCombo.Rows.Add((int)num.Value);
+			PopulateIndex(grdCombo);
+			grdCombo.AutoSizeCol(0);
+		}
+	}
+
 	private void _cmdAppendRowVoucher_Click(object sender, ClickEventArgs e)
 	{
 		decimal? num = InputForm.Numeric("追加行", "请输入追加行数：");
@@ -687,6 +809,16 @@ public class frmImport : C1RibbonForm
 	private void _cmdCopyAux_Click(object sender, ClickEventArgs e)
 	{
 		grdAuxiliary.Copy();
+	}
+
+	private async void _cmdPasteCombo_Click(object sender, ClickEventArgs e)
+	{
+		await CmdPaste_Click(grdCombo);
+	}
+
+	private void _cmdCopyCombo_Click(object sender, ClickEventArgs e)
+	{
+		grdCombo.Copy();
 	}
 
 	private async void _cmdPasteVoucher_Click(object sender, ClickEventArgs e)
@@ -722,6 +854,7 @@ public class frmImport : C1RibbonForm
 			grdBalance.AutoSizeColsFill();
 			grdVoucher.AutoSizeColsFill();
 			grdAuxiliary.AutoSizeColsFill();
+			grdCombo.AutoSizeColsFill();
 		}));
 	}
 
@@ -950,6 +1083,11 @@ public class frmImport : C1RibbonForm
 		ResizeRow(grdAuxiliary, grdAuxiliary.Rows[e.Row].Height);
 	}
 
+	private void GrdCombo_AfterResizeRow(object sender, RowColEventArgs e)
+	{
+		ResizeRow(grdCombo, grdCombo.Rows[e.Row].Height);
+	}
+
 	private void GrdBalance_AfterResizeRow(object sender, RowColEventArgs e)
 	{
 		ResizeRow(grdBalance, grdBalance.Rows[e.Row].Height);
@@ -974,6 +1112,7 @@ public class frmImport : C1RibbonForm
 		grdBalance.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdVoucher.Styles.Fixed.Border.Color = Color.DarkGray;
 		grdAuxiliary.Styles.Fixed.Border.Color = Color.DarkGray;
+		grdCombo.Styles.Fixed.Border.Color = Color.DarkGray;
 		AuditaiTheme selectedAuditaiTheme = Auditai.UI.Controls.Theme.SelectedAuditaiTheme;
 		if (selectedAuditaiTheme != null && selectedAuditaiTheme.ThemeFlags.HasFlag(ThemeEnum.WhiteIcon))
 		{
@@ -1191,6 +1330,10 @@ public class frmImport : C1RibbonForm
 				{
 					NativeMenuShim.Show(ctxCellAux, c1FlexGrid, e.Location);
 				}
+				else if (c1FlexGrid == grdCombo)
+				{
+					NativeMenuShim.Show(ctxCellCombo, c1FlexGrid, e.Location);
+				}
 				break;
 			case HitTestTypeEnum.None:
 				if (c1FlexGrid == grdBalance)
@@ -1204,6 +1347,10 @@ public class frmImport : C1RibbonForm
 				else if (c1FlexGrid == grdAuxiliary)
 				{
 					NativeMenuShim.Show(ctxEmptyAux, c1FlexGrid, e.Location);
+				}
+				else if (c1FlexGrid == grdCombo)
+				{
+					NativeMenuShim.Show(ctxEmptyCombo, c1FlexGrid, e.Location);
 				}
 				break;
 			case HitTestTypeEnum.RowHeader:
@@ -1247,6 +1394,11 @@ public class frmImport : C1RibbonForm
 			HotGrid.Focus();
 			dockTabInput.SelectedTab = tabPageInputBoxAuxiliary;
 			ckbBalanceNonDirection.Checked = sourceConfig.AuxiliaryAmountDirectionStyle == DirectionStyleEnum.NONE_DIRECTION;
+		}
+		else if (dockTab.SelectedTab == tabCombo)
+		{
+			HotGrid = grdCombo;
+			HotGrid.Focus();
 		}
 		else
 		{
@@ -1840,6 +1992,55 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
+	private void InitializeCombo()
+	{
+		grdCombo.BeginUpdate();
+		try
+		{
+			grdCombo.Rows.Count = 1;
+			grdCombo.Rows.Fixed = 1;
+			grdCombo.Cols.Count = 1;
+			grdCombo.Cols.Fixed = 1;
+			grdCombo.Rows.DefaultSize = 30;
+			grdCombo.AllowResizing = AllowResizingEnum.Both;
+			C1.Win.C1FlexGrid.Column column = grdCombo.Cols[0];
+			column.Name = "index";
+			column.Caption = "序号";
+			column.DataType = typeof(string);
+			column.TextAlign = TextAlignEnum.CenterCenter;
+			column = grdCombo.Cols.Add();
+			column.Name = "kmdm";
+			column.Caption = "科目代码";
+			column.DataType = typeof(string);
+			column = grdCombo.Cols.Add();
+			column.Name = "auxtype";
+			column.Caption = "辅助核算类别";
+			column.DataType = typeof(string);
+			column = grdCombo.Cols.Add();
+			column.Name = "auxcode";
+			column.Caption = "辅助核算代码";
+			column.DataType = typeof(string);
+			column = grdCombo.Cols.Add();
+			column.Name = "auxname";
+			column.Caption = "辅助核算名称";
+			column.DataType = typeof(string);
+			column = grdCombo.Cols.Add();
+			column.Name = "debit";
+			column.Caption = "年初借方余额";
+			column.DataType = typeof(decimal);
+			column.Format = "#,0.00;-#,0.00;#";
+			column = grdCombo.Cols.Add();
+			column.Name = "credit";
+			column.Caption = "年初贷方余额";
+			column.DataType = typeof(decimal);
+			column.Format = "#,0.00;-#,0.00;#";
+		}
+		finally
+		{
+			grdCombo.EndUpdate();
+		}
+	}
+
 	private void PopulateIndex(C1FlexGrid grid)
 	{
 		if (grid == null)
@@ -1869,7 +2070,7 @@ public class frmImport : C1RibbonForm
 		}
 	}
 
-	private async Task PasteClipboard(C1FlexGrid grid)
+	private Task PasteClipboard(C1FlexGrid grid)
 	{
 		GridCommandsManager commandManager = GetCommandsManager(grid);
 		List<GridCellInfo> cellInfos = new List<GridCellInfo>();
@@ -1920,7 +2121,7 @@ public class frmImport : C1RibbonForm
 				grid.BeginUpdate();
 				if (clipValue == null)
 				{
-					return;
+					return Task.CompletedTask;
 				}
 				if (clipValue.Count == 1 && clipValue[0].Count == 1 && !grid.Selection.IsSingleCell)
 				{
@@ -2114,6 +2315,7 @@ public class frmImport : C1RibbonForm
 				pendingEditEvent = false;
 			}
 		}
+		return Task.CompletedTask;
 	}
 
 	private GridCommandsManager GetCommandsManager(C1FlexGrid grid)
@@ -2129,6 +2331,10 @@ public class frmImport : C1RibbonForm
 		if (grid == grdAuxiliary)
 		{
 			return commandManagerAuxiliary;
+		}
+		if (grid == grdCombo)
+		{
+			return commandManagerCombo;
 		}
 		return null;
 	}
@@ -2601,9 +2807,60 @@ public class frmImport : C1RibbonForm
 					decimal num = (decimal.TryParse(row2["credit"]?.ToString(), out result) ? result : 0m);
 					dataRow2["debit"] = (valueOrDefault ? num : 0m);
 					dataRow2["credit"] = (valueOrDefault ? 0m : num);
-					dataTable.SetTag(dataRow2, row2);
-				}
+				dataTable.SetTag(dataRow2, row2);
 			}
+		}
+		}
+		return dataTable;
+	}
+
+	private LedgerImport.DataTable ConvertFromCombo()
+	{
+		LedgerImport.DataTable dataTable = new LedgerImport.DataTable();
+		DataColumn dataColumn = dataTable.Columns.Add("kmdm");
+		dataColumn.Caption = "科目代码";
+		dataColumn.DataType = typeof(string);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["kmdm"]);
+		dataColumn = dataTable.Columns.Add("auxtype");
+		dataColumn.Caption = "辅助核算类别";
+		dataColumn.DataType = typeof(string);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["auxtype"]);
+		dataColumn = dataTable.Columns.Add("auxcode");
+		dataColumn.Caption = "辅助核算代码";
+		dataColumn.DataType = typeof(string);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["auxcode"]);
+		dataColumn = dataTable.Columns.Add("auxname");
+		dataColumn.Caption = "辅助核算名称";
+		dataColumn.DataType = typeof(string);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["auxname"]);
+		dataColumn = dataTable.Columns.Add("debit");
+		dataColumn.Caption = "年初借方余额";
+		dataColumn.DataType = typeof(decimal);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["debit"]);
+		dataColumn = dataTable.Columns.Add("credit");
+		dataColumn.Caption = "年初贷方余额";
+		dataColumn.DataType = typeof(decimal);
+		dataTable.SetTag(dataColumn, grdCombo.Cols["credit"]);
+		bool hasRow = false;
+		for (int i = grdCombo.Rows.Fixed; i < grdCombo.Rows.Count; i++)
+		{
+			C1.Win.C1FlexGrid.Row row = grdCombo.Rows[i];
+			if (!(row.UserData?.ToString() == "tag_total") && RowHasValue(row))
+			{
+				hasRow = true;
+				DataRow dataRow = dataTable.Rows.Add();
+				dataRow["kmdm"] = row["kmdm"] ?? DBNull.Value;
+				dataRow["auxtype"] = row["auxtype"] ?? DBNull.Value;
+				dataRow["auxcode"] = row["auxcode"] ?? DBNull.Value;
+				dataRow["auxname"] = row["auxname"] ?? DBNull.Value;
+				dataRow["debit"] = row["debit"] ?? DBNull.Value;
+				dataRow["credit"] = row["credit"] ?? DBNull.Value;
+				dataTable.SetTag(dataRow, row);
+			}
+		}
+		if (!hasRow)
+		{
+			return null;
 		}
 		return dataTable;
 	}
@@ -2693,14 +2950,18 @@ public class frmImport : C1RibbonForm
 		{
 			cellRect = grdVoucher.GetCellRect(row, col);
 		}
+		else if (grid == grdAuxiliary)
+		{
+			cellRect = grdAuxiliary.GetCellRect(row, col);
+		}
+		else if (grid == grdCombo)
+		{
+			cellRect = grdCombo.GetCellRect(row, col);
+		}
 		else
 		{
-			if (grid != grdAuxiliary)
-			{
-				_tooltip.Hide();
-				return;
-			}
-			cellRect = grdAuxiliary.GetCellRect(row, col);
+			_tooltip.Hide();
+			return;
 		}
 		Point point = default(Point);
 		point.X = cellRect.Right;
@@ -2892,17 +3153,17 @@ public class frmImport : C1RibbonForm
 				xElement = GetVoucherFilltip(col);
 			}
 		}
-		else
+		else if (grid == grdAuxiliary)
 		{
-			if (grid != grdAuxiliary)
-			{
-				return null;
-			}
 			Rectangle cellRect = grdAuxiliary.GetCellRect(row, col);
 			if (displayFilltip)
 			{
 				xElement = GetAuxiliaryFilltip(col);
 			}
+		}
+		else if (grid != grdCombo)
+		{
+			return null;
 		}
 		string text = null;
 		ValidateResult2 validateResult = ValidateResults.Find((ValidateResult2 v) => v.C1FlexGrid == grid && v.Row.Index == row && v.Column.Index == col);
@@ -2930,7 +3191,7 @@ public class frmImport : C1RibbonForm
 		return xElement2;
 	}
 
-	private async Task<bool> ValidateFill(bool save)
+	private Task<bool> ValidateFill(bool save)
 	{
 		try
 		{
@@ -2938,6 +3199,7 @@ public class frmImport : C1RibbonForm
 			grdBalance.FilterManager.Clear();
 			grdVoucher.FilterManager.Clear();
 			grdAuxiliary.FilterManager.Clear();
+			grdCombo.FilterManager.Clear();
 			CrawlerModelAlias::Auditai.Model.Ledger ledger = LedgerBuilder3.EMPTY_LEDGER;
 			ProgressRuntimeData progressRuntimeData = new ProgressRuntimeData();
 			ProgressForm2 progressForm = new ProgressForm2();
@@ -2981,6 +3243,13 @@ public class frmImport : C1RibbonForm
 				});
 				Application.DoEvents();
 				dataSource.AuxiliaryTable = ConvertFromAuxiliary();
+				iProgress.Report(new ProgressInfo
+				{
+					MainCaption = "正在处理多维组合数据",
+					MainProgress = ++currentProgress * 100 / totalProgress
+				});
+				Application.DoEvents();
+				dataSource.ComboTable = ConvertFromCombo();
 				builder.DataSource = dataSource;
 				ledger = builder.GetLedger(string.IsNullOrEmpty(txtCurrency.Text) ? "人民币" : txtCurrency.Text);
 				iProgress.Report(new ProgressInfo
@@ -2995,12 +3264,12 @@ public class frmImport : C1RibbonForm
 				if (string.IsNullOrEmpty(txtCompany.Text))
 				{
 					ShowValidatetip(txtCompany, new Point((txtCompany.Right - txtCompany.Left) / 2, 0), "错误提示", "请输入核算单位名称");
-					return false;
+					return Task.FromResult(false);
 				}
 				if (string.IsNullOrEmpty(txtCurrency.Text))
 				{
 					ShowValidatetip(txtCurrency, new Point((txtCurrency.Right - txtCurrency.Left) / 2, 0), "错误提示", "请输入本位币");
-					return false;
+					return Task.FromResult(false);
 				}
 				string text = txtCompany.Text.Trim();
 				ledger.CompanyName = text;
@@ -3013,11 +3282,11 @@ public class frmImport : C1RibbonForm
 				{
 					ledger.SaveAsSqlite(saveFileDialog.FileName);
 					SavePath = saveFileDialog.FileName;
-					return true;
+					return Task.FromResult(true);
 				}
-				return false;
+				return Task.FromResult(false);
 			}
-			return true;
+			return Task.FromResult(true);
 		}
 		catch (ValidateException ex)
 		{
@@ -3318,18 +3587,42 @@ public class frmImport : C1RibbonForm
 						SetError(grdVoucher, row.Index, grdVoucher.Cols["auxname"].Index, importException.FailureContext.UserData?.ToString());
 						break;
 					case TableEnum.AUXILIARY:
-						SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxtype"].Index, importException.FailureContext.UserData?.ToString());
-						SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxcode"].Index, importException.FailureContext.UserData?.ToString());
-						SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxname"].Index, importException.FailureContext.UserData?.ToString());
-						break;
-					}
+					SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxtype"].Index, importException.FailureContext.UserData?.ToString());
+					SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxcode"].Index, importException.FailureContext.UserData?.ToString());
+					SetError(grdAuxiliary, row.Index, grdAuxiliary.Cols["auxname"].Index, importException.FailureContext.UserData?.ToString());
+					break;
+				case TableEnum.COMBO:
+					SetError(grdCombo, row.Index, grdCombo.Cols["auxtype"].Index, importException.FailureContext.UserData?.ToString());
+					SetError(grdCombo, row.Index, grdCombo.Cols["auxcode"].Index, importException.FailureContext.UserData?.ToString());
+					SetError(grdCombo, row.Index, grdCombo.Cols["auxname"].Index, importException.FailureContext.UserData?.ToString());
+					break;
+				}
 				}
 				ShowValidatetipIfCanPosition(importException.FailureContext, importException.FailureContext.UserData?.ToString());
 				break;
 			case FailureReasonEnum.AccCodeNotBeInBalanceRule:
-				ShowValidatetipIfCanPosition(importException.FailureContext, "辅助核算期初表和凭证表中的科目代码应该与科目余额表中的科目代码级次保持一致或为更长");
-				break;
-			case FailureReasonEnum.SpecificMessage:
+			ShowValidatetipIfCanPosition(importException.FailureContext, "辅助核算期初表和凭证表中的科目代码应该与科目余额表中的科目代码级次保持一致或为更长");
+			break;
+		case FailureReasonEnum.ComboAccountNotFound:
+			ShowValidatetipIfCanPosition(importException.FailureContext, $"（{importException.FailureContext.UserData}）科目不存在，请检查科目代码或先在《年初科目余额表》中维护该科目");
+			break;
+		case FailureReasonEnum.ComboAccountNotLeaf:
+			ShowValidatetipIfCanPosition(importException.FailureContext, $"（{importException.FailureContext.UserData}）不是明细科目，多维组合期初余额只能挂最末级科目");
+			break;
+		case FailureReasonEnum.ComboSegmentMismatch:
+			ShowValidatetipIfCanPosition(importException.FailureContext, $"（{importException.FailureContext.UserData}）组合表辅助核算类别/代码/名称为空或段数不一致，多值请用 | 分隔且一一对应");
+			break;
+		case FailureReasonEnum.ComboClassNotAttached:
+			ShowValidatetipIfCanPosition(importException.FailureContext, $"（{importException.FailureContext.UserData}）该辅助类别未在该科目的《年初辅助余额表》中挂接");
+			break;
+		case FailureReasonEnum.ComboClassSetInconsistent:
+			ShowValidatetipIfCanPosition(importException.FailureContext, $"（{importException.FailureContext.UserData}）同一科目各行的辅助核算类别集合或顺序不一致");
+			break;
+		case FailureReasonEnum.ComboTotalNotBalance:
+		case FailureReasonEnum.ComboMarginalNotBalance:
+			ShowValidatetipIfCanPosition(importException.FailureContext, importException.FailureContext.UserData?.ToString());
+			break;
+		case FailureReasonEnum.SpecificMessage:
 				Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, importException.FailureContext.UserData?.ToString());
 				break;
 			}
@@ -3344,7 +3637,7 @@ public class frmImport : C1RibbonForm
 			ex3.Log();
 			Auditai.UI.Controls.MessageBox.Show(MessageBoxIcon.None, ex3.Message);
 		}
-		return false;
+		return Task.FromResult(false);
 	}
 
 	private void SetError(C1FlexGrid grid, int row, int col, string error)
@@ -3406,6 +3699,12 @@ public class frmImport : C1RibbonForm
 				SetError(grdAuxiliary, row.Index, column.Index, message);
 				ShowValidatetip(grdAuxiliary, row.Index, column.Index);
 				break;
+			case TableEnum.COMBO:
+				dockTab.SelectedTab = tabCombo;
+				grdCombo.ShowCell(row.Index, column.Index);
+				SetError(grdCombo, row.Index, column.Index, message);
+				ShowValidatetip(grdCombo, row.Index, column.Index);
+				break;
 			}
 		}
 	}
@@ -3440,6 +3739,10 @@ public class frmImport : C1RibbonForm
 			else if (ex.Grid == grdAuxiliary)
 			{
 				dockTab.SelectedTab = tabAuxiliary;
+			}
+			else if (ex.Grid == grdCombo)
+			{
+				dockTab.SelectedTab = tabCombo;
 			}
 			grid.ShowCell(row.Index, col.Index);
 			SetError(grid, row.Index, col.Index, message);
@@ -3512,7 +3815,13 @@ public class frmImport : C1RibbonForm
 
 	private void cmdFilltip_CheckedChanged(object sender, EventArgs e)
 	{
-		displayFilltip = ((ToolStripButton)sender).Checked;
+		// sender 可能是 C1Command 或 ToolStripButton，分别取 Checked
+		displayFilltip = sender switch
+		{
+			ToolStripButton btn => btn.Checked,
+			C1.Win.C1Command.C1Command cmd => cmd.Checked,
+			_ => displayFilltip
+		};
 		if (!displayFilltip)
 		{
 			_tooltip.Hide();
@@ -4386,6 +4695,9 @@ public class frmImport : C1RibbonForm
 		this.grdAuxiliary = new Auditai.UI.Controls.C1FlexGridEx();
 		this.tabVoucher = new C1.Win.C1Command.C1DockingTabPage();
 		this.grdVoucher = new Auditai.UI.Controls.C1FlexGridEx();
+		this.tabCombo = new C1.Win.C1Command.C1DockingTabPage();
+		this.grdCombo = new Auditai.UI.Controls.C1FlexGridEx();
+		this.lblComboTips = new System.Windows.Forms.Label();
 		this.cmdGenerate = new C1.Win.C1Command.C1Command();
 		this.cmdFilltip = new C1.Win.C1Command.C1Command();
 		this.cmdValidate = new C1.Win.C1Command.C1Command();
@@ -4425,6 +4737,8 @@ public class frmImport : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.grdAuxiliary).BeginInit();
 		this.tabVoucher.SuspendLayout();
 		((System.ComponentModel.ISupportInitialize)this.grdVoucher).BeginInit();
+		this.tabCombo.SuspendLayout();
+		((System.ComponentModel.ISupportInitialize)this.grdCombo).BeginInit();
 		base.SuspendLayout();
 		this.ctnAll.AutoSizeElement = C1.Framework.AutoSizeElement.Both;
 		this.ctnAll.BackColor = System.Drawing.Color.FromArgb(164, 195, 235);
@@ -4714,6 +5028,7 @@ public class frmImport : C1RibbonForm
 		this.dockTab.Controls.Add(this.tabBalance);
 		this.dockTab.Controls.Add(this.tabAuxiliary);
 		this.dockTab.Controls.Add(this.tabVoucher);
+		this.dockTab.Controls.Add(this.tabCombo);
 		this.dockTab.Dock = System.Windows.Forms.DockStyle.Fill;
 		this.dockTab.Location = new System.Drawing.Point(0, 0);
 		this.dockTab.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -4776,6 +5091,34 @@ public class frmImport : C1RibbonForm
 		this.grdVoucher.Rows.DefaultSize = 37;
 		this.grdVoucher.Size = new System.Drawing.Size(1330, 402);
 		this.grdVoucher.TabIndex = 0;
+		this.tabCombo.Controls.Add(this.grdCombo);
+		this.tabCombo.Controls.Add(this.lblComboTips);
+		this.tabCombo.Location = new System.Drawing.Point(0, 45);
+		this.tabCombo.Name = "tabCombo";
+		this.tabCombo.Size = new System.Drawing.Size(1330, 402);
+		this.tabCombo.TabIndex = 3;
+		this.tabCombo.Text = "年初多维组合余额表";
+		this.grdCombo.AllowSorting = C1.Win.C1FlexGrid.AllowSortingEnum.None;
+		this.grdCombo.BorderStyle = C1.Win.C1FlexGrid.Util.BaseControls.BorderStyleEnum.None;
+		this.grdCombo.ColumnInfo = "10,1,0,0,0,150,Columns:";
+		this.grdCombo.Dock = System.Windows.Forms.DockStyle.Fill;
+		this.grdCombo.DrawMode = C1.Win.C1FlexGrid.DrawModeEnum.OwnerDraw;
+		this.grdCombo.Location = new System.Drawing.Point(0, 0);
+		this.grdCombo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+		this.grdCombo.Name = "grdCombo";
+		this.grdCombo.Rows.DefaultSize = 37;
+		this.grdCombo.Size = new System.Drawing.Size(1330, 402);
+		this.grdCombo.TabIndex = 0;
+		this.lblComboTips.AutoSize = true;
+		this.lblComboTips.Dock = System.Windows.Forms.DockStyle.Top;
+		this.lblComboTips.Font = new System.Drawing.Font("微软雅黑", 9f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 134);
+		this.lblComboTips.ForeColor = System.Drawing.Color.Red;
+		this.lblComboTips.Location = new System.Drawing.Point(0, 0);
+		this.lblComboTips.MaximumSize = new System.Drawing.Size(1314, 0);
+		this.lblComboTips.Name = "lblComboTips";
+		this.lblComboTips.Padding = new System.Windows.Forms.Padding(8, 6, 8, 6);
+		this.lblComboTips.TabIndex = 1;
+		this.lblComboTips.Text = "1、同一科目各行的辅助核算类别集合与顺序必须一致（多值用 | 分隔，如 部门|项目）\r\n2、每个科目的组合余额合计必须与《年初科目余额表》中该科目的年初余额相等\r\n3、按每个类别汇总的各项目金额，必须与《年初辅助余额表》中该科目对应项目余额相等";
 		this.cmdGenerate.Image = IconLibrary.CreateBitmap("folder-plus", 32, Color.FromArgb(22, 163, 74));
 		this.cmdGenerate.Name = "cmdGenerate";
 		this.cmdGenerate.ShortcutText = "";
@@ -4847,6 +5190,9 @@ public class frmImport : C1RibbonForm
 		((System.ComponentModel.ISupportInitialize)this.grdAuxiliary).EndInit();
 		this.tabVoucher.ResumeLayout(false);
 		((System.ComponentModel.ISupportInitialize)this.grdVoucher).EndInit();
+		this.tabCombo.ResumeLayout(false);
+		this.tabCombo.PerformLayout();
+		((System.ComponentModel.ISupportInitialize)this.grdCombo).EndInit();
 		base.ResumeLayout(false);
 	}
 }

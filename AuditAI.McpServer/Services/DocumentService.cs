@@ -203,6 +203,12 @@ namespace AuditAI.McpServer.Services
                 if (string.IsNullOrWhiteSpace(outputPath))
                     return ErrorJson("输出路径不能为空");
 
+                // 安全修复：两条导出分支都以 File.Copy(..., true) 覆盖写目标，此前未做路径校验，
+                // 可覆盖任意可写文件。复用 ExportService 既有实现。
+                string pathError = ExportService.ValidateOutputPath(outputPath);
+                if (pathError != null)
+                    return pathError;
+
                 var node = FindDocumentNode(documentNodeId);
                 if (node == null)
                     return ErrorJson($"未找到文档节点: {documentNodeId}");

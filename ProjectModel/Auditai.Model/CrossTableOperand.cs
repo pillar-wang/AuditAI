@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -58,7 +58,7 @@ public class CrossTableOperand : Operand
 
 	public override Operand LessThanOrEqual(Operand other)
 	{
-		throw new NotImplementedException();
+		throw new FormulaTypeMismatchException();
 	}
 
 	public override ValueOperand Multiply(Operand other)
