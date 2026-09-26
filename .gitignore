@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# 本地临时构建目录（含超大 dll，禁止入库）
+_build_temp/
